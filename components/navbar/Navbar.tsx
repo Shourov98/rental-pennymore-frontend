@@ -1,15 +1,17 @@
 "use client";
+
 import { useState } from "react";
 import Image from "next/image";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, User } from "lucide-react";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [activeItem, setActiveItem] = useState("Home");
 
   const user = {
-    name: "John",
-    role: "Renter",
+    firstName: "John",
+    role: "Renter", // or "Agent"
   };
 
   const navItems = ["Home", "About", "Monthly Report", "Contact Us"];
@@ -32,31 +34,46 @@ export default function Navbar() {
         {/* Nav Links (Desktop) */}
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-800">
           {navItems.map((item) => (
-            <a
+            <button
               key={item}
-              href={`#${item.toLowerCase().replace(" ", "-")}`}
-              className="hover:text-blue-600 transition"
+              onClick={() => setActiveItem(item)}
+              className={`relative pb-1 transition ${
+                activeItem === item ? "text-blue-600" : "hover:text-blue-600"
+              }`}
             >
               {item}
-            </a>
+              <span
+                className={`absolute left-0 bottom-0 h-[3px] rounded-full bg-blue-600 transition-all duration-300 ${
+                  activeItem === item
+                    ? "w-full opacity-100"
+                    : "w-0 opacity-0 group-hover:w-full"
+                }`}
+              ></span>
+            </button>
           ))}
         </div>
 
         {/* User Section */}
-        <div className="hidden md:flex items-center gap-4 relative">
+        <div className="hidden md:flex items-center relative">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-full hover:bg-gray-200 transition"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-gray-100 transition"
           >
-            <span className="font-medium text-sm">
-              Hey, {user.name} ({user.role})
-            </span>
-            <ChevronDown size={18} />
+            <div className="flex items-center gap-2">
+              <User className="w-5 h-5 text-blue-600" />
+              <div className="text-left">
+                <p className="text-sm font-semibold text-gray-800">
+                  {user.firstName}
+                </p>
+                <p className="text-xs text-gray-500">{user.role}</p>
+              </div>
+            </div>
+            <ChevronDown size={18} className="text-gray-600" />
           </button>
 
           {/* Dropdown */}
           {dropdownOpen && (
-            <div className="absolute right-0 mt-12 w-56 bg-white shadow-lg rounded-lg border">
+            <div className="absolute right-0 top-12 w-56 bg-white shadow-lg rounded-lg border animate-fadeIn">
               {userMenu.map((menu) => (
                 <a
                   key={menu.label}
@@ -77,18 +94,6 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Buttons for Non-Auth */}
-        {!user && (
-          <div className="hidden md:flex gap-3">
-            <button className="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200">
-              Sign Up
-            </button>
-            <button className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
-              Login
-            </button>
-          </div>
-        )}
-
         {/* Mobile Menu Icon */}
         <button
           className="md:hidden p-2 rounded-md hover:bg-gray-100"
@@ -100,9 +105,9 @@ export default function Navbar() {
 
       {/* Mobile Drawer */}
       {menuOpen && (
-        <div className="md:hidden fixed inset-0 bg-black bg-opacity-40 z-40">
-          <div className="absolute left-0 top-0 w-64 h-full bg-white shadow-xl flex flex-col p-6 gap-6">
-            <div className="flex justify-between items-center mb-4">
+        <div className="fixed inset-0 bg-black bg-opacity-40 z-40">
+          <div className="absolute left-0 top-0 w-64 h-full bg-white shadow-xl flex flex-col p-6 gap-6 overflow-y-auto">
+            <div className="flex justify-between items-center mb-2">
               <span className="text-lg font-bold">Logo</span>
               <X
                 size={22}
@@ -111,32 +116,47 @@ export default function Navbar() {
               />
             </div>
 
-            <div className="border-b pb-4">
-              <p className="font-medium mb-2">
-                Hey, {user.name} ({user.role})
-              </p>
+            {/* User Info */}
+            <div className="flex items-center gap-3 mb-4 border-b pb-4">
+              <User className="w-6 h-6 text-blue-600" />
+              <div>
+                <p className="font-semibold text-gray-800">{user.firstName}</p>
+                <p className="text-xs text-gray-500">{user.role}</p>
+              </div>
             </div>
 
+            {/* Nav Items */}
             <div className="flex flex-col gap-3">
               {navItems.map((item) => (
-                <a
+                <button
                   key={item}
-                  href={`#${item.toLowerCase().replace(" ", "-")}`}
-                  className="hover:text-blue-600 transition"
+                  onClick={() => {
+                    setActiveItem(item);
+                    setMenuOpen(false);
+                  }}
+                  className={`relative text-left pb-1 ${
+                    activeItem === item
+                      ? "text-blue-600 font-medium"
+                      : "text-gray-800 hover:text-blue-600"
+                  }`}
                 >
                   {item}
-                </a>
+                  {activeItem === item && (
+                    <span className="block w-full h-[3px] bg-blue-600 rounded-full mt-1"></span>
+                  )}
+                </button>
               ))}
             </div>
 
             <hr className="my-4" />
 
+            {/* Dropdown items in mobile */}
             <div className="flex flex-col gap-3">
               {userMenu.map((menu) => (
                 <a
                   key={menu.label}
                   href="#"
-                  className="flex items-center gap-3 hover:text-blue-600 text-sm"
+                  className="flex items-center gap-3 text-gray-700 hover:text-blue-600 text-sm"
                 >
                   <Image
                     src={menu.icon}
@@ -151,6 +171,23 @@ export default function Navbar() {
           </div>
         </div>
       )}
+
+      {/* Animation */}
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-5px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out forwards;
+        }
+      `}</style>
     </nav>
   );
 }
