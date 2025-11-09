@@ -23,7 +23,7 @@ export default function AuthLayout({
       {/* Auth Card */}
       <div
         className="
-          relative z-10 flex flex-col items-center justify-center
+          relative z-10 my-5 flex flex-col items-center justify-center
           bg-white shadow-md rounded-2xl
           w-[90%] sm:w-[400px] md:w-[430px] lg:w-[460px]
           p-6 sm:p-8 md:p-10
