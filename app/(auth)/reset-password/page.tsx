@@ -1,0 +1,159 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+
+export default function ResetPasswordPage() {
+  const router = useRouter();
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [form, setForm] = useState({
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Add validation + API call for password reset here
+    console.log("New password set:", form);
+    router.push("/signin"); // Redirect to login after success
+  };
+
+  return (
+    <div className="w-full">
+      {/* Logo */}
+      <h1 className="text-3xl font-semibold text-center text-black mb-4">
+        Logo
+      </h1>
+
+      {/* Title */}
+      <h2 className="text-2xl font-semibold text-center text-text-primary mb-1">
+        Set new password
+      </h2>
+      <p className="text-center text-text-secondary mb-6 text-sm sm:text-base">
+        Set a new password and continue your journey
+      </p>
+
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* New Password */}
+        <div>
+          <label className="block text-sm font-semibold text-text-tertiary mb-2">
+            New Password
+          </label>
+          <div className="flex items-center bg-surface-secondary border border-border-secondary rounded-xl px-4 py-3 sm:py-3.5">
+            <Image
+              src="/icons/square-lock-01.svg"
+              alt="lock icon"
+              width={20}
+              height={20}
+              className="w-5 h-5 mr-2"
+            />
+            <input
+              type={showNewPassword ? "text" : "password"}
+              placeholder="Enter password"
+              value={form.newPassword}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, newPassword: e.target.value }))
+              }
+              required
+              className="flex-1 bg-transparent focus:outline-none text-text-secondary text-sm sm:text-base"
+            />
+            <Image
+              src={
+                showNewPassword ? "/icons/view-closed.svg" : "/icons/view.svg"
+              }
+              alt="toggle password"
+              width={20}
+              height={20}
+              onClick={() => setShowNewPassword((p) => !p)}
+              className="w-5 h-5 opacity-70 cursor-pointer ml-2 hover:opacity-100 transition"
+            />
+          </div>
+        </div>
+
+        {/* Confirm Password */}
+        <div>
+          <label className="block text-sm font-semibold text-text-tertiary mb-2">
+            Confirm Password
+          </label>
+          <div className="flex items-center bg-surface-secondary border border-border-secondary rounded-xl px-4 py-3 sm:py-3.5">
+            <Image
+              src="/icons/square-lock-01.svg"
+              alt="lock icon"
+              width={20}
+              height={20}
+              className="w-5 h-5 mr-2"
+            />
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Retype password"
+              value={form.confirmPassword}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  confirmPassword: e.target.value,
+                }))
+              }
+              required
+              className="flex-1 bg-transparent focus:outline-none text-text-secondary text-sm sm:text-base"
+            />
+            <Image
+              src={
+                showConfirmPassword
+                  ? "/icons/view-closed.svg"
+                  : "/icons/view.svg"
+              }
+              alt="toggle confirm password"
+              width={20}
+              height={20}
+              onClick={() => setShowConfirmPassword((p) => !p)}
+              className="w-5 h-5 opacity-70 cursor-pointer ml-2 hover:opacity-100 transition"
+            />
+          </div>
+        </div>
+
+        {/* Submit */}
+        <button
+          type="submit"
+          className="
+            w-full bg-action hover:bg-action-hover
+            text-text-inverted font-semibold
+            py-3 sm:py-3.5 rounded-lg transition
+          "
+        >
+          Next
+        </button>
+
+        {/* Resend + Back */}
+        <div className="flex flex-col items-center gap-3 text-sm sm:text-base mt-1">
+          <p className="text-text-tertiary">
+            Don’t receive OTP?{" "}
+            <button
+              type="button"
+              className="text-action hover:text-action-hover font-semibold"
+            >
+              Resend again
+            </button>
+          </p>
+
+          <button
+            type="button"
+            onClick={() => router.push("/signin")}
+            className="flex items-center gap-2 text-text-tertiary hover:text-action transition"
+          >
+            <Image
+              src="/icons/arrow-left-01.svg"
+              alt="Back icon"
+              width={20}
+              height={20}
+              className="w-5 h-5"
+            />
+            Back to Login
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
