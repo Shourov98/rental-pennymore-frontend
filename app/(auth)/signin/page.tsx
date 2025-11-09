@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 export default function SigninPage() {
@@ -27,18 +28,21 @@ export default function SigninPage() {
           <label className="block text-sm font-semibold text-text-tertiary mb-2">
             Email
           </label>
-          <input
-            type="email"
-            placeholder="Enter email"
-            className="
-              w-full px-4 py-3 sm:py-3.5
-              rounded-xl bg-surface-secondary
-              border border-border-secondary
-              text-text-secondary text-sm sm:text-base
-              focus:outline-none focus:border-action
-              transition
-            "
-          />
+          <div className="flex items-center bg-surface-secondary border border-border-secondary rounded-xl px-4 py-3 sm:py-3.5">
+            <Image
+              src="/icons/mail-01.svg"
+              alt="Mail icon"
+              width={20}
+              height={20}
+              className="w-5 h-5 text-action mr-2"
+            />
+            <input
+              type="email"
+              placeholder="Enter email"
+              required
+              className="flex-1 bg-transparent focus:outline-none text-text-secondary text-sm sm:text-base"
+            />
+          </div>
         </div>
 
         {/* Password */}
@@ -46,18 +50,29 @@ export default function SigninPage() {
           <label className="block text-sm font-semibold text-text-tertiary mb-2">
             Password
           </label>
-          <input
-            type="password"
-            placeholder="Enter password"
-            className="
-              w-full px-4 py-3 sm:py-3.5
-              rounded-xl bg-surface-secondary
-              border border-border-secondary
-              text-text-secondary text-sm sm:text-base
-              focus:outline-none focus:border-action
-              transition
-            "
-          />
+          <div className="flex items-center bg-surface-secondary border border-border-secondary rounded-xl px-4 py-3 sm:py-3.5">
+            <Image
+              src="/icons/square-lock-01.svg"
+              alt="Lock icon"
+              width={20}
+              height={20}
+              className="w-5 h-5 text-action mr-2"
+            />
+            <input
+              type="password"
+              placeholder="Enter password"
+              required
+              className="flex-1 bg-transparent focus:outline-none text-text-secondary text-sm sm:text-base"
+            />
+            <Image
+              src="/icons/view.svg"
+              alt="Lock icon"
+              width={20}
+              height={20}
+              className="w-5 h-5 text-action mr-2"
+            />
+          </div>
+
           <div className="text-right mt-2">
             <a
               href="/forgot-password"
