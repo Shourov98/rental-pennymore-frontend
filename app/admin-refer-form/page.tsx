@@ -27,10 +27,11 @@ export default function ReferFormPage() {
           LOGO
         </h1>
         <h2 className="text-xl text-black sm:text-2xl font-semibold mb-2">
-          The Mor Team “Renters Edge” Specification Form
+          The Mor Team <span className="font-bold">Renters Edge</span>{" "}
+          Specification Form
         </h2>
         <p className="text-sm sm:text-base text-gray-600 mb-8 max-w-[700px] mx-auto">
-          Providing you with options to view upcoming rentals that aren’t
+          Providing you with options to view upcoming rentals that aren&apos;t
           publicly marketed and a 15 second market report read.
         </p>
 
@@ -45,20 +46,102 @@ export default function ReferFormPage() {
           Get Access to NYC pre-market apartments before they are listed
         </p>
 
-        {/* Steps */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-10 mb-12">
+        {/* Steps with arrows */}
+        <div className="flex flex-col sm:flex-row items-center justify-between mb-12 relative">
           <Step
             icon="/icons/steps/submit.svg"
             title="Step 1"
             subtitle="Submit Preferences"
-            description="Submit your pre-market search preferences to start seeing apartments before they’re listed."
+            description="Submit your pre-market search preferences to start seeing apartments before they're listed."
           />
+
+          {/* Arrow between step 1 and 2 */}
+          <div className="hidden sm:block mx-2 lg:mx-4 flex-shrink-0">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="text-gray-400"
+            >
+              <path
+                d="M5 12H19M19 12L12 5M19 12L12 19"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+
+          {/* Mobile arrow - downward */}
+          <div className="sm:hidden my-4">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="text-gray-400"
+            >
+              <path
+                d="M12 5V19M12 19L5 12M12 19L19 12"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+
           <Step
             icon="/icons/steps/connect.svg"
             title="Step 2"
             subtitle="Get Matched"
             description="Your request will be sent to our agents, who will reach out once a pre-market match is found."
           />
+
+          {/* Arrow between step 2 and 3 */}
+          <div className="hidden sm:block mx-2 lg:mx-4 flex-shrink-0">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="text-gray-400"
+            >
+              <path
+                d="M5 12H19M19 12L12 5M19 12L12 19"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+
+          {/* Mobile arrow - downward */}
+          <div className="sm:hidden my-4">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="text-gray-400"
+            >
+              <path
+                d="M12 5V19M12 19L5 12M12 19L19 12"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+
           <Step
             icon="/icons/steps/decide.svg"
             title="Step 3"
@@ -67,7 +150,7 @@ export default function ReferFormPage() {
           />
         </div>
 
-        {/* Form Section */}
+        {/* Rest of your form remains the same */}
         <form
           onSubmit={handleSubmit}
           className="text-left space-y-6 sm:space-y-8"
@@ -225,7 +308,7 @@ function Step({
   description: string;
 }) {
   return (
-    <div className="flex flex-col items-center text-center px-2 sm:px-4">
+    <div className="flex flex-col items-center text-center px-2 sm:px-4 flex-1">
       <Image
         src={icon}
         alt={title}
