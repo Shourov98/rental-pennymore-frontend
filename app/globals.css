@@ -9,6 +9,8 @@
   /* 🎨 Figma-based color tokens */
   --color-action: #1890ff;
   --color-action-hover: #1166b5;
+  --color-icon-action: #1890ff;
+  --color-icon-hover: #1166b5;
 
   --color-text-primary: #212121;
   --color-text-secondary: #717171;
