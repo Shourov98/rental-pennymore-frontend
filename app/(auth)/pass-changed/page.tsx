@@ -12,7 +12,7 @@ export default function PasswordChangedPage() {
       <div className="flex items-center justify-center mb-5">
         <div className="bg-action rounded-full p-3 sm:p-4">
           <Image
-            src="/icons/check.svg"
+            src="/icons/tick-01.svg"
             alt="Success"
             width={32}
             height={32}
