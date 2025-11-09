@@ -43,7 +43,7 @@ export default function EmailVerifiedPage() {
           bg-action hover:bg-action-hover
           text-text-inverted font-semibold
           px-8 py-2.5 sm:px-10 sm:py-3
-          rounded-lg transition
+          rounded-xl transition
         "
       >
         Next

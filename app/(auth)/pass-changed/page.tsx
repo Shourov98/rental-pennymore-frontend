@@ -36,7 +36,7 @@ export default function PasswordChangedPage() {
           flex items-center justify-center gap-2
           bg-action hover:bg-action-hover
           text-text-inverted font-semibold
-          px-6 py-2.5 sm:px-8 sm:py-3 rounded-lg transition
+          px-6 py-2.5 sm:px-8 sm:py-3 rounded-xl transition
         "
       >
         <Image
