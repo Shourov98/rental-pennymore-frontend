@@ -20,14 +20,12 @@ export default function AgentLayout({
         {/* 👆 Add top padding equal to navbar height */}
 
         {/* ✅ Sidebar */}
-        <div className="w-64 flex-shrink-0">
+        <div className="w-64 shrink-0">
           <AgentSidebar open={sidebarOpen} />
         </div>
 
         {/* ✅ Main Content */}
-        <main className="flex-1 overflow-y-auto px-6 py-8 bg-gray-50">
-          {children}
-        </main>
+        <main className="flex-1 px-6 py-8 bg-gray-50">{children}</main>
       </div>
     </div>
   );
