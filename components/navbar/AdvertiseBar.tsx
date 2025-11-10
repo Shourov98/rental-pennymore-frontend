@@ -3,7 +3,7 @@ import React from "react";
 
 export default function AdvertiseBar() {
   return (
-    <div className="w-full bg-gray-100 border-b overflow-hidden">
+    <div className="w-full bg-gray-100 overflow-hidden">
       <div className="flex whitespace-nowrap animate-scroll gap-8 py-2 text-sm text-gray-700">
         <span>Advertising text</span>
         <span>•</span>
