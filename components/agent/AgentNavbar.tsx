@@ -95,16 +95,16 @@ export default function AgentNavbar({
 
           {/* Dropdown */}
           {dropdownOpen && (
-            <div className="absolute right-0 top-12 w-40 bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden animate-fadeIn">
+            <div className="absolute text-black right-0 top-12 w-40 bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden animate-fadeIn">
               <a
                 href="/agent/profile"
-                className="block px-4 py-2 text-sm hover:bg-gray-100"
+                className="block px-4 py-2 text-sm hover:bg-blue-100"
               >
                 Profile
               </a>
               <a
                 href="/logout"
-                className="block px-4 py-2 text-sm hover:bg-gray-100"
+                className="block px-4 py-2 text-sm hover:bg-blue-100"
               >
                 Logout
               </a>

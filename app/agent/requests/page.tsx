@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { Eye, Trash2, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function RenterRequestsPage() {
+  const router = useRouter();
   const [filterOpen, setFilterOpen] = useState(false);
 
   // Mock data
@@ -81,7 +83,10 @@ export default function RenterRequestsPage() {
                   </span>
                 </td>
                 <td className="py-3 px-5 flex justify-end gap-3">
-                  <button className="p-2 bg-gray-100 rounded-full hover:bg-gray-200">
+                  <button
+                    onClick={() => router.push(`/agent/requests/${req.id}`)}
+                    className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition"
+                  >
                     <Eye className="w-4 h-4 text-gray-600" />
                   </button>
                   <button className="p-2 bg-gray-100 rounded-full hover:bg-red-100">
