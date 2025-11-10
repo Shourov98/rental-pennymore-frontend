@@ -58,7 +58,7 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
                   key={item.name}
                   href={item.href}
                   onClick={() => setActive(item.href)}
-                  className={`flex items-center gap-3 px-4 py-2 rounded-lg border ${
+                  className={`flex items-center gap-3 px-4 py-4 rounded-2xl border ${
                     active === item.href
                       ? "bg-blue-600 text-white border-blue-600"
                       : "bg-white text-gray-800 hover:bg-gray-100 border-gray-200"
