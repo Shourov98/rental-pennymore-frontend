@@ -6,7 +6,7 @@ export default function AboutSection() {
   return (
     <section className="relative w-full mx-3 mt-3 lg:mx-6 lg:mt-6 rounded-2xl bg-white py-16 md:py-24 overflow-hidden">
       {/* Background Illustration fills entire section */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute p-10 inset-0 z-0">
         <Image
           src="/auth-bg.svg"
           alt="City Background"
