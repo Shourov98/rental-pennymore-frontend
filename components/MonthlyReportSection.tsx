@@ -68,7 +68,7 @@ export default function MonthlyReportSection() {
   ];
 
   return (
-    <section className="relative w-full bg-gray-50 py-20 overflow-hidden">
+    <section className="relative w-full bg-gray-100 py-10 px-4 md:mx-3 md:mt-3 lg:mx-6 lg:mt-6 rounded-2xl sm:px-8 md:px-12 overflow-hidden">
       {/* Title */}
       <div className="text-center mb-10">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900">

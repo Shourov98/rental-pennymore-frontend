@@ -1,4 +1,5 @@
 import AboutSection from "@/components/AboutSection";
+import FaqSection from "@/components/FaqSecction";
 import HeroSection from "@/components/HeroSection";
 import MonthlyReportSection from "@/components/MonthlyReportSection";
 import Image from "next/image";
@@ -129,6 +130,9 @@ export default function HomePage() {
 
       {/* --- Monthly Report Section --- */}
       <MonthlyReportSection />
+
+      {/* --- FAQ Section --- */}
+      <FaqSection />
 
       {/* --- Contact Section --- */}
       <section className="py-16 px-6 md:px-16 lg:px-24 bg-gray-50 text-center">
