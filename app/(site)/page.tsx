@@ -1,3 +1,4 @@
+import AboutSection from "@/components/AboutSection";
 import HeroSection from "@/components/HeroSection";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,7 +9,7 @@ export default function HomePage() {
       <HeroSection />
 
       {/* --- How It Works Section --- */}
-      <section className="py-16 px-6 md:m-3 lg:m-6 rounded-2xl md:px-16 lg:px-24 bg-white">
+      <section className="py-16 px-6 md:mx-3 md:mt-3 lg:mx-6 lg:mt-6 rounded-2xl md:px-16 lg:px-24 bg-white">
         <h2 className="text-3xl font-semibold text-center mb-10">LOGO</h2>
 
         <p className="w-full max-w-2xl mx-auto text-base font-semibold text-center mb-10">
@@ -121,6 +122,9 @@ export default function HomePage() {
           />
         </div>
       </section>
+
+      {/* --- About Section --- */}
+      <AboutSection />
 
       {/* --- Contact Section --- */}
       <section className="py-16 px-6 md:px-16 lg:px-24 bg-gray-50 text-center">
