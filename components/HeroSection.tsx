@@ -2,8 +2,12 @@
 
 import Image from "next/image";
 import { MapPin, DollarSign } from "lucide-react";
+import { useState } from "react";
+import LocationModal from "./LocationModal";
 
 export default function HeroSection() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <section className="relative w-full min-h-[85vh] flex flex-col justify-center items-center text-center text-white">
       {/* Background image */}
@@ -49,13 +53,14 @@ export default function HeroSection() {
             <label className="text-xs font-medium mb-1 text-gray-600">
               Location
             </label>
-            <div className="flex items-center bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5">
+            <div
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 cursor-pointer hover:border-blue-500 transition"
+            >
               <MapPin size={16} className="text-blue-600 mr-2 shrink-0" />
-              <input
-                type="text"
-                placeholder="Choose neighborhoods or boroughs"
-                className="bg-transparent outline-none w-full text-sm"
-              />
+              <span className="text-gray-500 text-sm">
+                Choose neighborhoods or boroughs
+              </span>
             </div>
           </div>
 
@@ -98,6 +103,11 @@ export default function HeroSection() {
           </button>
         </form>
       </div>
+      {/* Location Modal */}
+      <LocationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </section>
   );
 }
