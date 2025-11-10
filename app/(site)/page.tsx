@@ -1,4 +1,5 @@
 import AboutSection from "@/components/AboutSection";
+import ContactSection from "@/components/ContactSection";
 import FaqSection from "@/components/FaqSecction";
 import HeroSection from "@/components/HeroSection";
 import MonthlyReportSection from "@/components/MonthlyReportSection";
@@ -135,36 +136,7 @@ export default function HomePage() {
       <FaqSection />
 
       {/* --- Contact Section --- */}
-      <section className="py-16 px-6 md:px-16 lg:px-24 bg-gray-50 text-center">
-        <h2 className="text-3xl font-semibold mb-6">Get In Touch</h2>
-        <p className="max-w-2xl mx-auto text-gray-600 mb-10">
-          Whether you’re a renter or an agent, we’d love to hear from you.
-        </p>
-
-        <form className="max-w-lg mx-auto flex flex-col gap-4">
-          <input
-            type="text"
-            placeholder="Your Name"
-            className="px-4 py-3 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="email"
-            placeholder="Your Email"
-            className="px-4 py-3 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <textarea
-            rows={4}
-            placeholder="Message"
-            className="px-4 py-3 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          ></textarea>
-          <button
-            type="submit"
-            className="bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
-          >
-            Send Message
-          </button>
-        </form>
-      </section>
+      <ContactSection />
     </main>
   );
 }
