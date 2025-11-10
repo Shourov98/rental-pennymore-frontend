@@ -1,22 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Edit2, User, Phone } from "lucide-react";
 
 export default function EditProfilePage() {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [profile, setProfile] = useState({
     name: "John Doe",
     phone: "+1 9592626",
-    image: "/profile-image.png", // should exist in /public
+    image: "/profile-image.png", // default image in /public
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setProfile((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // 🔹 handle image selection
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setProfile((prev) => ({
+          ...prev,
+          image: event.target?.result as string,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -54,18 +70,28 @@ export default function EditProfilePage() {
           className="flex flex-col sm:flex-row items-center sm:items-start gap-8 sm:gap-12"
         >
           {/* Profile Picture */}
-          <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-hidden border-4 border-gray-200">
+          <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-visible border-4 border-gray-200">
             <Image
               src={profile.image}
               alt="User"
               fill
-              className="object-cover"
+              className="object-cover rounded-full"
             />
+
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+
             <button
               type="button"
-              className="absolute bottom-2 right-2 bg-white shadow-md p-2 rounded-full hover:bg-gray-100 transition"
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute -bottom-2 -right-2 bg-white shadow-lg p-2 rounded-full hover:bg-gray-100 transition"
             >
-              <Edit2 className="w-4 h-4 text-blue-600" />
+              <Edit2 className="w-4 h-4 text-blue-500" />
             </button>
           </div>
 
@@ -95,7 +121,7 @@ export default function EditProfilePage() {
                 <label className="text-sm text-gray-600 font-medium">
                   Phone no.
                 </label>
-                <div className="flex items-center bg-gray-100 rounded-xl px-3 py-2 mt-1">
+                <div className="flex items-center bg-gray-100 rounded-md px-3 py-2 mt-1">
                   <Phone className="w-5 h-5 text-gray-400 mr-2" />
                   <input
                     type="text"
