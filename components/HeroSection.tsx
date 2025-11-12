@@ -3,9 +3,17 @@
 import Image from "next/image";
 import { MapPin, DollarSign } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import LocationModal from "./LocationModal";
+import dynamic from "next/dynamic";
+
+// Lazy load OpenStreetMap (fixes SSR issues)
+const OpenStreetMap = dynamic(() => import("./partials/OpenStreetMap"), {
+  ssr: false,
+});
 
 export default function HeroSection() {
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -96,8 +104,9 @@ export default function HeroSection() {
 
           {/* Submit */}
           <button
-            type="submit"
+            type="button"
             className="w-full sm:w-[20%] bg-blue-500 text-white text-sm sm:text-base font-semibold rounded-xl mt-5 px-6 py-2 hover:bg-blue-700 transition"
+            onClick={() => router.push("/pre-market-listing")}
           >
             Next
           </button>

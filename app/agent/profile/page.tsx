@@ -23,7 +23,7 @@ export default function AgentProfile() {
       {/* Profile Card */}
       <div className="bg-white rounded-xl shadow-sm p-8 flex flex-col sm:flex-row gap-8">
         {/* Profile Picture */}
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <Image
             src="https://randomuser.me/api/portraits/men/32.jpg"
             alt="Profile"
