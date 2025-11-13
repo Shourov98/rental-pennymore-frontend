@@ -8,7 +8,7 @@ export default function EmailVerifiedPage() {
 
   const handleNext = () => {
     // Redirect user to the next setup step
-    router.push("/preference"); // or /dashboard, depending on your flow
+    router.push("/signin"); // or /dashboard, depending on your flow
   };
 
   return (

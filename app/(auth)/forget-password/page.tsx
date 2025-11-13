@@ -53,6 +53,7 @@ export default function ForgotPasswordPage() {
         {/* Submit Button */}
         <button
           type="submit"
+          onClick={() => router.push("/mor-confirmation")}
           className="
             w-full bg-action hover:bg-action-hover
             text-text-inverted font-semibold

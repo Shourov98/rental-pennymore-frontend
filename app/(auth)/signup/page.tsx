@@ -124,10 +124,11 @@ export default function SignupPage() {
         <button
           type="submit"
           disabled={!agree}
+          onClick={() => router.push("/otp-verify")}
           className="
             w-full bg-action hover:bg-action-hover text-text-inverted
             font-semibold py-3 sm:py-3.5 rounded-lg transition
-            disabled:opacity-70
+            disabled:opacity-20
           "
         >
           Signup
@@ -145,7 +146,7 @@ export default function SignupPage() {
             </a>
           </p>
           <a
-            href="#"
+            href="/terms-conditions"
             className="text-action hover:text-action-hover text-sm mt-2 inline-block"
           >
             Terms & Conditions

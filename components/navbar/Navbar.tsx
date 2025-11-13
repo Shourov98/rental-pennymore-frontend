@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { X, ChevronDown, User } from "lucide-react";
@@ -22,17 +23,43 @@ export default function Navbar() {
     { name: "Home", id: "#" },
     { name: "About", id: "#about" },
     { name: "Monthly Report", id: "#monthly-report" },
-    { name: "Contact Us", id: "#contact" }
+    { name: "Contact Us", id: "#contact" },
   ];
 
   const userMenu = [
-    { label: "Dashboard", icon: "/icons/dashboard-square-01.svg" },
-    { label: "Profile", icon: "/icons/user.svg" },
-    { label: "Pre-Market Requests", icon: "/icons/file-01.svg" },
-    { label: "Notification", icon: "/icons/notification-01.svg" },
-    { label: "Settings", icon: "/icons/settings-01.svg" },
-    { label: "Logout", icon: "/icons/logout-01.svg" },
+    {
+      label: "Dashboard",
+      icon: "/icons/dashboard-square-01.svg",
+      path: "/agent/dashboard",
+    },
+    { label: "Profile", icon: "/icons/user.svg", path: "/profile" },
+    {
+      label: "Pre-Market Requests",
+      icon: "/icons/file-01.svg",
+      path: "/saved-searches",
+    },
+    {
+      label: "Notification",
+      icon: "/icons/notification-01.svg",
+      path: "/matches",
+    },
+    { label: "Settings", icon: "/icons/settings-01.svg", path: "/settings" },
+    { label: "Logout", icon: "/icons/logout-01.svg", path: "/" },
   ];
+
+  const router = useRouter();
+
+  const handleMenuItemClick = (path: string) => {
+    if (path === "/logout") {
+      // Handle logout logic here
+      console.log("Logging out...");
+      // router.push('/signin'); // Uncomment and implement actual logout
+    } else {
+      router.push(path);
+    }
+    setDropdownOpen(false);
+    setMenuOpen(false);
+  };
 
   // ✅ Close dropdown when mouse leaves
   const handleMouseLeave = () => {
@@ -76,14 +103,18 @@ export default function Navbar() {
               onClick={(e) => {
                 e.preventDefault();
                 setActiveItem(item.name);
-                if (item.id === '#') {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                if (item.id === "#") {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
                 } else {
-                  document.querySelector(item.id)?.scrollIntoView({ behavior: 'smooth' });
+                  document
+                    .querySelector(item.id)
+                    ?.scrollIntoView({ behavior: "smooth" });
                 }
               }}
               className={`relative pb-1 lg:px-2 transition ${
-                activeItem === item.name ? "text-blue-600" : "hover:text-blue-600"
+                activeItem === item.name
+                  ? "text-blue-600"
+                  : "hover:text-blue-600"
               }`}
             >
               {item.name}
@@ -124,10 +155,10 @@ export default function Navbar() {
           {dropdownOpen && (
             <div className="absolute right-0 top-12 w-56 bg-white shadow-lg rounded-lg border-gray-600 animate-fadeIn">
               {userMenu.map((menu) => (
-                <a
+                <button
                   key={menu.label}
-                  href="#"
-                  className="flex items-center gap-3 px-4 py-2 hover:bg-blue-100 text-gray-800 text-sm"
+                  onClick={() => handleMenuItemClick(menu.path)}
+                  className="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-blue-100 text-gray-800 text-sm"
                 >
                   <Image
                     src={menu.icon}
@@ -137,7 +168,7 @@ export default function Navbar() {
                     className="opacity-80"
                   />
                   {menu.label}
-                </a>
+                </button>
               ))}
             </div>
           )}
@@ -202,10 +233,12 @@ export default function Navbar() {
                     e.preventDefault();
                     setActiveItem(item.name);
                     setMenuOpen(false);
-                    if (item.id === '#') {
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    if (item.id === "#") {
+                      window.scrollTo({ top: 0, behavior: "smooth" });
                     } else {
-                      document.querySelector(item.id)?.scrollIntoView({ behavior: 'smooth' });
+                      document
+                        .querySelector(item.id)
+                        ?.scrollIntoView({ behavior: "smooth" });
                     }
                   }}
                   className={`relative text-left gap-4 pb-1 ${
@@ -227,10 +260,10 @@ export default function Navbar() {
             {/* Dropdown items in mobile */}
             <div className="flex flex-col gap-3">
               {userMenu.map((menu) => (
-                <a
+                <button
                   key={menu.label}
-                  href="#"
-                  className="flex items-center px-3 py-1 gap-3 text-gray-700 hover:text-blue-600 text-sm"
+                  onClick={() => handleMenuItemClick(menu.path)}
+                  className="w-full text-left flex items-center px-3 py-1 gap-3 text-gray-700 hover:text-blue-600 text-sm"
                 >
                   <Image
                     src={menu.icon}
@@ -239,7 +272,7 @@ export default function Navbar() {
                     height={18}
                   />
                   {menu.label}
-                </a>
+                </button>
               ))}
             </div>
           </div>

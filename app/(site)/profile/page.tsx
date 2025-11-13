@@ -74,7 +74,10 @@ export default function ProfilePage() {
             </div>
 
             {/* Change Password */}
-            <div className="mt-5 flex items-center gap-2 text-blue-600 cursor-pointer hover:text-blue-700 w-fit">
+            <div
+              onClick={() => router.push("/set-new-password")}
+              className="mt-5 flex items-center gap-2 text-blue-600 cursor-pointer hover:text-blue-700 w-fit"
+            >
               <Lock size={16} />
               <span className="text-sm font-medium">Change Password</span>
               <ArrowRight size={14} />

@@ -75,7 +75,7 @@ export default function SigninPage() {
 
           <div className="text-right mt-2">
             <a
-              href="/forgot-password"
+              href="/forget-password"
               className="text-action hover:text-action-hover text-sm sm:text-base"
             >
               Forgot Password?
@@ -86,6 +86,7 @@ export default function SigninPage() {
         {/* Login Button */}
         <button
           type="submit"
+          onClick={() => router.push("/")}
           className="
             w-full bg-action hover:bg-action-hover text-text-inverted
             py-3 sm:py-3.5 rounded-xl

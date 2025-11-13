@@ -118,6 +118,7 @@ export default function SignupPage() {
         <button
           type="submit"
           disabled={!agree}
+          onClick={() => router.push("/mor-confirmation")}
           className="
             w-full bg-action hover:bg-action-hover text-text-inverted
             py-3 sm:py-3.5 rounded-lg transition

@@ -93,6 +93,7 @@ export default function OtpVerifyPage() {
         {/* Submit Button */}
         <button
           type="submit"
+          onClick={() => router.push("/successful-verify")}
           className="
             w-full bg-action hover:bg-action-hover
             text-text-inverted font-semibold

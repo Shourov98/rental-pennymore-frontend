@@ -117,6 +117,7 @@ export default function ResetPasswordPage() {
         {/* Submit */}
         <button
           type="submit"
+          onClick={() => router.push("/signin")}
           className="
             w-full bg-action hover:bg-action-hover
             text-text-inverted font-semibold
