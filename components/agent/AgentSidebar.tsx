@@ -35,7 +35,7 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
       title: "Personal Information",
       items: [
         { name: "Profile", icon: <User />, href: "/agent/profile" },
-        { name: "Logout", icon: <LogOut />, href: "/logout" },
+        { name: "Logout", icon: <LogOut />, href: "/" },
       ],
     },
   ];

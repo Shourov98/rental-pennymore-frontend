@@ -10,13 +10,15 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activeItem, setActiveItem] = useState("Home");
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // ✅ NEW AUTH STATE
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const user = {
     firstName: "John",
-    role: "Renter", // or "Agent"
+    role: "Renter",
   };
 
   const navItems = [
@@ -47,26 +49,20 @@ export default function Navbar() {
     { label: "Logout", icon: "/icons/logout-01.svg", path: "/" },
   ];
 
-  const router = useRouter();
-
   const handleMenuItemClick = (path: string) => {
     if (path === "/logout") {
-      // Handle logout logic here
-      console.log("Logging out...");
-      // router.push('/signin'); // Uncomment and implement actual logout
+      setIsAuthenticated(false);
+      setDropdownOpen(false);
+      setMenuOpen(false);
+      router.push("/");
     } else {
       router.push(path);
+      setDropdownOpen(false);
+      setMenuOpen(false);
     }
-    setDropdownOpen(false);
-    setMenuOpen(false);
   };
 
-  // ✅ Close dropdown when mouse leaves
-  const handleMouseLeave = () => {
-    setTimeout(() => setDropdownOpen(false), 150);
-  };
-
-  // ✅ Detect outside clicks to close drawer
+  // ✅ Detect outside click to close drawer
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -76,15 +72,16 @@ export default function Navbar() {
         setMenuOpen(false);
       }
     };
-
     if (menuOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     } else {
       document.removeEventListener("mousedown", handleClickOutside);
     }
-
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [menuOpen]);
+
+  // ✅ Close dropdown when mouse leaves
+  const handleMouseLeave = () => setTimeout(() => setDropdownOpen(false), 150);
 
   return (
     <nav className="w-full bg-white shadow-sm sticky top-0 z-50">
@@ -122,54 +119,67 @@ export default function Navbar() {
                 className={`absolute left-0 bottom-0 h-[3px] rounded-full bg-blue-600 transition-all duration-300 ${
                   activeItem === item.name
                     ? "w-full opacity-100"
-                    : "w-0 opacity-0 group-hover:w-full"
+                    : "w-0 opacity-0"
                 }`}
               ></span>
             </a>
           ))}
         </div>
 
-        {/* User Section */}
+        {/* 🔹 User Section or Signin/Signup */}
         <div
           className="hidden md:flex items-center relative"
           ref={dropdownRef}
           onMouseLeave={handleMouseLeave}
         >
-          <button
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-gray-100 transition"
-          >
-            <div className="flex items-center gap-2">
-              <User className="w-5 h-5 text-blue-600" />
-              <div className="text-left">
-                <p className="text-sm font-semibold text-gray-800">
-                  Hey, {user.firstName}
-                </p>
-                <p className="text-xs text-gray-500">{user.role}</p>
-              </div>
-            </div>
-            <ChevronDown size={18} className="text-gray-600" />
-          </button>
+          {isAuthenticated ? (
+            <>
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-gray-100 transition"
+              >
+                <User className="w-5 h-5 text-blue-600" />
+                <div className="text-left">
+                  <p className="text-sm font-semibold text-gray-800">
+                    Hey, {user.firstName}
+                  </p>
+                  <p className="text-xs text-gray-500">{user.role}</p>
+                </div>
+                <ChevronDown size={18} className="text-gray-600" />
+              </button>
 
-          {/* Dropdown */}
-          {dropdownOpen && (
-            <div className="absolute right-0 top-12 w-56 bg-white shadow-lg rounded-lg border-gray-600 animate-fadeIn">
-              {userMenu.map((menu) => (
-                <button
-                  key={menu.label}
-                  onClick={() => handleMenuItemClick(menu.path)}
-                  className="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-blue-100 text-gray-800 text-sm"
-                >
-                  <Image
-                    src={menu.icon}
-                    alt={menu.label}
-                    width={18}
-                    height={18}
-                    className="opacity-80"
-                  />
-                  {menu.label}
-                </button>
-              ))}
+              {dropdownOpen && (
+                <div className="absolute right-0 top-12 w-56 bg-white shadow-lg rounded-lg border-gray-600 animate-fadeIn">
+                  {userMenu.map((menu) => (
+                    <button
+                      key={menu.label}
+                      onClick={() => handleMenuItemClick(menu.path)}
+                      className="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-blue-100 text-gray-800 text-sm"
+                    >
+                      <Image
+                        src={menu.icon}
+                        alt={menu.label}
+                        width={18}
+                        height={18}
+                        className="opacity-80"
+                      />
+                      {menu.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setIsAuthenticated(true)}
+                className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
+              >
+                Sign In
+              </button>
+              <button className="px-4 py-2 rounded-md border border-blue-600 text-blue-600 text-sm font-medium hover:bg-blue-50">
+                Sign Up
+              </button>
             </div>
           )}
         </div>
@@ -196,7 +206,7 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer (Original Design Preserved) */}
       {menuOpen && (
         <div className="fixed inset-0 bg-black/30 z-40">
           <div
@@ -212,69 +222,83 @@ export default function Navbar() {
               />
             </div>
 
-            {/* User Info */}
-            <div className="flex items-center gap-3 mb-2 border-b pb-2">
-              <User className="w-6 h-6 text-blue-600" />
-              <div>
-                <p className="font-semibold text-gray-800">
-                  Hey, {user.firstName}
-                </p>
-                <p className="text-xs text-gray-500">{user.role}</p>
-              </div>
-            </div>
+            {/* Conditional User / Auth UI */}
+            {isAuthenticated ? (
+              <>
+                <div className="flex items-center gap-3 mb-2 border-b pb-2">
+                  <User className="w-6 h-6 text-blue-600" />
+                  <div>
+                    <p className="font-semibold text-gray-800">
+                      Hey, {user.firstName}
+                    </p>
+                    <p className="text-xs text-gray-500">{user.role}</p>
+                  </div>
+                </div>
 
-            {/* Nav Items */}
-            <div className="flex flex-col">
-              {navItems.map((item) => (
-                <a
-                  key={item.name}
-                  href={item.id}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setActiveItem(item.name);
-                    setMenuOpen(false);
-                    if (item.id === "#") {
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    } else {
-                      document
-                        .querySelector(item.id)
-                        ?.scrollIntoView({ behavior: "smooth" });
-                    }
-                  }}
-                  className={`relative text-left gap-4 pb-1 ${
-                    activeItem === item.name
-                      ? "text-blue-600 font-medium"
-                      : "text-gray-800 hover:text-blue-600"
-                  }`}
-                >
-                  {item.name}
-                  {activeItem === item.name && (
-                    <span className="inline-block h-[2px] bg-blue-600 rounded-full"></span>
-                  )}
-                </a>
-              ))}
-            </div>
+                <div className="flex flex-col">
+                  {navItems.map((item) => (
+                    <a
+                      key={item.name}
+                      href={item.id}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setActiveItem(item.name);
+                        setMenuOpen(false);
+                        if (item.id === "#") {
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        } else {
+                          document
+                            .querySelector(item.id)
+                            ?.scrollIntoView({ behavior: "smooth" });
+                        }
+                      }}
+                      className={`relative text-left gap-4 pb-1 ${
+                        activeItem === item.name
+                          ? "text-blue-600 font-medium"
+                          : "text-gray-800 hover:text-blue-600"
+                      }`}
+                    >
+                      {item.name}
+                    </a>
+                  ))}
+                </div>
 
-            <hr className="my-1" />
+                <hr className="my-1" />
 
-            {/* Dropdown items in mobile */}
-            <div className="flex flex-col gap-3">
-              {userMenu.map((menu) => (
+                <div className="flex flex-col gap-3">
+                  {userMenu.map((menu) => (
+                    <button
+                      key={menu.label}
+                      onClick={() => handleMenuItemClick(menu.path)}
+                      className="w-full text-left flex items-center px-3 py-1 gap-3 text-gray-700 hover:text-blue-600 text-sm"
+                    >
+                      <Image
+                        src={menu.icon}
+                        alt={menu.label}
+                        width={18}
+                        height={18}
+                      />
+                      {menu.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col gap-4 mt-4">
                 <button
-                  key={menu.label}
-                  onClick={() => handleMenuItemClick(menu.path)}
-                  className="w-full text-left flex items-center px-3 py-1 gap-3 text-gray-700 hover:text-blue-600 text-sm"
+                  onClick={() => {
+                    setIsAuthenticated(true);
+                    setMenuOpen(false);
+                  }}
+                  className="w-full bg-blue-600 text-white py-2 rounded-md text-sm font-medium hover:bg-blue-700"
                 >
-                  <Image
-                    src={menu.icon}
-                    alt={menu.label}
-                    width={18}
-                    height={18}
-                  />
-                  {menu.label}
+                  Sign In
                 </button>
-              ))}
-            </div>
+                <button className="w-full border border-blue-600 text-blue-600 py-2 rounded-md text-sm font-medium hover:bg-blue-50">
+                  Sign Up
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

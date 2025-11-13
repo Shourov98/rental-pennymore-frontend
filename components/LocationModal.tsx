@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { X, Search, Map } from "lucide-react";
 import dynamic from "next/dynamic";
 
-// Lazy import the NeighborhoodModal (to prevent SSR issues)
+// Lazy import NeighborhoodModal (prevents SSR issues)
 const NeighborhoodModal = dynamic(() => import("./NeighborhoodModal"), {
   ssr: false,
 });
@@ -18,13 +18,38 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
   const [search, setSearch] = useState("");
   const [isNeighborhoodOpen, setIsNeighborhoodOpen] = useState(false);
 
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  const handleClose = useCallback(() => {
+    setIsNeighborhoodOpen(false);
+    onClose();
+  }, [onClose]);
+
+  // ✅ Close Location Modal when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        handleClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen, handleClose]);
+
   if (!isOpen) return null;
 
   return (
     <>
-      {/* --- Main Location Modal --- */}
+      {/* --- Location Modal --- */}
       <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
-        <div className="bg-white w-[90%] sm:w-[400px] md:w-[460px] rounded-2xl shadow-lg p-6 relative animate-fadeIn">
+        <div
+          ref={modalRef}
+          className="bg-white w-[90%] sm:w-[400px] md:w-[460px] rounded-2xl shadow-lg p-6 relative animate-fadeIn"
+        >
           {/* Close Button */}
           <button
             onClick={onClose}
@@ -74,7 +99,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
           </div>
         </div>
 
-        {/* Animation */}
+        {/* Fade-in animation */}
         <style jsx>{`
           @keyframes fadeIn {
             from {
@@ -92,7 +117,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
         `}</style>
       </div>
 
-      {/* --- Neighborhood Modal --- */}
+      {/* ✅ Render NeighborhoodModal only when explicitly triggered */}
       <NeighborhoodModal
         isOpen={isNeighborhoodOpen}
         onClose={() => setIsNeighborhoodOpen(false)}

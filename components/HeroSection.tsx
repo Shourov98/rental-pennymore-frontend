@@ -5,12 +5,6 @@ import { MapPin, DollarSign } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import LocationModal from "./LocationModal";
-import dynamic from "next/dynamic";
-
-// Lazy load OpenStreetMap (fixes SSR issues)
-const OpenStreetMap = dynamic(() => import("./partials/OpenStreetMap"), {
-  ssr: false,
-});
 
 export default function HeroSection() {
   const router = useRouter();
