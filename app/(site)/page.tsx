@@ -12,7 +12,7 @@ export default function HomePage() {
       <HeroSection />
 
       {/* --- How It Works Section --- */}
-      <section className="py-16 px-6 md:mx-3 md:mt-3 lg:mx-6 lg:mt-6 rounded-2xl md:px-16 lg:px-24 bg-white">
+      <section id="how-it-works" className="py-16 px-6 md:mx-3 md:mt-3 lg:mx-6 lg:mt-6 rounded-2xl md:px-16 lg:px-24 bg-white">
         <h2 className="text-3xl font-semibold text-center mb-10">LOGO</h2>
 
         <p className="w-full max-w-2xl mx-auto text-base font-semibold text-center mb-10">
@@ -127,16 +127,24 @@ export default function HomePage() {
       </section>
 
       {/* --- About Section --- */}
-      <AboutSection />
+      <section id="about" className="scroll-mt-20">
+        <AboutSection />
+      </section>
 
       {/* --- Monthly Report Section --- */}
-      <MonthlyReportSection />
+      <section id="monthly-report" className="scroll-mt-20">
+        <MonthlyReportSection />
+      </section>
 
       {/* --- FAQ Section --- */}
-      <FaqSection />
+      <section id="faq" className="scroll-mt-20">
+        <FaqSection />
+      </section>
 
       {/* --- Contact Section --- */}
-      <ContactSection />
+      <section id="contact" className="scroll-mt-20">
+        <ContactSection />
+      </section>
     </main>
   );
 }

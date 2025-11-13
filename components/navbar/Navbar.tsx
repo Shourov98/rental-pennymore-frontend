@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { X, ChevronDown, User } from "lucide-react";
 
 export default function Navbar() {
@@ -17,7 +18,12 @@ export default function Navbar() {
     role: "Renter", // or "Agent"
   };
 
-  const navItems = ["Home", "About", "Monthly Report", "Contact Us"];
+  const navItems = [
+    { name: "Home", id: "#" },
+    { name: "About", id: "#about" },
+    { name: "Monthly Report", id: "#monthly-report" },
+    { name: "Contact Us", id: "#contact" }
+  ];
 
   const userMenu = [
     { label: "Dashboard", icon: "/icons/dashboard-square-01.svg" },
@@ -57,27 +63,38 @@ export default function Navbar() {
     <nav className="w-full bg-white shadow-sm sticky top-0 z-50">
       <div className="md:max-w-11/12 lg:max-w-10/12 mx-auto px-4 md:px-8 flex justify-between items-center py-4">
         {/* Logo */}
-        <div className="text-2xl font-bold text-black">Logo</div>
+        <Link href="/" className="text-2xl font-bold text-black">
+          Logo
+        </Link>
 
         {/* Nav Links (Desktop) */}
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-800">
           {navItems.map((item) => (
-            <button
-              key={item}
-              onClick={() => setActiveItem(item)}
+            <a
+              key={item.name}
+              href={item.id}
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveItem(item.name);
+                if (item.id === '#') {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                  document.querySelector(item.id)?.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
               className={`relative pb-1 lg:px-2 transition ${
-                activeItem === item ? "text-blue-600" : "hover:text-blue-600"
+                activeItem === item.name ? "text-blue-600" : "hover:text-blue-600"
               }`}
             >
-              {item}
+              {item.name}
               <span
                 className={`absolute left-0 bottom-0 h-[3px] rounded-full bg-blue-600 transition-all duration-300 ${
-                  activeItem === item
+                  activeItem === item.name
                     ? "w-full opacity-100"
                     : "w-0 opacity-0 group-hover:w-full"
                 }`}
               ></span>
-            </button>
+            </a>
           ))}
         </div>
 
@@ -178,23 +195,30 @@ export default function Navbar() {
             {/* Nav Items */}
             <div className="flex flex-col">
               {navItems.map((item) => (
-                <button
-                  key={item}
-                  onClick={() => {
-                    setActiveItem(item);
+                <a
+                  key={item.name}
+                  href={item.id}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActiveItem(item.name);
                     setMenuOpen(false);
+                    if (item.id === '#') {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                      document.querySelector(item.id)?.scrollIntoView({ behavior: 'smooth' });
+                    }
                   }}
                   className={`relative text-left gap-4 pb-1 ${
-                    activeItem === item
+                    activeItem === item.name
                       ? "text-blue-600 font-medium"
                       : "text-gray-800 hover:text-blue-600"
                   }`}
                 >
-                  {item}
-                  {activeItem === item && (
+                  {item.name}
+                  {activeItem === item.name && (
                     <span className="inline-block h-[2px] bg-blue-600 rounded-full"></span>
                   )}
-                </button>
+                </a>
               ))}
             </div>
 
