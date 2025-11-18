@@ -54,30 +54,30 @@ export default function RenterRequestsPage() {
 
       {/* Table Wrapper */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        {/* Responsive Scroll Container for Tablet */}
-        <div className="overflow-x-auto md:overflow-x-visible">
-          <table className="min-w-[700px] md:min-w-full w-full text-sm text-left">
+        {/* ✅ Scrollable below lg (≤1024px) */}
+        <div className="overflow-x-auto lg:overflow-x-visible">
+          <table className="min-w-[850px] lg:min-w-full w-full text-sm text-left">
             <thead className="bg-blue-100 text-gray-800">
               <tr>
-                <th className="py-3 px-4 md:px-5 font-semibold whitespace-nowrap">
+                <th className="py-3 px-4 lg:px-5 font-semibold whitespace-nowrap">
                   No
                 </th>
-                <th className="py-3 px-4 md:px-5 font-semibold whitespace-nowrap">
+                <th className="py-3 px-4 lg:px-5 font-semibold whitespace-nowrap">
                   Neighborhood
                 </th>
-                <th className="py-3 px-4 md:px-5 font-semibold whitespace-nowrap">
+                <th className="py-3 px-4 lg:px-5 font-semibold whitespace-nowrap">
                   Price Range
                 </th>
-                <th className="py-3 px-4 md:px-5 font-semibold whitespace-nowrap">
+                <th className="py-3 px-4 lg:px-5 font-semibold whitespace-nowrap">
                   Bedrooms
                 </th>
-                <th className="py-3 px-4 md:px-5 font-semibold whitespace-nowrap">
+                <th className="py-3 px-4 lg:px-5 font-semibold whitespace-nowrap">
                   Bathrooms
                 </th>
-                <th className="py-3 px-4 md:px-5 font-semibold whitespace-nowrap">
+                <th className="py-3 px-4 lg:px-5 font-semibold whitespace-nowrap">
                   Status
                 </th>
-                <th className="py-3 px-4 md:px-5 font-semibold text-right whitespace-nowrap">
+                <th className="py-3 px-4 lg:px-5 font-semibold text-right whitespace-nowrap">
                   Actions
                 </th>
               </tr>
@@ -89,19 +89,23 @@ export default function RenterRequestsPage() {
                   key={req.id}
                   className="border-t border-gray-200 hover:bg-gray-50 transition text-gray-700"
                 >
-                  <td className="py-3 px-4 md:px-5 text-nowrap">
+                  <td className="py-3 px-4 lg:px-5 whitespace-nowrap">
                     {String(index + 1).padStart(2, "0")}
                   </td>
-                  <td className="py-3 px-4 md:px-5">{req.neighborhood}</td>
-                  <td className="py-3 px-4 md:px-5">${req.price.toFixed(2)}</td>
-                  <td className="py-3 px-4 md:px-5">{req.bedrooms}</td>
-                  <td className="py-3 px-4 md:px-5">{req.bathrooms}</td>
-                  <td className="py-3 px-4 md:px-5">
+                  <td className="py-3 px-4 lg:px-5 whitespace-nowrap">
+                    {req.neighborhood}
+                  </td>
+                  <td className="py-3 px-4 lg:px-5 whitespace-nowrap">
+                    ${req.price.toFixed(2)}
+                  </td>
+                  <td className="py-3 px-4 lg:px-5">{req.bedrooms}</td>
+                  <td className="py-3 px-4 lg:px-5">{req.bathrooms}</td>
+                  <td className="py-3 px-4 lg:px-5">
                     <span className="bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap">
                       {req.status}
                     </span>
                   </td>
-                  <td className="py-3 px-4 md:px-5 flex justify-end gap-2">
+                  <td className="py-3 px-4 lg:px-5 flex justify-end gap-2">
                     <button
                       onClick={() => router.push(`/agent/requests/${req.id}`)}
                       className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition shrink-0"
@@ -119,7 +123,7 @@ export default function RenterRequestsPage() {
         </div>
       </div>
 
-      {/* Card View (Mobile) */}
+      {/* Card View (Mobile)
       <div className="grid grid-cols-1 gap-4 md:hidden">
         {requests.map((req, index) => (
           <div
@@ -156,7 +160,7 @@ export default function RenterRequestsPage() {
             </div>
           </div>
         ))}
-      </div>
+      </div> */}
 
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row justify-between items-center mt-6 text-sm text-gray-600 gap-3">
