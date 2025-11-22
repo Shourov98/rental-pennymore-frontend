@@ -63,19 +63,23 @@ export default function PreMarketListingPage() {
               />
             </div>
 
-            {/* Location */}
-            <div className="flex flex-col mb-4">
-              <label className="text-sm font-medium text-gray-700 mb-1">
-                Location
-              </label>
-              <div
-                onClick={() => setIsLocationModalOpen(true)}
-                className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 cursor-pointer hover:border-blue-500 transition"
-              >
-                <MapPin size={16} className="text-blue-600 mr-2 shrink-0" />
-                <span className="text-gray-500 text-sm">
-                  Choose neighborhoods or boroughs
-                </span>
+            {/* Moving Date */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-4">
+              <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 w-full sm:w-1/2">
+                <Calendar size={16} className="text-blue-600 mr-2" />
+                <input
+                  type="date"
+                  placeholder="From"
+                  className="w-full bg-transparent outline-none text-sm"
+                />
+              </div>
+              <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 w-full sm:w-1/2">
+                <Calendar size={16} className="text-blue-600 mr-2" />
+                <input
+                  type="date"
+                  placeholder="To"
+                  className="w-full bg-transparent outline-none text-sm"
+                />
               </div>
             </div>
 
@@ -99,23 +103,19 @@ export default function PreMarketListingPage() {
               </div>
             </div>
 
-            {/* Moving Date */}
-            <div className="flex flex-col sm:flex-row gap-3 mb-4">
-              <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 w-full sm:w-1/2">
-                <Calendar size={16} className="text-blue-600 mr-2" />
-                <input
-                  type="date"
-                  placeholder="From"
-                  className="w-full bg-transparent outline-none text-sm"
-                />
-              </div>
-              <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 w-full sm:w-1/2">
-                <Calendar size={16} className="text-blue-600 mr-2" />
-                <input
-                  type="date"
-                  placeholder="To"
-                  className="w-full bg-transparent outline-none text-sm"
-                />
+            {/* Location */}
+            <div className="flex flex-col mb-4">
+              <label className="text-sm font-medium text-gray-700 mb-1">
+                Location
+              </label>
+              <div
+                onClick={() => setIsLocationModalOpen(true)}
+                className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 cursor-pointer hover:border-blue-500 transition"
+              >
+                <MapPin size={16} className="text-blue-600 mr-2 shrink-0" />
+                <span className="text-gray-500 text-sm">
+                  Choose Boroughs and neighborhoods
+                </span>
               </div>
             </div>
 

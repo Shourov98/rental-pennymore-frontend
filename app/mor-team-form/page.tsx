@@ -45,7 +45,7 @@ export default function RentersEdgeForm() {
             icon="/icons/steps/submit.svg"
             title="Step 1"
             subtitle="Submit Preferences"
-            description="Submit your pre-market search preferences to start seeing apartments before they’re listed."
+            description="Submit your pre-market request preferences to our agents to search on your behalf."
           />
 
           {/* Arrow */}
@@ -56,7 +56,7 @@ export default function RentersEdgeForm() {
             icon="/icons/steps/connect.svg"
             title="Step 2"
             subtitle="Get Matched"
-            description="Your request will be sent to our agents, who will reach out to their network once a match is found."
+            description="When a matching pre-market listing is found, your agent will contact you with details."
           />
 
           {/* Arrow */}
@@ -67,7 +67,7 @@ export default function RentersEdgeForm() {
             icon="/icons/steps/decide.svg"
             title="Step 3"
             subtitle="View & Decide"
-            description="Register with the agent, view the apartment, apply if you choose, and only pay the fee at lease signing."
+            description="Register to view the apartment, apply if you choose, and only pay their broker fee at lease signing."
           />
         </div>
 

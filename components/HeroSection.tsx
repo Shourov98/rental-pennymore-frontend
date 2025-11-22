@@ -61,7 +61,7 @@ export default function HeroSection() {
             >
               <MapPin size={16} className="text-blue-600 mr-2 shrink-0" />
               <span className="text-gray-500 text-sm">
-                Choose neighborhoods or boroughs
+                Choose Borough and neighborhoods
               </span>
             </div>
           </div>

@@ -12,13 +12,17 @@ export default function HomePage() {
       <HeroSection />
 
       {/* --- How It Works Section --- */}
-      <section id="how-it-works" className="py-16 px-6 md:mx-3 md:mt-3 lg:mx-6 lg:mt-6 rounded-2xl md:px-16 lg:px-24 bg-white">
+      <section
+        id="how-it-works"
+        className="py-16 px-6 md:mx-3 md:mt-3 lg:mx-6 lg:mt-6 rounded-2xl md:px-16 lg:px-24 bg-white"
+      >
         <h2 className="text-3xl font-semibold text-center mb-10">LOGO</h2>
 
         <p className="w-full max-w-2xl mx-auto text-base font-semibold text-center mb-10">
-          BeforeListed agents get early access to no listed yet rentals through
-          their network of trusted owners and supers. Find apartments below
-          market value and rent-stabilized before they’re listed.
+          BeforeListed’s network of top agents can get you early access to
+          rentals before they hit the market by reaching out on your behalf to
+          trusted owners and supers. Discover below-market-priced and
+          rent-stabilized apartments before they’re listed.
         </p>
 
         {/* Steps with arrows */}
@@ -27,7 +31,7 @@ export default function HomePage() {
             icon="/icons/steps/submit.svg"
             title="Step 1"
             subtitle="Submit Preferences"
-            description="Submit your pre-market search preferences to start seeing apartments before they're listed."
+            description="Submit your pre-market request preferences to our agents to search on your behalf."
           />
 
           {/* Arrow between step 1 and 2 */}
@@ -74,11 +78,11 @@ export default function HomePage() {
             icon="/icons/steps/connect.svg"
             title="Step 2"
             subtitle="Get Matched"
-            description="Your request will be sent to our agents, who will reach out once a pre-market match is found."
+            description="When a matching pre-market listing is found, your agent will contact you with details."
           />
 
           {/* Arrow between step 2 and 3 */}
-          <div className="hidden sm:block mx-2 lg:mx-4 flex-shrink-0">
+          <div className="hidden sm:block mx-2 lg:mx-4">
             <svg
               width="24"
               height="24"
@@ -121,7 +125,7 @@ export default function HomePage() {
             icon="/icons/steps/decide.svg"
             title="Step 3"
             subtitle="View & Decide"
-            description="Register with the agent, view the apartment, apply if you choose, and only pay at lease signing."
+            description="Register to view the apartment, apply if you choose, and only pay their broker fee at lease signing."
           />
         </div>
       </section>

@@ -16,10 +16,10 @@ export default function RenterRequestDetails() {
 
   // 🔹 Mock states
   const isAdminApproved = true;
-  const isRenterApproved = false;
+  const isPaid = true;
   const isFree = false;
 
-  const showContact = isRenterApproved;
+  const showContact = isPaid;
   const showCost = isAdminApproved;
 
   // 🔹 Toggle collapsible section
@@ -42,7 +42,7 @@ export default function RenterRequestDetails() {
 
         {/* ✅ Status Badge */}
         {isAdminApproved ? (
-          isRenterApproved ? (
+          isPaid ? (
             <span className="text-green-600 bg-green-100 px-3 py-1 rounded-full text-sm font-medium">
               Paid & Approved
             </span>
@@ -161,13 +161,15 @@ export default function RenterRequestDetails() {
         )}
 
         {/* --- Renter Preferences Section --- */}
-        {/* --- Renter Preferences Section --- */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden transition-all duration-200">
+          {/* Header */}
           <div
-            className="p-6 flex justify-between items-center cursor-pointer"
+            className="px-6 py-4 flex justify-between items-center cursor-pointer border-b border-gray-100"
             onClick={() => toggleSection("renter")}
           >
-            <h3 className="font-semibold text-gray-900">Renter Preference</h3>
+            <h3 className="text-lg font-semibold text-[#0A093D]">
+              Renter Preference
+            </h3>
             {openSection === "renter" ? (
               <ChevronUp className="w-5 h-5 text-gray-500" />
             ) : (
@@ -175,109 +177,114 @@ export default function RenterRequestDetails() {
             )}
           </div>
 
+          {/* Dropdown Content */}
           {openSection === "renter" && (
-            <div className="px-6 pb-6 border-t border-gray-100 animate-fadeIn max-h-[65vh] overflow-y-auto">
-              <form className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 text-sm">
+            <div className="px-6 py-6 border-t border-gray-200 animate-fadeIn max-h-[75vh] overflow-y-auto">
+              <form className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-sm text-gray-700">
                 {/* Neighborhood */}
-                <div>
-                  <p className="font-medium text-gray-800 mb-2">Neighborhood</p>
-                  <div className="flex gap-4 text-gray-700">
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        name="neighborhood"
-                        defaultChecked
-                        disabled
-                        className="accent-blue-600"
-                      />
-                      <span>Manhattan</span>
-                    </label>
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        name="neighborhood"
-                        disabled
-                        className="accent-blue-600"
-                      />
-                      <span>Brooklyn</span>
-                    </label>
+                <div className="col-span-2">
+                  <p className="font-medium text-gray-900 mb-2">Neighborhood</p>
+                  <div className="flex gap-6">
+                    {["Manhattan", "Brooklyn"].map((city, idx) => (
+                      <label
+                        key={idx}
+                        className="flex items-center gap-2 text-gray-700"
+                      >
+                        <input
+                          type="radio"
+                          name="neighborhood"
+                          checked={city === "Brooklyn"}
+                          disabled
+                          className="accent-blue-600"
+                        />
+                        <span>{city}</span>
+                      </label>
+                    ))}
                   </div>
                 </div>
 
                 {/* Borough */}
-                <div>
-                  <p className="font-medium text-gray-800 mb-2">Borough</p>
-                  <input
-                    type="text"
-                    value="West Chelsea"
-                    readOnly
-                    disabled
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 text-gray-700"
-                  />
-                </div>
-
-                {/* Address */}
-                <div className="md:col-span-2">
-                  <p className="font-medium text-gray-800 mb-2">Address</p>
-                  <div className="flex gap-3">
+                <div className="col-span-2">
+                  <p className="font-medium text-gray-900 mb-2">Borough</p>
+                  <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                    <span className="text-blue-500">📍</span>
                     <input
                       type="text"
-                      value="123 Hudson St"
-                      readOnly
+                      value="West Chelsea"
                       disabled
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 text-gray-700"
-                    />
-                    <input
-                      type="text"
-                      value="5A"
                       readOnly
-                      disabled
-                      className="w-24 border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 text-gray-700"
+                      className="w-full bg-transparent text-gray-700 outline-none"
                     />
                   </div>
                 </div>
 
                 {/* Price */}
                 <div>
-                  <p className="font-medium text-gray-800 mb-2">
-                    Pre-Market Price
-                  </p>
-                  <input
-                    type="text"
-                    value="$4,250.00"
-                    readOnly
-                    disabled
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 text-gray-700"
-                  />
+                  <p className="font-medium text-gray-900 mb-2">Price</p>
+                  <div className="flex gap-3">
+                    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 w-full">
+                      <span className="text-blue-500">$</span>
+                      <input
+                        type="text"
+                        value="Min"
+                        readOnly
+                        disabled
+                        className="w-full bg-transparent text-gray-700 outline-none"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 w-full">
+                      <span className="text-blue-500">$</span>
+                      <input
+                        type="text"
+                        value="Max"
+                        readOnly
+                        disabled
+                        className="w-full bg-transparent text-gray-700 outline-none"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                {/* Date */}
+                {/* Moving Date */}
                 <div>
-                  <p className="font-medium text-gray-800 mb-2">
-                    Estimate listing end date
-                  </p>
-                  <input
-                    type="text"
-                    value="5/21/25 - 6/21/25"
-                    readOnly
-                    disabled
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 text-gray-700"
-                  />
+                  <p className="font-medium text-gray-900 mb-2">Moving Date</p>
+                  <div className="flex gap-3">
+                    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 w-full">
+                      <span className="text-blue-500">📅</span>
+                      <input
+                        type="text"
+                        value="From"
+                        readOnly
+                        disabled
+                        className="w-full bg-transparent text-gray-700 outline-none"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 w-full">
+                      <span className="text-blue-500">📅</span>
+                      <input
+                        type="text"
+                        value="To"
+                        readOnly
+                        disabled
+                        className="w-full bg-transparent text-gray-700 outline-none"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Bedrooms */}
-                <div className="md:col-span-2">
-                  <p className="font-medium text-gray-800 mb-2">Bedrooms</p>
-                  <div className="grid grid-cols-5 gap-2 text-gray-700">
+                <div className="col-span-2">
+                  <p className="font-medium text-gray-900 mb-2">Bedrooms</p>
+                  <div className="grid grid-cols-6 sm:grid-cols-6 gap-2">
                     {["Studio", "1BR", "2BR", "3BR", "4BR+"].map((b) => (
                       <button
                         key={b}
                         type="button"
                         disabled
                         className={`py-2 rounded-lg border text-sm font-medium ${
-                          b === "2BR"
+                          b === "Studio"
                             ? "bg-blue-600 text-white border-blue-600"
-                            : "bg-gray-50 text-gray-700 border-gray-200"
+                            : "bg-white text-gray-700 border-gray-200"
                         } cursor-default`}
                       >
                         {b}
@@ -287,9 +294,9 @@ export default function RenterRequestDetails() {
                 </div>
 
                 {/* Bathrooms */}
-                <div className="md:col-span-2">
-                  <p className="font-medium text-gray-800 mb-2">Bathrooms</p>
-                  <div className="grid grid-cols-4 gap-2 text-gray-700">
+                <div className="col-span-2">
+                  <p className="font-medium text-gray-900 mb-2">Bathrooms</p>
+                  <div className="grid grid-cols-4 gap-2">
                     {[1, 2, 3, 4].map((b) => (
                       <button
                         key={b}
@@ -298,7 +305,7 @@ export default function RenterRequestDetails() {
                         className={`py-2 rounded-lg border text-sm font-medium ${
                           b === 1
                             ? "bg-blue-600 text-white border-blue-600"
-                            : "bg-gray-50 text-gray-700 border-gray-200"
+                            : "bg-white text-gray-700 border-gray-200"
                         } cursor-default`}
                       >
                         {b}
@@ -308,9 +315,10 @@ export default function RenterRequestDetails() {
                 </div>
 
                 {/* Features */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 md:col-span-2 gap-4 text-gray-700">
+                <div className="col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4 text-gray-700">
+                  {/* Unit Features */}
                   <div>
-                    <p className="font-medium text-gray-800 mb-2">
+                    <p className="font-medium text-gray-900 mb-2">
                       Unit Features
                     </p>
                     {[
@@ -330,8 +338,9 @@ export default function RenterRequestDetails() {
                     ))}
                   </div>
 
+                  {/* Building Features */}
                   <div>
-                    <p className="font-medium text-gray-800 mb-2">
+                    <p className="font-medium text-gray-900 mb-2">
                       Building Features
                     </p>
                     {["Doorman", "Elevator", "Laundry in building"].map(
@@ -349,8 +358,9 @@ export default function RenterRequestDetails() {
                     )}
                   </div>
 
+                  {/* Pet Policy */}
                   <div>
-                    <p className="font-medium text-gray-800 mb-2">Pet Policy</p>
+                    <p className="font-medium text-gray-900 mb-2">Pet Policy</p>
                     {["Cats allowed", "Dogs allowed"].map((f, i) => (
                       <label key={i} className="flex items-center gap-2">
                         <input
@@ -366,11 +376,11 @@ export default function RenterRequestDetails() {
                 </div>
 
                 {/* Guarantor */}
-                <div className="md:col-span-2 text-gray-700">
-                  <p className="font-medium text-gray-800 mb-2">
+                <div className="col-span-2">
+                  <p className="font-medium text-gray-900 mb-2">
                     Accept Guarantor
                   </p>
-                  <div className="flex gap-4">
+                  <div className="flex gap-4 text-gray-700">
                     {["Personal guarantor", "Third party guarantor"].map(
                       (f, i) => (
                         <label key={i} className="flex items-center gap-2">
@@ -385,6 +395,17 @@ export default function RenterRequestDetails() {
                       )
                     )}
                   </div>
+                </div>
+
+                {/* Note */}
+                <div className="col-span-2">
+                  <p className="font-medium text-gray-900 mb-2">Note</p>
+                  <textarea
+                    value="I want the room clean."
+                    readOnly
+                    disabled
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-700 resize-none"
+                  />
                 </div>
               </form>
             </div>
