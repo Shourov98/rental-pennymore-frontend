@@ -8,8 +8,8 @@ import SuccessModal from "@/components/SuccessModal";
 export default function PreMarketListingPage() {
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-  const [activeBedroom, setActiveBedroom] = useState("Studio");
-  const [activeBathroom, setActiveBathroom] = useState("1");
+  const [activeBedrooms, setActiveBedrooms] = useState<string[]>([]);
+  const [activeBathrooms, setActiveBathrooms] = useState<string[]>([]);
 
   const bedroomOptions = ["Studio", "1BR", "2BR", "3BR", "4BR+"];
   const bathroomOptions = ["1", "2", "3", "4+"];
@@ -19,6 +19,18 @@ export default function PreMarketListingPage() {
     // TODO: connect your backend API here
     // After successful submission:
     setIsSuccessModalOpen(true);
+  };
+
+  const toggleBedroom = (br: string) => {
+    setActiveBedrooms((prev) =>
+      prev.includes(br) ? prev.filter((x) => x !== br) : [...prev, br]
+    );
+  };
+
+  const toggleBathroom = (b: string) => {
+    setActiveBathrooms((prev) =>
+      prev.includes(b) ? prev.filter((x) => x !== b) : [...prev, b]
+    );
   };
 
   const unitFeatures = [
@@ -36,7 +48,7 @@ export default function PreMarketListingPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-            Pre-Market Listing Preference
+            Pre-Market Listing Request
           </h1>
           <button className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 text-sm hover:bg-gray-100 transition">
             Saved Requests
@@ -105,7 +117,7 @@ export default function PreMarketListingPage() {
 
             {/* Location */}
             <div className="flex flex-col mb-4">
-              <label className="text-sm font-medium text-gray-700 mb-1">
+              <label className="text-sm font-semibold text-gray-700 mb-1">
                 Location
               </label>
               <div
@@ -114,21 +126,23 @@ export default function PreMarketListingPage() {
               >
                 <MapPin size={16} className="text-blue-600 mr-2 shrink-0" />
                 <span className="text-gray-500 text-sm">
-                  Choose Boroughs and neighborhoods
+                  Choose Borough and neighborhoods
                 </span>
               </div>
             </div>
 
             {/* Bedrooms */}
             <div className="mb-4">
-              <p className="text-sm font-medium text-gray-700 mb-2">Bedrooms</p>
+              <p className="text-sm font-semibold text-gray-700 mb-2">
+                Bedrooms
+              </p>
               <div className="grid grid-cols-5 gap-2">
                 {bedroomOptions.map((br) => (
                   <button
                     key={br}
-                    onClick={() => setActiveBedroom(br)}
+                    onClick={() => toggleBedroom(br)}
                     className={`py-2 rounded-lg text-sm font-medium border ${
-                      activeBedroom === br
+                      activeBedrooms.includes(br)
                         ? "bg-blue-600 text-white border-blue-600"
                         : "bg-gray-50 text-gray-700 border-gray-200 hover:border-blue-500"
                     }`}
@@ -141,16 +155,16 @@ export default function PreMarketListingPage() {
 
             {/* Bathrooms */}
             <div className="mb-4">
-              <p className="text-sm font-medium text-gray-700 mb-2">
+              <p className="text-sm font-semibold text-gray-700 mb-2">
                 Bathrooms
               </p>
               <div className="grid grid-cols-4 gap-2">
                 {bathroomOptions.map((b) => (
                   <button
                     key={b}
-                    onClick={() => setActiveBathroom(b)}
+                    onClick={() => toggleBathroom(b)}
                     className={`py-2 rounded-lg text-sm font-medium border ${
-                      activeBathroom === b
+                      activeBathrooms.includes(b)
                         ? "bg-blue-600 text-white border-blue-600"
                         : "bg-gray-50 text-gray-700 border-gray-200 hover:border-blue-500"
                     }`}
@@ -164,7 +178,7 @@ export default function PreMarketListingPage() {
             {/* Features Section */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">
+                <p className="text-sm font-semibold text-gray-700 mb-2">
                   Unit Features
                 </p>
                 {unitFeatures.map((f) => (
@@ -211,7 +225,7 @@ export default function PreMarketListingPage() {
 
             {/* Guarantor */}
             <div className="mb-6">
-              <p className="text-sm font-medium text-gray-700 mb-2">
+              <p className="text-sm font-semibold text-gray-700 mb-2">
                 Accept Guarantor
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
@@ -229,7 +243,10 @@ export default function PreMarketListingPage() {
 
             {/* Notes */}
             <div className="mb-6">
-              <p className="text-sm font-medium text-gray-700 mb-2">Note</p>
+              <p className="text-sm font-medium text-gray-700 mb-2">
+                Notes sent to your agent when they find a matching pre-market
+                apartment
+              </p>
               <textarea
                 placeholder="Write here"
                 className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm min-h-[100px] outline-none focus:ring-2 focus:ring-blue-500"
@@ -240,7 +257,7 @@ export default function PreMarketListingPage() {
             <div className="flex justify-end">
               <button
                 onClick={handleSubmit}
-                className="flex items-center gap-2 bg-blue-600 text-white text-sm sm:text-base font-semibold rounded-lg px-5 py-3 hover:bg-blue-700 transition"
+                className="flex items-center gap-2 bg-blue-500 text-white text-sm sm:text-base font-meduim rounded-lg px-5 py-3 hover:bg-blue-700 transition"
               >
                 <Bell size={16} />
                 Save Request & Get Match

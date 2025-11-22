@@ -76,7 +76,7 @@ export default function RentersEdgeForm() {
           {/* Register Option */}
           <div>
             <p className="font-medium text-gray-800 mb-2">
-              Would you like to register to BeforeListed?
+              Would you like to start a request at BeforeListed?
             </p>
             <div className="space-y-2 text-sm text-gray-700">
               <label className="flex items-center gap-2">
