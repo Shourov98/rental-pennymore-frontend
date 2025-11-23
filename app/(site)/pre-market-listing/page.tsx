@@ -16,8 +16,6 @@ export default function PreMarketListingPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: connect your backend API here
-    // After successful submission:
     setIsSuccessModalOpen(true);
   };
 
@@ -76,42 +74,70 @@ export default function PreMarketListingPage() {
             </div>
 
             {/* Moving Date */}
+            <div className="mb-2">
+              <p className="text-sm font-semibold text-gray-700 mb-2">
+                Moving Date
+              </p>
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-3 mb-4">
-              <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 w-full sm:w-1/2">
-                <Calendar size={16} className="text-blue-600 mr-2" />
-                <input
-                  type="date"
-                  placeholder="From"
-                  className="w-full bg-transparent outline-none text-sm"
-                />
+              {/* Earliest Date */}
+              <div className="w-full sm:w-1/2">
+                <label className="text-xs text-gray-600">Earliest</label>
+                <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+                  <Calendar size={16} className="text-blue-600 mr-2" />
+                  <input
+                    type="date"
+                    className="w-full bg-transparent outline-none text-sm"
+                  />
+                </div>
               </div>
-              <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 w-full sm:w-1/2">
-                <Calendar size={16} className="text-blue-600 mr-2" />
-                <input
-                  type="date"
-                  placeholder="To"
-                  className="w-full bg-transparent outline-none text-sm"
-                />
+
+              {/* Latest Date */}
+              <div className="w-full sm:w-1/2">
+                <label className="text-xs text-gray-600">Latest</label>
+                <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+                  <Calendar size={16} className="text-blue-600 mr-2" />
+                  <input
+                    type="date"
+                    className="w-full bg-transparent outline-none text-sm"
+                  />
+                </div>
               </div>
             </div>
 
             {/* Price Range */}
+            <div className="mb-2">
+              <p className="text-sm font-semibold text-gray-700 mb-2">
+                Price Range
+              </p>
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-3 mb-4">
-              <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 w-full sm:w-1/2">
-                <DollarSign size={16} className="text-blue-600 mr-2" />
-                <input
-                  type="number"
-                  placeholder="Min"
-                  className="w-full bg-transparent outline-none text-sm"
-                />
+              {/* Min Price */}
+              <div className="w-full sm:w-1/2">
+                <label className="text-xs text-gray-600">Min Price</label>
+                <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+                  <DollarSign size={16} className="text-blue-600 mr-2" />
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    className="w-full bg-transparent outline-none text-sm"
+                  />
+                </div>
               </div>
-              <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 w-full sm:w-1/2">
-                <DollarSign size={16} className="text-blue-600 mr-2" />
-                <input
-                  type="number"
-                  placeholder="Max"
-                  className="w-full bg-transparent outline-none text-sm"
-                />
+
+              {/* Max Price */}
+              <div className="w-full sm:w-1/2">
+                <label className="text-xs text-gray-600">Max Price</label>
+                <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+                  <DollarSign size={16} className="text-blue-600 mr-2" />
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    className="w-full bg-transparent outline-none text-sm"
+                  />
+                </div>
               </div>
             </div>
 
@@ -175,7 +201,7 @@ export default function PreMarketListingPage() {
               </div>
             </div>
 
-            {/* Features Section */}
+            {/* Features */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               <div>
                 <p className="text-sm font-semibold text-gray-700 mb-2">
@@ -257,7 +283,7 @@ export default function PreMarketListingPage() {
             <div className="flex justify-end">
               <button
                 onClick={handleSubmit}
-                className="flex items-center gap-2 bg-blue-500 text-white text-sm sm:text-base font-meduim rounded-lg px-5 py-3 hover:bg-blue-700 transition"
+                className="flex items-center gap-2 bg-blue-500 text-white text-sm sm:text-base font-medium rounded-lg px-5 py-3 hover:bg-blue-700 transition"
               >
                 <Bell size={16} />
                 Save Request & Get Match

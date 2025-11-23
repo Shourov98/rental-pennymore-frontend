@@ -12,7 +12,7 @@ import {
 
 export default function RenterRequestDetails() {
   const [showModal, setShowModal] = useState(false);
-  const [openSection, setOpenSection] = useState<string | null>(null);
+  const [openSection, setOpenSection] = useState<string | null>("renter");
 
   // 🔹 Mock states
   const isAdminApproved = true;
@@ -81,9 +81,9 @@ export default function RenterRequestDetails() {
           {openSection === "renter" && (
             <div className="px-6 py-6 border-t border-gray-200 animate-fadeIn max-h-[75vh] overflow-y-auto">
               <form className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-sm text-gray-700">
-                {/* Neighborhood */}
+                {/* Bprough */}
                 <div className="col-span-2">
-                  <p className="font-medium text-gray-900 mb-2">Neighborhood</p>
+                  <p className="font-medium text-gray-900 mb-2">Borough</p>
                   <div className="flex gap-6">
                     {["Manhattan", "Brooklyn"].map((city, idx) => (
                       <label
@@ -103,9 +103,11 @@ export default function RenterRequestDetails() {
                   </div>
                 </div>
 
-                {/* Borough */}
+                {/* Neighborhoods */}
                 <div className="col-span-2">
-                  <p className="font-medium text-gray-900 mb-2">Borough</p>
+                  <p className="font-medium text-gray-900 mb-2">
+                    Neighborhoods
+                  </p>
                   <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
                     <span className="text-blue-500">📍</span>
                     <input
@@ -118,56 +120,90 @@ export default function RenterRequestDetails() {
                   </div>
                 </div>
 
-                {/* Price */}
-                <div>
-                  <p className="font-medium text-gray-900 mb-2">Price</p>
-                  <div className="flex gap-3">
-                    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 w-full">
-                      <span className="text-blue-500">$</span>
-                      <input
-                        type="text"
-                        value="Min"
-                        readOnly
-                        disabled
-                        className="w-full bg-transparent text-gray-700 outline-none"
-                      />
-                    </div>
-                    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 w-full">
-                      <span className="text-blue-500">$</span>
-                      <input
-                        type="text"
-                        value="Max"
-                        readOnly
-                        disabled
-                        className="w-full bg-transparent text-gray-700 outline-none"
-                      />
+                <div className="flex flex-col gap-5">
+                  {/* Price */}
+                  <div>
+                    <p className="font-semibold text-gray-900 mb-2">
+                      Price Range
+                    </p>
+
+                    <div className="flex gap-3">
+                      {/* Minimum Price */}
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">
+                          Minimum Price
+                        </p>
+                        <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                          <span className="text-blue-500">$</span>
+                          <input
+                            type="text"
+                            value="4250"
+                            readOnly
+                            disabled
+                            className="w-full bg-transparent text-gray-700 outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Maximum Price */}
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">
+                          Maximum Price
+                        </p>
+                        <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                          <span className="text-blue-500">$</span>
+                          <input
+                            type="text"
+                            value="5000"
+                            readOnly
+                            disabled
+                            className="w-full bg-transparent text-gray-700 outline-none"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Moving Date */}
-                <div>
-                  <p className="font-medium text-gray-900 mb-2">Moving Date</p>
-                  <div className="flex gap-3">
-                    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 w-full">
-                      <span className="text-blue-500">📅</span>
-                      <input
-                        type="text"
-                        value="From"
-                        readOnly
-                        disabled
-                        className="w-full bg-transparent text-gray-700 outline-none"
-                      />
-                    </div>
-                    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 w-full">
-                      <span className="text-blue-500">📅</span>
-                      <input
-                        type="text"
-                        value="To"
-                        readOnly
-                        disabled
-                        className="w-full bg-transparent text-gray-700 outline-none"
-                      />
+                  {/* Moving Date */}
+                  <div>
+                    <p className="font-semibold text-gray-900 mb-2">
+                      Moving Date
+                    </p>
+
+                    <div className="flex gap-3">
+                      {/* Earliest Date */}
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">
+                          Earliest Date
+                        </p>
+                        <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                          <span className="text-blue-500">📅</span>
+                          <input
+                            type="text"
+                            value="05/21/2025"
+                            readOnly
+                            disabled
+                            className="w-full bg-transparent text-gray-700 outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Latest Date */}
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">
+                          Latest Date
+                        </p>
+                        <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                          <span className="text-blue-500">📅</span>
+                          <input
+                            type="text"
+                            value="06/21/2025"
+                            readOnly
+                            disabled
+                            className="w-full bg-transparent text-gray-700 outline-none"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
