@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { LayoutDashboard, Bell, Handshake, User, LogOut } from "lucide-react";
+import {
+  SearchSlash,
+  Bell,
+  Handshake,
+  User,
+  LogOut,
+  Link as LinkIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -14,20 +21,25 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
       title: "Main",
       items: [
         {
-          name: "Dashboard",
-          icon: <LayoutDashboard />,
+          name: "Refer Link",
+          icon: <LinkIcon />,
           href: "/agent/dashboard",
         },
         { name: "Notifications", icon: <Bell />, href: "/agent/notifications" },
+        {
+          name: "Renter Requests",
+          icon: <SearchSlash />,
+          href: "/agent/requests",
+        },
       ],
     },
     {
       title: "Listing & Match",
       items: [
         {
-          name: "Renter Requests",
+          name: "Renter Matches",
           icon: <Handshake />,
-          href: "/agent/requests",
+          href: "/agent/matches",
         },
       ],
     },

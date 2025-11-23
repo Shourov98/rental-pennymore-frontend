@@ -58,108 +58,8 @@ export default function RenterRequestDetails() {
         )}
       </div>
 
-      {/* ✅ Contact Details */}
-      {showContact && (
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-          <div className="flex justify-between items-start">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Renter Contact Details
-            </h2>
-            <span className="text-xs border border-blue-400 text-blue-600 px-3 py-1 rounded-full">
-              Tuval’s Client
-            </span>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-6 mt-4 items-center sm:items-start">
-            <Image
-              src="https://randomuser.me/api/portraits/men/32.jpg"
-              alt="User"
-              width={80}
-              height={80}
-              className="rounded-full object-cover"
-            />
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
-              <div>
-                <p className="text-gray-500 text-sm">Name</p>
-                <p className="font-medium text-gray-900">John Doe</p>
-              </div>
-              <div>
-                <p className="text-gray-500 text-sm">Email</p>
-                <p className="font-medium text-gray-900">example@gmail.com</p>
-              </div>
-              <div>
-                <p className="text-gray-500 text-sm">Phone Number</p>
-                <p className="font-medium text-gray-900">+8801XXXXXXX</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ✅ Cost Section */}
-      {showCost && (
-        <div
-          className={`bg-white rounded-xl shadow-sm p-6 mb-6 ${
-            !isFree ? "border border-purple-400" : ""
-          }`}
-        >
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">Cost</h2>
-
-          <div className="border rounded-lg bg-gray-50 p-4 flex justify-between items-center">
-            <div>
-              <p className="text-gray-600 text-sm">Amount</p>
-              <p className="font-semibold text-gray-900">
-                {isFree ? "Free" : "$171.50"}
-              </p>
-            </div>
-
-            {isFree ? (
-              <span className="text-green-600 bg-green-100 px-3 py-1 rounded-full text-sm font-medium">
-                Approved
-              </span>
-            ) : isAdminApproved ? (
-              <CheckCircle className="text-green-500 w-5 h-5" />
-            ) : (
-              <AlertCircle className="text-yellow-500 w-5 h-5" />
-            )}
-          </div>
-        </div>
-      )}
-
       {/* ✅ Collapsible Sections */}
-      <div className="space-y-4">
-        {/* --- Payment Section --- */}
-        {isAdminApproved && (
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden transition-all duration-200">
-            <div
-              className="p-6 flex justify-between items-center cursor-pointer"
-              onClick={() => toggleSection("payment")}
-            >
-              <h3 className="font-semibold text-gray-900">Payment</h3>
-              {openSection === "payment" ? (
-                <ChevronUp className="w-5 h-5 text-gray-500" />
-              ) : (
-                <ChevronDown className="w-5 h-5 text-gray-500" />
-              )}
-            </div>
-
-            {openSection === "payment" && (
-              <div className="px-6 pb-6 border-t border-gray-100 animate-fadeIn">
-                <div className="flex justify-between items-center py-3">
-                  <p className="text-gray-700 font-medium">Amount:</p>
-                  <p className="font-semibold text-gray-900">$171.50</p>
-                </div>
-                <div className="flex justify-end mt-3">
-                  <button className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                    Confirm Payment
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
+      <div className="space-y-4 mb-4">
         {/* --- Renter Preferences Section --- */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden transition-all duration-200">
           {/* Header */}
@@ -411,6 +311,74 @@ export default function RenterRequestDetails() {
             </div>
           )}
         </div>
+
+        {/* --- Payment Section --- */}
+        {isAdminApproved && (
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden transition-all duration-200">
+            <div
+              className="p-6 flex justify-between items-center cursor-pointer"
+              onClick={() => toggleSection("payment")}
+            >
+              <h3 className="font-semibold text-gray-900">Payment</h3>
+              {openSection === "payment" ? (
+                <ChevronUp className="w-5 h-5 text-gray-500" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-gray-500" />
+              )}
+            </div>
+
+            {openSection === "payment" && (
+              <div className="px-6 pb-6 border-t border-gray-100 animate-fadeIn">
+                <div className="flex justify-between items-center py-3">
+                  <p className="text-gray-700 font-medium">Amount:</p>
+                  <p className="font-semibold text-gray-900">$171.50</p>
+                </div>
+                <div className="flex justify-end mt-3">
+                  <button className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    Confirm Payment
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ✅ Cost Section */}
+      {showCost && (
+        <div
+          className={`bg-white rounded-xl shadow-sm p-6 mb-6 ${
+            !isFree ? "border border-purple-400" : ""
+          }`}
+        >
+          <h2 className="text-lg font-semibold text-gray-900 mb-3">Cost</h2>
+
+          <div className="border rounded-lg bg-gray-50 p-4 flex justify-between items-center">
+            <div>
+              <p className="text-gray-600 text-sm">Amount</p>
+              <p className="font-semibold text-gray-900">
+                {isFree ? "Free" : "$171.50"}
+              </p>
+            </div>
+
+            {isFree ? (
+              <span className="text-green-600 bg-green-100 px-3 py-1 rounded-full text-sm font-medium">
+                Approved
+              </span>
+            ) : isAdminApproved ? (
+              <CheckCircle className="text-green-500 w-5 h-5" />
+            ) : (
+              <AlertCircle className="text-yellow-500 w-5 h-5" />
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Action Button */}
+      <div className="flex justify-end mt-6">
+        <button className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+          Match Request
+        </button>
       </div>
 
       {/* ✅ Modal */}
