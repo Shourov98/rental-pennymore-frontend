@@ -113,7 +113,7 @@ export default function FilterModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/30 z-50 flex">
+    <div className="fixed inset-0 bg-black/30 z-50 flex justify-end">
       <div className="bg-white w-[85%] sm:w-[350px] h-full p-6 shadow-xl animate-slideIn relative overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
@@ -276,16 +276,16 @@ export default function FilterModal({
       <style jsx>{`
         @keyframes slideIn {
           from {
-            transform: translateX(-100%);
+            transform: translateX(100%);
             opacity: 0;
           }
           to {
-            transform: translateX(0);
+            transform: translateX(0%);
             opacity: 1;
           }
         }
         .animate-slideIn {
-          animation: slideIn 0.25s ease-out;
+          animation: slideIn 0.25s ease-out forwards;
         }
       `}</style>
     </div>

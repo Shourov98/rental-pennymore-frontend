@@ -79,7 +79,7 @@ export default function RenterRequestDetails() {
 
           {/* Dropdown Content */}
           {openSection === "renter" && (
-            <div className="px-6 py-6 border-t border-gray-200 animate-fadeIn max-h-[75vh] overflow-y-auto">
+            <div className="px-6 py-6 border-t border-gray-200 animate-fadeIn overflow-y-auto">
               <form className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-sm text-gray-700">
                 {/* Bprough */}
                 <div className="col-span-2">
