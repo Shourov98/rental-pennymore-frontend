@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 
 export default function ContactSection() {
   return (
@@ -26,10 +27,11 @@ export default function ContactSection() {
           {/* Layout */}
           <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-10">
             {/* Left Side — Brand Info */}
-            <div className="w-full md:w-1/3 text-center md:text-left">
-              <h1 className="text-4xl text-center md:text-5xl font-bold text-black mb-3">
-                Logo
-              </h1>
+            <div className="w-full md:w-1/3 text-center flex flex-col items-center gap-3 justify-center md:text-left">
+              {/* Logo */}
+              <Link href="/">
+                <Image src="/Logo_1.svg" alt="Logo" width={250} height={200} />
+              </Link>
               <p className="text-gray-700 text-sm sm:text-base text-center leading-relaxed">
                 Rent your next apartment before it is listed. <br />
                 <span className="font-medium text-gray-900">

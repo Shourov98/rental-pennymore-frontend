@@ -16,7 +16,12 @@ export default function HomePage() {
         id="how-it-works"
         className="py-16 px-6 md:mx-3 md:mt-3 lg:mx-6 lg:mt-6 rounded-2xl md:px-16 lg:px-24 bg-white"
       >
-        <h2 className="text-3xl font-semibold text-center mb-10">LOGO</h2>
+        <h2 className="text-3xl font-semibold items-center justify-center flex text-center mb-10">
+          {/* Logo */}
+          <Link href="/">
+            <Image src="/Logo_1.svg" alt="Logo" width={250} height={200} />
+          </Link>
+        </h2>
 
         <p className="w-full max-w-2xl mx-auto text-base font-semibold text-center mb-10">
           BeforeListed’s network of top agents can get you early access to

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 
 export default function AboutSection() {
   return (
@@ -36,9 +37,10 @@ export default function AboutSection() {
           <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
             {/* Left Side — Logo */}
             <div className="shrink-0 w-full md:w-1/3 text-center md:text-left">
-              <h1 className="text-3xl md:text-5xl font-bold text-black">
-                Logo
-              </h1>
+              {/* Logo */}
+              <Link href="/">
+                <Image src="/Logo_1.svg" alt="Logo" width={250} height={200} />
+              </Link>
             </div>
 
             {/* Right Side — About Content */}

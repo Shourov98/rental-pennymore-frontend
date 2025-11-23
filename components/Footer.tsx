@@ -12,7 +12,10 @@ export default function Footer() {
             Find your next apartment before it hits the market, no middlemen, no
             hassle.
           </p>
-          <h2 className="text-2xl font-bold">Logo</h2>
+          {/* Logo */}
+          <Link href="/" className="text-2xl font-bold text-black">
+            <Image src="/Logo_2.svg" alt="Logo" width={200} height={150} />
+          </Link>
         </div>
 
         {/* --- Middle: Quick Links --- */}

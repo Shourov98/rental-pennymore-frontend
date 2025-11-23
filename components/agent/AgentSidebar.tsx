@@ -21,16 +21,16 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
       title: "Main",
       items: [
         {
-          name: "Refer Link",
-          icon: <LinkIcon />,
-          href: "/agent/dashboard",
-        },
-        { name: "Notifications", icon: <Bell />, href: "/agent/notifications" },
-        {
           name: "Renter Requests",
           icon: <SearchSlash />,
-          href: "/agent/requests",
+          href: "/agent/dashboard",
         },
+        {
+          name: "Refer Link",
+          icon: <LinkIcon />,
+          href: "/agent/refer-link",
+        },
+        { name: "Notifications", icon: <Bell />, href: "/agent/notifications" },
       ],
     },
     {

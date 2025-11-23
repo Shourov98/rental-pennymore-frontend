@@ -88,7 +88,7 @@ export default function Navbar() {
       <div className="md:max-w-11/12 lg:max-w-10/12 mx-auto px-4 md:px-8 flex justify-between items-center py-4">
         {/* Logo */}
         <Link href="/" className="text-2xl font-bold text-black">
-          Logo
+          <Image src="/Logo_1.svg" alt="Logo" width={200} height={150} />
         </Link>
 
         {/* Nav Links (Desktop) */}
