@@ -286,7 +286,7 @@ export default function PreMarketListingPage() {
                 className="flex items-center gap-2 bg-blue-500 text-white text-sm sm:text-base font-medium rounded-lg px-5 py-3 hover:bg-blue-700 transition"
               >
                 <Bell size={16} />
-                Save Request & Get Match
+                Save Request & Send to Agents
               </button>
             </div>
           </div>
