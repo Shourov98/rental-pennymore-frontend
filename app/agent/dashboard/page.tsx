@@ -61,8 +61,8 @@ interface Request {
 interface FilterParams {
   borough: string | null;
   neighborhoods: string[];
-  bedrooms: string[];
-  bathrooms: string[];
+  bedrooms: number[];
+  bathrooms: number[];
   maxPrice: number | null;
   // Add other filter properties as needed
 }
@@ -128,16 +128,14 @@ export default function RenterRequestsPage() {
     // Bedrooms (multi)
     if (filter.bedrooms?.length > 0) {
       results = results.filter((item) =>
-        filter.bedrooms.includes(
-          item.bedrooms === 0 ? "Studio" : `${item.bedrooms}BR`
-        )
+        filter.bedrooms.includes(item.bedrooms)
       );
     }
 
     // Bathrooms (multi)
     if (filter.bathrooms?.length > 0) {
       results = results.filter((item) =>
-        filter.bathrooms.includes(String(item.bathrooms))
+        filter.bathrooms.includes(item.bathrooms)
       );
     }
 
@@ -150,7 +148,7 @@ export default function RenterRequestsPage() {
   };
 
   return (
-    <section className="bg-gray-50 min-h-screen px-4 lg:px-6 py-6">
+    <section className="bg-gray-50 h-screen overflow-y-auto px-4 lg:px-6 py-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 bg-white p-5 rounded-xl shadow-sm">
         <h1 className="text-xl md:text-2xl font-bold text-gray-900">
@@ -169,7 +167,7 @@ export default function RenterRequestsPage() {
       {/* ----------------------
           TABLE
       ---------------------- */}
-      <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-[900px] w-full text-sm">
             <thead className="bg-blue-100 text-gray-800">

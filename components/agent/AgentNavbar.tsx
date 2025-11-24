@@ -37,15 +37,37 @@ export default function AgentNavbar({
     <nav className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 lg:px-10 py-3 flex justify-between items-center">
         {/* Logo */}
-        <Link href="/" className="text-2xl font-bold text-black pr-3">
-          <Image
-            src="/Logo_1.svg"
-            alt="Logo"
-            width={200}
-            height={150}
-            className="w-[120px] md:w-[160px] lg:w-[200px] h-auto"
-          />
-        </Link>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onMenuToggle}
+            className="block lg:hidden p-2 rounded-md hover:bg-gray-100"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 text-gray-700"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+          {/* Logo */}
+          <Link href="/" className="text-2xl font-bold text-black pr-3">
+            <Image
+              src="/Logo_1.svg"
+              alt="Logo"
+              width={200}
+              height={150}
+              className="w-[120px] md:w-[160px] lg:w-[200px] h-auto"
+            />
+          </Link>
+        </div>
 
         {/* User Section */}
         <div className="relative flex items-center gap-4" ref={dropdownRef}>

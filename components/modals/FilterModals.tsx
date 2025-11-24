@@ -3,6 +3,14 @@
 import { X } from "lucide-react";
 import { useState, useMemo } from "react";
 
+interface FilterType {
+  borough: string | null;
+  neighborhoods: string[];
+  bedrooms: number[];
+  bathrooms: number[];
+  maxPrice: number | null;
+}
+
 const boroughNeighborhoods: Record<string, string[]> = {
   Manhattan: [
     "Harlem",
@@ -39,60 +47,54 @@ const boroughNeighborhoods: Record<string, string[]> = {
   ],
 };
 
-interface FilterModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onApply: (filters: {
-    borough: string | null;
-    neighborhoods: string[];
-    bedrooms: string[];
-    bathrooms: string[];
-    maxPrice: number | null;
-  }) => void;
-}
-
 export default function FilterModal({
   isOpen,
   onClose,
   onApply,
-}: FilterModalProps) {
-  const boroughOptions = Object.keys(boroughNeighborhoods);
-
-  // STATE
-  const [borough, setBorough] = useState<string | null>(null);
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onApply: (filters: FilterType) => void;
+}) {
+  const [borough, setBorough] = useState<string | null>("Manhattan");
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<string[]>(
     []
   );
-  const [bedrooms, setBedrooms] = useState<string[]>([]);
-  const [bathrooms, setBathrooms] = useState<string[]>([]);
+  const [bedrooms, setBedrooms] = useState<number[]>([]);
+  const [bathrooms, setBathrooms] = useState<number[]>([]);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
 
-  // OPTIONS
-  const bedroomOptions = ["Studio", "1BR", "2BR", "3BR", "4BR+"];
-  const bathroomOptions = ["1", "2", "3", "4+"];
-  const priceOptions = Array.from({ length: 11 }, (_, i) => i * 1000);
-
-  // Derive neighborhoods from borough
-  const neighborhoods = useMemo(() => {
-    return borough ? boroughNeighborhoods[borough] || [] : [];
-  }, [borough]);
-
-  // Reset selected neighborhoods when borough changes by using a key on the parent component
+  const neighborhoods = useMemo(
+    () => (borough ? boroughNeighborhoods[borough] : []),
+    [borough]
+  );
 
   const toggleSelection = (
+    value: number,
+    setter: React.Dispatch<React.SetStateAction<number[]>>,
+    state: number[]
+  ) => {
+    if (state.includes(value)) {
+      setter(state.filter((item) => item !== value));
+    } else {
+      setter([...state, value]);
+    }
+  };
+
+  const toggleStringSelection = (
     value: string,
     setter: React.Dispatch<React.SetStateAction<string[]>>,
     state: string[]
   ) => {
     if (state.includes(value)) {
-      setter(state.filter((v) => v !== value));
+      setter(state.filter((item) => item !== value));
     } else {
       setter([...state, value]);
     }
   };
 
   const resetAll = () => {
-    setBorough(null);
+    setBorough("Manhattan");
     setSelectedNeighborhoods([]);
     setBedrooms([]);
     setBathrooms([]);
@@ -113,27 +115,28 @@ export default function FilterModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/30 z-50 flex justify-end">
-      <div className="bg-white w-[85%] sm:w-[350px] h-full p-6 shadow-xl animate-slideIn relative overflow-y-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
+    <div className="fixed inset-0 bg-black/30 text-black z-50 flex justify-end">
+      <div className="bg-white h-full w-[85%] sm:w-[350px] shadow-xl animate-slideIn flex flex-col">
+        {/* HEADER (fixed) */}
+        <div className="p-5 flex border border-gray-300 justify-between items-center shrink-0">
           <h2 className="text-lg font-semibold text-gray-900">Filter</h2>
-          <button onClick={onClose}>
-            <X className="w-5 h-5 text-gray-600" />
-          </button>
+          <X
+            className="w-5 h-5 text-gray-600 cursor-pointer"
+            onClick={onClose}
+          />
         </div>
 
-        {/* CONTENT */}
-        <div className="space-y-6 pb-20">
+        {/* CONTENT (scrollable) */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-6">
           {/* Borough */}
           <div>
-            <p className="text-sm font-medium text-gray-700 mb-2">Borough</p>
+            <p className="text-sm font-medium mb-2">Borough</p>
             <div className="grid grid-cols-2 gap-2">
-              {boroughOptions.map((b) => (
+              {["Manhattan", "Brooklyn"].map((b) => (
                 <button
                   key={b}
                   onClick={() => setBorough(b)}
-                  className={`py-2 border rounded-lg text-sm font-medium ${
+                  className={`py-2 rounded-lg border text-sm font-medium ${
                     borough === b
                       ? "bg-blue-600 text-white border-blue-600"
                       : "bg-gray-50 text-gray-700 border-gray-200"
@@ -145,25 +148,23 @@ export default function FilterModal({
             </div>
           </div>
 
-          {/* Neighborhood (Multi-select + Chips) */}
+          {/* Neighborhood Chips + List */}
           {borough && (
             <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">
-                Neighborhood
-              </p>
+              <p className="text-sm font-medium mb-2">Neighborhood</p>
 
-              {/* Selected chips */}
-              <div className="flex flex-wrap gap-2 mb-2">
+              {/* Selected Chips (scrollable horizontally) */}
+              <div className="flex flex-wrap gap-2 mb-3 max-h-20 overflow-y-auto">
                 {selectedNeighborhoods.map((n) => (
                   <span
                     key={n}
-                    className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs flex items-center gap-2"
+                    className="px-3 py-1 border border-gray-300 bg-blue-100 text-blue-800 rounded-full text-xs flex items-center gap-1"
                   >
                     {n}
                     <button
                       onClick={() =>
-                        setSelectedNeighborhoods((prev) =>
-                          prev.filter((i) => i !== n)
+                        setSelectedNeighborhoods(
+                          selectedNeighborhoods.filter((x) => x !== n)
                         )
                       }
                     >
@@ -173,22 +174,22 @@ export default function FilterModal({
                 ))}
               </div>
 
-              {/* Dropdown list */}
-              <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto border p-2 rounded-lg">
+              {/* Neighborhood List (scrollable) */}
+              <div className="border border-gray-300 rounded-lg p-2 max-h-40 overflow-y-auto space-y-1">
                 {neighborhoods.map((n) => (
                   <button
                     key={n}
                     onClick={() =>
-                      toggleSelection(
+                      toggleStringSelection(
                         n,
                         setSelectedNeighborhoods,
                         selectedNeighborhoods
                       )
                     }
-                    className={`text-left p-2 rounded-lg text-sm border ${
+                    className={`block w-full text-left p-2 rounded-md text-sm border ${
                       selectedNeighborhoods.includes(n)
                         ? "bg-blue-600 text-white border-blue-600"
-                        : "bg-gray-50 border-gray-200 text-gray-700"
+                        : "bg-gray-50 text-gray-700 border-gray-200"
                     }`}
                   >
                     {n}
@@ -200,64 +201,83 @@ export default function FilterModal({
 
           {/* Bedrooms */}
           <div>
-            <p className="text-sm font-medium text-gray-700 mb-2">Bedrooms</p>
+            <p className="text-sm font-medium mb-2">Bedrooms</p>
             <div className="grid grid-cols-3 gap-2">
-              {bedroomOptions.map((br) => (
-                <button
-                  key={br}
-                  onClick={() => toggleSelection(br, setBedrooms, bedrooms)}
-                  className={`py-2 border rounded-lg text-sm ${
-                    bedrooms.includes(br)
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-gray-50 text-gray-700 border-gray-200"
-                  }`}
-                >
-                  {br}
-                </button>
-              ))}
+              {["Studio", "1BR", "2BR", "3BR", "4BR+"].map((b) => {
+                // Convert display text to number (Studio = 0, 1BR = 1, etc.)
+                const value = b === "Studio" ? 0 : parseInt(b);
+                return (
+                  <button
+                    key={b}
+                    onClick={() =>
+                      toggleSelection(value, setBedrooms, bedrooms)
+                    }
+                    className={`py-2 rounded-lg border text-sm ${
+                      bedrooms.includes(value)
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-gray-50 text-gray-700 border-gray-200"
+                    }`}
+                  >
+                    {b}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {/* Bathrooms */}
           <div>
-            <p className="text-sm font-medium text-gray-700 mb-2">Bathrooms</p>
+            <p className="text-sm font-medium mb-2">Bathrooms</p>
             <div className="grid grid-cols-4 gap-2">
-              {bathroomOptions.map((b) => (
-                <button
-                  key={b}
-                  onClick={() => toggleSelection(b, setBathrooms, bathrooms)}
-                  className={`py-2 border rounded-lg text-sm ${
-                    bathrooms.includes(b)
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-gray-50 text-gray-700 border-gray-200"
-                  }`}
-                >
-                  {b}
-                </button>
-              ))}
+              {["1", "2", "3", "4+"].map((b) => {
+                // Convert display text to number (handle '4+' as 4)
+                const value = b.endsWith("+") ? parseInt(b) : parseInt(b);
+                return (
+                  <button
+                    key={b}
+                    onClick={() =>
+                      toggleSelection(value, setBathrooms, bathrooms)
+                    }
+                    className={`py-2 rounded-lg border text-sm ${
+                      bathrooms.includes(value)
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-gray-50 text-gray-700 border-gray-200"
+                    }`}
+                  >
+                    {b}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {/* Max Price */}
           <div>
-            <p className="text-sm font-medium text-gray-700 mb-2">Max Price</p>
-            <select
-              className="w-full border px-3 py-2 rounded-lg bg-gray-50"
-              value={maxPrice ?? ""}
-              onChange={(e) => setMaxPrice(Number(e.target.value))}
-            >
-              <option value="">Select Price</option>
-              {priceOptions.map((p) => (
-                <option key={p} value={p}>
-                  ${p}
-                </option>
-              ))}
-            </select>
+            <p className="text-sm font-medium mb-2">Max Price</p>
+
+            <div className="flex items-center gap-2 border border-gray-300 bg-gray-50 rounded-lg px-3 py-2">
+              <span className="text-blue-600 font-medium">$</span>
+
+              <input
+                type="number"
+                min={0}
+                max={10000}
+                step={100} // you can change this
+                value={maxPrice ?? ""}
+                onChange={(e) => {
+                  const value =
+                    e.target.value === "" ? null : Number(e.target.value);
+                  setMaxPrice(value);
+                }}
+                placeholder="Enter amount"
+                className="w-full bg-transparent outline-none text-gray-700"
+              />
+            </div>
           </div>
         </div>
 
-        {/* FOOTER */}
-        <div className="absolute bottom-0 left-0 right-0 bg-white p-6 flex gap-3 border-t">
+        {/* FOOTER (fixed) */}
+        <div className="p-5 border-t border-gray-300 bg-white flex gap-3 shrink-0">
           <button
             onClick={resetAll}
             className="flex-1 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium"
@@ -273,6 +293,7 @@ export default function FilterModal({
         </div>
       </div>
 
+      {/* Animation */}
       <style jsx>{`
         @keyframes slideIn {
           from {
