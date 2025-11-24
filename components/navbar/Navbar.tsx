@@ -76,7 +76,10 @@ export default function Navbar() {
     <nav className="w-full bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-full md:max-w-11/12 lg:max-w-10/12 mx-auto px-2 md:px-8 flex justify-between items-center py-4">
         {/* Logo */}
-        <Link href="/" className="text-2xl font-bold text-black pr-3">
+        <Link
+          href="/"
+          className="text-2xl items-start justify-start font-bold text-black pr-3"
+        >
           <Image
             src="/Logo_1.svg"
             alt="Logo"
@@ -165,10 +168,15 @@ export default function Navbar() {
             </>
           ) : (
             <div className="flex items-center gap-4">
-              <button onClick={() => {!isAuthenticated}} className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700">
+              <button
+                onClick={() => {
+                  !isAuthenticated;
+                }}
+                className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700"
+              >
                 Sign In
               </button>
-              <button  className="px-4 py-2 rounded-md border border-blue-600 text-blue-600 text-sm hover:bg-blue-50">
+              <button className="px-4 py-2 rounded-md border border-blue-600 text-blue-600 text-sm hover:bg-blue-50">
                 Sign Up
               </button>
             </div>

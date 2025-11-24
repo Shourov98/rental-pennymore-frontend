@@ -52,7 +52,7 @@ export default function HeroSection() {
         <form className="flex flex-col sm:flex-row items-center gap-4 sm:gap-3 w-full">
           {/* Location */}
           <div className="flex flex-col w-full sm:w-2/5">
-            <label className="text-xs font-medium mb-1 text-gray-600">
+            <label className="text-xs text-left font-medium pl-2 mb-1 text-gray-600">
               Location
             </label>
             <div
@@ -68,14 +68,14 @@ export default function HeroSection() {
 
           {/* Price Min */}
           <div className="flex flex-col w-full sm:w-[20%]">
-            <label className="text-xs font-medium mb-1 text-gray-600">
+            <label className="text-xs text-left font-medium pl-2 mb-1 text-gray-600">
               Price
             </label>
             <div className="flex items-center bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5">
               <DollarSign size={16} className="text-blue-600 mr-2 shrink-0" />
               <input
                 type="number"
-                placeholder="Min"
+                placeholder="Min Price"
                 className="bg-transparent outline-none w-full text-sm"
               />
             </div>
@@ -90,7 +90,7 @@ export default function HeroSection() {
               <DollarSign size={16} className="text-blue-600 mr-2 shrink-0" />
               <input
                 type="number"
-                placeholder="Max"
+                placeholder="Max Price"
                 className="bg-transparent outline-none w-full text-sm"
               />
             </div>
