@@ -317,7 +317,7 @@ export default function RenterRequestDetails() {
                 {/* Guarantor */}
                 <div className="col-span-2">
                   <p className="font-medium text-gray-900 mb-2">
-                    Accept Guarantor
+                    Guarantor Type Required
                   </p>
                   <div className="flex gap-4 text-gray-700">
                     {["Personal guarantor", "Third party guarantor"].map(
