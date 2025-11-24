@@ -116,12 +116,11 @@ export default function PreMarketListingPage() {
             <div className="flex flex-col sm:flex-row gap-3 mb-4">
               {/* Min Price */}
               <div className="w-full sm:w-1/2">
-                <label className="text-xs text-gray-600">Min Price</label>
                 <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
                   <DollarSign size={16} className="text-blue-600 mr-2" />
                   <input
                     type="number"
-                    placeholder="Min"
+                    placeholder="Min Price"
                     className="w-full bg-transparent outline-none text-sm"
                   />
                 </div>
@@ -129,12 +128,11 @@ export default function PreMarketListingPage() {
 
               {/* Max Price */}
               <div className="w-full sm:w-1/2">
-                <label className="text-xs text-gray-600">Max Price</label>
                 <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
                   <DollarSign size={16} className="text-blue-600 mr-2" />
                   <input
                     type="number"
-                    placeholder="Max"
+                    placeholder="Max Price"
                     className="w-full bg-transparent outline-none text-sm"
                   />
                 </div>

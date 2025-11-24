@@ -8,6 +8,14 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "randomuser.me",
       },
+      {
+        protocol: "https",
+        hostname: "www.instagram.com",
+      },
+      {
+        protocol: "https",
+        hostname: "www.tiktok.com",
+      },
     ],
   },
 };

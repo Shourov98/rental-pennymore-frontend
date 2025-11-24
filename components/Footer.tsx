@@ -8,10 +8,6 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
         {/* --- Left: Logo & Text --- */}
         <div>
-          <p className="text-gray-300 mb-6 max-w-xs leading-relaxed">
-            Find your next apartment before it hits the market, no middlemen, no
-            hassle.
-          </p>
           {/* Logo */}
           <Link href="/" className="text-2xl font-bold text-black">
             <Image src="/Logo_2.svg" alt="Logo" width={200} height={150} />
@@ -39,12 +35,13 @@ export default function Footer() {
         <div>
           <div className="flex flex-col gap-3 mb-4 text-gray-300">
             <div className="flex items-center gap-3">
-              <Phone size={18} className="text-gray-400" />
-              <span>689296744</span>
-            </div>
-            <div className="flex items-center gap-3">
               <Mail size={18} className="text-gray-400" />
-              <span>admin@rentersedge.com</span>
+              <Link
+                href="mailto:support@BeforeListed.com"
+                className="hover:text-white transition"
+              >
+                Support@BeforeListed.com
+              </Link>
             </div>
           </div>
 
@@ -58,7 +55,10 @@ export default function Footer() {
                 height={20}
               />
             </Link>
-            <Link href="#" className="hover:opacity-80 transition">
+            <Link
+              href="https://www.instagram.com/beforelisted/"
+              className="hover:opacity-80 transition"
+            >
               <Image
                 src="/icons/instagram.svg"
                 alt="Instagram"
@@ -74,7 +74,10 @@ export default function Footer() {
                 height={20}
               />
             </Link>
-            <Link href="#" className="hover:opacity-80 transition">
+            <Link
+              href="https://www.tiktok.com/@beforelisted"
+              className="hover:opacity-80 transition"
+            >
               <Image
                 src="/icons/tiktok.svg"
                 alt="TikTok"
@@ -88,8 +91,9 @@ export default function Footer() {
 
       {/* --- Bottom Copyright --- */}
       <div className="mt-10 border-t border-gray-700 pt-6 text-center text-gray-400 text-sm">
-        © {new Date().getFullYear()} All rights reserved to{" "}
-        <span className="font-medium text-white">RentersEdge</span>
+        © {new Date().getFullYear()}{" "}
+        <span className="font-medium text-white">MOR NY HOMES INC.</span> All
+        rights reserved.
       </div>
     </footer>
   );
