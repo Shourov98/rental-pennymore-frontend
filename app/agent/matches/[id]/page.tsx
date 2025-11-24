@@ -283,9 +283,10 @@ export default function RenterRequestDetails() {
                       <label key={i} className="flex items-center gap-2">
                         <input
                           type="checkbox"
-                          disabled
-                          defaultChecked={i !== 1}
-                          className="accent-blue-600"
+                          checked={i === 0}
+                          readOnly
+                          className="accent-blue-600 cursor-not-allowed"
+                          onClick={(e) => e.preventDefault()}
                         />
                         <span>{f}</span>
                       </label>
@@ -302,9 +303,10 @@ export default function RenterRequestDetails() {
                         <label key={i} className="flex items-center gap-2">
                           <input
                             type="checkbox"
-                            disabled
-                            defaultChecked={i < 2}
-                            className="accent-blue-600"
+                            checked={i === 0}
+                            readOnly
+                            className="accent-blue-600 cursor-not-allowed"
+                            onClick={(e) => e.preventDefault()}
                           />
                           <span>{f}</span>
                         </label>
@@ -319,9 +321,10 @@ export default function RenterRequestDetails() {
                       <label key={i} className="flex items-center gap-2">
                         <input
                           type="checkbox"
-                          disabled
-                          defaultChecked={i === 0}
-                          className="accent-blue-600"
+                          checked={i === 0}
+                          readOnly
+                          className="accent-blue-600 cursor-not-allowed"
+                          onClick={(e) => e.preventDefault()}
                         />
                         <span>{f}</span>
                       </label>
@@ -332,7 +335,7 @@ export default function RenterRequestDetails() {
                 {/* Guarantor */}
                 <div className="col-span-2">
                   <p className="font-medium text-gray-900 mb-2">
-                    Accept Guarantor
+                    Guarantor Type Required
                   </p>
                   <div className="flex gap-4 text-gray-700">
                     {["Personal guarantor", "Third party guarantor"].map(
@@ -340,9 +343,10 @@ export default function RenterRequestDetails() {
                         <label key={i} className="flex items-center gap-2">
                           <input
                             type="checkbox"
-                            disabled
-                            defaultChecked={i === 0}
-                            className="accent-blue-600"
+                            checked={i === 0}
+                            readOnly
+                            className="accent-blue-600 cursor-not-allowed"
+                            onClick={(e) => e.preventDefault()}
                           />
                           <span>{f}</span>
                         </label>
