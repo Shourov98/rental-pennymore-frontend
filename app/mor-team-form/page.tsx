@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function RentersEdgeForm() {
   const [agree, setAgree] = useState(false);
@@ -17,7 +18,6 @@ export default function RentersEdgeForm() {
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-sm p-6 md:p-12">
         {/* Header */}
         <div className="text-center mb-10">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">LOGO</h1>
           <h2 className="text-lg md:text-xl font-semibold text-gray-800 mt-4">
             The Mor Team &quot;Renters Edge&quot; Specification Form
           </h2>
@@ -29,7 +29,17 @@ export default function RentersEdgeForm() {
 
         {/* Sub Logo + Info */}
         <div className="text-center mb-8">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">LOGO</h3>
+          <div className="flex items-center justify-center mb-4">
+            <Link href="/" className="text-black pr-3">
+              <Image
+                src="/Logo_1.svg"
+                alt="Logo"
+                width={200}
+                height={150}
+                className="w-[120px] md:w-[160px] lg:w-[200px] h-auto"
+              />
+            </Link>
+          </div>
           <h4 className="text-base font-semibold text-gray-700">
             See it first, Rent it First
           </h4>
