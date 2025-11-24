@@ -10,7 +10,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activeItem, setActiveItem] = useState("Home");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -165,10 +165,10 @@ export default function Navbar() {
             </>
           ) : (
             <div className="flex items-center gap-4">
-              <button className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700">
+              <button onClick={() => {!isAuthenticated}} className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700">
                 Sign In
               </button>
-              <button className="px-4 py-2 rounded-md border border-blue-600 text-blue-600 text-sm hover:bg-blue-50">
+              <button  className="px-4 py-2 rounded-md border border-blue-600 text-blue-600 text-sm hover:bg-blue-50">
                 Sign Up
               </button>
             </div>
