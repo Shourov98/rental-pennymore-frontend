@@ -61,10 +61,9 @@ interface Request {
 interface FilterParams {
   borough: string | null;
   neighborhoods: string[];
-  bedrooms: string[];
-  bathrooms: string[];
+  bedrooms: number[];
+  bathrooms: number[];
   maxPrice: number | null;
-  // Add other filter properties as needed
 }
 
 // ---------------------
@@ -128,16 +127,14 @@ export default function RenterRequestsPage() {
     // Bedrooms (multi)
     if (filter.bedrooms?.length > 0) {
       results = results.filter((item) =>
-        filter.bedrooms.includes(
-          item.bedrooms === 0 ? "Studio" : `${item.bedrooms}BR`
-        )
+        filter.bedrooms.includes(item.bedrooms)
       );
     }
 
     // Bathrooms (multi)
     if (filter.bathrooms?.length > 0) {
       results = results.filter((item) =>
-        filter.bathrooms.includes(String(item.bathrooms))
+        filter.bathrooms.includes(item.bathrooms)
       );
     }
 

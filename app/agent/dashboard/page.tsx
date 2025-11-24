@@ -64,7 +64,6 @@ interface FilterParams {
   bedrooms: number[];
   bathrooms: number[];
   maxPrice: number | null;
-  // Add other filter properties as needed
 }
 
 // ---------------------

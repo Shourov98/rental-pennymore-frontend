@@ -135,7 +135,10 @@ export default function FilterModal({
               {["Manhattan", "Brooklyn"].map((b) => (
                 <button
                   key={b}
-                  onClick={() => setBorough(b)}
+                  onClick={() => {
+                    setBorough(b);
+                    setSelectedNeighborhoods([]); // reset neighborhoods on borough switch
+                  }}
                   className={`py-2 rounded-lg border text-sm font-medium ${
                     borough === b
                       ? "bg-blue-600 text-white border-blue-600"
@@ -153,7 +156,7 @@ export default function FilterModal({
             <div>
               <p className="text-sm font-medium mb-2">Neighborhood</p>
 
-              {/* Selected Chips (scrollable horizontally) */}
+              {/* Selected Chips */}
               <div className="flex flex-wrap gap-2 mb-3 max-h-20 overflow-y-auto">
                 {selectedNeighborhoods.map((n) => (
                   <span
@@ -174,7 +177,7 @@ export default function FilterModal({
                 ))}
               </div>
 
-              {/* Neighborhood List (scrollable) */}
+              {/* Neighborhood List */}
               <div className="border border-gray-300 rounded-lg p-2 max-h-40 overflow-y-auto space-y-1">
                 {neighborhoods.map((n) => (
                   <button
@@ -204,7 +207,6 @@ export default function FilterModal({
             <p className="text-sm font-medium mb-2">Bedrooms</p>
             <div className="grid grid-cols-3 gap-2">
               {["Studio", "1BR", "2BR", "3BR", "4BR+"].map((b) => {
-                // Convert display text to number (Studio = 0, 1BR = 1, etc.)
                 const value = b === "Studio" ? 0 : parseInt(b);
                 return (
                   <button
@@ -230,7 +232,6 @@ export default function FilterModal({
             <p className="text-sm font-medium mb-2">Bathrooms</p>
             <div className="grid grid-cols-4 gap-2">
               {["1", "2", "3", "4+"].map((b) => {
-                // Convert display text to number (handle '4+' as 4)
                 const value = b.endsWith("+") ? parseInt(b) : parseInt(b);
                 return (
                   <button
@@ -251,7 +252,7 @@ export default function FilterModal({
             </div>
           </div>
 
-          {/* Max Price */}
+          {/* Max Price (Manual Input) */}
           <div>
             <p className="text-sm font-medium mb-2">Max Price</p>
 
@@ -261,8 +262,7 @@ export default function FilterModal({
               <input
                 type="number"
                 min={0}
-                max={10000}
-                step={100} // you can change this
+                step={100}
                 value={maxPrice ?? ""}
                 onChange={(e) => {
                   const value =
