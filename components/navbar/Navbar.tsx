@@ -10,7 +10,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activeItem, setActiveItem] = useState("Home");
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // ✅ NEW AUTH STATE
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -50,19 +50,12 @@ export default function Navbar() {
   ];
 
   const handleMenuItemClick = (path: string) => {
-    if (path === "/logout") {
-      setIsAuthenticated(false);
-      setDropdownOpen(false);
-      setMenuOpen(false);
-      router.push("/");
-    } else {
-      router.push(path);
-      setDropdownOpen(false);
-      setMenuOpen(false);
-    }
+    router.push(path);
+    setDropdownOpen(false);
+    setMenuOpen(false);
   };
 
-  // ✅ Detect outside click to close drawer
+  // Close drawer when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -72,27 +65,29 @@ export default function Navbar() {
         setMenuOpen(false);
       }
     };
-    if (menuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
+    if (menuOpen) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [menuOpen]);
 
-  // ✅ Close dropdown when mouse leaves
+  // Auto-close desktop dropdown
   const handleMouseLeave = () => setTimeout(() => setDropdownOpen(false), 150);
 
   return (
     <nav className="w-full bg-white shadow-sm sticky top-0 z-50">
-      <div className="md:max-w-11/12 lg:max-w-10/12 mx-auto px-4 md:px-8 flex justify-between items-center py-4">
+      <div className="max-w-full md:max-w-11/12 lg:max-w-10/12 mx-auto px-2 md:px-8 flex justify-between items-center py-4">
         {/* Logo */}
-        <Link href="/" className="text-2xl font-bold text-black">
-          <Image src="/Logo_1.svg" alt="Logo" width={200} height={150} />
+        <Link href="/" className="text-2xl font-bold text-black pr-3">
+          <Image
+            src="/Logo_1.svg"
+            alt="Logo"
+            width={200}
+            height={150}
+            className="w-[120px] md:w-[160px] lg:w-[200px] h-auto"
+          />
         </Link>
 
-        {/* Nav Links (Desktop) */}
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-800">
+        {/* Desktop Navbar Links (only show on lg+) */}
+        <div className="hidden lg:flex items-center gap-8 text-sm font-medium text-gray-800">
           {navItems.map((item) => (
             <a
               key={item.name}
@@ -126,9 +121,9 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* 🔹 User Section or Signin/Signup */}
+        {/* Desktop User Dropdown (lg+) */}
         <div
-          className="hidden md:flex items-center relative"
+          className="hidden lg:flex items-center relative"
           ref={dropdownRef}
           onMouseLeave={handleMouseLeave}
         >
@@ -149,7 +144,7 @@ export default function Navbar() {
               </button>
 
               {dropdownOpen && (
-                <div className="absolute right-0 top-12 w-56 bg-white shadow-lg rounded-lg border-gray-600 animate-fadeIn">
+                <div className="absolute right-0 top-12 w-56 bg-white shadow-lg rounded-lg animate-fadeIn">
                   {userMenu.map((menu) => (
                     <button
                       key={menu.label}
@@ -161,7 +156,6 @@ export default function Navbar() {
                         alt={menu.label}
                         width={18}
                         height={18}
-                        className="opacity-80"
                       />
                       {menu.label}
                     </button>
@@ -171,22 +165,19 @@ export default function Navbar() {
             </>
           ) : (
             <div className="flex items-center gap-4">
-              <button
-                onClick={() => setIsAuthenticated(true)}
-                className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
-              >
+              <button className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700">
                 Sign In
               </button>
-              <button className="px-4 py-2 rounded-md border border-blue-600 text-blue-600 text-sm font-medium hover:bg-blue-50">
+              <button className="px-4 py-2 rounded-md border border-blue-600 text-blue-600 text-sm hover:bg-blue-50">
                 Sign Up
               </button>
             </div>
           )}
         </div>
 
-        {/* Mobile Menu Icon */}
+        {/* Mobile + Tablet Menu Trigger (shown until lg) */}
         <button
-          className="md:hidden p-2 rounded-md hover:bg-gray-100"
+          className="lg:hidden p-2 rounded-md hover:bg-gray-100"
           onClick={() => setMenuOpen(!menuOpen)}
         >
           {menuOpen ? (
@@ -206,15 +197,15 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile Drawer (Original Design Preserved) */}
+      {/* Mobile/Tablet Drawer */}
       {menuOpen && (
         <div className="fixed inset-0 bg-black/30 z-40">
           <div
             ref={drawerRef}
-            className="absolute right-0 top-0 w-64 h-full bg-white shadow-xl flex flex-col p-6 gap-6 overflow-y-auto"
+            className="absolute right-0 top-0 w-72 h-full bg-white shadow-xl flex flex-col p-6 gap-6 overflow-y-auto"
           >
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-lg font-bold">Logo</span>
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-lg font-bold">Menu</span>
               <X
                 size={22}
                 className="cursor-pointer"
@@ -222,88 +213,51 @@ export default function Navbar() {
               />
             </div>
 
-            {/* Conditional User / Auth UI */}
-            {isAuthenticated ? (
-              <>
-                <div className="flex items-center gap-3 mb-2 border-b pb-2">
-                  <User className="w-6 h-6 text-blue-600" />
-                  <div>
-                    <p className="font-semibold text-gray-800">
-                      Hey, {user.firstName}
-                    </p>
-                    <p className="text-xs text-gray-500">{user.role}</p>
-                  </div>
-                </div>
-
-                <div className="flex flex-col">
-                  {navItems.map((item) => (
-                    <a
-                      key={item.name}
-                      href={item.id}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setActiveItem(item.name);
-                        setMenuOpen(false);
-                        if (item.id === "#") {
-                          window.scrollTo({ top: 0, behavior: "smooth" });
-                        } else {
-                          document
-                            .querySelector(item.id)
-                            ?.scrollIntoView({ behavior: "smooth" });
-                        }
-                      }}
-                      className={`relative text-left gap-4 pb-1 ${
-                        activeItem === item.name
-                          ? "text-blue-600 font-medium"
-                          : "text-gray-800 hover:text-blue-600"
-                      }`}
-                    >
-                      {item.name}
-                    </a>
-                  ))}
-                </div>
-
-                <hr className="my-1" />
-
-                <div className="flex flex-col gap-3">
-                  {userMenu.map((menu) => (
-                    <button
-                      key={menu.label}
-                      onClick={() => handleMenuItemClick(menu.path)}
-                      className="w-full text-left flex items-center px-3 py-1 gap-3 text-gray-700 hover:text-blue-600 text-sm"
-                    >
-                      <Image
-                        src={menu.icon}
-                        alt={menu.label}
-                        width={18}
-                        height={18}
-                      />
-                      {menu.label}
-                    </button>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="flex flex-col gap-4 mt-4">
+            {/* Drawer Content */}
+            <div className="flex flex-col gap-4">
+              {navItems.map((item) => (
                 <button
+                  key={item.name}
                   onClick={() => {
-                    setIsAuthenticated(true);
+                    setActiveItem(item.name);
                     setMenuOpen(false);
+                    document
+                      .querySelector(item.id)
+                      ?.scrollIntoView({ behavior: "smooth" });
                   }}
-                  className="w-full bg-blue-600 text-white py-2 rounded-md text-sm font-medium hover:bg-blue-700"
+                  className={`text-left text-gray-700 py-2 ${
+                    activeItem === item.name
+                      ? "text-blue-600 font-semibold"
+                      : ""
+                  }`}
                 >
-                  Sign In
+                  {item.name}
                 </button>
-                <button className="w-full border border-blue-600 text-blue-600 py-2 rounded-md text-sm font-medium hover:bg-blue-50">
-                  Sign Up
+              ))}
+
+              <hr />
+
+              {userMenu.map((menu) => (
+                <button
+                  key={menu.label}
+                  onClick={() => handleMenuItemClick(menu.path)}
+                  className="w-full text-left flex items-center gap-3 px-2 py-2 hover:bg-blue-50 text-gray-800 text-sm"
+                >
+                  <Image
+                    src={menu.icon}
+                    alt={menu.label}
+                    width={18}
+                    height={18}
+                  />
+                  {menu.label}
                 </button>
-              </div>
-            )}
+              ))}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Animation */}
+      {/* Animations */}
       <style jsx>{`
         @keyframes fadeIn {
           from {
