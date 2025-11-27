@@ -58,7 +58,7 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
         open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       } z-30`}
     >
-      <div className="flex flex-col p-4 overflow-y-auto">
+      <div className="flex flex-col p-4 mt-4 overflow-y-auto">
         {menuSections.map((section) => (
           <div key={section.title} className="mb-4">
             <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">
