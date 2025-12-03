@@ -6,33 +6,32 @@ export default function NotificationsPage() {
   const notifications = [
     {
       id: 1,
-      type: "renter",
-      icon: Home,
-      title: "New Renter Request",
+      type: "match",
+      icon: Handshake,
+      title: "Agent Matched",
       message:
-        "A new renter has submitted a request for a 2BR apartment in Manhattan.",
-      time: "2 hours ago",
+        "1 agent has been matched with your pre-market request BeforeListed-1.",
+      time: "Just now",
       status: "New",
     },
     {
       id: 2,
-      type: "agent",
+      type: "match-multiple",
       icon: Handshake,
-      title: "Agent Connection Request",
+      title: "Agents Matched",
       message:
-        "Agent John Wick has requested to connect with renter request #102.",
-      time: "Yesterday at 5:12 PM",
-      status: "Pending",
+        "3 agents have been matched with your request BeforeListed-2. Review and take action.",
+      time: "1 hour ago",
+      status: "New",
     },
     {
       id: 3,
-      type: "payment",
-      icon: CreditCard,
-      title: "Payment Completed",
-      message:
-        "Agent Alice’s payment for renter connection #205 has been received and marked as Paid.",
-      time: "Nov 12, 2025",
-      status: "Paid",
+      type: "admin-action",
+      icon: Home,
+      title: "Request Deactivated",
+      message: "Admin has deactivated your pre-market request BeforeListed-3.",
+      time: "Yesterday at 4:20 PM",
+      status: "Important",
     },
   ];
 
