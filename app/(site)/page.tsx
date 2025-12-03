@@ -1,6 +1,6 @@
 import AboutSection from "@/components/AboutSection";
 import ContactSection from "@/components/ContactSection";
-import FaqSection from "@/components/FaqSecction";
+import FaqSection from "@/components/FaqSection";
 import HeroSection from "@/components/HeroSection";
 import MonthlyReportSection from "@/components/MonthlyReportSection";
 import Image from "next/image";

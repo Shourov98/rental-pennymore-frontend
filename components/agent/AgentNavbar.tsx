@@ -17,7 +17,6 @@ export default function AgentNavbar({
     name: "Steve",
     role: "Agent",
     avatar: "/agent-avatar.jpg", // must exist in /public
-    notifications: 12,
   };
 
   // Close dropdown on outside click
@@ -73,16 +72,6 @@ export default function AgentNavbar({
         className="relative flex items-center gap-2 md:gap-3 lg:gap-4"
         ref={dropdownRef}
       >
-        {/* Notification Bell */}
-        <div className="relative hidden md:block">
-          <Bell className="w-5 h-5 text-gray-600 cursor-pointer hover:text-blue-600" />
-          {user.notifications > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-semibold rounded-full px-[5px]">
-              {user.notifications}
-            </span>
-          )}
-        </div>
-
         {/* Avatar & Name */}
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}

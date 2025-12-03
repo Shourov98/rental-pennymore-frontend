@@ -33,11 +33,10 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
           href: "/renter/settings",
         },
         {
-          name: "Refer Link",
-          icon: <LinkIcon />,
-          href: "/agent/refer-link",
+          name: "Notifications",
+          icon: <Bell />,
+          href: "/renter/notifications",
         },
-        { name: "Notifications", icon: <Bell />, href: "/agent/notifications" },
       ],
     },
     {
@@ -49,14 +48,9 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
           href: "/renter/matches",
         },
         {
-          name: "Notifications",
-          icon: <Bell />,
-          href: "/renter/notifications",
-        },
-        {
           name: "Request Lists",
           icon: <List />,
-          href: "/renter/request-lists",
+          href: "/renter/saved-requests",
         },
       ],
     },

@@ -12,45 +12,40 @@ export default function RenterLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
 
-  // ✅ Close drawer on outside click
+  // Close drawer on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (drawerRef.current && !drawerRef.current.contains(e.target as Node)) {
         setSidebarOpen(false);
       }
     };
-    if (sidebarOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
+    if (sidebarOpen) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [sidebarOpen]);
 
   return (
-    <div className="h-screen w-full flex flex-col bg-gray-50 overflow-hidden">
-      {/* ✅ Fixed Navbar */}
+    <div className="h-screen w-full flex flex-col bg-gray-50">
+      {/* FIXED NAVBAR */}
       <AgentNavbar onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
 
-      <div className="flex flex-1 pt-[72px] relative">
-        {/* ✅ Sidebar (Desktop) */}
+      <div className="flex flex-1 pt-[72px] overflow-hidden">
+        {/* Sidebar (Desktop) */}
         <div className="hidden lg:block w-64 shrink-0">
           <RenterSidebar open={true} />
         </div>
 
-        {/* ✅ Drawer (Mobile & Tablet) */}
+        {/* Sidebar Drawer (Mobile) */}
         {sidebarOpen && (
-          <div className="fixed inset-0 z-40 flex lg:hidden">
-            {/* Backdrop */}
+          <div className="fixed inset-0 z-40 lg:hidden flex">
             <div
               className="fixed inset-0 bg-black/40 backdrop-blur-sm"
               onClick={() => setSidebarOpen(false)}
-            ></div>
+            />
 
-            {/* Sidebar Drawer */}
             <div
               ref={drawerRef}
-              className="relative z-50 w-64 h-full bg-white shadow-lg border-r border-gray-200 transform translate-x-0 animate-slideIn"
+              className="relative z-50 w-64 h-full bg-white shadow-lg border-r border-gray-200 animate-slideIn"
             >
-              {/* Close Button */}
               <div className="absolute top-3 right-3">
                 <button
                   onClick={() => setSidebarOpen(false)}
@@ -65,13 +60,13 @@ export default function RenterLayout({
           </div>
         )}
 
-        {/* ✅ Main Content */}
-        <main className="flex-1 px-2 md:px-2 lg:px-6 py-8 bg-gray-50 overflow-y-auto">
+        {/* MAIN CONTENT — ONLY THIS SCROLLS */}
+        <main className="flex-1 overflow-y-auto px-2 md:px-2 lg:px-6 py-8">
           {children}
         </main>
       </div>
 
-      {/* ✅ Slide-in Animation */}
+      {/* Animation */}
       <style jsx>{`
         @keyframes slideIn {
           from {

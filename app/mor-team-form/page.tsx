@@ -44,7 +44,11 @@ export default function RentersEdgeForm() {
             See it first, Rent it First
           </h4>
           <p className="text-gray-600 text-sm mt-1">
-            Get access to NYC pre-market apartments before they are listed.
+            The BeforeListed™ network of top agents gives you early access to
+            rentals before they are listed by contacting trusted owners on your
+            behalf for upcoming units that match your preferences. Discover
+            below market rents and, in some cases, rent stabilized pre market
+            apartments. Pay our broker fee only if you rent.
           </p>
         </div>
 

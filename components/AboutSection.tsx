@@ -47,12 +47,14 @@ export default function AboutSection() {
             <div className="w-full md:w-2/3 text-center md:text-left">
               {/* Description */}
               <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
-                Our platform connects renters with licensed agents who know and
-                can provide access to pre-market listings — apartments not yet
-                listed or published on major platforms like StreetEasy or
-                Zillow. By leveraging agent networks and insider knowledge, we
-                give renters a head start to discover and secure apartments
-                before they hit the open market.
+                BeforeListed™ is a platform that provides renters with early
+                access to pre-market NYC apartments before they appear on sites
+                such as StreetEasy or Zillow. Our network of trusted, licensed
+                rental agents represent the renter and use established
+                relationships with owners and property managers to locate
+                upcoming and unlisted units that match your submitted request. A
+                broker fee is paid only if you rent an apartment found through
+                BeforeListed™, creating a simple and risk-free process.
               </p>
             </div>
           </div>
