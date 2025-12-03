@@ -38,7 +38,7 @@ export default function ProfilePage() {
 
               {/* Edit Button */}
               <button
-                onClick={() => router.push("/profile/edit")}
+                onClick={() => router.push("/renter/profile/edit")}
                 className="flex items-center gap-2 bg-blue-500 text-white font-medium px-4 py-2 rounded-xl hover:bg-blue-700 transition"
               >
                 <Edit2 size={16} />

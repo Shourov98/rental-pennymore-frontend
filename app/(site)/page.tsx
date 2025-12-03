@@ -24,10 +24,11 @@ export default function HomePage() {
         </h2>
 
         <p className="w-full max-w-2xl mx-auto text-base font-semibold text-center mb-10">
-          BeforeListed’s network of top agents can get you early access to
-          rentals before they hit the market by reaching out on your behalf to
-          trusted owners and supers. Discover below-market-priced and
-          rent-stabilized apartments before they’re listed.
+          The BeforeListed™ network of top agents gives you early access to
+          rentals before they are listed by contacting trusted owners on your
+          behalf for upcoming units that match your preferences. Discover below
+          market rents and, in some cases, rent stabilized pre market
+          apartments. Pay our broker fee only if you rent.
         </p>
 
         {/* Steps with arrows */}

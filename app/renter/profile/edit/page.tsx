@@ -38,7 +38,7 @@ export default function EditProfilePage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // TODO: connect API endpoint to update user profile
-    router.push("/profile");
+    router.push("/renter/profile");
   };
 
   return (
