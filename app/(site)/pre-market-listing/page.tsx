@@ -4,6 +4,7 @@ import { useState } from "react";
 import { MapPin, DollarSign, Calendar, ChevronDown, Bell } from "lucide-react";
 import LocationModal from "@/components/LocationModal";
 import SuccessModal from "@/components/SuccessModal";
+import PreferencesDragList from "@/components/PreferencesDragList";
 
 export default function PreMarketListingPage() {
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
@@ -261,16 +262,11 @@ export default function PreMarketListingPage() {
               </div>
             </div>
 
-            {/* Notes */}
+            {/* Preference List */}
             <div className="mb-6">
-              <p className="text-sm font-medium text-gray-700 mb-2">
-                Notes sent to your agent when they find a matching pre-market
-                apartment
-              </p>
-              <textarea
-                placeholder="Write here"
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm min-h-[100px] outline-none focus:ring-2 focus:ring-blue-500"
-              ></textarea>
+              <PreferencesDragList
+                onChange={(list: string[]) => console.log(list)}
+              />
             </div>
 
             {/* Submit */}
