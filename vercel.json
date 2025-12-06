@@ -1,0 +1,8 @@
+{
+  "build": {
+    "env": {
+      "NEXT_SHARP_IGNORE_GLOBAL_LIBRARY": "1",
+      "NEXT_DISABLE_SWC_SHARP": "1"
+    }
+  }
+}
