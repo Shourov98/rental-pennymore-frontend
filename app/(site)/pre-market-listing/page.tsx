@@ -9,6 +9,9 @@ import PreferencesDragList from "@/components/PreferencesDragList";
 export default function PreMarketListingPage() {
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [selectedLocations, setSelectedLocations] = useState<
+    { borough: string; neighborhoods: string[] }[]
+  >([]);
   const [activeBedrooms, setActiveBedrooms] = useState<string[]>([]);
   const [activeBathrooms, setActiveBathrooms] = useState<string[]>([]);
 
@@ -287,6 +290,7 @@ export default function PreMarketListingPage() {
       <LocationModal
         isOpen={isLocationModalOpen}
         onClose={() => setIsLocationModalOpen(false)}
+        onApply={(data) => setSelectedLocations(data)} // NEW
       />
 
       <SuccessModal

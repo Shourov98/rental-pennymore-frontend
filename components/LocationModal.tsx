@@ -1,127 +1,189 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
-import { X, Search, Map } from "lucide-react";
-import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
+import { X, MapPin, Search } from "lucide-react";
+import boroughNeighborhoods from "@/data/boroughNeighborhoods";
 
-// Lazy import NeighborhoodModal (prevents SSR issues)
-const NeighborhoodModal = dynamic(() => import("./NeighborhoodModal"), {
-  ssr: false,
-});
+interface NeighborhoodSelection {
+  borough: string;
+  neighborhood: string;
+}
 
 interface LocationModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialSelection?: NeighborhoodSelection[];
+  onSave: (locations: { borough: string; neighborhoods: string[] }[]) => void;
 }
 
-export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
+export default function LocationModal({
+  isOpen,
+  onClose,
+  initialSelection = [],
+  onSave,
+}: LocationModalProps) {
   const [search, setSearch] = useState("");
-  const [isNeighborhoodOpen, setIsNeighborhoodOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<NeighborhoodSelection[]>([]);
+  const [selected, setSelected] = useState<NeighborhoodSelection[]>([]);
 
-  const modalRef = useRef<HTMLDivElement>(null);
-
-  const handleClose = useCallback(() => {
-    setIsNeighborhoodOpen(false);
-    onClose();
-  }, [onClose]);
-
-  // ✅ Close Location Modal when clicking outside
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-        handleClose();
-      }
-    };
-
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+      setSelected(initialSelection);
     }
-
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen, handleClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
+  // 🔍 SEARCH FUNCTION
+  const handleSearch = (value: string) => {
+    setSearch(value);
+
+    if (!value.trim()) {
+      setSuggestions([]);
+      return;
+    }
+
+    const lower = value.toLowerCase();
+    const matches: NeighborhoodSelection[] = [];
+
+    Object.entries(boroughNeighborhoods).forEach(([borough, hoods]) => {
+      hoods.forEach((hood) => {
+        if (hood.toLowerCase().includes(lower)) {
+          matches.push({ borough, neighborhood: hood });
+        }
+      });
+    });
+
+    setSuggestions(matches);
+  };
+
+  // ➕ Add selected item
+  const addSelection = (item: NeighborhoodSelection) => {
+    if (
+      !selected.some(
+        (s) =>
+          s.neighborhood === item.neighborhood && s.borough === item.borough
+      )
+    ) {
+      setSelected((prev) => [...prev, item]);
+    }
+
+    // Clear search
+    setSearch("");
+    setSuggestions([]);
+  };
+
+  // ❌ Remove one neighborhood
+  const removeSelection = (hood: string) => {
+    setSelected((prev) => prev.filter((s) => s.neighborhood !== hood));
+  };
+
+  // ✅ SAVE IN YOUR FINAL BACKEND FORMAT
+  const handleApply = () => {
+    const grouped: Record<string, string[]> = {};
+
+    selected.forEach(({ borough, neighborhood }) => {
+      if (!grouped[borough]) grouped[borough] = [];
+      grouped[borough].push(neighborhood);
+    });
+
+    const finalOutput = Object.entries(grouped).map(
+      ([borough, neighborhoods]) => ({
+        borough,
+        neighborhoods,
+      })
+    );
+
+    onSave(finalOutput);
+    onClose();
+  };
+
   return (
-    <>
-      {/* --- Location Modal --- */}
-      <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
-        <div
-          ref={modalRef}
-          className="bg-white w-[90%] sm:w-[400px] md:w-[460px] rounded-2xl shadow-lg p-6 relative animate-fadeIn"
+    <div className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-4">
+      <div
+        className="bg-white w-full max-w-xl rounded-2xl shadow-xl p-6 relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-900"
         >
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="absolute right-4 top-4 text-gray-500 hover:text-gray-800 transition"
-          >
-            <X size={20} />
-          </button>
+          <X size={22} />
+        </button>
 
-          {/* Title */}
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Location</h3>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          Select Location
+        </h2>
 
-          {/* Input */}
-          <div className="flex items-center bg-gray-100 border border-gray-200 rounded-lg px-3 py-2.5 mb-6">
-            <Search size={16} className="text-blue-500 mr-2 shrink-0" />
+        {/* Search Box */}
+        <div className="relative mb-4">
+          <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+            <Search size={16} className="text-gray-500 mr-2" />
             <input
               type="text"
-              placeholder="Choose neighborhoods or boroughs"
+              placeholder="Search neighborhoods…"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-transparent outline-none text-sm text-gray-800"
+              onChange={(e) => handleSearch(e.target.value)}
+              className="w-full bg-transparent outline-none text-sm"
             />
           </div>
 
-          {/* See all neighborhoods */}
-          <button
-            onClick={() => setIsNeighborhoodOpen(true)}
-            className="flex items-center gap-2 text-blue-600 font-medium text-sm mb-6 hover:underline mx-auto"
-          >
-            <Map size={18} className="text-blue-600" />
-            See all neighborhoods
-          </button>
-
-          {/* Actions */}
-          <div className="flex justify-between mt-4">
-            <button
-              onClick={() => setSearch("")}
-              className="w-[45%] bg-gray-100 text-gray-800 font-medium py-2.5 rounded-lg hover:bg-gray-200 transition"
-            >
-              Reset
-            </button>
-            <button
-              onClick={onClose}
-              className="w-[45%] bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 transition"
-            >
-              Done
-            </button>
-          </div>
+          {suggestions.length > 0 && (
+            <div className="absolute w-full bg-white border border-gray-200 rounded-lg mt-1 shadow-lg max-h-60 overflow-y-auto z-50">
+              {suggestions.map((item) => (
+                <div
+                  key={`${item.borough}-${item.neighborhood}`}
+                  onClick={() => addSelection(item)}
+                  className="cursor-pointer px-4 py-2 hover:bg-gray-100 flex justify-between"
+                >
+                  <span>{item.neighborhood}</span>
+                  <span className="text-xs text-gray-500">{item.borough}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Fade-in animation */}
-        <style jsx>{`
-          @keyframes fadeIn {
-            from {
-              opacity: 0;
-              transform: scale(0.95);
-            }
-            to {
-              opacity: 1;
-              transform: scale(1);
-            }
-          }
-          .animate-fadeIn {
-            animation: fadeIn 0.2s ease-out forwards;
-          }
-        `}</style>
-      </div>
+        {/* Selected Neighborhoods */}
+        <div className="space-y-2 max-h-60 overflow-y-auto mb-4">
+          {selected.map((item) => (
+            <div
+              key={item.neighborhood}
+              className="flex justify-between items-center bg-blue-50 border border-blue-400 rounded-lg px-3 py-2"
+            >
+              <div className="flex items-center gap-2">
+                <MapPin size={16} className="text-blue-600" />
+                <span className="font-medium text-sm">{item.neighborhood}</span>
+                <span className="text-xs text-gray-500">({item.borough})</span>
+              </div>
 
-      {/* ✅ Render NeighborhoodModal only when explicitly triggered */}
-      <NeighborhoodModal
-        isOpen={isNeighborhoodOpen}
-        onClose={() => setIsNeighborhoodOpen(false)}
-      />
-    </>
+              <button
+                onClick={() => removeSelection(item.neighborhood)}
+                className="text-red-500 hover:text-red-700 text-sm"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-3 mt-4">
+          <button
+            onClick={() => setSelected([])}
+            className="flex-1 bg-gray-200 text-gray-900 py-2 rounded-lg font-medium hover:bg-gray-300"
+          >
+            Clear All
+          </button>
+          <button
+            onClick={handleApply}
+            className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700"
+          >
+            Apply
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

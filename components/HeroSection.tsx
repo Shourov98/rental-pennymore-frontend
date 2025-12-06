@@ -9,6 +9,11 @@ import LocationModal from "./LocationModal";
 export default function HeroSection() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+
+  const [selectedLocations, setSelectedLocations] = useState<
+    { borough: string; neighborhoods: string[] }[]
+  >([]);
 
   return (
     <section className="relative w-full min-h-[85vh] flex flex-col justify-center items-center text-center text-white">
@@ -108,8 +113,11 @@ export default function HeroSection() {
       </div>
       {/* Location Modal */}
       <LocationModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        key={isLocationModalOpen ? "open" : "closed"}
+        isOpen={isLocationModalOpen}
+        onClose={() => setIsLocationModalOpen(false)}
+        initialSelection={locations}
+        onSave={handleSaveLocations}
       />
     </section>
   );

@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { neighborhoods } from "@/data/neighborhoods";
 import type { LatLngExpression } from "leaflet";
 
-// Dynamically import MapContainer to avoid SSR issues
+// Dynamic imports to fix SSR issues with Leaflet
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
   { ssr: false }
@@ -30,11 +30,12 @@ const NeighborhoodModal = ({ isOpen, onClose }: NeighborhoodModalProps) => {
     "Manhattan"
   );
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+
   if (!isOpen) return null;
 
   const handleToggleArea = (name: string) => {
     setSelectedAreas((prev) =>
-      prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]
+      prev.includes(name) ? prev.filter((x) => x !== name) : [...prev, name]
     );
   };
 
@@ -42,13 +43,13 @@ const NeighborhoodModal = ({ isOpen, onClose }: NeighborhoodModalProps) => {
     activeTab === "Manhattan" ? [40.7831, -73.9712] : [40.6782, -73.9442];
 
   const handleApply = () => {
-    // You can handle the selected areas here
-    console.log("Selected areas:", selectedAreas);
+    console.log("Selected neighborhoods:", selectedAreas);
     onClose();
   };
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-4">
+      {/* MODAL CONTENT */}
       <div className="bg-white w-full max-w-6xl h-[90vh] rounded-2xl shadow-xl flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-white shrink-0">
@@ -57,18 +58,16 @@ const NeighborhoodModal = ({ isOpen, onClose }: NeighborhoodModalProps) => {
               Select Your Neighborhoods
             </h2>
             <p className="text-sm text-gray-600 mt-1">
-              {selectedAreas.length} area{selectedAreas.length !== 1 ? "s" : ""}{" "}
-              selected
+              {selectedAreas.length} area
+              {selectedAreas.length !== 1 ? "s" : ""} selected
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-800 transition p-1"
-            >
-              <X size={24} />
-            </button>
-          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-800 transition p-1"
+          >
+            <X size={24} />
+          </button>
         </div>
 
         {/* Tabs */}
@@ -88,25 +87,44 @@ const NeighborhoodModal = ({ isOpen, onClose }: NeighborhoodModalProps) => {
           ))}
         </div>
 
-        {/* Content Area - Responsive layout */}
+        {/* Main Layout */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-          {/* Map Section */}
-          <div className="flex-1 min-h-[300px] md:min-h-0 border-b md:border-b-0 md:border-r border-gray-200">
+          {/* MAP */}
+          <div className="flex-1 min-h-[300px] md:min-h-0 border-b md:border-r border-gray-200">
             <MapContainer
               center={center}
               zoom={12}
-              style={{ height: "100%", width: "100%" }}
               scrollWheelZoom={true}
               zoomControl={true}
+              style={{ height: "100%", width: "100%" }}
             >
               <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               />
 
-              {/* Render polygons for selected areas */}
-              {neighborhoods[activeTab].map((area) =>
-                selectedAreas.includes(area.name) ? (
+              {/* Render polygons */}
+              {neighborhoods[activeTab].map((area) => {
+                if (!selectedAreas.includes(area.name)) return null;
+
+                if (area.geometryType === "MultiPolygon") {
+                  return (area.coords as LatLngExpression[][]).map(
+                    (poly, idx) => (
+                      <Polygon
+                        key={`${area.name}-${idx}`}
+                        positions={poly}
+                        pathOptions={{
+                          color: "#2563eb",
+                          fillColor: "#3b82f6",
+                          fillOpacity: 0.4,
+                          weight: 2,
+                        }}
+                      />
+                    )
+                  );
+                }
+
+                return (
                   <Polygon
                     key={area.name}
                     positions={area.coords as LatLngExpression[]}
@@ -117,19 +135,19 @@ const NeighborhoodModal = ({ isOpen, onClose }: NeighborhoodModalProps) => {
                       weight: 2,
                     }}
                   />
-                ) : null
-              )}
+                );
+              })}
             </MapContainer>
           </div>
 
-          {/* Neighborhood List Section */}
+          {/* LIST */}
           <div className="flex-1 flex flex-col min-h-[300px] md:min-h-0">
             <div className="p-4 border-b border-gray-200 shrink-0">
               <h3 className="font-medium text-gray-900">
                 Neighborhoods in {activeTab}
               </h3>
               <p className="text-sm text-gray-600 mt-1">
-                Click to select/deselect areas
+                Click to select or deselect areas
               </p>
             </div>
 
@@ -162,13 +180,13 @@ const NeighborhoodModal = ({ isOpen, onClose }: NeighborhoodModalProps) => {
             <div className="flex gap-3 p-4 border-t border-gray-200 bg-gray-50 shrink-0">
               <button
                 onClick={() => setSelectedAreas([])}
-                className="flex-1 bg-gray-200 text-gray-800 font-medium py-3 rounded-lg hover:bg-gray-300 transition-colors"
+                className="flex-1 bg-gray-200 text-gray-800 font-medium py-3 rounded-lg hover:bg-gray-300"
               >
                 Clear All
               </button>
               <button
                 onClick={handleApply}
-                className="flex-1 bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                className="flex-1 bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700"
               >
                 Apply Selection
               </button>
