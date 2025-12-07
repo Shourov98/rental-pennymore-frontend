@@ -41,50 +41,138 @@ const initialState: PreferencesState = {
   preferences: [],
 };
 
-const preferenceSlice = createSlice({
+export const preferenceSlice = createSlice({
   name: "preferences",
   initialState,
   reducers: {
-    setMovingDate: (state, action: PayloadAction<MovingDate>) => {
-      state.movingDate = action.payload;
-    },
-    setPriceRange: (state, action: PayloadAction<PriceRange>) => {
-      state.priceRange = action.payload;
-    },
+    // ---------------------------
+    // LOCATION MANAGEMENT
+    // ---------------------------
+
     setLocations: (state, action: PayloadAction<LocationSelection[]>) => {
       state.locations = action.payload;
     },
+
+    addNeighborhood: (
+      state,
+      action: PayloadAction<{ borough: string; neighborhood: string }>
+    ) => {
+      const { borough, neighborhood } = action.payload;
+
+      const entry = state.locations.find((loc) => loc.borough === borough);
+
+      if (!entry) {
+        // New borough added for the first time
+        state.locations.push({
+          borough,
+          neighborhoods: [neighborhood],
+        });
+      } else {
+        // Add neighborhood if not existing
+        if (!entry.neighborhoods.includes(neighborhood)) {
+          entry.neighborhoods.push(neighborhood);
+        }
+      }
+    },
+
+    removeNeighborhood: (
+      state,
+      action: PayloadAction<{ borough: string; neighborhood: string }>
+    ) => {
+      const { borough, neighborhood } = action.payload;
+
+      const entry = state.locations.find((loc) => loc.borough === borough);
+      if (!entry) return;
+
+      // Remove the neighborhood
+      entry.neighborhoods = entry.neighborhoods.filter(
+        (n) => n !== neighborhood
+      );
+
+      // If no neighborhoods left → remove borough completely
+      if (entry.neighborhoods.length === 0) {
+        state.locations = state.locations.filter(
+          (loc) => loc.borough !== borough
+        );
+      }
+    },
+
+    // ---------------------------
+    // MOVING DATE
+    // ---------------------------
+    setMovingDate: (state, action: PayloadAction<MovingDate>) => {
+      state.movingDate = action.payload;
+    },
+
+    // ---------------------------
+    // PRICE RANGE
+    // ---------------------------
+    setPriceRange: (state, action: PayloadAction<PriceRange>) => {
+      state.priceRange = action.payload;
+    },
+
+    // ---------------------------
+    // BEDROOMS
+    // ---------------------------
     setBedrooms: (state, action: PayloadAction<string[]>) => {
       state.bedrooms = action.payload;
     },
+
+    // ---------------------------
+    // BATHROOMS
+    // ---------------------------
     setBathrooms: (state, action: PayloadAction<string[]>) => {
       state.bathrooms = action.payload;
     },
+
+    // ---------------------------
+    // UNIT FEATURES
+    // ---------------------------
     setUnitFeatures: (state, action: PayloadAction<string[]>) => {
       state.unitFeatures = action.payload;
     },
+
+    // ---------------------------
+    // BUILDING FEATURES
+    // ---------------------------
     setBuildingFeatures: (state, action: PayloadAction<string[]>) => {
       state.buildingFeatures = action.payload;
     },
+
+    // ---------------------------
+    // PET POLICY
+    // ---------------------------
     setPetPolicy: (state, action: PayloadAction<string[]>) => {
       state.petPolicy = action.payload;
     },
+
+    // ---------------------------
+    // GUARANTOR
+    // ---------------------------
     setGuarantor: (state, action: PayloadAction<string[]>) => {
       state.guarantor = action.payload;
     },
+
+    // ---------------------------
+    // GENERAL PREFERENCES LIST
+    // ---------------------------
     setPreferences: (state, action: PayloadAction<string[]>) => {
       state.preferences = action.payload;
     },
 
-    // reset to initial
+    // ---------------------------
+    // RESET EVERYTHING
+    // ---------------------------
     resetPreferences: () => initialState,
   },
 });
 
 export const {
+  setLocations,
+  addNeighborhood,
+  removeNeighborhood,
   setMovingDate,
   setPriceRange,
-  setLocations,
   setBedrooms,
   setBathrooms,
   setUnitFeatures,
