@@ -1,12 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import dynamic from "next/dynamic";
 import { neighborhoods } from "@/data/neighborhoods";
 import type { LatLngExpression } from "leaflet";
 
-// Dynamic imports to fix SSR issues with Leaflet
+// Redux
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store/store";
+import {
+  addNeighborhood,
+  removeNeighborhood,
+} from "@/store/slices/preferenceSlice";
+
+interface NeighborhoodModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedBorough: "Manhattan" | "Brooklyn" | "";
+}
+
+// Dynamic imports for Leaflet
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
   { ssr: false }
@@ -20,48 +34,137 @@ const Polygon = dynamic(
   { ssr: false }
 );
 
-interface NeighborhoodModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-const NeighborhoodModal = ({ isOpen, onClose }: NeighborhoodModalProps) => {
-  const [activeTab, setActiveTab] = useState<"Manhattan" | "Brooklyn">(
-    "Manhattan"
+export default function NeighborhoodModal({
+  isOpen,
+  onClose,
+  selectedBorough,
+}: NeighborhoodModalProps) {
+  const dispatch = useDispatch();
+  const locations = useSelector(
+    (state: RootState) => state.preferences.locations
   );
-  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
 
+  // LOCAL UI STATE (track selections per borough so they stay highlighted)
+  const [state, setState] = useState({
+    activeTab: "Manhattan" as "Manhattan" | "Brooklyn",
+    selectedAreasByBorough: {
+      Manhattan: [] as string[],
+      Brooklyn: [] as string[],
+    },
+  });
+
+  // -------------------------------------------------------
+  // 🔥 PREFILL ONLY WHEN MODAL OPENS (fixes setState warnings)
+  // -------------------------------------------------------
+  useEffect(() => {
+    if (!isOpen) return; // prevent unnecessary effects
+
+    const getSelections = (borough: "Manhattan" | "Brooklyn") =>
+      locations.find((loc) => loc.borough === borough)?.neighborhoods ?? [];
+
+    // determine which tab to show
+    const newTab = selectedBorough === "Brooklyn" ? "Brooklyn" : "Manhattan";
+
+    // Re-seed local draft selections from Redux when opening the modal.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setState({
+      activeTab: newTab,
+      selectedAreasByBorough: {
+        Manhattan: getSelections("Manhattan"),
+        Brooklyn: getSelections("Brooklyn"),
+      },
+    });
+  }, [isOpen, locations, selectedBorough]); // ONLY trigger when modal becomes visible
+
+  // -------------------------------------------------------
+  // EARLY RETURN AFTER HOOKS (no conditional hooks error)
+  // -------------------------------------------------------
   if (!isOpen) return null;
 
+  // -------------------------------------------------------
+  // Toggle single neighborhood
+  // -------------------------------------------------------
   const handleToggleArea = (name: string) => {
-    setSelectedAreas((prev) =>
-      prev.includes(name) ? prev.filter((x) => x !== name) : [...prev, name]
-    );
+    setState((prev) => ({
+      ...prev,
+      selectedAreasByBorough: {
+        ...prev.selectedAreasByBorough,
+        [prev.activeTab]: prev.selectedAreasByBorough[prev.activeTab].includes(
+          name
+        )
+          ? prev.selectedAreasByBorough[prev.activeTab].filter(
+              (x) => x !== name
+            )
+          : [...prev.selectedAreasByBorough[prev.activeTab], name],
+      },
+    }));
   };
 
-  const center: LatLngExpression =
-    activeTab === "Manhattan" ? [40.7831, -73.9712] : [40.6782, -73.9442];
-
+  // -------------------------------------------------------
+  // Apply button → Sync Redux
+  // -------------------------------------------------------
   const handleApply = () => {
-    console.log("Selected neighborhoods:", selectedAreas);
+    (["Manhattan", "Brooklyn"] as const).forEach((borough) => {
+      const desired = state.selectedAreasByBorough[borough];
+      const existing =
+        locations.find((loc) => loc.borough === borough)?.neighborhoods ?? [];
+
+      // remove deselected
+      existing
+        .filter((n) => !desired.includes(n))
+        .forEach((n) =>
+          dispatch(removeNeighborhood({ borough, neighborhood: n }))
+        );
+
+      // add new selections
+      desired
+        .filter((n) => !existing.includes(n))
+        .forEach((n) =>
+          dispatch(addNeighborhood({ borough, neighborhood: n }))
+        );
+    });
+
     onClose();
   };
 
+  // -------------------------------------------------------
+  // Clear All (active borough only)
+  // -------------------------------------------------------
+  const handleClearAll = () => {
+    const borough = state.activeTab;
+
+    setState((prev) => ({
+      ...prev,
+      selectedAreasByBorough: { ...prev.selectedAreasByBorough, [borough]: [] },
+    }));
+  };
+
+  // -------------------------------------------------------
+  // Map Center
+  // -------------------------------------------------------
+  const center: LatLngExpression =
+    state.activeTab === "Manhattan" ? [40.7831, -73.9712] : [40.6782, -73.9442];
+
+  const currentSelections = state.selectedAreasByBorough[state.activeTab];
+
+  // -------------------------------------------------------
+  // RENDER
+  // -------------------------------------------------------
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-4">
-      {/* MODAL CONTENT */}
       <div className="bg-white w-full max-w-6xl h-[90vh] rounded-2xl shadow-xl flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-white shrink-0">
+        <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-white">
           <div>
             <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
               Select Your Neighborhoods
             </h2>
             <p className="text-sm text-gray-600 mt-1">
-              {selectedAreas.length} area
-              {selectedAreas.length !== 1 ? "s" : ""} selected
+              {currentSelections.length} area
+              {currentSelections.length !== 1 ? "s" : ""} selected
             </p>
           </div>
+
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-800 transition p-1"
@@ -71,13 +174,18 @@ const NeighborhoodModal = ({ isOpen, onClose }: NeighborhoodModalProps) => {
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center gap-4 px-6 py-3 border-b border-gray-200 bg-gray-50 shrink-0">
+        <div className="flex items-center gap-4 px-6 py-3 border-b border-gray-200 bg-gray-50">
           {(["Manhattan", "Brooklyn"] as const).map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() =>
+                setState((prev) => ({
+                  ...prev,
+                  activeTab: tab,
+                }))
+              }
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeTab === tab
+                state.activeTab === tab
                   ? "bg-blue-600 text-white shadow-sm"
                   : "text-gray-700 hover:text-gray-900 hover:bg-gray-200"
               }`}
@@ -87,25 +195,21 @@ const NeighborhoodModal = ({ isOpen, onClose }: NeighborhoodModalProps) => {
           ))}
         </div>
 
-        {/* Main Layout */}
+        {/* Body */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
           {/* MAP */}
-          <div className="flex-1 min-h-[300px] md:min-h-0 border-b md:border-r border-gray-200">
+          <div className="flex-1 min-h-[300px] border-b md:border-r border-gray-200">
             <MapContainer
               center={center}
               zoom={12}
-              scrollWheelZoom={true}
-              zoomControl={true}
+              scrollWheelZoom
+              zoomControl
               style={{ height: "100%", width: "100%" }}
             >
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              />
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-              {/* Render polygons */}
-              {neighborhoods[activeTab].map((area) => {
-                if (!selectedAreas.includes(area.name)) return null;
+              {neighborhoods[state.activeTab].map((area) => {
+                if (!currentSelections.includes(area.name)) return null;
 
                 if (area.geometryType === "MultiPolygon") {
                   return (area.coords as LatLngExpression[][]).map(
@@ -141,52 +245,53 @@ const NeighborhoodModal = ({ isOpen, onClose }: NeighborhoodModalProps) => {
           </div>
 
           {/* LIST */}
-          <div className="flex-1 flex flex-col min-h-[300px] md:min-h-0">
-            <div className="p-4 border-b border-gray-200 shrink-0">
+          <div className="flex-1 flex flex-col">
+            <div className="p-4">
               <h3 className="font-medium text-gray-900">
-                Neighborhoods in {activeTab}
+                Neighborhoods in {state.activeTab}
               </h3>
-              <p className="text-sm text-gray-600 mt-1">
-                Click to select or deselect areas
+              <p className="text-sm text-gray-600">
+                Click to select or deselect
               </p>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {neighborhoods[activeTab].map((area) => (
+            <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {neighborhoods[state.activeTab].map((area) => {
+                const isChecked = currentSelections.includes(area.name);
+
+                return (
                   <label
                     key={area.name}
                     className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                      selectedAreas.includes(area.name)
+                      isChecked
                         ? "border-blue-500 bg-blue-50"
                         : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                     }`}
                   >
                     <input
                       type="checkbox"
-                      checked={selectedAreas.includes(area.name)}
+                      checked={isChecked}
                       onChange={() => handleToggleArea(area.name)}
-                      className="w-4 h-4 accent-blue-600 cursor-pointer"
+                      className="w-4 h-4 accent-blue-600"
                     />
-                    <span className="text-sm font-medium text-gray-900">
-                      {area.name}
-                    </span>
+                    <span className="text-sm text-gray-900">{area.name}</span>
                   </label>
-                ))}
-              </div>
+                );
+              })}
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-3 p-4 border-t border-gray-200 bg-gray-50 shrink-0">
+            {/* Footer */}
+            <div className="flex gap-3 p-4 bg-gray-50">
               <button
-                onClick={() => setSelectedAreas([])}
-                className="flex-1 bg-gray-200 text-gray-800 font-medium py-3 rounded-lg hover:bg-gray-300"
+                onClick={handleClearAll}
+                className="flex-1 bg-gray-200 text-gray-800 py-3 rounded-lg hover:bg-gray-300"
               >
                 Clear All
               </button>
+
               <button
                 onClick={handleApply}
-                className="flex-1 bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700"
+                className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700"
               >
                 Apply Selection
               </button>
@@ -196,8 +301,4 @@ const NeighborhoodModal = ({ isOpen, onClose }: NeighborhoodModalProps) => {
       </div>
     </div>
   );
-};
-
-export default dynamic(() => Promise.resolve(NeighborhoodModal), {
-  ssr: false,
-});
+}

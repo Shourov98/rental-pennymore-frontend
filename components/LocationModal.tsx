@@ -29,32 +29,30 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
 
   const [search, setSearch] = useState("");
   const [isNeighborhoodOpen, setIsNeighborhoodOpen] = useState(false);
-  const [selectedBorough, setSelectedBorough] = useState("");
+  const [selectedBorough, setSelectedBorough] = useState<
+    "" | "Manhattan" | "Brooklyn"
+  >("");
 
   // SEARCH LOGIC
+  const allNeighborhoods = useMemo(
+    () =>
+      Object.entries(boroughNeighborhoods).flatMap(([borough, neighborhoods]) =>
+        neighborhoods.map((n) => ({ borough, neighborhood: n }))
+      ),
+    []
+  );
+
   const searchResults = useMemo(() => {
-    if (!search.trim()) return [];
+    if (!search.trim()) return allNeighborhoods;
 
     const query = search.toLowerCase();
 
-    const results: { borough: string; neighborhood: string }[] = [];
-
-    Object.entries(boroughNeighborhoods).forEach(([borough, neighborhoods]) => {
-      if (borough.toLowerCase().includes(query)) {
-        results.push(
-          ...neighborhoods.map((n) => ({ borough, neighborhood: n }))
-        );
-      } else {
-        neighborhoods.forEach((n) => {
-          if (n.toLowerCase().includes(query)) {
-            results.push({ borough, neighborhood: n });
-          }
-        });
-      }
-    });
-
-    return results;
-  }, [search]);
+    return allNeighborhoods.filter(
+      (item) =>
+        item.borough.toLowerCase().includes(query) ||
+        item.neighborhood.toLowerCase().includes(query)
+    );
+  }, [allNeighborhoods, search]);
 
   if (!isOpen) return null;
 
@@ -70,7 +68,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
     }
   };
 
-  const openNeighborhoodModal = (borough: string) => {
+  const openNeighborhoodModal = (borough: "" | "Manhattan" | "Brooklyn") => {
     setSelectedBorough(borough);
     setIsNeighborhoodOpen(true);
   };
@@ -95,42 +93,40 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
             <input
               type="text"
               placeholder="Search neighborhoods or boroughs"
-              className="w-full bg-transparent outline-none text-sm"
+              className="w-full bg-transparent text-gray-600 outline-none text-sm"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
 
           {/* SEARCH RESULTS */}
-          {search && (
-            <div className="max-h-48 overflow-y-auto mb-4 border rounded-lg p-2 bg-gray-50">
-              {searchResults.length === 0 ? (
-                <p className="text-sm text-gray-500">No results</p>
-              ) : (
-                searchResults.map((item, i) => {
-                  const isSelected = locations
-                    .find((l) => l.borough === item.borough)
-                    ?.neighborhoods.includes(item.neighborhood);
+          <div className="max-h-48 overflow-y-auto mb-4 rounded-lg p-2 bg-gray-100">
+            {searchResults.length === 0 ? (
+              <p className="text-sm text-gray-500">No results</p>
+            ) : (
+              searchResults.map((item, i) => {
+                const isSelected = locations
+                  .find((l) => l.borough === item.borough)
+                  ?.neighborhoods.includes(item.neighborhood);
 
-                  return (
-                    <button
-                      key={i}
-                      onClick={() =>
-                        toggleNeighborhood(item.borough, item.neighborhood)
-                      }
-                      className={`block w-full text-left px-3 py-2 text-sm rounded-md ${
-                        isSelected
-                          ? "bg-blue-100 text-blue-700"
-                          : "hover:bg-gray-200 text-gray-700"
-                      }`}
-                    >
-                      <b>{item.borough}</b> — {item.neighborhood}
-                    </button>
-                  );
-                })
-              )}
-            </div>
-          )}
+                return (
+                  <button
+                    key={i}
+                    onClick={() =>
+                      toggleNeighborhood(item.borough, item.neighborhood)
+                    }
+                    className={`block w-full text-left px-3 py-2 text-sm rounded-md ${
+                      isSelected
+                        ? "bg-blue-100 text-blue-700"
+                        : "hover:bg-gray-200 text-gray-700"
+                    }`}
+                  >
+                    <b>{item.borough}</b> — {item.neighborhood}
+                  </button>
+                );
+              })
+            )}
+          </div>
 
           {/* SEE ALL */}
           <button

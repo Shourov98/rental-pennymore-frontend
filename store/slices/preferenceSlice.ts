@@ -1,36 +1,44 @@
+// store/slices/preferenceSlice.ts
+
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface MovingDate {
-  earliest: string;
-  latest: string;
-}
-
-interface PriceRange {
-  min: number;
-  max: number;
-}
-
-interface LocationSelection {
-  borough: string;
+export interface LocationEntry {
+  borough: "Manhattan" | "Brooklyn";
   neighborhoods: string[];
 }
 
-interface PreferencesState {
-  movingDate: MovingDate;
-  priceRange: PriceRange;
-  locations: LocationSelection[];
+export interface PreferencesState {
+  movingDate: {
+    earliest: string;
+    latest: string;
+  };
+
+  priceRange: {
+    min: number;
+    max: number;
+  };
+
+  locations: LocationEntry[];
   bedrooms: string[];
   bathrooms: string[];
   unitFeatures: string[];
   buildingFeatures: string[];
   petPolicy: string[];
   guarantor: string[];
-  preferences: string[];
+  preferences: string[]; // Drag list
 }
 
 const initialState: PreferencesState = {
-  movingDate: { earliest: "", latest: "" },
-  priceRange: { min: 0, max: 0 },
+  movingDate: {
+    earliest: "",
+    latest: "",
+  },
+
+  priceRange: {
+    min: 0,
+    max: 0,
+  },
+
   locations: [],
   bedrooms: [],
   bathrooms: [],
@@ -38,6 +46,7 @@ const initialState: PreferencesState = {
   buildingFeatures: [],
   petPolicy: [],
   guarantor: [],
+
   preferences: [],
 };
 
@@ -45,51 +54,56 @@ export const preferenceSlice = createSlice({
   name: "preferences",
   initialState,
   reducers: {
-    // ---------------------------
-    // LOCATION MANAGEMENT
-    // ---------------------------
+    // ===============================
+    // BASIC FIELDS
+    // ===============================
 
-    setLocations: (state, action: PayloadAction<LocationSelection[]>) => {
-      state.locations = action.payload;
+    setMovingDate(
+      state,
+      action: PayloadAction<{ earliest: string; latest: string }>
+    ) {
+      state.movingDate = action.payload;
     },
 
-    addNeighborhood: (
+    setPriceRange(state, action: PayloadAction<{ min: number; max: number }>) {
+      state.priceRange = action.payload;
+    },
+
+    // ===============================
+    // LOCATION SELECTOR
+    // ===============================
+
+    addNeighborhood(
       state,
       action: PayloadAction<{ borough: string; neighborhood: string }>
-    ) => {
+    ) {
       const { borough, neighborhood } = action.payload;
 
       const entry = state.locations.find((loc) => loc.borough === borough);
 
       if (!entry) {
-        // New borough added for the first time
         state.locations.push({
-          borough,
+          borough: borough as "Manhattan" | "Brooklyn",
           neighborhoods: [neighborhood],
         });
-      } else {
-        // Add neighborhood if not existing
-        if (!entry.neighborhoods.includes(neighborhood)) {
-          entry.neighborhoods.push(neighborhood);
-        }
+      } else if (!entry.neighborhoods.includes(neighborhood)) {
+        entry.neighborhoods.push(neighborhood);
       }
     },
 
-    removeNeighborhood: (
+    removeNeighborhood(
       state,
       action: PayloadAction<{ borough: string; neighborhood: string }>
-    ) => {
+    ) {
       const { borough, neighborhood } = action.payload;
 
       const entry = state.locations.find((loc) => loc.borough === borough);
       if (!entry) return;
 
-      // Remove the neighborhood
       entry.neighborhoods = entry.neighborhoods.filter(
         (n) => n !== neighborhood
       );
 
-      // If no neighborhoods left → remove borough completely
       if (entry.neighborhoods.length === 0) {
         state.locations = state.locations.filter(
           (loc) => loc.borough !== borough
@@ -97,90 +111,88 @@ export const preferenceSlice = createSlice({
       }
     },
 
-    // ---------------------------
-    // MOVING DATE
-    // ---------------------------
-    setMovingDate: (state, action: PayloadAction<MovingDate>) => {
-      state.movingDate = action.payload;
+    // ===============================
+    // BED / BATH / FEATURES
+    // ===============================
+
+    toggleBedroom(state, action: PayloadAction<string>) {
+      const value = action.payload;
+      if (state.bedrooms.includes(value)) {
+        state.bedrooms = state.bedrooms.filter((v) => v !== value);
+      } else {
+        state.bedrooms.push(value);
+      }
     },
 
-    // ---------------------------
-    // PRICE RANGE
-    // ---------------------------
-    setPriceRange: (state, action: PayloadAction<PriceRange>) => {
-      state.priceRange = action.payload;
+    toggleBathroom(state, action: PayloadAction<string>) {
+      const value = action.payload;
+      if (state.bathrooms.includes(value)) {
+        state.bathrooms = state.bathrooms.filter((v) => v !== value);
+      } else {
+        state.bathrooms.push(value);
+      }
     },
 
-    // ---------------------------
-    // BEDROOMS
-    // ---------------------------
-    setBedrooms: (state, action: PayloadAction<string[]>) => {
-      state.bedrooms = action.payload;
+    toggleUnitFeature(state, action: PayloadAction<string>) {
+      const value = action.payload;
+      if (state.unitFeatures.includes(value)) {
+        state.unitFeatures = state.unitFeatures.filter((v) => v !== value);
+      } else {
+        state.unitFeatures.push(value);
+      }
     },
 
-    // ---------------------------
-    // BATHROOMS
-    // ---------------------------
-    setBathrooms: (state, action: PayloadAction<string[]>) => {
-      state.bathrooms = action.payload;
+    toggleBuildingFeature(state, action: PayloadAction<string>) {
+      const value = action.payload;
+      if (state.buildingFeatures.includes(value)) {
+        state.buildingFeatures = state.buildingFeatures.filter(
+          (v) => v !== value
+        );
+      } else {
+        state.buildingFeatures.push(value);
+      }
     },
 
-    // ---------------------------
-    // UNIT FEATURES
-    // ---------------------------
-    setUnitFeatures: (state, action: PayloadAction<string[]>) => {
-      state.unitFeatures = action.payload;
+    togglePetPolicy(state, action: PayloadAction<string>) {
+      const value = action.payload;
+      if (state.petPolicy.includes(value)) {
+        state.petPolicy = state.petPolicy.filter((v) => v !== value);
+      } else {
+        state.petPolicy.push(value);
+      }
     },
 
-    // ---------------------------
-    // BUILDING FEATURES
-    // ---------------------------
-    setBuildingFeatures: (state, action: PayloadAction<string[]>) => {
-      state.buildingFeatures = action.payload;
+    toggleGuarantor(state, action: PayloadAction<string>) {
+      const value = action.payload;
+      if (state.guarantor.includes(value)) {
+        state.guarantor = state.guarantor.filter((v) => v !== value);
+      } else {
+        state.guarantor.push(value);
+      }
     },
 
-    // ---------------------------
-    // PET POLICY
-    // ---------------------------
-    setPetPolicy: (state, action: PayloadAction<string[]>) => {
-      state.petPolicy = action.payload;
-    },
+    // ===============================
+    // DRAG LIST
+    // ===============================
 
-    // ---------------------------
-    // GUARANTOR
-    // ---------------------------
-    setGuarantor: (state, action: PayloadAction<string[]>) => {
-      state.guarantor = action.payload;
-    },
-
-    // ---------------------------
-    // GENERAL PREFERENCES LIST
-    // ---------------------------
-    setPreferences: (state, action: PayloadAction<string[]>) => {
+    setPreferencesList(state, action: PayloadAction<string[]>) {
       state.preferences = action.payload;
     },
-
-    // ---------------------------
-    // RESET EVERYTHING
-    // ---------------------------
-    resetPreferences: () => initialState,
   },
 });
 
 export const {
-  setLocations,
-  addNeighborhood,
-  removeNeighborhood,
   setMovingDate,
   setPriceRange,
-  setBedrooms,
-  setBathrooms,
-  setUnitFeatures,
-  setBuildingFeatures,
-  setPetPolicy,
-  setGuarantor,
-  setPreferences,
-  resetPreferences,
+  addNeighborhood,
+  removeNeighborhood,
+  toggleBedroom,
+  toggleBathroom,
+  toggleUnitFeature,
+  toggleBuildingFeature,
+  togglePetPolicy,
+  toggleGuarantor,
+  setPreferencesList,
 } = preferenceSlice.actions;
 
 export default preferenceSlice.reducer;

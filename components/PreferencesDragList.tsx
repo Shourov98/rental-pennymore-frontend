@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
+
 import {
   DndContext,
   closestCenter,
@@ -20,9 +21,6 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 
-// ---------------------------------------------------------
-// Default Items
-// ---------------------------------------------------------
 const defaultPreferences = [
   "Large Apartment",
   "Lots of Light",
@@ -38,17 +36,24 @@ const defaultPreferences = [
   "If Walk-Up: Prefer Lower Floors",
 ];
 
-// ---------------------------------------------------------
-// MAIN COMPONENT
-// ---------------------------------------------------------
-export default function PreferencesDragList({
-  onChange,
-}: {
-  onChange?: (list: string[]) => void;
-}) {
-  const [items, setItems] = useState(defaultPreferences);
+interface Props {
+  onChange: (list: string[]) => void;
+  initialList?: string[];
+}
+export default function PreferencesDragList({ onChange, initialList }: Props) {
+  const items = initialList?.length ? initialList : defaultPreferences;
+  const hasSeededDefaults = useRef(false);
+  useEffect(() => {
+    if (initialList && initialList.length > 0) {
+      hasSeededDefaults.current = false;
+      return;
+    }
+    if (!hasSeededDefaults.current) {
+      onChange(defaultPreferences);
+      hasSeededDefaults.current = true;
+    }
+  }, [initialList, onChange]);
 
-  // Sensors (mouse + touch)
   const sensors = useSensors(useSensor(PointerSensor));
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -59,11 +64,9 @@ export default function PreferencesDragList({
     const newIndex = items.indexOf(over.id as string);
 
     const updated = arrayMove(items, oldIndex, newIndex);
-    setItems(updated);
-    onChange?.(updated);
+    onChange(updated); // ALWAYS send changes to Redux
   };
 
-  // Split into 2 columns dynamically
   const midPoint = Math.ceil(items.length / 2);
   const leftCol = items.slice(0, midPoint);
   const rightCol = items.slice(midPoint);
@@ -73,19 +76,15 @@ export default function PreferencesDragList({
       <h3 className="text-sm font-semibold text-gray-900 mb-1">
         Rank Importance of Features
       </h3>
-      <p className="text-xs text-gray-500 mb-4">
-        Drag to reorder. #1 = Most important.
-      </p>
+      <p className="text-xs text-gray-500 mb-4">Drag to reorder.</p>
 
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        {/* Single sortable container, but visually 2 columns */}
         <SortableContext items={items} strategy={verticalListSortingStrategy}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* LEFT COLUMN */}
             <div className="space-y-2">
               {leftCol.map((item) => (
                 <SortableItem
@@ -96,7 +95,6 @@ export default function PreferencesDragList({
               ))}
             </div>
 
-            {/* RIGHT COLUMN */}
             <div className="space-y-2">
               {rightCol.map((item) => (
                 <SortableItem
@@ -113,9 +111,6 @@ export default function PreferencesDragList({
   );
 }
 
-// ---------------------------------------------------------
-// SORTABLE ITEM COMPONENT
-// ---------------------------------------------------------
 function SortableItem({ id, index }: { id: string; index: number }) {
   const {
     attributes,
@@ -140,10 +135,8 @@ function SortableItem({ id, index }: { id: string; index: number }) {
           isDragging
             ? "shadow-xl bg-white scale-[1.02] z-50"
             : "border-gray-200 hover:bg-gray-100"
-        }
-      `}
+        }`}
     >
-      {/* Drag Handle */}
       <div
         {...listeners}
         {...attributes}
@@ -152,12 +145,9 @@ function SortableItem({ id, index }: { id: string; index: number }) {
         <GripVertical size={16} className="text-zinc-500" />
       </div>
 
-      {/* Number */}
       <span className="w-6 text-sm font-semibold text-gray-700">
         {index + 1}.
       </span>
-
-      {/* Text */}
       <span className="text-sm text-gray-800">{id}</span>
     </div>
   );
