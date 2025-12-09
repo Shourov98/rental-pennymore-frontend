@@ -66,7 +66,7 @@ export default function OtpVerifyPage() {
     fetch(`${API_BASE_URL}/auth/verify-password-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, code }),
+      body: JSON.stringify({ email, otp: code }),
     })
       .then(async (res) => {
         const data = await res.json();
