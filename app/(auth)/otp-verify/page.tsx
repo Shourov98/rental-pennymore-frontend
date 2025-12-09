@@ -1,12 +1,22 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
 
 export default function OtpVerifyPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") || "";
   const [otp, setOtp] = useState(["", "", "", ""]);
+  const [statusMessage, setStatusMessage] = useState<
+    { type: "success" | "error"; message: string } | null
+  >(null);
+  const [loading, setLoading] = useState(false);
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   const handleChange = (index: number, value: string) => {
@@ -33,11 +43,54 @@ export default function OtpVerifyPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const code = otp.join("");
-    if (code.length === 4) {
-      // verify code logic here
-      console.log("OTP Submitted:", code);
-      router.push("/reset-password"); // example next step
+    if (code.length !== 4) {
+      setStatusMessage({
+        type: "error",
+        message: "Please enter the 4-digit code.",
+      });
+      return;
     }
+
+    if (!email) {
+      setStatusMessage({
+        type: "error",
+        message: "Missing email from signup. Please restart the signup flow.",
+      });
+      return;
+    }
+
+    setStatusMessage(null);
+    setLoading(true);
+
+    fetch(`${API_BASE_URL}/auth/verify-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, code }),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok || !data?.success) {
+          throw new Error(
+            data?.message || "Invalid or expired code. Please try again."
+          );
+        }
+        setStatusMessage({
+          type: "success",
+          message: data.message || "Email verified successfully.",
+        });
+        router.push("/successful-verify");
+      })
+      .catch((err: unknown) => {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Unable to verify right now. Please try again in a moment.";
+        setStatusMessage({
+          type: "error",
+          message,
+        });
+      })
+      .finally(() => setLoading(false));
   };
 
   const handleResend = () => {
@@ -58,7 +111,10 @@ export default function OtpVerifyPage() {
       </h2>
       <p className="text-center text-text-secondary mb-6 text-sm sm:text-base">
         We sent an OTP code to your email <br />
-        <span className="text-blue-700 font-medium">example@gmail.com</span>.
+        <span className="text-blue-700 font-medium">
+          {email || "your email"}
+        </span>
+        .
         Enter the code below to verify within 1 min.
       </p>
 
@@ -93,15 +149,28 @@ export default function OtpVerifyPage() {
         {/* Submit Button */}
         <button
           type="submit"
-          onClick={() => router.push("/successful-verify")}
+          disabled={loading}
           className="
             w-full bg-action hover:bg-action-hover
             text-text-inverted font-semibold
             py-3 sm:py-3.5 rounded-lg transition
+            disabled:opacity-60
           "
         >
-          Next
+          {loading ? "Verifying..." : "Next"}
         </button>
+
+        {statusMessage && (
+          <p
+            className={`text-sm sm:text-base ${
+              statusMessage.type === "error"
+                ? "text-red-600"
+                : "text-green-600"
+            }`}
+          >
+            {statusMessage.message}
+          </p>
+        )}
 
         {/* Resend and Back */}
         <div className="flex flex-col items-center gap-3 text-sm sm:text-base mt-1">
