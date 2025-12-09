@@ -1,88 +1,67 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
-import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import type { SerializedError } from "@reduxjs/toolkit";
-import { useLoginAgentMutation } from "@/store/api";
-import { selectAuth } from "@/store/slices/authSlice";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
 
 export default function SigninPage() {
   const router = useRouter();
-  const auth = useSelector(selectAuth);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
-
-  const [login, { isLoading, error: mutationError }] = useLoginAgentMutation();
-
-  useEffect(() => {
-    if (auth.status === "authenticated") {
-      const destination =
-        auth.role === "Agent" ? "/agent/dashboard" : "/renter/matches";
-      router.replace(destination);
-    }
-  }, [auth.role, auth.status, router]);
-
-  const extractErrorMessage = (
-    error: FetchBaseQueryError | SerializedError | undefined | null
-  ) => {
-    if (!error) return null;
-
-    if ("data" in error && error.data) {
-      const data = error.data as { message?: string; error?: string };
-      return data.message || data.error || null;
-    }
-
-    if ("error" in error && error.error) {
-      return typeof error.error === "string" ? error.error : null;
-    }
-
-    if ("message" in error && error.message) {
-      return error.message;
-    }
-
-    return null;
-  };
-
-  const errorMessage = useMemo(() => {
-    if (formError) return formError;
-    const apiErrorMessage = extractErrorMessage(mutationError);
-    if (!mutationError && !apiErrorMessage) return null;
-    return apiErrorMessage || "Login failed. Please try again.";
-  }, [formError, mutationError]);
+  const [statusMessage, setStatusMessage] = useState<
+    { type: "success" | "error"; message: string } | null
+  >(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setFormError(null);
+    setStatusMessage(null);
 
     if (!email.trim() || !password.trim()) {
-      setFormError("Email and password are required.");
+      setStatusMessage({
+        type: "error",
+        message: "Email and password are required.",
+      });
       return;
     }
 
     try {
-      await login({ email: email.trim(), password }).unwrap();
-    } catch (err) {
-      if (err && typeof err === "object" && "data" in err) {
-        const data = (err as { data?: { message?: string; error?: string } })
-          .data;
-        setFormError(
-          data?.message ?? data?.error ?? "Login failed. Please try again."
+      setIsLoading(true);
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.success) {
+        throw new Error(
+          data?.message || "Login failed. Please check your credentials."
         );
-        return;
       }
 
-      if (err && typeof err === "object" && "message" in err) {
-        const message = (err as { message?: string }).message;
-        setFormError(message ?? "Login failed. Please try again.");
-        return;
-      }
-
-      setFormError("Login failed. Please try again.");
+      const role = data?.data?.user?.role;
+      const destination =
+        role === "Agent" ? "/agent/dashboard" : "/renter/matches";
+      setStatusMessage({
+        type: "success",
+        message: data.message || "Login successful.",
+      });
+      router.replace(destination);
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Login failed. Please check your credentials.";
+      setStatusMessage({ type: "error", message });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -175,8 +154,16 @@ export default function SigninPage() {
         </div>
 
         {/* Error */}
-        {errorMessage && (
-          <p className="text-red-600 text-sm sm:text-base">{errorMessage}</p>
+        {statusMessage && (
+          <p
+            className={`text-sm sm:text-base ${
+              statusMessage.type === "error"
+                ? "text-red-600"
+                : "text-green-600"
+            }`}
+          >
+            {statusMessage.message}
+          </p>
         )}
 
         {/* Login Button */}
