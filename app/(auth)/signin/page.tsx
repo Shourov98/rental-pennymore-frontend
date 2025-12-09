@@ -3,6 +3,12 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import {
+  agentLoginSuccess,
+  authFailure,
+  authStart,
+} from "@/store/slices/authSlice";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -10,12 +16,14 @@ const API_BASE_URL =
 
 export default function SigninPage() {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<
-    { type: "success" | "error"; message: string } | null
-  >(null);
+  const [statusMessage, setStatusMessage] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -32,6 +40,7 @@ export default function SigninPage() {
 
     try {
       setIsLoading(true);
+      dispatch(authStart());
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -41,14 +50,29 @@ export default function SigninPage() {
       const data = await response.json();
 
       if (!response.ok || !data?.success) {
-        throw new Error(
-          data?.message || "Login failed. Please check your credentials."
+        const message =
+          data?.message || "Login failed. Please check your credentials.";
+        dispatch(authFailure(message));
+        throw new Error(message);
+      }
+
+      const user = data?.data?.user;
+      const accessToken = data?.data?.accessToken;
+      const expiresIn = data?.data?.expiresIn || null;
+      const mustChangePassword = !!data?.data?.mustChangePassword;
+      if (user && accessToken) {
+        dispatch(
+          agentLoginSuccess({
+            user,
+            accessToken,
+            expiresIn: expiresIn ?? "",
+            mustChangePassword,
+          })
         );
       }
 
       const role = data?.data?.user?.role;
-      const destination =
-        role === "Agent" ? "/agent/dashboard" : "/renter/matches";
+      const destination = role === "Agent" ? "/agent/dashboard" : "/";
       setStatusMessage({
         type: "success",
         message: data.message || "Login successful.",
@@ -60,6 +84,7 @@ export default function SigninPage() {
           ? err.message
           : "Login failed. Please check your credentials.";
       setStatusMessage({ type: "error", message });
+      dispatch(authFailure(message));
     } finally {
       setIsLoading(false);
     }
@@ -157,9 +182,7 @@ export default function SigninPage() {
         {statusMessage && (
           <p
             className={`text-sm sm:text-base ${
-              statusMessage.type === "error"
-                ? "text-red-600"
-                : "text-green-600"
+              statusMessage.type === "error" ? "text-red-600" : "text-green-600"
             }`}
           >
             {statusMessage.message}

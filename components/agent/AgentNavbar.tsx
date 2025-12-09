@@ -2,21 +2,33 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { ChevronDown, Bell } from "lucide-react";
 import Link from "next/link";
+import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+import { logout, selectAuth, selectIsAuthed } from "@/store/slices/authSlice";
 
 export default function AgentNavbar({
   onMenuToggle,
 }: {
   onMenuToggle?: () => void;
 }) {
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const auth = useSelector(selectAuth);
+  const isAuthed = useSelector(selectIsAuthed);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const user = {
-    name: "Steve",
-    role: "Agent",
-    avatar: "/agent-avatar.jpg", // must exist in /public
+  const firstName =
+    auth.user?.fullName?.split(" ")[0] ||
+    auth.user?.fullName ||
+    "Guest";
+  const role = auth.role || auth.user?.role || "Agent";
+  const avatar = auth.user ? "/agent-avatar.jpg" : "/icons/user.svg";
+
+  const handleLogout = () => {
+    dispatch(logout());
+    router.replace("/signin");
   };
 
   // Close dropdown on outside click
@@ -74,40 +86,40 @@ export default function AgentNavbar({
       >
         {/* Avatar & Name */}
         <button
-          onClick={() => setDropdownOpen(!dropdownOpen)}
+          onClick={() => isAuthed && setDropdownOpen(!dropdownOpen)}
           className="flex items-right md:items-center gap-2 rounded-full hover:bg-gray-100 transition px-2 py-1"
         >
           <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-300">
             <Image
-              src={user.avatar}
-              alt={user.name}
+              src={avatar}
+              alt={firstName}
               fill
               className="object-cover"
             />
           </div>
           <div className="text-left">
             <p className="text-sm font-semibold text-gray-800">
-              Hello, {user.name}
+              Hello, {firstName}
             </p>
-            <p className="text-xs text-gray-500">{user.role}</p>
+            <p className="text-xs text-gray-500">{role}</p>
           </div>
         </button>
 
         {/* Dropdown */}
         {dropdownOpen && (
           <div className="absolute text-black right-0 top-12 w-40 bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden animate-fadeIn">
-            <a
+            <Link
               href="/agent/profile"
               className="block px-4 py-2 text-sm hover:bg-blue-100"
             >
               Profile
-            </a>
-            <a
-              href="/logout"
-              className="block px-4 py-2 text-sm hover:bg-blue-100"
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="block w-full text-left px-4 py-2 text-sm hover:bg-blue-100"
             >
               Logout
-            </a>
+            </button>
           </div>
         )}
       </div>

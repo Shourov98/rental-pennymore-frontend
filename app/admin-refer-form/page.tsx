@@ -56,7 +56,7 @@ export default function ReferFormPage() {
           />
 
           {/* Arrow between step 1 and 2 */}
-          <div className="hidden sm:block mx-2 lg:mx-4 flex-shrink-0">
+          <div className="hidden sm:block mx-2 lg:mx-4 shrink-0">
             <svg
               width="24"
               height="24"
@@ -103,7 +103,7 @@ export default function ReferFormPage() {
           />
 
           {/* Arrow between step 2 and 3 */}
-          <div className="hidden sm:block mx-2 lg:mx-4 flex-shrink-0">
+          <div className="hidden sm:block mx-2 lg:mx-4 shrink-0">
             <svg
               width="24"
               height="24"

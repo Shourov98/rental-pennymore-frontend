@@ -5,21 +5,27 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { X, ChevronDown, User } from "lucide-react";
+import { useSelector, useDispatch } from "react-redux";
+import { selectAuth, logout, selectIsAuthed } from "@/store/slices/authSlice";
 
 export default function Navbar() {
+  const dispatch = useDispatch();
+  const auth = useSelector(selectAuth);
+  const isAuthed = useSelector(selectIsAuthed);
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activeItem, setActiveItem] = useState("Home");
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  const user = {
-    firstName: "John",
-    role: "Renter",
-  };
+  const firstName =
+    auth.user?.fullName?.split(" ")[0] ||
+    auth.user?.fullName ||
+    "Guest";
+
+  const role = auth.role || auth.user?.role || "Guest";
 
   const navItems = [
     { name: "Home", id: "#" },
@@ -53,6 +59,11 @@ export default function Navbar() {
     router.push(path);
     setDropdownOpen(false);
     setMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    router.replace("/signin");
   };
 
   // Close drawer when clicking outside
@@ -130,7 +141,7 @@ export default function Navbar() {
           ref={dropdownRef}
           onMouseLeave={handleMouseLeave}
         >
-          {isAuthenticated ? (
+          {isAuthed ? (
             <>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -139,44 +150,52 @@ export default function Navbar() {
                 <User className="w-5 h-5 text-blue-600" />
                 <div className="text-left">
                   <p className="text-sm font-semibold text-gray-800">
-                    Hey, {user.firstName}
+                    Hey, {firstName}
                   </p>
-                  <p className="text-xs text-gray-500">{user.role}</p>
+                  <p className="text-xs text-gray-500">{role}</p>
                 </div>
                 <ChevronDown size={18} className="text-gray-600" />
               </button>
 
               {dropdownOpen && (
                 <div className="absolute right-0 top-12 w-56 bg-white shadow-lg rounded-lg animate-fadeIn">
-                  {userMenu.map((menu) => (
-                    <button
-                      key={menu.label}
-                      onClick={() => handleMenuItemClick(menu.path)}
-                      className="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-blue-100 text-gray-800 text-sm"
-                    >
-                      <Image
-                        src={menu.icon}
-                        alt={menu.label}
-                        width={18}
-                        height={18}
-                      />
-                      {menu.label}
-                    </button>
-                  ))}
+                  {userMenu.map((menu) => {
+                    const isLogout = menu.label === "Logout";
+                    return (
+                      <button
+                        key={menu.label}
+                        onClick={() =>
+                          isLogout
+                            ? handleLogout()
+                            : handleMenuItemClick(menu.path)
+                        }
+                        className="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-blue-100 text-gray-800 text-sm"
+                      >
+                        <Image
+                          src={menu.icon}
+                          alt={menu.label}
+                          width={18}
+                          height={18}
+                        />
+                        {menu.label}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </>
           ) : (
             <div className="flex items-center gap-4">
               <button
-                onClick={() => {
-                  !isAuthenticated;
-                }}
+                onClick={() => router.push("/signin")}
                 className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700"
               >
                 Sign In
               </button>
-              <button className="px-4 py-2 rounded-md border border-blue-600 text-blue-600 text-sm hover:bg-blue-50">
+              <button
+                onClick={() => router.push("/signup")}
+                className="px-4 py-2 rounded-md border border-blue-600 text-blue-600 text-sm hover:bg-blue-50"
+              >
                 Sign Up
               </button>
             </div>
@@ -195,9 +214,9 @@ export default function Navbar() {
               <User className="w-5 h-5 text-blue-600" />
               <div className="text-left">
                 <p className="text-sm font-semibold text-gray-800">
-                  Hey, {user.firstName}
+                  Hey, {firstName}
                 </p>
-                <p className="text-xs text-gray-500">{user.role}</p>
+                <p className="text-xs text-gray-500">{role}</p>
               </div>
               <ChevronDown size={18} className="text-gray-600" />
             </div>
@@ -245,21 +264,42 @@ export default function Navbar() {
 
               <hr />
 
-              {userMenu.map((menu) => (
-                <button
-                  key={menu.label}
-                  onClick={() => handleMenuItemClick(menu.path)}
-                  className="w-full text-left flex items-center gap-3 px-2 py-2 hover:bg-blue-50 text-gray-800 text-sm"
-                >
-                  <Image
-                    src={menu.icon}
-                    alt={menu.label}
-                    width={18}
-                    height={18}
-                  />
-                  {menu.label}
-                </button>
-              ))}
+              {isAuthed ? (
+                userMenu.map((menu) => (
+                  <button
+                    key={menu.label}
+                    onClick={() =>
+                      menu.label === "Logout"
+                        ? handleLogout()
+                        : handleMenuItemClick(menu.path)
+                    }
+                    className="w-full text-left flex items-center gap-3 px-2 py-2 hover:bg-blue-50 text-gray-800 text-sm"
+                  >
+                    <Image
+                      src={menu.icon}
+                      alt={menu.label}
+                      width={18}
+                      height={18}
+                    />
+                    {menu.label}
+                  </button>
+                ))
+              ) : (
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={() => router.push("/signin")}
+                    className="w-full px-4 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700"
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => router.push("/signup")}
+                    className="w-full px-4 py-2 rounded-md border border-blue-600 text-blue-600 text-sm hover:bg-blue-50"
+                  >
+                    Sign Up
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
