@@ -1,23 +1,81 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") || "";
+  const otp = searchParams.get("otp") || "";
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [form, setForm] = useState({
     newPassword: "",
     confirmPassword: "",
   });
+  const [statusMessage, setStatusMessage] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Add validation + API call for password reset here
-    console.log("New password set:", form);
-    router.push("/signin"); // Redirect to login after success
+    setStatusMessage(null);
+
+    if (!email || !otp) {
+      setStatusMessage({
+        type: "error",
+        message: "Missing email or OTP. Please restart the reset flow.",
+      });
+      return;
+    }
+
+    if (form.newPassword !== form.confirmPassword) {
+      setStatusMessage({ type: "error", message: "Passwords do not match." });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          otp,
+          newPassword: form.newPassword,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data?.success) {
+        throw new Error(
+          data?.message ||
+            "Unable to reset password right now. Please try again."
+        );
+      }
+
+      setStatusMessage({
+        type: "success",
+        message: data?.message || "Password reset successful.",
+      });
+      router.replace("/signin");
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Unable to reset password right now. Please try again.";
+      setStatusMessage({ type: "error", message });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -114,17 +172,28 @@ export default function ResetPasswordPage() {
           </div>
         </div>
 
+        {statusMessage && (
+          <p
+            className={`text-sm sm:text-base ${
+              statusMessage.type === "error" ? "text-red-600" : "text-green-600"
+            }`}
+          >
+            {statusMessage.message}
+          </p>
+        )}
+
         {/* Submit */}
         <button
           type="submit"
-          onClick={() => router.push("/signin")}
+          disabled={loading}
           className="
             w-full bg-action hover:bg-action-hover
             text-text-inverted font-semibold
             py-3 sm:py-3.5 rounded-lg transition
+            disabled:opacity-60
           "
         >
-          Next
+          {loading ? "Updating..." : "Next"}
         </button>
 
         {/* Resend + Back */}
