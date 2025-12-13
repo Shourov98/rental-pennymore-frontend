@@ -8,6 +8,7 @@ import {
   agentLoginSuccess,
   authFailure,
   authStart,
+  renterLoginSuccess,
 } from "@/store/slices/authSlice";
 
 const API_BASE_URL =
@@ -56,23 +57,31 @@ export default function SigninPage() {
         throw new Error(message);
       }
 
-      const user = data?.data?.user;
-      const accessToken = data?.data?.accessToken;
-      const expiresIn = data?.data?.expiresIn || null;
-      const mustChangePassword = !!data?.data?.mustChangePassword;
-      if (user && accessToken) {
+      const payload = data?.data;
+      const role = payload?.user?.role;
+
+      if (role === "Renter" && payload?.tokens?.accessToken) {
+        dispatch(
+          renterLoginSuccess({
+            user: payload.user,
+            renter: payload.renter,
+            tokens: payload.tokens,
+            registrationType: payload.registrationType ?? "normal",
+          })
+        );
+      } else if (payload?.user && payload?.accessToken) {
         dispatch(
           agentLoginSuccess({
-            user,
-            accessToken,
-            expiresIn: expiresIn ?? "",
-            mustChangePassword,
+            user: payload.user,
+            accessToken: payload.accessToken,
+            expiresIn: payload.expiresIn ?? "",
+            mustChangePassword: !!payload.mustChangePassword,
           })
         );
       }
 
-      const role = data?.data?.user?.role;
-      const destination = role === "Agent" ? "/agent/dashboard" : "/";
+      const destination =
+        role === "Agent" ? "/agent/dashboard" : "/renter/saved-requests";
       setStatusMessage({
         type: "success",
         message: data.message || "Login successful.",

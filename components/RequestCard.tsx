@@ -5,11 +5,12 @@ interface RequestCardProps {
   borough: string;
   neighborhood: string;
   dateRange: string;
-  price: string;
-  beds: number;
-  baths: number;
+  priceRange: string;
+  bedsLabel: string;
+  bathsLabel: string;
   status: "active" | "deactive";
   disableActivate?: boolean;
+  isMutating?: boolean;
   onEdit: () => void;
   onDelete: () => void;
   onToggleStatus: () => void;
@@ -20,11 +21,12 @@ export default function RequestCard({
   borough,
   neighborhood,
   dateRange,
-  price,
-  beds,
-  baths,
+  priceRange,
+  bedsLabel,
+  bathsLabel,
   status,
   disableActivate = false,
+  isMutating = false,
   onEdit,
   onDelete,
   onToggleStatus,
@@ -63,22 +65,22 @@ export default function RequestCard({
 
       {/* Price */}
       <div className="mt-4">
-        <p className="text-gray-500 text-sm">Min</p>
-        <p className="text-xl font-bold text-[#0B0B2C]">{price}</p>
+        <p className="text-gray-500 text-sm">Price Range</p>
+        <p className="text-xl font-bold text-[#0B0B2C]">{priceRange}</p>
       </div>
 
       {/* Beds & Baths */}
       <div className="flex items-center gap-3 mt-3 text-gray-600 text-sm">
         <div className="flex items-center gap-1">
           <BedDouble className="w-4 h-4 text-gray-500" />
-          <span>{beds} Beds</span>
+          <span>{bedsLabel}</span>
         </div>
 
         <span className="text-gray-300">|</span>
 
         <div className="flex items-center gap-1">
           <Bath className="w-4 h-4 text-gray-500" />
-          <span>{baths} Bath</span>
+          <span>{bathsLabel}</span>
         </div>
       </div>
 
@@ -103,22 +105,27 @@ export default function RequestCard({
           </button>
         </div>
 
-        {/* Second Row: Activate / Deactivate */}
-        <button
-          disabled={!isActive && disableActivate}
-          onClick={onToggleStatus}
-          className={`w-full py-2.5 font-medium text-sm rounded-2xl transition-all
-            ${
-              isActive
-                ? "bg-red-50 text-red-600 hover:bg-red-500 hover:text-white"
-                : disableActivate
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-green-50 text-green-600 hover:bg-green-500 hover:text-white"
-            }
-          `}
-        >
-          {isActive ? "Deactivate" : "Activate"}
-        </button>
+      {/* Second Row: Activate / Deactivate */}
+      <button
+        disabled={isMutating || (!isActive && disableActivate)}
+        onClick={onToggleStatus}
+        className={`w-full py-2.5 font-medium text-sm rounded-2xl transition-all
+          ${
+            isActive
+              ? "bg-red-50 text-red-600 hover:bg-red-500 hover:text-white"
+            : disableActivate
+            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+            : "bg-green-50 text-green-600 hover:bg-green-500 hover:text-white"
+          }
+          ${isMutating ? "opacity-70 cursor-not-allowed" : ""}
+        `}
+      >
+        {isMutating
+          ? "Please wait..."
+          : isActive
+          ? "Deactivate"
+          : "Activate"}
+      </button>
       </div>
     </div>
   );
