@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { defaultPreferencesList } from "@/store/slices/preferenceSlice";
 
 import {
   DndContext,
@@ -21,27 +22,12 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 
-const defaultPreferences = [
-  "Large Apartment",
-  "Lots of Light",
-  "Outdoor Space",
-  "New Renovation",
-  "High Ceilings",
-  "W/D in Unit",
-  "Gym in Building",
-  "Open Kitchen",
-  "Dishwasher",
-  "Lots of Storage",
-  "Ground Floor Preferred",
-  "If Walk-Up: Prefer Lower Floors",
-];
-
 interface Props {
   onChange: (list: string[]) => void;
   initialList?: string[];
 }
 export default function PreferencesDragList({ onChange, initialList }: Props) {
-  const items = initialList?.length ? initialList : defaultPreferences;
+  const items = initialList?.length ? initialList : defaultPreferencesList;
   const hasSeededDefaults = useRef(false);
   useEffect(() => {
     if (initialList && initialList.length > 0) {
@@ -49,7 +35,7 @@ export default function PreferencesDragList({ onChange, initialList }: Props) {
       return;
     }
     if (!hasSeededDefaults.current) {
-      onChange(defaultPreferences);
+      onChange(defaultPreferencesList);
       hasSeededDefaults.current = true;
     }
   }, [initialList, onChange]);

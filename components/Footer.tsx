@@ -1,3 +1,4 @@
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Mail, Phone } from "lucide-react";
@@ -12,6 +13,14 @@ export default function Footer() {
           <Link href="/" className="text-2xl font-bold text-black">
             <Image src="/Logo_2.svg" alt="Logo" width={200} height={150} />
           </Link>
+          <div className="mt-5 ml-10">
+            <Image
+              src="/equal-house-logo.png"
+              alt="Logo"
+              width={80}
+              height={150}
+            />
+          </div>
         </div>
 
         {/* --- Middle: Quick Links --- */}
@@ -90,9 +99,37 @@ export default function Footer() {
       </div>
 
       {/* --- Bottom Copyright --- */}
-      <div className="mt-10 border-t border-gray-700 pt-6 text-center text-gray-400 text-sm">
+      <div className="mt-5 pt-3 text-center text-gray-100 text-sm">
+        <span>
+          This website is not the official website of The Corcoran Group or its
+          affiliated companies, and neither
+        </span>
+        <br />{" "}
+        <span>
+          {" "}
+          The Corcoran Group nor its affiliated companies in any way warrant the
+          accuracy of any information contained herein.{" "}
+        </span>
+        <br />{" "}
+        <span>
+          Operated by Tuval Mor, Licensed Real Estate Salesperson with The
+          Corcoran Group.{" "}
+        </span>
+        <br />{" "}
+        <span>
+          157 Columbus Avenue, Suite 2W, New York, NY 10023 | Office:
+          212-957-4100 x2001 tmor@corcoran.com
+        </span>
+        <br />{" "}
+        <span className="text-cyan-500">
+          Fair Housing Notice | Standardized Operating Procedures | Reasonable
+          Accommodations | Agency Disclosure
+        </span>
+      </div>
+
+      <div className="mt-5 pt-3 text-center text-gray-400 text-sm">
         © {new Date().getFullYear()}{" "}
-        <span className="font-medium text-white">MOR NY HOMES INC.</span> All
+        <span className="font-medium text-white">BeforeListed™ |</span> All
         rights reserved.
       </div>
     </footer>

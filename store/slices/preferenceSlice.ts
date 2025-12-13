@@ -2,6 +2,21 @@
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+export const defaultPreferencesList = [
+  "Outdoor Space",
+  "Lots of Light",
+  "Large Apartment",
+  "Open Kitchen",
+  "Dishwasher",
+  "New Renovation",
+  "W/D in Unit",
+  "High Ceilings",
+  "Ground Floor Preferred",
+  "Lots of Storage",
+  "Gym in Building",
+  "If Walk-Up: Prefer Lower Floors",
+];
+
 export interface LocationEntry {
   borough: "Manhattan" | "Brooklyn";
   neighborhoods: string[];
@@ -28,7 +43,7 @@ export interface PreferencesState {
   preferences: string[]; // Drag list
 }
 
-const initialState: PreferencesState = {
+const createInitialState = (): PreferencesState => ({
   movingDate: {
     earliest: "",
     latest: "",
@@ -47,8 +62,10 @@ const initialState: PreferencesState = {
   petPolicy: [],
   guarantor: [],
 
-  preferences: [],
-};
+  preferences: [...defaultPreferencesList],
+});
+
+const initialState: PreferencesState = createInitialState();
 
 export const preferenceSlice = createSlice({
   name: "preferences",
@@ -176,7 +193,12 @@ export const preferenceSlice = createSlice({
     // ===============================
 
     setPreferencesList(state, action: PayloadAction<string[]>) {
-      state.preferences = action.payload;
+      state.preferences =
+        action.payload.length > 0 ? action.payload : createInitialState().preferences;
+    },
+
+    resetPreferences() {
+      return createInitialState();
     },
   },
 });
@@ -193,6 +215,7 @@ export const {
   togglePetPolicy,
   toggleGuarantor,
   setPreferencesList,
+  resetPreferences,
 } = preferenceSlice.actions;
 
 export default preferenceSlice.reducer;

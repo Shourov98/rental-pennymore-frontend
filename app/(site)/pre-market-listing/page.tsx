@@ -27,12 +27,19 @@ const PreferencesDragList = dynamic(
   { ssr: false }
 );
 
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
+
 export default function PreMarketListingPage() {
   const dispatch = useDispatch();
 
   // Modal state (local UI)
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [description, setDescription] = useState("");
 
   // Redux Global States
   const {
@@ -47,22 +54,81 @@ export default function PreMarketListingPage() {
     guarantor,
     preferences,
   } = useSelector((state: RootState) => state.preferences);
+  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSuccessModalOpen(true);
-    console.log("FINAL FORM DATA:", {
-      movingDate,
+    setErrorMessage(null);
+
+    const toIsoDate = (date: string, endOfDay?: boolean) =>
+      date ? `${date}T${endOfDay ? "23:59:59" : "00:00:00"}Z` : "";
+
+    const payload = {
+      movingDateRange: {
+        earliest: toIsoDate(movingDate.earliest),
+        latest: toIsoDate(movingDate.latest, true),
+      },
       priceRange,
       locations,
       bedrooms,
       bathrooms,
-      unitFeatures,
-      buildingFeatures,
-      petPolicy,
-      guarantor,
+      description,
+      unitFeatures: {
+        laundryInUnit: unitFeatures.includes("Laundry in unit"),
+        privateOutdoorSpace: unitFeatures.includes("Private outdoor space"),
+        dishwasher: unitFeatures.includes("Dishwasher"),
+      },
+      buildingFeatures: {
+        doorman: buildingFeatures.includes("Doorman"),
+        elevator: buildingFeatures.includes("Elevator"),
+        laundryInBuilding: buildingFeatures.includes("Laundry in building"),
+      },
+      petPolicy: {
+        catsAllowed: petPolicy.includes("Cats allowed"),
+        dogsAllowed: petPolicy.includes("Dogs allowed"),
+      },
+      guarantorRequired: {
+        personalGuarantor: guarantor.includes("Personal guarantor"),
+        thirdPartyGuarantor: guarantor.includes("Third party guarantor"),
+      },
       preferences,
-    });
+    };
+
+    try {
+      setIsSubmitting(true);
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      if (accessToken) {
+        headers.Authorization = `Bearer ${accessToken}`;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/pre-market/create`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message ||
+            "We couldn't submit your request right now. Please try again."
+        );
+      }
+
+      setIsSuccessModalOpen(true);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "We couldn't submit your request right now. Please try again.";
+      setErrorMessage(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const bedroomOptions = ["Studio", "1BR", "2BR", "3BR", "4BR+"];
@@ -87,7 +153,7 @@ export default function PreMarketListingPage() {
         </div>
 
         {/* Form Section */}
-        <div className="space-y-6">
+        <form className="space-y-6" onSubmit={handleSubmit}>
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Choose your preferences
           </h2>
@@ -226,6 +292,7 @@ export default function PreMarketListingPage() {
               {bedroomOptions.map((br) => (
                 <button
                   key={br}
+                  type="button"
                   onClick={() => dispatch(toggleBedroom(br))}
                   className={`py-2 rounded-lg text-sm font-medium border ${
                     bedrooms.includes(br)
@@ -249,6 +316,7 @@ export default function PreMarketListingPage() {
               {bathroomOptions.map((b) => (
                 <button
                   key={b}
+                  type="button"
                   onClick={() => dispatch(toggleBathroom(b))}
                   className={`py-2 rounded-lg text-sm font-medium border ${
                     bathrooms.includes(b)
@@ -349,16 +417,20 @@ export default function PreMarketListingPage() {
           </div>
 
           {/* Submit */}
+          {errorMessage && (
+            <p className="text-sm text-red-600 text-right">{errorMessage}</p>
+          )}
           <div className="flex justify-end">
             <button
-              onClick={handleSubmit}
-              className="flex items-center gap-2 bg-blue-500 text-white text-sm sm:text-base font-medium rounded-lg px-5 py-3 hover:bg-blue-700 transition"
+              type="submit"
+              disabled={isSubmitting}
+              className="flex items-center gap-2 bg-blue-500 text-white text-sm sm:text-base font-medium rounded-lg px-5 py-3 hover:bg-blue-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
             >
               <Bell size={16} />
-              Save Request & Send to Agents
+              {isSubmitting ? "Submitting..." : "Save Request & Send to Agents"}
             </button>
           </div>
-        </div>
+        </form>
       </div>
 
       {/* Location Modal */}
