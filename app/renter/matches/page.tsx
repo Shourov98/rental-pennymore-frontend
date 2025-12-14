@@ -1,98 +1,128 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
 import AgentContactCard from "@/components/AgentContactCard";
 import { ChevronDown, ChevronUp } from "lucide-react";
-
-interface Agent {
-  id: number;
-  image: string;
-  name: string;
-  email: string;
-  phone: string;
-  license: string;
-  brokerage: string;
-}
-
-interface Request {
-  id: number;
-  requestName: string;
-  borough: string;
-  neighborhood: string;
-  dateRange: string;
-  price: string;
-  beds: number;
-  baths: number;
-  status: "active" | "deactive";
-  matchedAgents: Agent[];
-}
+import { RootState } from "@/store/store";
+import {
+  API_BASE_URL,
+  ApiMatchesResponse,
+  NormalizedMatchRequest,
+  cacheMatches,
+  cacheSingleMatch,
+  normalizeRequest,
+} from "./utils";
 
 export default function MatchedAgentsPage() {
-  const [openRequestId, setOpenRequestId] = useState<number | null>(null);
+  const router = useRouter();
+  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
 
-  // ---------------------------
-  // Mock Data
-  // ---------------------------
-  const requests: Request[] = [
-    {
-      id: 1,
-      requestName: "BeforeListed-1",
-      borough: "Manhattan",
-      neighborhood: "West Chelsea",
-      dateRange: "5/21/25 - 6/21/30",
-      price: "$4,250.00",
-      beds: 2,
-      baths: 1,
-      status: "active",
-      matchedAgents: [
-        {
-          id: 101,
-          image: "https://randomuser.me/api/portraits/men/31.jpg",
-          name: "John Doe",
-          email: "example@gmail.com",
-          phone: "+8801XXXXXXXXX",
-          license: "ABCD1234",
-          brokerage: "Alice Realty",
-        },
-        {
-          id: 102,
-          image: "https://randomuser.me/api/portraits/women/44.jpg",
-          name: "Sarah Miller",
-          email: "sarah@example.com",
-          phone: "+8801YYYYYYYYY",
-          license: "LMNO5678",
-          brokerage: "Prime Estates",
-        },
-      ],
-    },
+  const [openRequestId, setOpenRequestId] = useState<string | null>(null);
+  const [requests, setRequests] = useState<NormalizedMatchRequest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState<ApiMatchesResponse["pagination"]>({
+    currentPage: 1,
+    totalPages: 1,
+    hasNext: false,
+    hasPrev: false,
+  });
 
-    {
-      id: 2,
-      requestName: "BeforeListed-2",
-      borough: "Brooklyn",
-      neighborhood: "Williamsburg",
-      dateRange: "5/25/25 - 1/01/24",
-      price: "$4,100.00",
-      beds: 3,
-      baths: 2,
-      status: "active",
-      matchedAgents: [
-        {
-          id: 103,
-          image: "https://randomuser.me/api/portraits/men/28.jpg",
-          name: "Michael Ross",
-          email: "ross@example.com",
-          phone: "+8801ZZZZZZZZZ",
-          license: "XQWE9264",
-          brokerage: "Urban Homes",
-        },
-      ],
-    },
-  ];
+  const limit = 10;
 
-  // Toggle Accordion
-  const toggleAccordion = (id: number) => {
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchMatches = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(limit),
+        });
+
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+
+        if (accessToken) {
+          headers.Authorization = `Bearer ${accessToken}`;
+        }
+
+        const response = await fetch(
+          `${API_BASE_URL}/pre-market/renter/requests/with-agents?${params.toString()}`,
+          {
+            method: "GET",
+            headers,
+            signal: controller.signal,
+          }
+        );
+
+        const data: ApiMatchesResponse = await response
+          .json()
+          .catch(() => ({} as ApiMatchesResponse));
+
+        if (!response.ok || data?.success === false) {
+          throw new Error(
+            data?.message ||
+              "We couldn't load your matched requests right now. Please try again."
+          );
+        }
+
+        const normalized = (data.data ?? []).map(normalizeRequest);
+        setRequests(normalized);
+        setPagination(data.pagination);
+        cacheMatches(normalized);
+      } catch (err) {
+        if (controller.signal.aborted) return;
+        const message =
+          err instanceof Error
+            ? err.message
+            : "We couldn't load your matched requests right now. Please try again.";
+        setError(message);
+        setRequests([]);
+        setPagination({
+          currentPage: 1,
+          totalPages: 1,
+          hasNext: false,
+          hasPrev: false,
+        });
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchMatches();
+
+    return () => controller.abort();
+  }, [accessToken, page]);
+
+  const toggleAccordion = (id: string) => {
     setOpenRequestId((prev) => (prev === id ? null : id));
+  };
+
+  const handleView = (req: NormalizedMatchRequest) => {
+    cacheSingleMatch(req);
+    router.push(`/renter/matches/${req.id}`);
+  };
+
+  const handlePreviousPage = () => {
+    if (pagination?.hasPrev) {
+      setPage((prev) => Math.max(1, prev - 1));
+    }
+  };
+
+  const handleNextPage = () => {
+    if (pagination?.hasNext) {
+      setPage((prev) => prev + 1);
+    }
   };
 
   return (
@@ -102,77 +132,160 @@ export default function MatchedAgentsPage() {
         <h1 className="text-2xl font-semibold text-[#0A093D]">
           Agents Matched With Requests
         </h1>
+        <p className="text-sm text-gray-500 mt-1">
+          View all pre-market requests with their matched agents.
+        </p>
       </div>
 
-      {/* Accordion List */}
-      <div className="space-y-4">
-        {requests.map((req) => {
-          const isOpen = openRequestId === req.id;
+      {isLoading ? (
+        <div className="bg-white rounded-xl shadow-sm p-6 text-gray-600">
+          Loading matched requests…
+        </div>
+      ) : error ? (
+        <div className="bg-red-50 text-red-700 border border-red-100 rounded-xl p-4 text-sm">
+          {error}
+        </div>
+      ) : requests.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-sm p-6 text-gray-600">
+          No matched requests yet.
+        </div>
+      ) : (
+        <>
+          {/* Accordion List */}
+          <div className="space-y-4">
+            {requests.map((req) => {
+              const isOpen = openRequestId === req.id;
 
-          return (
-            <div
-              key={req.id}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
-            >
-              {/* Accordion Header */}
-              <button
-                className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50 transition"
-                onClick={() => toggleAccordion(req.id)}
-              >
-                <div>
-                  <h2 className="text-lg font-semibold text-[#0A093D]">
-                    {req.requestName}
-                  </h2>
+              return (
+                <div
+                  key={req.id}
+                  className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+                >
+                  {/* Accordion Header */}
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50 transition focus:outline-none focus:ring-2 focus:ring-blue-100"
+                    onClick={() => toggleAccordion(req.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        toggleAccordion(req.id);
+                      }
+                    }}
+                  >
+                    <div>
+                      <h2 className="text-lg font-semibold text-[#0A093D]">
+                        {req.requestName}
+                      </h2>
 
-                  <p className="text-sm text-gray-600">
-                    {req.borough} • {req.neighborhood}
-                  </p>
+                      <p className="text-sm text-gray-600">
+                        {req.boroughsLabel} • {req.neighborhoodsLabel}
+                      </p>
 
-                  <p className="text-sm text-gray-400">
-                    {req.dateRange} • Min {req.price}
-                  </p>
+                      <p className="text-sm text-gray-400">
+                        {req.dateRangeLabel} • {req.priceRangeLabel}
+                      </p>
 
-                  {/* Agent Count */}
-                  <p className="mt-1 text-sm font-medium text-blue-600">
-                    {req.matchedAgents.length} Agent
-                    {req.matchedAgents.length > 1 ? "s" : ""} Matched
-                  </p>
+                      {/* Agent Count */}
+                      <p className="mt-1 text-sm font-medium text-blue-600">
+                        {req.agentMatchCount} Agent
+                        {req.agentMatchCount !== 1 ? "s" : ""} Matched
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          req.status === "active"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-gray-100 text-gray-600"
+                        }`}
+                      >
+                        {req.status === "active" ? "Active" : "Inactive"}
+                      </span>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleView(req);
+                        }}
+                        className="px-3 py-2 text-sm font-semibold text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-50"
+                      >
+                        View
+                      </button>
+
+                      <div className="text-gray-500">
+                        {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Accordion Body */}
+                  {isOpen && (
+                    <div className="px-6 pb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                      {req.matchedAgents.length === 0 ? (
+                        <div className="text-gray-500 text-sm col-span-full">
+                          No agents matched yet.
+                        </div>
+                      ) : (
+                        req.matchedAgents.map((agent) => (
+                          <AgentContactCard
+                            key={agent._id || agent.userId || agent.email || Math.random()}
+                            agent={{
+                              image: agent.profileImageUrl,
+                              name: agent.fullName,
+                              email: agent.email,
+                              phone: agent.phoneNumber,
+                              license: agent.licenseNumber,
+                              brokerage: agent.hasGrantAccess
+                                ? "Has grant access"
+                                : "Awaiting access",
+                              hasGrantAccess: agent.hasGrantAccess,
+                            }}
+                          />
+                        ))
+                      )}
+                    </div>
+                  )}
                 </div>
+              );
+            })}
+          </div>
 
-                <div className="text-gray-500">
-                  {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                </div>
-              </button>
-
-              {/* Accordion Body */}
-              {isOpen && (
-                <div className="px-6 pb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {req.matchedAgents.map((agent) => (
-                    <AgentContactCard key={agent.id} agent={agent} />
-                  ))}
-                </div>
-              )}
+          {pagination && (
+            <div className="flex items-center justify-between bg-white rounded-xl shadow-sm p-4 text-sm text-gray-600 mt-4">
+              <div>
+                Page {pagination.currentPage ?? page} of {pagination.totalPages ?? 1}
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={handlePreviousPage}
+                  disabled={!pagination.hasPrev}
+                  className={`px-4 py-2 rounded-lg border text-sm ${
+                    pagination.hasPrev
+                      ? "bg-white text-gray-700 hover:bg-gray-50"
+                      : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={handleNextPage}
+                  disabled={!pagination.hasNext}
+                  className={`px-4 py-2 rounded-lg border text-sm ${
+                    pagination.hasNext
+                      ? "bg-white text-gray-700 hover:bg-gray-50"
+                      : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Next
+                </button>
+              </div>
             </div>
-          );
-        })}
-      </div>
-
-      {/* Fade-in Animation */}
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(4px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.25s ease-out forwards;
-        }
-      `}</style>
+          )}
+        </>
+      )}
     </section>
   );
 }
