@@ -1,259 +1,308 @@
 "use client";
 
-import { useState } from "react";
-import { Eye, Trash2, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Eye, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 import FilterModal from "@/components/modals/FilterModals";
+import {
+  API_BASE_URL,
+  ApiAgentRequestsResponse,
+  NormalizedAgentRequest,
+  cacheAgentRequests,
+  cacheSingleAgentRequest,
+  normalizeAgentRequest,
+} from "./utils";
 
-// ---------------------
-// Neighborhood Mapping
-// ---------------------
-const boroughNeighborhoods: Record<string, string[]> = {
-  Manhattan: [
-    "Harlem",
-    "Upper West Side",
-    "Upper East Side",
-    "Hell’s Kitchen",
-    "Midtown East",
-    "Chelsea",
-    "SoHo",
-    "Tribeca",
-    "Financial District",
-    "West Village",
-    "East Village",
-    "Lower East Side",
-    "Chinatown",
-  ],
-  Brooklyn: [
-    "Williamsburg",
-    "Greenpoint",
-    "Bushwick",
-    "Bedford-Stuyvesant",
-    "Brooklyn Heights",
-    "Park Slope",
-    "Fort Greene",
-    "Clinton Hill",
-    "Crown Heights",
-    "Flatbush",
-    "Kensington",
-    "Bay Ridge",
-    "Bensonhurst",
-    "Brighton Beach",
-    "Sheepshead Bay",
-    "DUMBO",
-  ],
-};
-
-// ---------------------
-// Types
-// ---------------------
-interface Request {
-  id: number;
-  submitDate: string;
-  borough: string;
-  neighborhood: string;
-  maxPrice: number;
-  bedrooms: number;
-  bathrooms: number;
-  requested: boolean;
-}
-
-interface FilterParams {
-  borough: string | null;
-  neighborhoods: string[];
-  bedrooms: number[];
-  bathrooms: number[];
-  maxPrice: number | null;
-}
-
-// ---------------------
-// Mock Data
-// ---------------------
-const allRequests: Request[] = [
-  {
-    id: 1,
-    submitDate: "11/22/2025",
-    borough: "Manhattan",
-    neighborhood: "Chelsea",
-    maxPrice: 7500,
-    bedrooms: 5,
-    bathrooms: 2,
-    requested: false, // ➜ Available
-  },
-  {
-    id: 2,
-    submitDate: "11/19/2025",
-    borough: "Brooklyn",
-    neighborhood: "Williamsburg",
-    maxPrice: 6100,
-    bedrooms: 3,
-    bathrooms: 1,
-    requested: true, // ➜ Pending
-  },
-  {
-    id: 3,
-    submitDate: "11/13/2025",
-    borough: "Manhattan",
-    neighborhood: "Harlem",
-    maxPrice: 5200,
-    bedrooms: 4,
-    bathrooms: 2,
-    requested: false,
-  },
-];
-
-export default function RenterRequestsPage() {
+export default function AgentRenterRequestsPage() {
   const router = useRouter();
+  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
 
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [filteredData, setFilteredData] = useState(allRequests);
+  const [requests, setRequests] = useState<NormalizedAgentRequest[]>([]);
+  const [filters, setFilters] = useState<{
+    borough: string | null;
+    neighborhoods: string[];
+    bedrooms: number[];
+    bathrooms: number[];
+    maxPrice: number | null;
+  }>({
+    borough: null,
+    neighborhoods: [],
+    bedrooms: [],
+    bathrooms: [],
+    maxPrice: null,
+  });
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState<
+    ApiAgentRequestsResponse["pagination"]
+  >({
+    currentPage: 1,
+    totalPages: 1,
+    hasNext: false,
+    hasPrev: false,
+  });
 
-  // APPLY FILTER
-  const handleApplyFilter = (filter: FilterParams) => {
-    let results = allRequests;
+  const limit = 10;
 
-    // Borough
-    if (filter.borough) {
-      results = results.filter((item) => item.borough === filter.borough);
-    }
+  useEffect(() => {
+    const controller = new AbortController();
 
-    // Neighborhoods (multi)
-    if (filter.neighborhoods && filter.neighborhoods.length > 0) {
-      results = results.filter((item) =>
-        filter.neighborhoods?.includes(item.neighborhood)
-      );
-    }
+    const fetchRequests = async () => {
+      setIsLoading(true);
+      setError(null);
 
-    // Bedrooms (multi)
-    if (filter.bedrooms?.length > 0) {
-      results = results.filter((item) =>
-        filter.bedrooms.includes(item.bedrooms)
-      );
-    }
+      try {
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(limit),
+        });
 
-    // Bathrooms (multi)
-    if (filter.bathrooms?.length > 0) {
-      results = results.filter((item) =>
-        filter.bathrooms.includes(item.bathrooms)
-      );
-    }
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
-    // Max Price
-    if (typeof filter.maxPrice === "number") {
-      results = results.filter((item) => item.maxPrice <= filter.maxPrice!);
-    }
+        const response = await fetch(
+          `${API_BASE_URL}/pre-market/all?${params.toString()}`,
+          {
+            method: "GET",
+            headers,
+            signal: controller.signal,
+          }
+        );
 
-    setFilteredData(results);
+        const data: ApiAgentRequestsResponse = await response
+          .json()
+          .catch(() => ({} as ApiAgentRequestsResponse));
+
+        if (!response.ok || data?.success === false) {
+          throw new Error(
+            data?.message ||
+              "We couldn't load renter requests right now. Please try again."
+          );
+        }
+
+        const normalized = (data.data ?? []).map(normalizeAgentRequest);
+        setRequests(normalized);
+        setPagination(data.pagination);
+        cacheAgentRequests(normalized);
+      } catch (err) {
+        if (controller.signal.aborted) return;
+        const message =
+          err instanceof Error
+            ? err.message
+            : "We couldn't load renter requests right now. Please try again.";
+        setError(message);
+        setRequests([]);
+        setPagination({
+          currentPage: 1,
+          totalPages: 1,
+          hasNext: false,
+          hasPrev: false,
+        });
+      } finally {
+        if (!controller.signal.aborted) setIsLoading(false);
+      }
+    };
+
+    fetchRequests();
+
+    return () => controller.abort();
+  }, [accessToken, page]);
+
+  const filteredRequests = useMemo(() => {
+    return requests.filter((req) => {
+      const { raw } = req;
+      if (filters.borough) {
+        const hasBorough = raw.locations?.some(
+          (loc) => loc?.borough === filters.borough
+        );
+        if (!hasBorough) return false;
+      }
+
+      if (filters.neighborhoods.length) {
+        const neighborhoods = raw.locations
+          ?.flatMap((loc) => loc?.neighborhoods || [])
+          .filter(Boolean) as string[];
+        const hasNeighborhood = filters.neighborhoods.some((n) =>
+          neighborhoods.includes(n)
+        );
+        if (!hasNeighborhood) return false;
+      }
+
+      if (filters.bedrooms.length) {
+        const bedroomValues =
+          raw.bedrooms?.map((b) => (b === "Studio" ? 0 : parseInt(b, 10))) ||
+          [];
+        const hasBedroom = filters.bedrooms.some((b) =>
+          bedroomValues.includes(b)
+        );
+        if (!hasBedroom) return false;
+      }
+
+      if (filters.bathrooms.length) {
+        const bathroomValues = raw.bathrooms?.map((b) => parseInt(b, 10)) || [];
+        const hasBathroom = filters.bathrooms.some((b) =>
+          bathroomValues.includes(b)
+        );
+        if (!hasBathroom) return false;
+      }
+
+      if (filters.maxPrice != null) {
+        const max = raw.priceRange?.max ?? raw.priceRange?.min;
+        if (max != null && max > filters.maxPrice) return false;
+      }
+
+      return true;
+    });
+  }, [filters, requests]);
+
+  const handleView = (req: NormalizedAgentRequest) => {
+    cacheSingleAgentRequest(req);
+    router.push(`/agent/dashboard/${req.id}`);
+  };
+
+  const handlePreviousPage = () => {
+    if (pagination?.hasPrev) setPage((prev) => Math.max(1, prev - 1));
+  };
+
+  const handleNextPage = () => {
+    if (pagination?.hasNext) setPage((prev) => prev + 1);
   };
 
   return (
-    <section className="bg-gray-50 h-screen overflow-y-auto px-4 lg:px-6 py-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 bg-white p-5 rounded-xl shadow-sm">
-        <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-          Renter Requests
-        </h1>
-
+    <section className="bg-gray-50 min-h-screen px-4 lg:px-6 py-6 overflow-y-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 bg-white p-5 rounded-xl shadow-sm gap-3">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+            Renter Requests
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            View all available pre-market requests from renters.
+          </p>
+        </div>
         <button
-          onClick={() => setFilterOpen(true)}
-          className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-2xl font-medium hover:bg-blue-700 transition mt-3 sm:mt-0"
+          onClick={() => setIsFilterOpen(true)}
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
         >
           <Filter className="w-4 h-4" />
           Filter
         </button>
       </div>
 
-      {/* ----------------------
-          TABLE
-      ---------------------- */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-[900px] w-full text-sm">
-            <thead className="bg-blue-100 text-gray-800">
-              <tr>
-                <th className="py-3 px-5 text-left">Submit Date</th>
-                <th className="py-3 px-5 text-left">Borough</th>
-                <th className="py-3 px-5 text-left">Neighborhood</th>
-                <th className="py-3 px-5 text-left">Max Price</th>
-                <th className="py-3 px-5 text-left">Bedrooms</th>
-                <th className="py-3 px-5 text-left">Bathrooms</th>
-                <th className="py-3 px-5 text-left">Status</th>
-                <th className="py-3 px-5 text-right">Actions</th>
-              </tr>
-            </thead>
+      {isLoading ? (
+        <div className="bg-white rounded-xl shadow-sm p-6 text-gray-600">
+          Loading renter requests…
+        </div>
+      ) : error ? (
+        <div className="bg-red-50 text-red-700 border border-red-100 rounded-xl p-4 text-sm">
+          {error}
+        </div>
+      ) : filteredRequests.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-sm p-6 text-gray-600">
+          No renter requests available right now.
+        </div>
+      ) : (
+        <>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-[900px] w-full text-sm">
+                <thead className="bg-blue-100 text-gray-800">
+                  <tr>
+                    <th className="py-3 px-5 text-left">Date</th>
+                    <th className="py-3 px-5 text-left">Request</th>
+                    <th className="py-3 px-5 text-left">Borough</th>
+                    <th className="py-3 px-5 text-left">Price (Max)</th>
+                    <th className="py-3 px-5 text-left">Beds</th>
+                    <th className="py-3 px-5 text-left">Baths</th>
+                    <th className="py-3 px-5 text-left">Status</th>
+                    <th className="py-3 px-5 text-right">Actions</th>
+                  </tr>
+                </thead>
 
-            <tbody>
-              {filteredData.map((req) => (
-                <tr
-                  key={req.id}
-                  className="border-t border-gray-200 hover:bg-gray-50 text-gray-700"
+                <tbody>
+                  {filteredRequests.map((req) => (
+                    <tr
+                      key={req.id}
+                      className="border-t border-gray-200 hover:bg-gray-50 text-gray-700"
+                    >
+                      <td className="py-3 px-5">
+                        <div className="font-semibold text-gray-900">
+                          {req.dateLabel}
+                        </div>
+                      </td>
+                      <td className="py-3 px-5">
+                        <div className="text-gray-900">{req.requestName}</div>
+                      </td>
+                      <td className="py-3 px-5">
+                        <div className="text-gray-900">{req.boroughsLabel}</div>
+                      </td>
+                      <td className="py-3 px-5">{req.priceMaxLabel}</td>
+                      <td className="py-3 px-5">{req.bedroomsLabel}</td>
+                      <td className="py-3 px-5">{req.bathroomsLabel}</td>
+                      <td className="py-3 px-5">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            req.status === "active"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-gray-100 text-gray-600"
+                          }`}
+                        >
+                          {req.status === "active" ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td className="py-3 px-5 flex justify-end gap-2">
+                        <button
+                          onClick={() => handleView(req)}
+                          className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"
+                        >
+                          <Eye className="w-4 h-4 text-gray-600" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {pagination && (
+            <div className="flex flex-col sm:flex-row justify-between items-center mt-6 text-sm text-gray-600 gap-3">
+              <div>
+                Page {pagination.currentPage ?? page} of{" "}
+                {pagination.totalPages ?? 1}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handlePreviousPage}
+                  disabled={!pagination.hasPrev}
+                  className="p-2 rounded-full border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <td className="py-3 px-5 whitespace-nowrap">
-                    {req.submitDate}
-                  </td>
-                  <td className="py-3 px-5">{req.borough}</td>
-                  <td className="py-3 px-5">{req.neighborhood}</td>
-                  <td className="py-3 px-5">${req.maxPrice}</td>
-                  <td className="py-3 px-5">{req.bedrooms}</td>
-                  <td className="py-3 px-5">{req.bathrooms}</td>
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={handleNextPage}
+                  disabled={!pagination.hasNext}
+                  className="p-2 rounded-full border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
 
-                  <td className="py-3 px-5">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        req.requested
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-green-100 text-green-700"
-                      }`}
-                    >
-                      {req.requested ? "Pending" : "Available"}
-                    </span>
-                  </td>
-
-                  <td className="py-3 px-5 flex justify-end gap-2">
-                    <button
-                      onClick={() => router.push(`/agent/dashboard/${req.id}`)}
-                      className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"
-                    >
-                      <Eye className="w-4 h-4 text-gray-600" />
-                    </button>
-
-                    <button className="p-2 bg-gray-100 rounded-full hover:bg-red-100">
-                      <Trash2 className="w-4 h-4 text-red-500" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Pagination (not connected to mock data yet) */}
-      <div className="flex flex-col sm:flex-row justify-between items-center mt-6 text-sm text-gray-600 gap-3">
-        <p>No of Results: {filteredData.length} out of 100</p>
-
-        <div className="flex items-center gap-2">
-          <button className="p-2 rounded-full border hover:bg-gray-100">
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button className="p-2 w-8 h-8 flex items-center justify-center rounded-md bg-blue-600 text-white">
-            1
-          </button>
-          <button className="p-2 w-8 h-8 flex items-center justify-center rounded-md border hover:bg-gray-100">
-            2
-          </button>
-          <button className="p-2 rounded-full border hover:bg-gray-100">
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* Filter Drawer */}
-      <FilterModal
-        isOpen={filterOpen}
-        onClose={() => setFilterOpen(false)}
-        onApply={handleApplyFilter}
-      />
+          <FilterModal
+            isOpen={isFilterOpen}
+            onClose={() => setIsFilterOpen(false)}
+            onApply={(f) => setFilters(f)}
+          />
+        </>
+      )}
     </section>
   );
 }
