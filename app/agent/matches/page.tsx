@@ -252,7 +252,7 @@ export default function AgentMatchesPage() {
                               : "bg-gray-100 text-gray-600"
                           }`}
                         >
-                          {req.status === "active" ? "Active" : "Inactive"}
+                          {req.status === "active" ? "Matched" : "Inactive"}
                         </span>
                       </td>
                       <td className="py-3 px-5 flex justify-end gap-2">

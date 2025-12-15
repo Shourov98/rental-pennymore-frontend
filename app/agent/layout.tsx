@@ -30,7 +30,7 @@ export default function AgentLayout({
       {/* ✅ Fixed Navbar */}
       <AgentNavbar onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
 
-      <div className="flex flex-1 pt-[72px] relative">
+      <div className="flex flex-1 pt-[72px] relative min-h-0">
         {/* ✅ Sidebar (Desktop) */}
         <div className="hidden lg:block w-64 shrink-0">
           <AgentSidebar open={true} />
@@ -66,7 +66,7 @@ export default function AgentLayout({
         )}
 
         {/* ✅ Main Content */}
-        <main className="flex-1 px-2 md:px-2 lg:px-6 py-8 bg-gray-50 overflow-y-auto">
+        <main className="flex-1 px-2 md:px-2 lg:px-6 py-8 bg-gray-50 overflow-y-auto min-h-0">
           {children}
         </main>
       </div>

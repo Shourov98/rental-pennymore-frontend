@@ -14,6 +14,7 @@ import {
   normalizeAgentRequest,
   readCachedAgentRequests,
 } from "../utils";
+import { readCachedAgentMatches } from "../../matches/utils";
 
 const unitFeatureLabels: Record<string, string> = {
   laundryInUnit: "Laundry in unit",
@@ -64,6 +65,7 @@ export default function AgentRenterRequestDetailsPage() {
   const [request, setRequest] = useState<NormalizedAgentRequest | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isRequestSent, setIsRequestSent] = useState(false);
 
   useEffect(() => {
     if (!requestId) return;
@@ -139,6 +141,15 @@ export default function AgentRenterRequestDetailsPage() {
 
     return () => controller.abort();
   }, [accessToken, requestId]);
+
+  useEffect(() => {
+    if (!requestId) return;
+    const cachedMatches = readCachedAgentMatches();
+    const alreadyMatched = cachedMatches.some(
+      (m) => m.id === requestId || m.raw?.requestId === requestId
+    );
+    setIsRequestSent(alreadyMatched);
+  }, [requestId]);
 
   const {
     movingDateRange,
@@ -244,6 +255,9 @@ export default function AgentRenterRequestDetailsPage() {
       registrationType: renterInfo.registrationType || "Not specified",
     };
   }, [renterInfo]);
+  const requestStatus = (request?.raw?.status || request?.status || "").toLowerCase();
+  const isRequestSentByStatus = requestStatus === "sent" || requestStatus === "requested";
+  const shouldDisableMatchRequest = isRequestSentByStatus || isRequestSent;
 
   return (
     <section className="flex-1 bg-gray-50 h-full min-h-0 px-4 md:px-8 py-6 overflow-y-auto">
@@ -350,11 +364,29 @@ export default function AgentRenterRequestDetailsPage() {
 
           {/* Preferences */}
           <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-[#0A093D]">
-                Renter Preference
-              </h2>
-              <div className="text-sm text-gray-600">{request.boroughsLabel}</div>
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-semibold text-[#0A093D]">
+                  Renter Preference
+                </h2>
+                <div className="text-sm text-gray-600">{request.boroughsLabel}</div>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  !shouldDisableMatchRequest &&
+                  requestId &&
+                  router.push(`/agent/matches/${requestId}`)
+                }
+                disabled={!requestId || shouldDisableMatchRequest}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-60 disabled:cursor-not-allowed ${
+                  shouldDisableMatchRequest
+                    ? "bg-gray-200 text-gray-600"
+                    : "bg-blue-600 text-white hover:bg-blue-700"
+                }`}
+              >
+                {shouldDisableMatchRequest ? "Request Sent" : "Match Request"}
+              </button>
             </div>
 
             <RenterPreferenceView data={renterPreferenceData} />
