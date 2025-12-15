@@ -151,15 +151,15 @@ export default function NeighborhoodModal({
   // RENDER
   // -------------------------------------------------------
   return (
-    <div className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-4">
-      <div className="bg-white w-full max-w-6xl h-[90vh] rounded-2xl shadow-xl flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-3 sm:p-4">
+      <div className="bg-white w-full max-w-6xl h-[90vh] rounded-2xl shadow-xl flex flex-col overflow-hidden text-sm sm:text-base">
         {/* Header */}
-        <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-white">
+        <div className="flex justify-between items-center px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-white">
           <div>
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+            <h2 className="text-base sm:text-xl font-semibold text-gray-900">
               Select Your Neighborhoods
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">
               {currentSelections.length} area
               {currentSelections.length !== 1 ? "s" : ""} selected
             </p>
@@ -174,7 +174,7 @@ export default function NeighborhoodModal({
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center gap-4 px-6 py-3 border-b border-gray-200 bg-gray-50">
+        <div className="flex items-center gap-2 sm:gap-4 px-4 sm:px-6 py-2 sm:py-3 border-b border-gray-200 bg-gray-50">
           {(["Manhattan", "Brooklyn"] as const).map((tab) => (
             <button
               key={tab}
@@ -184,7 +184,7 @@ export default function NeighborhoodModal({
                   activeTab: tab,
                 }))
               }
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base ${
                 state.activeTab === tab
                   ? "bg-blue-600 text-white shadow-sm"
                   : "text-gray-700 hover:text-gray-900 hover:bg-gray-200"
@@ -196,9 +196,9 @@ export default function NeighborhoodModal({
         </div>
 
         {/* Body */}
-        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
           {/* MAP */}
-          <div className="flex-1 min-h-[300px] border-b md:border-r border-gray-200">
+          <div className="w-full md:flex-1 h-56 md:min-h-[300px] border-b md:border-r border-gray-200">
             <MapContainer
               center={center}
               zoom={12}
@@ -245,24 +245,24 @@ export default function NeighborhoodModal({
           </div>
 
           {/* LIST */}
-          <div className="flex-1 flex flex-col">
-            <div className="p-4">
-              <h3 className="font-medium text-gray-900">
+          <div className="flex-1 flex flex-col min-h-0">
+            <div className="px-4 sm:px-5 py-3 sm:py-4">
+              <h3 className="font-medium text-gray-900 text-sm sm:text-base">
                 Neighborhoods in {state.activeTab}
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-xs sm:text-sm text-gray-600">
                 Click to select or deselect
               </p>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex-1 overflow-y-auto px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 min-h-0">
               {neighborhoods[state.activeTab].map((area) => {
                 const isChecked = currentSelections.includes(area.name);
 
                 return (
                   <label
                     key={area.name}
-                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                    className={`flex items-center gap-2 sm:gap-3 p-3 rounded-lg border cursor-pointer transition-all text-sm sm:text-base ${
                       isChecked
                         ? "border-blue-500 bg-blue-50"
                         : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
@@ -281,17 +281,17 @@ export default function NeighborhoodModal({
             </div>
 
             {/* Footer */}
-            <div className="flex gap-3 p-4 bg-gray-50">
+            <div className="flex gap-2 sm:gap-3 p-4 bg-gray-50">
               <button
                 onClick={handleClearAll}
-                className="flex-1 bg-gray-200 text-gray-800 py-3 rounded-lg hover:bg-gray-300"
+                className="flex-1 bg-gray-200 text-gray-800 py-2.5 sm:py-3 rounded-lg hover:bg-gray-300 text-sm sm:text-base"
               >
                 Clear All
               </button>
 
               <button
                 onClick={handleApply}
-                className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700"
+                className="flex-1 bg-blue-600 text-white py-2.5 sm:py-3 rounded-lg hover:bg-blue-700 text-sm sm:text-base"
               >
                 Apply Selection
               </button>

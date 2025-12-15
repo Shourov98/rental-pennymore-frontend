@@ -33,6 +33,17 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
     "" | "Manhattan" | "Brooklyn"
   >("");
 
+  const selectedNeighborhoods = useMemo(
+    () =>
+      locations.flatMap((loc) =>
+        (loc.neighborhoods || []).map((n) => ({
+          borough: loc.borough,
+          neighborhood: n,
+        }))
+      ),
+    [locations]
+  );
+
   // SEARCH LOGIC
   const allNeighborhoods = useMemo(
     () =>
@@ -98,6 +109,34 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
+
+          {selectedNeighborhoods.length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs text-gray-500 mb-2">
+                Selected neighborhoods
+              </p>
+              <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto pr-1">
+                {selectedNeighborhoods.map((item) => (
+                  <span
+                    key={`${item.borough}-${item.neighborhood}`}
+                    className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 text-xs px-3 py-1 rounded-full"
+                  >
+                    <b className="font-semibold">{item.borough}</b>
+                    <span>{item.neighborhood}</span>
+                    <button
+                      onClick={() =>
+                        toggleNeighborhood(item.borough, item.neighborhood)
+                      }
+                      aria-label={`Remove ${item.neighborhood}`}
+                      className="hover:text-blue-900 transition"
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* SEARCH RESULTS */}
           <div className="max-h-48 overflow-y-auto mb-4 rounded-lg p-2 bg-gray-100">
