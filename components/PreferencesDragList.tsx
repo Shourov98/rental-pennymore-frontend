@@ -7,6 +7,7 @@ import {
   DndContext,
   closestCenter,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragEndEvent,
@@ -40,7 +41,17 @@ export default function PreferencesDragList({ onChange, initialList }: Props) {
     }
   }, [initialList, onChange]);
 
-  const sensors = useSensors(useSensor(PointerSensor));
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 5,
+      },
+    })
+  );
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -110,12 +121,15 @@ function SortableItem({ id, index }: { id: string; index: number }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    touchAction: "none", // allow touch drag without the browser turning it into a scroll gesture
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
+      {...listeners}
+      {...attributes}
       className={`flex items-center gap-3 bg-gray-50 border rounded-lg px-4 py-2 select-none
         ${
           isDragging
@@ -123,11 +137,7 @@ function SortableItem({ id, index }: { id: string; index: number }) {
             : "border-gray-200 hover:bg-gray-100"
         }`}
     >
-      <div
-        {...listeners}
-        {...attributes}
-        className="cursor-grab active:cursor-grabbing"
-      >
+      <div className="cursor-grab active:cursor-grabbing">
         <GripVertical size={16} className="text-zinc-500" />
       </div>
 
