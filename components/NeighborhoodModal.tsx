@@ -198,7 +198,7 @@ export default function NeighborhoodModal({
         {/* Body */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
           {/* MAP */}
-          <div className="w-full md:flex-1 h-56 md:min-h-[300px] border-b md:border-r border-gray-200">
+          <div className="w-full md:flex-1 h-56 md:h-full border-b md:border-r border-gray-200">
             <MapContainer
               center={center}
               zoom={12}
