@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -10,6 +10,8 @@ const API_BASE_URL =
 
 export default function SignupPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const referralFromUrl = searchParams.get("ref");
   const [activeTab, setActiveTab] = useState<"renter" | "agent">("renter");
   const [agree, setAgree] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -24,6 +26,7 @@ export default function SignupPage() {
     brokerageName: "",
     email: "",
     password: "",
+    referralCode: "",
   });
 
   const isAgent = activeTab === "agent";
@@ -51,6 +54,16 @@ export default function SignupPage() {
     setStatusMessage(null);
     setLoading(false);
   };
+
+  useEffect(() => {
+    const referralFromUrl = searchParams.get("ref");
+    if (!referralFromUrl) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      referralCode: prev.referralCode || referralFromUrl,
+    }));
+  }, [referralFromUrl]);
 
   const resendVerification = async (email: string) => {
     const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
@@ -119,17 +132,30 @@ export default function SignupPage() {
       }
 
       // renter flow
+      const renterPayload: {
+        email: string;
+        password: string;
+        fullName: string;
+        phoneNumber: string;
+        referralCode?: string;
+      } = {
+        email,
+        password: formData.password,
+        fullName: formData.fullName.trim(),
+        phoneNumber: formData.phoneNumber.trim(),
+      };
+
+      const referralCode = formData.referralCode.trim();
+      if (referralCode) {
+        renterPayload.referralCode = referralCode;
+      }
+
       const response = await fetch(`${API_BASE_URL}/renter/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email,
-          password: formData.password,
-          fullName: formData.fullName.trim(),
-          phoneNumber: formData.phoneNumber.trim(),
-        }),
+        body: JSON.stringify(renterPayload),
       });
 
       const data = await response.json();
