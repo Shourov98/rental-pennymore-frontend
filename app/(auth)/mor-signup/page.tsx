@@ -1,16 +1,103 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { useState } from "react";
 
-export default function SignupPage() {
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
+
+type Questionnaire = {
+  lookingToPurchase: boolean;
+  purchaseTimeline: string;
+  buyerSpecialistNeeded: boolean;
+  renterSpecialistNeeded: boolean;
+};
+
+function SignupPageInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [agree, setAgree] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phoneNumber: "",
+    email: "",
+  });
+  const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(
+    null
+  );
+  const referralCode = searchParams.get("referralCode") || "";
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const rawQuestionnaire = searchParams.get("questionnaire");
+    if (!rawQuestionnaire) {
+      setQuestionnaire(null);
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(rawQuestionnaire) as Questionnaire;
+      setQuestionnaire(parsed);
+    } catch {
+      setQuestionnaire(null);
+    }
+  }, [searchParams]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // handle signup logic here
+    setStatusMessage(null);
+    if (!questionnaire) {
+      setStatusMessage({
+        type: "error",
+        message: "Missing questionnaire data. Please restart the flow.",
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/renter/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email.trim(),
+          fullName: formData.fullName.trim(),
+          phoneNumber: formData.phoneNumber.trim(),
+          referralCode,
+          questionnaire,
+        }),
+      });
+
+      console.log(response);
+
+      const data = await response.json();
+      if (!response.ok || !data?.success) {
+        throw new Error(
+          data?.message ||
+            "Unable to register right now. Please try again later."
+        );
+      }
+
+      setStatusMessage({
+        type: "success",
+        message: data?.message || "Registration complete.",
+      });
+      router.push("/mor-confirmation");
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to register right now. Please try again later.";
+      setStatusMessage({ type: "error", message });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -50,6 +137,10 @@ export default function SignupPage() {
             <input
               type="text"
               placeholder="Name"
+              value={formData.fullName}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, fullName: e.target.value }))
+              }
               className="flex-1 bg-transparent focus:outline-none text-text-secondary text-sm sm:text-base"
             />
           </div>
@@ -71,6 +162,13 @@ export default function SignupPage() {
             <input
               type="tel"
               placeholder="Phone no"
+              value={formData.phoneNumber}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  phoneNumber: e.target.value,
+                }))
+              }
               className="flex-1 bg-transparent focus:outline-none text-text-secondary text-sm sm:text-base"
             />
           </div>
@@ -93,6 +191,10 @@ export default function SignupPage() {
               type="email"
               placeholder="Enter email"
               required
+              value={formData.email}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, email: e.target.value }))
+              }
               className="flex-1 bg-transparent focus:outline-none text-text-secondary text-sm sm:text-base"
             />
           </div>
@@ -117,16 +219,25 @@ export default function SignupPage() {
         {/* Signup Button */}
         <button
           type="submit"
-          disabled={!agree}
-          onClick={() => router.push("/mor-confirmation")}
+          disabled={!agree || loading}
           className="
             w-full bg-action hover:bg-action-hover text-text-inverted
             py-3 sm:py-3.5 rounded-lg transition
             disabled:opacity-70
           "
         >
-          Signup
+          {loading ? "Signing up..." : "Signup"}
         </button>
+
+        {statusMessage && (
+          <p
+            className={`text-sm sm:text-base ${
+              statusMessage.type === "error" ? "text-red-600" : "text-green-600"
+            }`}
+          >
+            {statusMessage.message}
+          </p>
+        )}
 
         {/* Footer */}
         <div className="text-center text-sm sm:text-base mt-2">
@@ -145,5 +256,13 @@ export default function SignupPage() {
         </div>
       </form>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="p-4 text-center">Loading...</div>}>
+      <SignupPageInner />
+    </Suspense>
   );
 }

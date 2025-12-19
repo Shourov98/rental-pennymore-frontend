@@ -12,6 +12,8 @@ type Feature = {
   properties?: {
     neighborhood?: string;
     borough?: string;
+    ntaname?: string;
+    boroname?: string;
   };
 };
 
@@ -39,8 +41,10 @@ function extractNeighborhoods(
   geojson: FeatureCollection
 ): Record<string, string[]> {
   return geojson.features.reduce((acc, feature) => {
-    const borough = feature.properties?.borough;
-    const neighborhood = feature.properties?.neighborhood;
+    const borough =
+      feature.properties?.boroname || feature.properties?.borough;
+    const neighborhood =
+      feature.properties?.ntaname || feature.properties?.neighborhood;
 
     if (!borough || !neighborhood) return acc;
     if (!TARGET_BOROUGHS.includes(borough)) return acc;

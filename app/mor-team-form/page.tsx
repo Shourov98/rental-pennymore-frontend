@@ -1,17 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function RentersEdgeForm() {
+function RentersEdgeFormInner() {
   const [agree, setAgree] = useState(false);
   const [registerOption, setRegisterOption] = useState("");
   const [buyerOption, setBuyerOption] = useState("");
-  const [text, setText] = useState("");
+  const [purchaseTimeline, setPurchaseTimeline] = useState("");
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const referralCode =
+    searchParams.get("referralCode") || searchParams.get("ref") || "";
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!registerOption || !buyerOption) {
+      return;
+    }
+
+    if (registerOption === "no" || buyerOption === "none") {
+      router.push("/");
+      return;
+    }
+
+    const questionnaire = {
+      lookingToPurchase: registerOption === "yes",
+      purchaseTimeline: purchaseTimeline.trim(),
+      buyerSpecialistNeeded: buyerOption === "buyer",
+      renterSpecialistNeeded: buyerOption === "renter",
+    };
+
+    const params = new URLSearchParams();
+    if (referralCode) {
+      params.set("referralCode", referralCode);
+    }
+    params.set("questionnaire", JSON.stringify(questionnaire));
+    router.push(`/mor-signup?${params.toString()}`);
+  };
 
   return (
     <section className="w-full min-h-screen bg-[#F8F9FB] px-4 md:px-12 py-10 flex justify-center">
@@ -86,7 +115,7 @@ export default function RentersEdgeForm() {
         </div>
 
         {/* Form Section */}
-        <form className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-8">
           {/* Register Option */}
           <div>
             <p className="font-medium text-gray-800 mb-2">
@@ -126,8 +155,8 @@ export default function RentersEdgeForm() {
               purchase?
             </p>
             <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
+              value={purchaseTimeline}
+              onChange={(e) => setPurchaseTimeline(e.target.value)}
               placeholder="Text here"
               className="w-full text-gray-700 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
               rows={2}
@@ -196,9 +225,8 @@ export default function RentersEdgeForm() {
               Terms & Conditions
             </a>
             <button
-              type="button"
+              type="submit"
               disabled={!agree}
-              onClick={() => router.push("/")}
               className={`px-6 py-2 rounded-lg text-white font-medium ${
                 agree
                   ? "bg-blue-600 hover:bg-blue-700"
@@ -211,6 +239,14 @@ export default function RentersEdgeForm() {
         </form>
       </div>
     </section>
+  );
+}
+
+export default function RentersEdgeForm() {
+  return (
+    <Suspense fallback={<div className="p-4 text-center">Loading...</div>}>
+      <RentersEdgeFormInner />
+    </Suspense>
   );
 }
 
