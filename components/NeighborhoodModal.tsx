@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { X } from "lucide-react";
 import dynamic from "next/dynamic";
+import boroughNeighborhoods from "@/data/neighborhoods.manhattan-brooklyn";
 import { neighborhoods } from "@/data/neighborhoods";
 import type { LatLngExpression } from "leaflet";
 
@@ -76,6 +77,30 @@ export default function NeighborhoodModal({
     });
   }, [isOpen, locations, selectedBorough]); // ONLY trigger when modal becomes visible
 
+  const currentSelections = state.selectedAreasByBorough[state.activeTab];
+  const activeBoroughData = boroughNeighborhoods[state.activeTab];
+
+  const neighborhoodLabelByKey = useMemo(() => {
+    const map = new globalThis.Map<string, string>();
+    activeBoroughData.sections.forEach((section) => {
+      section.items.forEach((item) => {
+        map.set(item.key, item.label);
+      });
+    });
+    return map;
+  }, [activeBoroughData.sections]);
+
+  const geometryByLabel = useMemo(() => {
+    const map = new globalThis.Map<
+      string,
+      (typeof neighborhoods)["Manhattan"][number]
+    >();
+    neighborhoods[state.activeTab].forEach((area) => {
+      map.set(area.name, area);
+    });
+    return map;
+  }, [state.activeTab]);
+
   // -------------------------------------------------------
   // EARLY RETURN AFTER HOOKS (no conditional hooks error)
   // -------------------------------------------------------
@@ -84,18 +109,16 @@ export default function NeighborhoodModal({
   // -------------------------------------------------------
   // Toggle single neighborhood
   // -------------------------------------------------------
-  const handleToggleArea = (name: string) => {
+  const handleToggleArea = (key: string) => {
     setState((prev) => ({
       ...prev,
       selectedAreasByBorough: {
         ...prev.selectedAreasByBorough,
         [prev.activeTab]: prev.selectedAreasByBorough[prev.activeTab].includes(
-          name
+          key
         )
-          ? prev.selectedAreasByBorough[prev.activeTab].filter(
-              (x) => x !== name
-            )
-          : [...prev.selectedAreasByBorough[prev.activeTab], name],
+          ? prev.selectedAreasByBorough[prev.activeTab].filter((x) => x !== key)
+          : [...prev.selectedAreasByBorough[prev.activeTab], key],
       },
     }));
   };
@@ -145,8 +168,6 @@ export default function NeighborhoodModal({
   const center: LatLngExpression =
     state.activeTab === "Manhattan" ? [40.7831, -73.9712] : [40.6782, -73.9442];
 
-  const currentSelections = state.selectedAreasByBorough[state.activeTab];
-
   // -------------------------------------------------------
   // RENDER
   // -------------------------------------------------------
@@ -174,7 +195,7 @@ export default function NeighborhoodModal({
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center gap-2 sm:gap-4 px-4 sm:px-6 py-2 sm:py-3 border-b border-gray-200 bg-gray-50">
+        <div className="flex items-center gap-2 sm:gap-4 px-4 sm:px-6 py-1 sm:py-2 border-b border-gray-200 bg-gray-50">
           {(["Manhattan", "Brooklyn"] as const).map((tab) => (
             <button
               key={tab}
@@ -208,8 +229,12 @@ export default function NeighborhoodModal({
             >
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-              {neighborhoods[state.activeTab].map((area) => {
-                if (!currentSelections.includes(area.name)) return null;
+              {currentSelections.map((key) => {
+                const label = neighborhoodLabelByKey.get(key);
+                if (!label) return null;
+
+                const area = geometryByLabel.get(label);
+                if (!area) return null;
 
                 if (area.geometryType === "MultiPolygon") {
                   return (area.coords as LatLngExpression[][]).map(
@@ -255,29 +280,40 @@ export default function NeighborhoodModal({
               </p>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 min-h-0">
-              {neighborhoods[state.activeTab].map((area) => {
-                const isChecked = currentSelections.includes(area.name);
+            <div className="flex-1 overflow-y-auto px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2 min-h-0">
+              {activeBoroughData.sections.map((section) => (
+                <div key={section.title} className="sm:col-span-2">
+                  <p className="text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+                    {section.title}
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                    {section.items.map((item) => {
+                      const isChecked = currentSelections.includes(item.key);
 
-                return (
-                  <label
-                    key={area.name}
-                    className={`flex items-center gap-2 sm:gap-3 p-3 rounded-lg border cursor-pointer transition-all text-sm sm:text-base ${
-                      isChecked
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isChecked}
-                      onChange={() => handleToggleArea(area.name)}
-                      className="w-4 h-4 accent-blue-600"
-                    />
-                    <span className="text-sm text-gray-900">{area.name}</span>
-                  </label>
-                );
-              })}
+                      return (
+                        <label
+                          key={item.key}
+                          className={`flex items-center gap-2 sm:gap-1 px-3 py-1 rounded-lg cursor-pointer transition-all text-sm sm:text-base ${
+                            isChecked
+                              ? "border-blue-500 bg-blue-50"
+                              : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => handleToggleArea(item.key)}
+                            className="w-4 h-4 accent-blue-600"
+                          />
+                          <span className="text-sm text-gray-900">
+                            {item.label}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Footer */}

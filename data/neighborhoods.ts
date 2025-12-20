@@ -1,4 +1,4 @@
-import ntaData from "@/nyc-nta-manhattan-brooklyn.json";
+import ntaData from "@/data/exact-neighborhoods.json";
 import type {
   Feature,
   Polygon as GeoPolygon,
