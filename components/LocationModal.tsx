@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { X, Search, Map } from "lucide-react";
+import { X, Search, Map as MapIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -11,7 +11,7 @@ import {
   removeNeighborhood,
 } from "@/store/slices/preferenceSlice";
 
-import boroughNeighborhoods from "@/data/boroughNeighborhoods";
+import boroughNeighborhoods from "@/data/neighborhoods.manhattan-brooklyn";
 
 const NeighborhoodModal = dynamic(() => import("./NeighborhoodModal"), {
   ssr: false,
@@ -33,24 +33,40 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
     "" | "Manhattan" | "Brooklyn"
   >("");
 
-  const selectedNeighborhoods = useMemo(
-    () =>
-      locations.flatMap((loc) =>
-        (loc.neighborhoods || []).map((n) => ({
-          borough: loc.borough,
-          neighborhood: n,
-        }))
-      ),
-    [locations]
-  );
-
   // SEARCH LOGIC
   const allNeighborhoods = useMemo(
     () =>
-      Object.entries(boroughNeighborhoods).flatMap(([borough, neighborhoods]) =>
-        neighborhoods.map((n) => ({ borough, neighborhood: n }))
+      Object.entries(boroughNeighborhoods).flatMap(([borough, data]) =>
+        data.sections.flatMap((section) =>
+          section.items.map((item) => ({
+            borough,
+            section: section.title,
+            key: item.key,
+            label: item.label,
+          }))
+        )
       ),
     []
+  );
+
+  const neighborhoodLabelByKey = useMemo(() => {
+    const map = new globalThis.Map<string, string>();
+    allNeighborhoods.forEach((item) => {
+      map.set(`${item.borough}:${item.key}`, item.label);
+    });
+    return map;
+  }, [allNeighborhoods]);
+
+  const selectedNeighborhoods = useMemo(
+    () =>
+      locations.flatMap((loc) =>
+        (loc.neighborhoods || []).map((key) => ({
+          borough: loc.borough,
+          key,
+          label: neighborhoodLabelByKey.get(`${loc.borough}:${key}`) ?? key,
+        }))
+      ),
+    [locations, neighborhoodLabelByKey]
   );
 
   const searchResults = useMemo(() => {
@@ -61,21 +77,22 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
     return allNeighborhoods.filter(
       (item) =>
         item.borough.toLowerCase().includes(query) ||
-        item.neighborhood.toLowerCase().includes(query)
+        item.section.toLowerCase().includes(query) ||
+        item.label.toLowerCase().includes(query)
     );
   }, [allNeighborhoods, search]);
 
   if (!isOpen) return null;
 
   // SELECT / REMOVE
-  const toggleNeighborhood = (borough: string, neighborhood: string) => {
+  const toggleNeighborhood = (borough: string, neighborhoodKey: string) => {
     const boroughEntry = locations.find((l) => l.borough === borough);
-    const isSelected = boroughEntry?.neighborhoods.includes(neighborhood);
+    const isSelected = boroughEntry?.neighborhoods.includes(neighborhoodKey);
 
     if (isSelected) {
-      dispatch(removeNeighborhood({ borough, neighborhood }));
+      dispatch(removeNeighborhood({ borough, neighborhood: neighborhoodKey }));
     } else {
-      dispatch(addNeighborhood({ borough, neighborhood }));
+      dispatch(addNeighborhood({ borough, neighborhood: neighborhoodKey }));
     }
   };
 
@@ -118,16 +135,16 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
               <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto pr-1">
                 {selectedNeighborhoods.map((item) => (
                   <span
-                    key={`${item.borough}-${item.neighborhood}`}
+                    key={`${item.borough}-${item.key}`}
                     className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 text-xs px-3 py-1 rounded-full"
                   >
                     <b className="font-semibold">{item.borough}</b>
-                    <span>{item.neighborhood}</span>
+                    <span>{item.label}</span>
                     <button
                       onClick={() =>
-                        toggleNeighborhood(item.borough, item.neighborhood)
+                        toggleNeighborhood(item.borough, item.key)
                       }
-                      aria-label={`Remove ${item.neighborhood}`}
+                      aria-label={`Remove ${item.label}`}
                       className="hover:text-blue-900 transition"
                     >
                       <X size={12} />
@@ -143,16 +160,16 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
             {searchResults.length === 0 ? (
               <p className="text-sm text-gray-500">No results</p>
             ) : (
-              searchResults.map((item, i) => {
+              searchResults.map((item) => {
                 const isSelected = locations
                   .find((l) => l.borough === item.borough)
-                  ?.neighborhoods.includes(item.neighborhood);
+                  ?.neighborhoods.includes(item.key);
 
                 return (
                   <button
-                    key={i}
+                    key={`${item.borough}-${item.key}`}
                     onClick={() =>
-                      toggleNeighborhood(item.borough, item.neighborhood)
+                      toggleNeighborhood(item.borough, item.key)
                     }
                     className={`block w-full text-left px-3 py-2 text-sm rounded-md ${
                       isSelected
@@ -160,7 +177,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
                         : "hover:bg-gray-200 text-gray-700"
                     }`}
                   >
-                    <b>{item.borough}</b> — {item.neighborhood}
+                    <b>{item.borough}</b> — {item.label}
                   </button>
                 );
               })
@@ -172,7 +189,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
             onClick={() => openNeighborhoodModal("")}
             className="flex items-center gap-2 text-blue-600 font-medium text-sm mb-6 hover:underline mx-auto"
           >
-            <Map size={18} className="text-blue-600" />
+            <MapIcon size={18} className="text-blue-600" />
             See all neighborhoods
           </button>
 

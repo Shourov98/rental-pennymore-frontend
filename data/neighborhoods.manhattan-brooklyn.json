@@ -1,121 +1,466 @@
 {
   "Manhattan": [
-    "Midtown East – Sutton Place",
-    "Midtown-Times Square",
-    "Midtown South-Flatiron-Union Square",
-    "Murray Hill-Kips Bay",
-    "East Village",
-    "Greenwich Village",
-    "Chelsea-Hudson Yards",
-    "Gramercy",
-    "SoHo-Hudson Square",
-    "East Midtown-Turtle Bay",
-    "Little Italy",
-    "Chinatown-Two Bridges",
-    "Lower East Side",
-    "Two Bridges",
-    "Civic Center",
-    "Tribeca-Civic Center",
-    "Financial District-Battery Park City",
-    "Battery Park City",
-    "Upper East Side – Lenox Hill",
-    "Roosevelt Island",
-    "Upper East Side-Yorkville",
-    "Upper East Side-Carnegie Hill",
-    "West Village",
-    "Central Park",
-    "Midtown South",
-    "Kips Bay",
-    "Stuyvesant Town-Peter Cooper Village",
-    "Governors Island-Ellis Island-Liberty Island",
-    "East Harlem (South)",
-    "Hell's Kitchen",
-    "United Nations",
-    "Upper West Side-Lincoln Square",
-    "Upper West Side (Central)",
-    "Upper West Side-Manhattan Valley",
-    "Morningside Heights",
-    "Manhattanville-West Harlem",
-    "Hamilton Heights-Sugar Hill",
-    "Harlem (South)",
-    "Harlem (North)",
-    "East Harlem (North)",
-    "Randall's Island",
-    "Washington Heights (South)",
-    "Washington Heights (North)",
-    "Inwood",
-    "Highbridge Park",
-    "Inwood Hill Park"
+    {
+      "code": null,
+      "name": "Midtown East – Sutton Place"
+    },
+    {
+      "code": "MN0502",
+      "name": "Midtown-Times Square"
+    },
+    {
+      "code": "MN0501",
+      "name": "Midtown South-Flatiron-Union Square"
+    },
+    {
+      "code": "MN0603",
+      "name": "Murray Hill-Kips Bay"
+    },
+    {
+      "code": "MN0303",
+      "name": "East Village"
+    },
+    {
+      "code": "MN0202",
+      "name": "Greenwich Village"
+    },
+    {
+      "code": "MN0401",
+      "name": "Chelsea-Hudson Yards"
+    },
+    {
+      "code": "MN0602",
+      "name": "Gramercy"
+    },
+    {
+      "code": "MN0201",
+      "name": "SoHo-Hudson Square"
+    },
+    {
+      "code": "MN0604",
+      "name": "East Midtown-Turtle Bay"
+    },
+    {
+      "code": null,
+      "name": "Little Italy"
+    },
+    {
+      "code": "MN0301",
+      "name": "Chinatown-Two Bridges"
+    },
+    {
+      "code": "MN0302",
+      "name": "Lower East Side"
+    },
+    {
+      "code": null,
+      "name": "Two Bridges"
+    },
+    {
+      "code": null,
+      "name": "Civic Center"
+    },
+    {
+      "code": "MN0102",
+      "name": "Tribeca-Civic Center"
+    },
+    {
+      "code": "MN0101",
+      "name": "Financial District-Battery Park City"
+    },
+    {
+      "code": null,
+      "name": "Battery Park City"
+    },
+    {
+      "code": "MN0801",
+      "name": "Upper East Side – Lenox Hill"
+    },
+    {
+      "code": null,
+      "name": "Roosevelt Island"
+    },
+    {
+      "code": "MN0803",
+      "name": "Upper East Side-Yorkville"
+    },
+    {
+      "code": "MN0802",
+      "name": "Upper East Side-Carnegie Hill"
+    },
+    {
+      "code": "MN0203",
+      "name": "West Village"
+    },
+    {
+      "code": "MN6491",
+      "name": "Central Park"
+    },
+    {
+      "code": null,
+      "name": "Midtown South"
+    },
+    {
+      "code": null,
+      "name": "Kips Bay"
+    },
+    {
+      "code": "MN0601",
+      "name": "Stuyvesant Town-Peter Cooper Village"
+    },
+    {
+      "code": "MN0191",
+      "name": "Governors Island-Ellis Island-Liberty Island"
+    },
+    {
+      "code": "MN1101",
+      "name": "East Harlem (South)"
+    },
+    {
+      "code": "MN0402",
+      "name": "Hell's Kitchen"
+    },
+    {
+      "code": "MN0661",
+      "name": "United Nations"
+    },
+    {
+      "code": "MN0701",
+      "name": "Upper West Side-Lincoln Square"
+    },
+    {
+      "code": "MN0702",
+      "name": "Upper West Side (Central)"
+    },
+    {
+      "code": "MN0703",
+      "name": "Upper West Side-Manhattan Valley"
+    },
+    {
+      "code": "MN0901",
+      "name": "Morningside Heights"
+    },
+    {
+      "code": "MN0902",
+      "name": "Manhattanville-West Harlem"
+    },
+    {
+      "code": "MN0903",
+      "name": "Hamilton Heights-Sugar Hill"
+    },
+    {
+      "code": "MN1001",
+      "name": "Harlem (South)"
+    },
+    {
+      "code": "MN1002",
+      "name": "Harlem (North)"
+    },
+    {
+      "code": "MN1102",
+      "name": "East Harlem (North)"
+    },
+    {
+      "code": "MN1191",
+      "name": "Randall's Island"
+    },
+    {
+      "code": "MN1201",
+      "name": "Washington Heights (South)"
+    },
+    {
+      "code": "MN1202",
+      "name": "Washington Heights (North)"
+    },
+    {
+      "code": "MN1203",
+      "name": "Inwood"
+    },
+    {
+      "code": "MN1291",
+      "name": "Highbridge Park"
+    },
+    {
+      "code": "MN1292",
+      "name": "Inwood Hill Park"
+    }
   ],
   "Brooklyn": [
-    "Greenpoint",
-    "Williamsburg",
-    "South Williamsburg",
-    "East Williamsburg",
-    "Brooklyn Heights",
-    "Downtown Brooklyn-DUMBO-Boerum Hill",
-    "Fort Greene",
-    "Clinton Hill",
-    "Brooklyn Navy Yard",
-    "Bedford-Stuyvesant (West)",
-    "Bedford-Stuyvesant (East)",
-    "Bushwick (West)",
-    "Bushwick (East)",
-    "The Evergreens Cemetery",
-    "Cypress Hills",
-    "East New York (North)",
-    "East New York-New Lots",
-    "Spring Creek-Starrett City",
-    "East New York-City Line",
-    "Highland Park-Cypress Hills Cemeteries (South)",
-    "Carroll Gardens-Cobble Hill-Gowanus-Red Hook",
-    "Park Slope",
-    "Windsor Terrace-South Slope",
-    "Sunset Park (West)",
-    "Sunset Park (Central)",
-    "Green-Wood Cemetery",
-    "Prospect Heights",
-    "Crown Heights (North)",
-    "Lincoln Terrace Park",
-    "Crown Heights (South)",
-    "Prospect Lefferts Gardens-Wingate",
-    "Bay Ridge",
-    "Dyker Heights",
-    "Fort Hamilton",
-    "Dyker Beach Park",
-    "Bensonhurst",
-    "Bath Beach",
-    "Gravesend (West)",
-    "Sunset Park (East)-Borough Park (West)",
-    "Borough Park",
-    "Kensington",
-    "Mapleton-Midwood (West)",
-    "Gravesend (South)",
-    "Coney Island-Sea Gate",
-    "Brighton Beach",
-    "Calvert Vaux Park",
-    "Flatbush",
-    "Flatbush (West)-Ditmas Park-Parkville",
-    "Midwood",
-    "Gravesend (East)-Homecrest",
-    "Madison",
-    "Sheepshead Bay-Manhattan Beach-Gerritsen Beach",
-    "Ocean Hill",
-    "Brownsville",
-    "East Flatbush-Erasmus",
-    "East Flatbush-Farragut",
-    "East Flatbush-Rugby",
-    "East Flatbush-Remsen Village",
-    "Holy Cross Cemetery",
-    "Flatlands",
-    "Marine Park-Mill Basin-Bergen Beach",
-    "Canarsie",
-    "Marine Park-Plumb Island",
-    "McGuire Fields",
-    "Canarsie Park & Pier",
-    "Prospect Park",
-    "Barren Island-Floyd Bennett Field",
-    "Jamaica Bay (West)",
-    "Shirley Chisholm State Park"
+    {
+      "code": "BK0101",
+      "name": "Greenpoint"
+    },
+    {
+      "code": "BK0102",
+      "name": "Williamsburg"
+    },
+    {
+      "code": "BK0103",
+      "name": "South Williamsburg"
+    },
+    {
+      "code": "BK0104",
+      "name": "East Williamsburg"
+    },
+    {
+      "code": "BK0201",
+      "name": "Brooklyn Heights"
+    },
+    {
+      "code": "BK0202",
+      "name": "Downtown Brooklyn-DUMBO-Boerum Hill"
+    },
+    {
+      "code": "BK0203",
+      "name": "Fort Greene"
+    },
+    {
+      "code": "BK0204",
+      "name": "Clinton Hill"
+    },
+    {
+      "code": "BK0261",
+      "name": "Brooklyn Navy Yard"
+    },
+    {
+      "code": "BK0301",
+      "name": "Bedford-Stuyvesant (West)"
+    },
+    {
+      "code": "BK0302",
+      "name": "Bedford-Stuyvesant (East)"
+    },
+    {
+      "code": "BK0401",
+      "name": "Bushwick (West)"
+    },
+    {
+      "code": "BK0402",
+      "name": "Bushwick (East)"
+    },
+    {
+      "code": "BK0471",
+      "name": "The Evergreens Cemetery"
+    },
+    {
+      "code": "BK0501",
+      "name": "Cypress Hills"
+    },
+    {
+      "code": "BK0502",
+      "name": "East New York (North)"
+    },
+    {
+      "code": "BK0503",
+      "name": "East New York-New Lots"
+    },
+    {
+      "code": "BK0504",
+      "name": "Spring Creek-Starrett City"
+    },
+    {
+      "code": "BK0505",
+      "name": "East New York-City Line"
+    },
+    {
+      "code": "BK0571",
+      "name": "Highland Park-Cypress Hills Cemeteries (South)"
+    },
+    {
+      "code": "BK0601",
+      "name": "Carroll Gardens-Cobble Hill-Gowanus-Red Hook"
+    },
+    {
+      "code": "BK0602",
+      "name": "Park Slope"
+    },
+    {
+      "code": "BK0701",
+      "name": "Windsor Terrace-South Slope"
+    },
+    {
+      "code": "BK0702",
+      "name": "Sunset Park (West)"
+    },
+    {
+      "code": "BK0703",
+      "name": "Sunset Park (Central)"
+    },
+    {
+      "code": "BK0771",
+      "name": "Green-Wood Cemetery"
+    },
+    {
+      "code": "BK0801",
+      "name": "Prospect Heights"
+    },
+    {
+      "code": "BK0802",
+      "name": "Crown Heights (North)"
+    },
+    {
+      "code": "BK0891",
+      "name": "Lincoln Terrace Park"
+    },
+    {
+      "code": "BK0901",
+      "name": "Crown Heights (South)"
+    },
+    {
+      "code": "BK0902",
+      "name": "Prospect Lefferts Gardens-Wingate"
+    },
+    {
+      "code": "BK1001",
+      "name": "Bay Ridge"
+    },
+    {
+      "code": "BK1002",
+      "name": "Dyker Heights"
+    },
+    {
+      "code": "BK1061",
+      "name": "Fort Hamilton"
+    },
+    {
+      "code": "BK1091",
+      "name": "Dyker Beach Park"
+    },
+    {
+      "code": "BK1101",
+      "name": "Bensonhurst"
+    },
+    {
+      "code": "BK1102",
+      "name": "Bath Beach"
+    },
+    {
+      "code": "BK1103",
+      "name": "Gravesend (West)"
+    },
+    {
+      "code": "BK1201",
+      "name": "Sunset Park (East)-Borough Park (West)"
+    },
+    {
+      "code": "BK1202",
+      "name": "Borough Park"
+    },
+    {
+      "code": "BK1203",
+      "name": "Kensington"
+    },
+    {
+      "code": "BK1204",
+      "name": "Mapleton-Midwood (West)"
+    },
+    {
+      "code": "BK1301",
+      "name": "Gravesend (South)"
+    },
+    {
+      "code": "BK1302",
+      "name": "Coney Island-Sea Gate"
+    },
+    {
+      "code": "BK1303",
+      "name": "Brighton Beach"
+    },
+    {
+      "code": "BK1391",
+      "name": "Calvert Vaux Park"
+    },
+    {
+      "code": "BK1401",
+      "name": "Flatbush"
+    },
+    {
+      "code": "BK1402",
+      "name": "Flatbush (West)-Ditmas Park-Parkville"
+    },
+    {
+      "code": "BK1403",
+      "name": "Midwood"
+    },
+    {
+      "code": "BK1501",
+      "name": "Gravesend (East)-Homecrest"
+    },
+    {
+      "code": "BK1502",
+      "name": "Madison"
+    },
+    {
+      "code": "BK1503",
+      "name": "Sheepshead Bay-Manhattan Beach-Gerritsen Beach"
+    },
+    {
+      "code": "BK1601",
+      "name": "Ocean Hill"
+    },
+    {
+      "code": "BK1602",
+      "name": "Brownsville"
+    },
+    {
+      "code": "BK1701",
+      "name": "East Flatbush-Erasmus"
+    },
+    {
+      "code": "BK1702",
+      "name": "East Flatbush-Farragut"
+    },
+    {
+      "code": "BK1703",
+      "name": "East Flatbush-Rugby"
+    },
+    {
+      "code": "BK1704",
+      "name": "East Flatbush-Remsen Village"
+    },
+    {
+      "code": "BK1771",
+      "name": "Holy Cross Cemetery"
+    },
+    {
+      "code": "BK1801",
+      "name": "Flatlands"
+    },
+    {
+      "code": "BK1802",
+      "name": "Marine Park-Mill Basin-Bergen Beach"
+    },
+    {
+      "code": "BK1803",
+      "name": "Canarsie"
+    },
+    {
+      "code": "BK1891",
+      "name": "Marine Park-Plumb Island"
+    },
+    {
+      "code": "BK1892",
+      "name": "McGuire Fields"
+    },
+    {
+      "code": "BK1893",
+      "name": "Canarsie Park & Pier"
+    },
+    {
+      "code": "BK5591",
+      "name": "Prospect Park"
+    },
+    {
+      "code": "BK5691",
+      "name": "Barren Island-Floyd Bennett Field"
+    },
+    {
+      "code": "BK5692",
+      "name": "Jamaica Bay (West)"
+    },
+    {
+      "code": "BK5693",
+      "name": "Shirley Chisholm State Park"
+    }
   ]
 }
