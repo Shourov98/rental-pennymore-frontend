@@ -69,18 +69,48 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
     [locations, neighborhoodLabelByKey]
   );
 
-  const searchResults = useMemo(() => {
-    if (!search.trim()) return allNeighborhoods;
+  const filteredBoroughs = useMemo(() => {
+    if (!search.trim()) return boroughNeighborhoods;
 
     const query = search.toLowerCase();
+    const result: typeof boroughNeighborhoods = {
+      Manhattan: { ...boroughNeighborhoods.Manhattan, sections: [] },
+      Brooklyn: { ...boroughNeighborhoods.Brooklyn, sections: [] },
+    };
 
-    return allNeighborhoods.filter(
-      (item) =>
-        item.borough.toLowerCase().includes(query) ||
-        item.section.toLowerCase().includes(query) ||
-        item.label.toLowerCase().includes(query)
+    (Object.keys(boroughNeighborhoods) as Array<"Manhattan" | "Brooklyn">).forEach(
+      (borough) => {
+        const boroughData = boroughNeighborhoods[borough];
+        const filteredSections = boroughData.sections
+          .map((section) => {
+            const matchesSection = section.title
+              .toLowerCase()
+              .includes(query);
+            const matchesBorough = borough.toLowerCase().includes(query);
+            const items = section.items.filter(
+              (item) =>
+                matchesSection ||
+                matchesBorough ||
+                item.label.toLowerCase().includes(query) ||
+                item.key.toLowerCase().includes(query)
+            );
+            return items.length ? { ...section, items } : null;
+          })
+          .filter(Boolean);
+
+        if (filteredSections.length) {
+          result[borough] = {
+            ...boroughData,
+            sections: filteredSections as typeof boroughData.sections,
+          };
+        } else {
+          result[borough] = { ...boroughData, sections: [] };
+        }
+      }
     );
-  }, [allNeighborhoods, search]);
+
+    return result;
+  }, [search]);
 
   if (!isOpen) return null;
 
@@ -157,11 +187,10 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
           {/* BROWSE BY BOROUGH → SECTION → NEIGHBORHOOD */}
           <div className="max-h-56 overflow-y-auto mb-4 rounded-lg bg-gray-100 p-3 space-y-4">
             {(
-              Object.keys(boroughNeighborhoods) as Array<
-                "Manhattan" | "Brooklyn"
-              >
+              Object.keys(filteredBoroughs) as Array<"Manhattan" | "Brooklyn">
             ).map((borough) => {
-              const boroughData = boroughNeighborhoods[borough];
+              const boroughData = filteredBoroughs[borough];
+              if (!boroughData.sections.length) return null;
 
               return (
                 <div key={borough}>
