@@ -141,9 +141,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
                     <b className="font-semibold">{item.borough}</b>
                     <span>{item.label}</span>
                     <button
-                      onClick={() =>
-                        toggleNeighborhood(item.borough, item.key)
-                      }
+                      onClick={() => toggleNeighborhood(item.borough, item.key)}
                       aria-label={`Remove ${item.label}`}
                       className="hover:text-blue-900 transition"
                     >
@@ -156,32 +154,57 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
           )}
 
           {/* SEARCH RESULTS */}
-          <div className="max-h-48 overflow-y-auto mb-4 rounded-lg p-2 bg-gray-100">
-            {searchResults.length === 0 ? (
-              <p className="text-sm text-gray-500">No results</p>
-            ) : (
-              searchResults.map((item) => {
-                const isSelected = locations
-                  .find((l) => l.borough === item.borough)
-                  ?.neighborhoods.includes(item.key);
+          {/* BROWSE BY BOROUGH → SECTION → NEIGHBORHOOD */}
+          <div className="max-h-56 overflow-y-auto mb-4 rounded-lg bg-gray-100 p-3 space-y-4">
+            {(
+              Object.keys(boroughNeighborhoods) as Array<
+                "Manhattan" | "Brooklyn"
+              >
+            ).map((borough) => {
+              const boroughData = boroughNeighborhoods[borough];
 
-                return (
-                  <button
-                    key={`${item.borough}-${item.key}`}
-                    onClick={() =>
-                      toggleNeighborhood(item.borough, item.key)
-                    }
-                    className={`block w-full text-left px-3 py-2 text-sm rounded-md ${
-                      isSelected
-                        ? "bg-blue-100 text-blue-700"
-                        : "hover:bg-gray-200 text-gray-700"
-                    }`}
-                  >
-                    <b>{item.borough}</b> — {item.label}
-                  </button>
-                );
-              })
-            )}
+              return (
+                <div key={borough}>
+                  {/* Borough Title */}
+                  <h4 className="text-sm font-semibold text-gray-900 mb-2">
+                    {borough}
+                  </h4>
+
+                  {boroughData.sections.map((section) => (
+                    <div key={section.title} className="mb-3 pl-2">
+                      {/* Section Title */}
+                      <p className="text-xs font-medium text-gray-500 mb-1">
+                        {section.title}
+                      </p>
+
+                      <div className="space-y-1">
+                        {section.items.map((item) => {
+                          const isSelected = locations
+                            .find((l) => l.borough === borough)
+                            ?.neighborhoods.includes(item.key);
+
+                          return (
+                            <button
+                              key={`${borough}-${item.key}`}
+                              onClick={() =>
+                                toggleNeighborhood(borough, item.key)
+                              }
+                              className={`w-full text-left px-3 py-2 text-sm rounded-md ${
+                                isSelected
+                                  ? "bg-blue-100 text-blue-700"
+                                  : "hover:bg-gray-200 text-gray-700"
+                              }`}
+                            >
+                              {item.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
           </div>
 
           {/* SEE ALL */}
