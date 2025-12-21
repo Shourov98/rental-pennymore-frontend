@@ -34,7 +34,7 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
         title: "Upper Manhattan",
         items: [
           { key: "Inwood", label: "Inwood" },
-          { key: "Marble Hill–Inwood", label: "Marble Hill–Inwood" },
+          { key: "Marble Hill–Inwood", label: "Marble Hill" },
           {
             key: "Washington Heights (North)",
             label: "Washington Heights (North)",
@@ -50,16 +50,8 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
             label: "Hamilton Heights-Sugar Hill",
           },
           {
-            key: "Hamilton Heights–Sugar Hill",
-            label: "Hamilton Heights–Sugar Hill",
-          },
-          {
             key: "Manhattanville-West Harlem",
             label: "Manhattanville-West Harlem",
-          },
-          {
-            key: "Manhattanville–West Harlem",
-            label: "Manhattanville–West Harlem",
           },
           { key: "East Harlem (North)", label: "East Harlem (North)" },
           { key: "East Harlem (South)", label: "East Harlem (South)" },
@@ -75,10 +67,6 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
             label: "Upper West Side-Manhattan Valley",
           },
           {
-            key: "Upper West Side–Manhattan Valley",
-            label: "Upper West Side–Manhattan Valley",
-          },
-          {
             key: "Upper West Side (Central)",
             label: "Upper West Side (Central)",
           },
@@ -87,32 +75,16 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
             label: "Upper West Side-Lincoln Square",
           },
           {
-            key: "Upper West Side–Lincoln Square",
-            label: "Upper West Side–Lincoln Square",
-          },
-          {
             key: "Upper East Side-Yorkville",
             label: "Upper East Side-Yorkville",
-          },
-          {
-            key: "Upper East Side–Yorkville",
-            label: "Upper East Side–Yorkville",
           },
           {
             key: "Upper East Side-Carnegie Hill",
             label: "Upper East Side-Carnegie Hill",
           },
           {
-            key: "Upper East Side–Carnegie Hill",
-            label: "Upper East Side–Carnegie Hill",
-          },
-          {
             key: "Upper East Side – Lenox Hill",
             label: "Upper East Side – Lenox Hill",
-          },
-          {
-            key: "Upper East Side–Lenox Hill",
-            label: "Upper East Side–Lenox Hill",
           },
         ],
       },
@@ -121,23 +93,17 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
         title: "Midtown Manhattan",
         items: [
           { key: "Midtown", label: "Midtown" },
-          { key: "Midtown-Times Square", label: "Midtown-Times Square" },
           { key: "Midtown South", label: "Midtown South" },
           {
             key: "Midtown East – Sutton Place",
             label: "Midtown East – Sutton Place",
           },
           { key: "Midtown East–Turtle Bay", label: "Midtown East–Turtle Bay" },
-          { key: "East Midtown-Turtle Bay", label: "East Midtown-Turtle Bay" },
           {
             key: "Midtown West – Hell’s Kitchen",
             label: "Midtown West – Hell’s Kitchen",
           },
-          { key: "Hell's Kitchen", label: "Hell's Kitchen" },
           { key: "Murray Hill", label: "Murray Hill" },
-          { key: "Kips Bay", label: "Kips Bay" },
-          { key: "United Nations", label: "United Nations" },
-          { key: "Central Park", label: "Central Park" },
         ],
       },
 
@@ -145,19 +111,13 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
         title: "Downtown Manhattan",
         items: [
           { key: "Chelsea-Hudson Yards", label: "Chelsea-Hudson Yards" },
-          { key: "Chelsea–Hudson Yards", label: "Chelsea–Hudson Yards" },
-          { key: "Flatiron - Union Square", label: "Flatiron - Union Square" },
+          { key: "Flatiron - Union Square", label: "Flatiron" },
           { key: "SoHo-Hudson Square", label: "SoHo-Hudson Square" },
-          { key: "SoHo–Hudson Square", label: "SoHo–Hudson Square" },
           { key: "Gramercy", label: "Gramercy" },
           { key: "Gramercy Park", label: "Gramercy Park" },
           {
             key: "Stuyvesant Town-Peter Cooper Village",
             label: "Stuyvesant Town-Peter Cooper Village",
-          },
-          {
-            key: "Stuyvesant Town–Peter Cooper Village",
-            label: "Stuyvesant Town–Peter Cooper Village",
           },
           { key: "Greenwich Village", label: "Greenwich Village" },
           { key: "West Village", label: "West Village" },
@@ -175,16 +135,7 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
 
       {
         title: "Islands & Parks",
-        items: [
-          { key: "Roosevelt Island", label: "Roosevelt Island" },
-          { key: "Randall's Island", label: "Randall's Island" },
-          {
-            key: "Governors Island-Ellis Island-Liberty Island",
-            label: "Governors Island-Ellis Island-Liberty Island",
-          },
-          { key: "Highbridge Park", label: "Highbridge Park" },
-          { key: "Inwood Hill Park", label: "Inwood Hill Park" },
-        ],
+        items: [{ key: "Roosevelt Island", label: "Roosevelt Island" }],
       },
     ],
   },
@@ -210,7 +161,7 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
           { key: "Brooklyn Heights", label: "Brooklyn Heights" },
           {
             key: "Downtown Brooklyn-DUMBO-Boerum Hill",
-            label: "Downtown Brooklyn-DUMBO-Boerum Hill",
+            label: "Downtown Brooklyn-DUMBO",
           },
           { key: "Fort Greene", label: "Fort Greene" },
           { key: "Clinton Hill", label: "Clinton Hill" },
@@ -241,7 +192,7 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
           },
           { key: "Bay Ridge", label: "Bay Ridge" },
           { key: "Dyker Heights", label: "Dyker Heights" },
-          { key: "Fort Hamilton", label: "Fort Hamilton" },
+          // { key: "Fort Hamilton", label: "Fort Hamilton" },
           { key: "Bensonhurst", label: "Bensonhurst" },
           { key: "Bath Beach", label: "Bath Beach" },
           { key: "Borough Park", label: "Borough Park" },
@@ -251,7 +202,7 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
             key: "Sunset Park (East)-Borough Park (West)",
             label: "Sunset Park (East)-Borough Park (West)",
           },
-          { key: "Coney Island-Sea Gate", label: "Coney Island-Sea Gate" },
+          { key: "Coney Island-Sea Gate", label: "Coney Island" },
           { key: "Brighton Beach", label: "Brighton Beach" },
           { key: "Gravesend (West)", label: "Gravesend (West)" },
           { key: "Gravesend (South)", label: "Gravesend (South)" },
@@ -265,7 +216,7 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
       {
         title: "East Brooklyn",
         items: [
-          { key: "Cypress Hills", label: "Cypress Hills" },
+          { key: "Cypress Hills", label: "Cypress Hills–City Line" },
           { key: "East New York (North)", label: "East New York (North)" },
           { key: "East New York-New Lots", label: "East New York-New Lots" },
           { key: "East New York-City Line", label: "East New York-City Line" },
@@ -274,14 +225,14 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
             label: "Spring Creek-Starrett City",
           },
           { key: "Canarsie", label: "Canarsie" },
-          { key: "Flatlands", label: "Flatlands" },
+          // { key: "Flatlands", label: "Flatlands" },
           {
             key: "Marine Park-Mill Basin-Bergen Beach",
-            label: "Marine Park-Mill Basin-Bergen Beach",
+            label: "Georgetown–Marine Park–Bergen Beach–Mill Basin",
           },
           {
             key: "Marine Park-Plumb Island",
-            label: "Marine Park-Plumb Island",
+            label: "Marine Park",
           },
         ],
       },
@@ -289,27 +240,27 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
       {
         title: "Parks & Special Areas",
         items: [
-          { key: "Prospect Park", label: "Prospect Park" },
-          { key: "Green-Wood Cemetery", label: "Green-Wood Cemetery" },
-          { key: "The Evergreens Cemetery", label: "The Evergreens Cemetery" },
-          { key: "Holy Cross Cemetery", label: "Holy Cross Cemetery" },
+          // { key: "Prospect Park", label: "Prospect Park" },
+          // { key: "Green-Wood Cemetery", label: "Green-Wood Cemetery" },
+          // { key: "The Evergreens Cemetery", label: "The Evergreens Cemetery" },
+          // { key: "Holy Cross Cemetery", label: "Holy Cross Cemetery" },
           { key: "Calvert Vaux Park", label: "Calvert Vaux Park" },
-          { key: "Dyker Beach Park", label: "Dyker Beach Park" },
-          {
-            key: "Barren Island-Floyd Bennett Field",
-            label: "Barren Island-Floyd Bennett Field",
-          },
-          { key: "Jamaica Bay (West)", label: "Jamaica Bay (West)" },
-          {
-            key: "Shirley Chisholm State Park",
-            label: "Shirley Chisholm State Park",
-          },
-          { key: "McGuire Fields", label: "McGuire Fields" },
-          { key: "Canarsie Park & Pier", label: "Canarsie Park & Pier" },
-          {
-            key: "Highland Park-Cypress Hills Cemeteries (South)",
-            label: "Highland Park-Cypress Hills Cemeteries (South)",
-          },
+          // { key: "Dyker Beach Park", label: "Dyker Beach Park" },
+          // {
+          //   key: "Barren Island-Floyd Bennett Field",
+          //   label: "Barren Island-Floyd Bennett Field",
+          // },
+          // { key: "Jamaica Bay (West)", label: "Jamaica Bay (West)" },
+          // {
+          //   key: "Shirley Chisholm State Park",
+          //   label: "Shirley Chisholm State Park",
+          // },
+          // { key: "McGuire Fields", label: "McGuire Fields" },
+          // { key: "Canarsie Park & Pier", label: "Canarsie Park & Pier" },
+          // {
+          //   key: "Highland Park-Cypress Hills Cemeteries (South)",
+          //   label: "Highland Park-Cypress Hills Cemeteries (South)",
+          // },
           { key: "Lincoln Terrace Park", label: "Lincoln Terrace Park" },
         ],
       },
