@@ -6,15 +6,15 @@
     },
     {
       "code": "MN0502",
-      "name": "Midtown-Times Square"
+      "name": "Midtown"
     },
     {
       "code": "MN0501",
-      "name": "Midtown South-Flatiron-Union Square"
+      "name": "Flatiron - Union Square"
     },
     {
       "code": "MN0603",
-      "name": "Murray Hill-Kips Bay"
+      "name": "Murray Hill"
     },
     {
       "code": "MN0303",
@@ -46,7 +46,7 @@
     },
     {
       "code": "MN0301",
-      "name": "Chinatown-Two Bridges"
+      "name": "Chinatown"
     },
     {
       "code": "MN0302",
@@ -62,11 +62,11 @@
     },
     {
       "code": "MN0102",
-      "name": "Tribeca-Civic Center"
+      "name": "TriBeCa"
     },
     {
       "code": "MN0101",
-      "name": "Financial District-Battery Park City"
+      "name": "Financial District"
     },
     {
       "code": null,
@@ -183,6 +183,62 @@
     {
       "code": "MN1292",
       "name": "Inwood Hill Park"
+    },
+    {
+      "code": "MN0401",
+      "name": "Chelsea–Hudson Yards"
+    },
+    {
+      "code": "MN0602",
+      "name": "Gramercy Park"
+    },
+    {
+      "code": "MN0201",
+      "name": "SoHo–Hudson Square"
+    },
+    {
+      "code": "MN0604",
+      "name": "Midtown East–Turtle Bay"
+    },
+    {
+      "code": "MN0801",
+      "name": "Upper East Side–Lenox Hill"
+    },
+    {
+      "code": "MN0803",
+      "name": "Upper East Side–Yorkville"
+    },
+    {
+      "code": "MN0802",
+      "name": "Upper East Side–Carnegie Hill"
+    },
+    {
+      "code": "MN0601",
+      "name": "Stuyvesant Town–Peter Cooper Village"
+    },
+    {
+      "code": "BX0802",
+      "name": "Marble Hill–Inwood"
+    },
+    {
+      "code": "MN0402",
+      "name": "Midtown West – Hell’s Kitchen"
+    },
+    {
+      "code": "MN0701",
+      "name": "Upper West Side–Lincoln Square"
+    },
+    {
+      "code": "MN0703",
+      "name": "Upper West Side–Manhattan Valley"
+    },
+    {
+      "code": "MN0902",
+      "name": "Manhattanville–West Harlem"
+    },
+    {
+      "code": "MN0903",
+      "name": "Hamilton Heights–Sugar Hill"
     }
   ],
   "Brooklyn": [
