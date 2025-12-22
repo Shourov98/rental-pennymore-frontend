@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { MapPin, DollarSign, Calendar, Bell } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -34,6 +34,8 @@ const API_BASE_URL =
 
 export default function PreMarketListingPage() {
   const dispatch = useDispatch();
+  const earliestDateRef = useRef<HTMLInputElement>(null);
+  const latestDateRef = useRef<HTMLInputElement>(null);
 
   // Modal state (local UI)
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
@@ -56,6 +58,12 @@ export default function PreMarketListingPage() {
     preferences,
   } = useSelector((state: RootState) => state.preferences);
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+
+  const openDatePicker = (input: HTMLInputElement | null) => {
+    if (!input) return;
+    (input as HTMLInputElement & { showPicker?: () => void }).showPicker?.();
+    input.focus();
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -170,10 +178,14 @@ export default function PreMarketListingPage() {
             {/* Earliest */}
             <div className="w-full sm:w-1/2">
               <label className="text-xs text-gray-600">Earliest</label>
-              <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+              <div
+                className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 cursor-pointer"
+                onClick={() => openDatePicker(earliestDateRef.current)}
+              >
                 <Calendar size={16} className="text-blue-600 mr-2" />
                 <input
                   type="date"
+                  ref={earliestDateRef}
                   value={movingDate.earliest}
                   onChange={(e) =>
                     dispatch(
@@ -191,10 +203,14 @@ export default function PreMarketListingPage() {
             {/* Latest */}
             <div className="w-full sm:w-1/2">
               <label className="text-xs text-gray-600">Latest</label>
-              <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+              <div
+                className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 cursor-pointer"
+                onClick={() => openDatePicker(latestDateRef.current)}
+              >
                 <Calendar size={16} className="text-blue-600 mr-2" />
                 <input
                   type="date"
+                  ref={latestDateRef}
                   value={movingDate.latest}
                   onChange={(e) =>
                     dispatch(
