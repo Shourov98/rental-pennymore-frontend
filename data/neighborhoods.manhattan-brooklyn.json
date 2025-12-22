@@ -2,11 +2,55 @@
   "Manhattan": [
     {
       "code": null,
-      "name": "Midtown East – Sutton Place"
+      "name": "Kips Bay"
+    },
+    {
+      "code": "MN0303",
+      "name": "East Village"
+    },
+    {
+      "code": "MN0602",
+      "name": "Union Square Park"
     },
     {
       "code": "MN0502",
       "name": "Midtown"
+    },
+    {
+      "code": "MN0604",
+      "name": "East Midtown-Turtle Bay"
+    },
+    {
+      "code": "MN0801",
+      "name": "Upper East Side – Lenox Hill"
+    },
+    {
+      "code": null,
+      "name": "Roosevelt Island"
+    },
+    {
+      "code": "MN0803",
+      "name": "Upper East Side-Yorkville"
+    },
+    {
+      "code": "MN0802",
+      "name": "Upper East Side-Carnegie Hill"
+    },
+    {
+      "code": null,
+      "name": "Midtown South"
+    },
+    {
+      "code": "MN1101",
+      "name": "East Harlem (South)"
+    },
+    {
+      "code": "MN0702",
+      "name": "Upper West Side (Central)"
+    },
+    {
+      "code": null,
+      "name": "Midtown East – Sutton Place"
     },
     {
       "code": "MN0501",
@@ -17,28 +61,24 @@
       "name": "Murray Hill"
     },
     {
-      "code": "MN0303",
-      "name": "East Village"
-    },
-    {
       "code": "MN0202",
       "name": "Greenwich Village"
     },
     {
       "code": "MN0401",
-      "name": "Chelsea-Hudson Yards"
+      "name": "Chelsea–Hudson Yards"
     },
     {
       "code": "MN0602",
-      "name": "Gramercy"
+      "name": "Gramercy Park"
     },
     {
       "code": "MN0201",
-      "name": "SoHo-Hudson Square"
+      "name": "SoHo–Hudson Square"
     },
     {
       "code": "MN0604",
-      "name": "East Midtown-Turtle Bay"
+      "name": "Midtown East–Turtle Bay"
     },
     {
       "code": null,
@@ -74,134 +114,6 @@
     },
     {
       "code": "MN0801",
-      "name": "Upper East Side – Lenox Hill"
-    },
-    {
-      "code": null,
-      "name": "Roosevelt Island"
-    },
-    {
-      "code": "MN0803",
-      "name": "Upper East Side-Yorkville"
-    },
-    {
-      "code": "MN0802",
-      "name": "Upper East Side-Carnegie Hill"
-    },
-    {
-      "code": "MN0203",
-      "name": "West Village"
-    },
-    {
-      "code": "MN6491",
-      "name": "Central Park"
-    },
-    {
-      "code": null,
-      "name": "Midtown South"
-    },
-    {
-      "code": null,
-      "name": "Kips Bay"
-    },
-    {
-      "code": "MN0601",
-      "name": "Stuyvesant Town-Peter Cooper Village"
-    },
-    {
-      "code": "MN0191",
-      "name": "Governors Island-Ellis Island-Liberty Island"
-    },
-    {
-      "code": "MN1101",
-      "name": "East Harlem (South)"
-    },
-    {
-      "code": "MN0402",
-      "name": "Hell's Kitchen"
-    },
-    {
-      "code": "MN0661",
-      "name": "United Nations"
-    },
-    {
-      "code": "MN0701",
-      "name": "Upper West Side-Lincoln Square"
-    },
-    {
-      "code": "MN0702",
-      "name": "Upper West Side (Central)"
-    },
-    {
-      "code": "MN0703",
-      "name": "Upper West Side-Manhattan Valley"
-    },
-    {
-      "code": "MN0901",
-      "name": "Morningside Heights"
-    },
-    {
-      "code": "MN0902",
-      "name": "Manhattanville-West Harlem"
-    },
-    {
-      "code": "MN0903",
-      "name": "Hamilton Heights-Sugar Hill"
-    },
-    {
-      "code": "MN1001",
-      "name": "Harlem (South)"
-    },
-    {
-      "code": "MN1002",
-      "name": "Harlem (North)"
-    },
-    {
-      "code": "MN1102",
-      "name": "East Harlem (North)"
-    },
-    {
-      "code": "MN1191",
-      "name": "Randall's Island"
-    },
-    {
-      "code": "MN1201",
-      "name": "Washington Heights (South)"
-    },
-    {
-      "code": "MN1202",
-      "name": "Washington Heights (North)"
-    },
-    {
-      "code": "MN1203",
-      "name": "Inwood"
-    },
-    {
-      "code": "MN1291",
-      "name": "Highbridge Park"
-    },
-    {
-      "code": "MN1292",
-      "name": "Inwood Hill Park"
-    },
-    {
-      "code": "MN0401",
-      "name": "Chelsea–Hudson Yards"
-    },
-    {
-      "code": "MN0602",
-      "name": "Gramercy Park"
-    },
-    {
-      "code": "MN0201",
-      "name": "SoHo–Hudson Square"
-    },
-    {
-      "code": "MN0604",
-      "name": "Midtown East–Turtle Bay"
-    },
-    {
-      "code": "MN0801",
       "name": "Upper East Side–Lenox Hill"
     },
     {
@@ -213,8 +125,20 @@
       "name": "Upper East Side–Carnegie Hill"
     },
     {
+      "code": "MN0203",
+      "name": "West Village"
+    },
+    {
+      "code": "MN6491",
+      "name": "Central Park"
+    },
+    {
       "code": "MN0601",
       "name": "Stuyvesant Town–Peter Cooper Village"
+    },
+    {
+      "code": "MN0191",
+      "name": "Governors Island-Ellis Island-Liberty Island"
     },
     {
       "code": "BX0802",
@@ -233,26 +157,98 @@
       "name": "Upper West Side–Manhattan Valley"
     },
     {
+      "code": "MN0901",
+      "name": "Morningside Heights"
+    },
+    {
       "code": "MN0902",
       "name": "Manhattanville–West Harlem"
     },
     {
       "code": "MN0903",
       "name": "Hamilton Heights–Sugar Hill"
+    },
+    {
+      "code": "MN1001",
+      "name": "Harlem (South)"
+    },
+    {
+      "code": "MN1002",
+      "name": "Harlem (North)"
+    },
+    {
+      "code": "MN1102",
+      "name": "East Harlem (North)"
+    },
+    {
+      "code": "MN1201",
+      "name": "Washington Heights (South)"
+    },
+    {
+      "code": "MN1202",
+      "name": "Washington Heights (North)"
+    },
+    {
+      "code": "MN1203",
+      "name": "Inwood"
+    },
+    {
+      "code": "MN1292",
+      "name": "Inwood Hill Park"
+    },
+    {
+      "code": "MN0401",
+      "name": "Chelsea-Hudson Yards"
+    },
+    {
+      "code": "MN0201",
+      "name": "SoHo-Hudson Square"
+    },
+    {
+      "code": "MN0601",
+      "name": "Stuyvesant Town-Peter Cooper Village"
+    },
+    {
+      "code": "BX0802",
+      "name": "Marble Hill"
+    },
+    {
+      "code": "MN0402",
+      "name": "Hell's Kitchen"
+    },
+    {
+      "code": "MN0661",
+      "name": "United Nations"
+    },
+    {
+      "code": "MN0701",
+      "name": "Upper West Side-Lincoln Square"
+    },
+    {
+      "code": "MN0703",
+      "name": "Upper West Side-Manhattan Valley"
+    },
+    {
+      "code": "MN0902",
+      "name": "Manhattanville-West Harlem"
+    },
+    {
+      "code": "MN0903",
+      "name": "Hamilton Heights-Sugar Hill"
+    },
+    {
+      "code": "MN1191",
+      "name": "Randall's Island"
+    },
+    {
+      "code": "MN1291",
+      "name": "Highbridge Park"
     }
   ],
   "Brooklyn": [
     {
-      "code": "BK0101",
-      "name": "Greenpoint"
-    },
-    {
       "code": "BK0102",
       "name": "Williamsburg"
-    },
-    {
-      "code": "BK0103",
-      "name": "South Williamsburg"
     },
     {
       "code": "BK0104",
@@ -261,6 +257,38 @@
     {
       "code": "BK0201",
       "name": "Brooklyn Heights"
+    },
+    {
+      "code": "BK0601",
+      "name": "Carroll Gardens-Cobble Hill-Gowanus-Red Hook"
+    },
+    {
+      "code": "BK0602",
+      "name": "Park Slope"
+    },
+    {
+      "code": "BK0702",
+      "name": "Sunset Park West (Greenwood Heights)"
+    },
+    {
+      "code": "BK0703",
+      "name": "Sunset Park Central"
+    },
+    {
+      "code": "BK1102",
+      "name": "Bath Beach"
+    },
+    {
+      "code": "BK1201",
+      "name": "Sunset Park East–Borough Park West"
+    },
+    {
+      "code": "BK0101",
+      "name": "Greenpoint"
+    },
+    {
+      "code": "BK0103",
+      "name": "South Williamsburg"
     },
     {
       "code": "BK0202",
@@ -323,24 +351,8 @@
       "name": "Highland Park-Cypress Hills Cemeteries (South)"
     },
     {
-      "code": "BK0601",
-      "name": "Carroll Gardens-Cobble Hill-Gowanus-Red Hook"
-    },
-    {
-      "code": "BK0602",
-      "name": "Park Slope"
-    },
-    {
       "code": "BK0701",
       "name": "Windsor Terrace-South Slope"
-    },
-    {
-      "code": "BK0702",
-      "name": "Sunset Park (West)"
-    },
-    {
-      "code": "BK0703",
-      "name": "Sunset Park (Central)"
     },
     {
       "code": "BK0771",
@@ -387,16 +399,8 @@
       "name": "Bensonhurst"
     },
     {
-      "code": "BK1102",
-      "name": "Bath Beach"
-    },
-    {
       "code": "BK1103",
       "name": "Gravesend (West)"
-    },
-    {
-      "code": "BK1201",
-      "name": "Sunset Park (East)-Borough Park (West)"
     },
     {
       "code": "BK1202",
