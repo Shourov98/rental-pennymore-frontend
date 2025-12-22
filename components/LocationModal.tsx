@@ -78,36 +78,34 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
       Brooklyn: { ...boroughNeighborhoods.Brooklyn, sections: [] },
     };
 
-    (Object.keys(boroughNeighborhoods) as Array<"Manhattan" | "Brooklyn">).forEach(
-      (borough) => {
-        const boroughData = boroughNeighborhoods[borough];
-        const filteredSections = boroughData.sections
-          .map((section) => {
-            const matchesSection = section.title
-              .toLowerCase()
-              .includes(query);
-            const matchesBorough = borough.toLowerCase().includes(query);
-            const items = section.items.filter(
-              (item) =>
-                matchesSection ||
-                matchesBorough ||
-                item.label.toLowerCase().includes(query) ||
-                item.key.toLowerCase().includes(query)
-            );
-            return items.length ? { ...section, items } : null;
-          })
-          .filter(Boolean);
+    (
+      Object.keys(boroughNeighborhoods) as Array<"Manhattan" | "Brooklyn">
+    ).forEach((borough) => {
+      const boroughData = boroughNeighborhoods[borough];
+      const filteredSections = boroughData.sections
+        .map((section) => {
+          const matchesSection = section.title.toLowerCase().includes(query);
+          const matchesBorough = borough.toLowerCase().includes(query);
+          const items = section.items.filter(
+            (item) =>
+              matchesSection ||
+              matchesBorough ||
+              item.label.toLowerCase().includes(query) ||
+              item.key.toLowerCase().includes(query)
+          );
+          return items.length ? { ...section, items } : null;
+        })
+        .filter(Boolean);
 
-        if (filteredSections.length) {
-          result[borough] = {
-            ...boroughData,
-            sections: filteredSections as typeof boroughData.sections,
-          };
-        } else {
-          result[borough] = { ...boroughData, sections: [] };
-        }
+      if (filteredSections.length) {
+        result[borough] = {
+          ...boroughData,
+          sections: filteredSections as typeof boroughData.sections,
+        };
+      } else {
+        result[borough] = { ...boroughData, sections: [] };
       }
-    );
+    });
 
     return result;
   }, [search]);
@@ -168,7 +166,6 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
                     key={`${item.borough}-${item.key}`}
                     className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 text-xs px-3 py-1 rounded-full"
                   >
-                    <b className="font-semibold">{item.borough}</b>
                     <span>{item.label}</span>
                     <button
                       onClick={() => toggleNeighborhood(item.borough, item.key)}

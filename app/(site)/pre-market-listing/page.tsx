@@ -21,6 +21,7 @@ import {
 
 import LocationModal from "@/components/LocationModal";
 import SuccessModal from "@/components/SuccessModal";
+import { neighborhoods } from "@/data/neighborhoods";
 
 const PreferencesDragList = dynamic(
   () => import("@/components/PreferencesDragList"),
@@ -274,12 +275,13 @@ export default function PreMarketListingPage() {
             >
               <MapPin size={16} className="text-blue-600 mr-2 shrink-0" />
 
-              <span className="text-gray-600 text-sm">
+              <span className="text-gray-600 text-sm overflow-x-">
                 {locations.length === 0
                   ? "Choose Borough and Neighborhoods"
                   : locations
                       .map(
-                        (loc) => `${loc.borough} (${loc.neighborhoods.length})`
+                        (loc) =>
+                          `${loc.borough} (${loc.neighborhoods.length}, ${loc.neighborhoods})`
                       )
                       .join(", ")}
               </span>
