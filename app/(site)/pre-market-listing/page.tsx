@@ -223,7 +223,8 @@ export default function PreMarketListingPage() {
                 <DollarSign size={16} className="text-blue-600 mr-2" />
                 <input
                   type="number"
-                  value={priceRange.min}
+                  value={priceRange.min === 0 ? "" : priceRange.min}
+                  step={25}
                   onChange={(e) =>
                     dispatch(
                       setPriceRange({
@@ -244,7 +245,8 @@ export default function PreMarketListingPage() {
                 <DollarSign size={16} className="text-blue-600 mr-2" />
                 <input
                   type="number"
-                  value={priceRange.max}
+                  value={priceRange.max === 0 ? "" : priceRange.max}
+                  step={25}
                   onChange={(e) =>
                     dispatch(
                       setPriceRange({

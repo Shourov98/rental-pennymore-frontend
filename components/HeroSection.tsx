@@ -105,8 +105,9 @@ export default function HeroSection() {
               <DollarSign size={16} className="text-blue-600 mr-2" />
               <input
                 type="number"
-                placeholder="Min Price"
-                value={priceRange.min}
+                placeholder="Min"
+                value={priceRange.min === 0 ? "" : priceRange.min}
+                step={25}
                 onChange={(e) => handleMinPrice(e.target.value)}
                 className="bg-transparent outline-none w-full text-sm"
               />
@@ -121,8 +122,9 @@ export default function HeroSection() {
               <DollarSign size={16} className="text-blue-600 mr-2" />
               <input
                 type="number"
-                placeholder="Max Price"
-                value={priceRange.max}
+                placeholder="Max"
+                value={priceRange.max === 0 ? "" : priceRange.max}
+                step={25}
                 onChange={(e) => handleMaxPrice(e.target.value)}
                 className="bg-transparent outline-none w-full text-sm"
               />
