@@ -162,6 +162,31 @@ export default function NeighborhoodModal({
     }));
   };
 
+  const handleToggleSection = (
+    items: { key: string; label: string }[],
+    shouldSelect: boolean
+  ) => {
+    setState((prev) => {
+      const current = new globalThis.Set(
+        prev.selectedAreasByBorough[prev.activeTab]
+      );
+      items.forEach((item) => {
+        if (shouldSelect) {
+          current.add(item.key);
+        } else {
+          current.delete(item.key);
+        }
+      });
+      return {
+        ...prev,
+        selectedAreasByBorough: {
+          ...prev.selectedAreasByBorough,
+          [prev.activeTab]: Array.from(current),
+        },
+      };
+    });
+  };
+
   // -------------------------------------------------------
   // Map Center
   // -------------------------------------------------------
@@ -283,9 +308,25 @@ export default function NeighborhoodModal({
             <div className="flex-1 overflow-y-auto px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2 min-h-0">
               {activeBoroughData.sections.map((section) => (
                 <div key={section.title} className="sm:col-span-2">
-                  <p className="text-xs sm:text-sm font-semibold text-gray-700 mb-2">
-                    {section.title}
-                  </p>
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <input
+                      type="checkbox"
+                      checked={section.items.every((item) =>
+                        currentSelections.includes(item.key)
+                      )}
+                      onChange={(event) =>
+                        handleToggleSection(
+                          section.items,
+                          event.target.checked
+                        )
+                      }
+                      className="w-4 h-4 shrink-0 accent-blue-600"
+                      aria-label={`Select ${section.title}`}
+                    />
+                    <p className="text-xs sm:text-sm font-semibold text-gray-700 text-center">
+                      {section.title}
+                    </p>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                     {section.items.map((item) => {
                       const isChecked = currentSelections.includes(item.key);
