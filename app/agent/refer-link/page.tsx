@@ -70,7 +70,7 @@ export default function AgentReferLink() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <div className="bg-gray-50 border rounded-xl p-6">
           <div className="flex items-center justify-between mb-3">
             <div>
@@ -99,60 +99,6 @@ export default function AgentReferLink() {
           </div>
           <p className="text-sm text-gray-900 break-all">
             {referralLink || "No referral link available yet."}
-          </p>
-        </div>
-
-        <div className="bg-gray-50 border rounded-xl p-6">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h3 className="font-semibold text-gray-800">Referral Code</h3>
-              <p className="text-sm text-gray-600">
-                Use this code for filtering and manual referrals.
-              </p>
-            </div>
-            <button
-              disabled={!referralCode}
-              onClick={() => handleCopy(referralCode || undefined, "code")}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {copied === "code" ? (
-                <>
-                  <Check className="w-4 h-4" />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4" />
-                  Copy Code
-                </>
-              )}
-            </button>
-          </div>
-          <p className="text-2xl font-semibold text-gray-900 tracking-wide">
-            {referralCode || "N/A"}
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="border rounded-xl p-4">
-          <p className="text-xs text-gray-500">Total Referrals</p>
-          <p className="text-xl font-semibold text-gray-900">
-            {profile?.userId?.totalReferrals ?? 0}
-          </p>
-        </div>
-        <div className="border rounded-xl p-4">
-          <p className="text-xs text-gray-500">Active Referrals</p>
-          <p className="text-xl font-semibold text-gray-900">
-            {profile?.activeReferrals ?? 0}
-          </p>
-        </div>
-        <div className="border rounded-xl p-4">
-          <p className="text-xs text-gray-500">Conversion Rate</p>
-          <p className="text-xl font-semibold text-gray-900">
-            {profile?.referralConversionRate != null
-              ? `${profile.referralConversionRate}%`
-              : "0%"}
           </p>
         </div>
       </div>

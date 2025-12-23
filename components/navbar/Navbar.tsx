@@ -26,6 +26,8 @@ export default function Navbar() {
     "Guest";
 
   const role = auth.role || auth.user?.role || "Guest";
+  const menuBasePath =
+    role === "Agent" ? "/agent" : role === "Renter" ? "/renter" : "";
 
   const navItems = [
     { name: "Home", id: "#" },
@@ -34,26 +36,31 @@ export default function Navbar() {
     { name: "Contact Us", id: "#contact" },
   ];
 
-  const userMenu = [
-    {
-      label: "Dashboard",
-      icon: "/icons/dashboard-square-01.svg",
-      path: "/agent/dashboard",
-    },
-    { label: "Profile", icon: "/icons/user.svg", path: "/profile" },
-    {
-      label: "Pre-Market Requests",
-      icon: "/icons/file-01.svg",
-      path: "/saved-searches",
-    },
-    {
-      label: "Notification",
-      icon: "/icons/notification-01.svg",
-      path: "/matches",
-    },
-    { label: "Settings", icon: "/icons/settings-01.svg", path: "/settings" },
-    { label: "Logout", icon: "/icons/logout-01.svg", path: "/" },
-  ];
+  const userMenu = menuBasePath
+    ? [
+        {
+          label: "Dashboard",
+          icon: "/icons/dashboard-square-01.svg",
+          path: `${menuBasePath}/dashboard`,
+        },
+        {
+          label: "Notifications",
+          icon: "/icons/notification-01.svg",
+          path: `${menuBasePath}/notifications`,
+        },
+        {
+          label: "Settings",
+          icon: "/icons/settings-01.svg",
+          path: `${menuBasePath}/settings`,
+        },
+        {
+          label: "Profile",
+          icon: "/icons/user.svg",
+          path: `${menuBasePath}/profile`,
+        },
+        { label: "Logout", icon: "/icons/logout-01.svg", path: "/" },
+      ]
+    : [];
 
   const handleMenuItemClick = (path: string) => {
     router.push(path);

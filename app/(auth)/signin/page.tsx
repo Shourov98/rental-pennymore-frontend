@@ -80,8 +80,7 @@ export default function SigninPage() {
         );
       }
 
-      const destination =
-        role === "Agent" ? "/agent/dashboard" : "/renter/saved-requests";
+      const destination = "/";
       setStatusMessage({
         type: "success",
         message: data.message || "Login successful.",
