@@ -104,7 +104,7 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
             label: "Midtown West – Hell’s Kitchen",
           },
           { key: "Murray Hill", label: "Murray Hill" },
-          { key: "Union Square Park", label: "Union Square Park" },
+          { key: "Union Square Park", label: "Union Square" },
         ],
       },
 
@@ -115,6 +115,7 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
           { key: "Flatiron - Union Square", label: "Flatiron - Union Square" },
           { key: "SoHo-Hudson Square", label: "SoHo-Hudson Square" },
           { key: "Gramercy", label: "Gramercy" },
+          { key: "Kips Bay", label: "Kips Bay" },
           { key: "Gramercy Park", label: "Gramercy Park" },
           {
             key: "Stuyvesant Town-Peter Cooper Village",
@@ -153,6 +154,10 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
           { key: "East Williamsburg", label: "East Williamsburg" },
           { key: "Bushwick (West)", label: "Bushwick (West)" },
           { key: "Bushwick (East)", label: "Bushwick (East)" },
+          {
+            key: "Carroll Gardens-Cobble Hill-Gowanus-Red Hook",
+            label: "Carroll Gardens-Cobble Hill-Gowanus-Red Hook",
+          },
         ],
       },
 
@@ -200,11 +205,32 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
         title: "South Brooklyn",
         items: [
           { key: "Park Slope", label: "Park Slope" },
+          { key: "Midwood", label: "Midwood" },
           {
             key: "Windsor Terrace-South Slope",
             label: "Windsor Terrace-South Slope",
           },
           { key: "Bay Ridge", label: "Bay Ridge" },
+          {
+            key: "Sheepshead Bay-Manhattan Beach-Gerritsen Beach",
+            label: "Sheepshead Bay-Manhattan Beach-Gerritsen Beach",
+          },
+          {
+            key: "Prospect Lefferts Gardens-Wingate",
+            label: "Prospect Lefferts Gardens-Wingate",
+          },
+          {
+            key: "Flatbush (West)-Ditmas Park-Parkville",
+            label: "Flatbush (West)-Ditmas Park-Parkville",
+          },
+          {
+            key: "Mapleton-Midwood (West)",
+            label: "Mapleton-Midwood (West)",
+          },
+          {
+            key: "Madison",
+            label: "Madison",
+          },
           { key: "Dyker Heights", label: "Dyker Heights" },
           { key: "Fort Hamilton", label: "Fort Hamilton" },
           { key: "Bensonhurst", label: "Bensonhurst" },
@@ -234,6 +260,7 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
         title: "East Brooklyn",
         items: [
           { key: "Cypress Hills", label: "Cypress Hills" },
+          { key: "Brooklyn Navy Yard", label: "Brooklyn Navy Yard" },
           { key: "East New York (North)", label: "East New York (North)" },
           { key: "East New York-New Lots", label: "East New York-New Lots" },
           { key: "East New York-City Line", label: "East New York-City Line" },
