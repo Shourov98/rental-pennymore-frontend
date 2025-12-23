@@ -104,6 +104,7 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
             label: "Midtown West – Hell’s Kitchen",
           },
           { key: "Murray Hill", label: "Murray Hill" },
+          { key: "Union Square Park", label: "Union Square Park" },
         ],
       },
 
@@ -111,7 +112,7 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
         title: "Downtown Manhattan",
         items: [
           { key: "Chelsea-Hudson Yards", label: "Chelsea-Hudson Yards" },
-          { key: "Flatiron - Union Square", label: "Flatiron" },
+          { key: "Flatiron - Union Square", label: "Flatiron - Union Square" },
           { key: "SoHo-Hudson Square", label: "SoHo-Hudson Square" },
           { key: "Gramercy", label: "Gramercy" },
           { key: "Gramercy Park", label: "Gramercy Park" },
@@ -178,6 +179,7 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
           { key: "Prospect Heights", label: "Prospect Heights" },
           { key: "Ocean Hill", label: "Ocean Hill" },
           { key: "Brownsville", label: "Brownsville" },
+          { key: "Kensington", label: "Kensington" },
         ],
       },
 
