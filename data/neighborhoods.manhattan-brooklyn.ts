@@ -158,6 +158,7 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
             key: "Carroll Gardens-Cobble Hill-Gowanus-Red Hook",
             label: "Carroll Gardens-Cobble Hill-Gowanus-Red Hook",
           },
+          { key: "Brooklyn Navy Yard", label: "Brooklyn Navy Yard" },
         ],
       },
 
@@ -191,6 +192,10 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
       {
         title: "East Flatbush",
         items: [
+          {
+            key: "Flatbush",
+            label: "Flatbush (Central)",
+          },
           { key: "East Flatbush-Erasmus", label: "East Flatbush-Erasmus" },
           { key: "East Flatbush-Farragut", label: "East Flatbush-Farragut" },
           { key: "East Flatbush-Rugby", label: "East Flatbush-Rugby" },
