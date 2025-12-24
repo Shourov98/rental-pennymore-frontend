@@ -13,7 +13,11 @@ const API_BASE_URL =
 
 interface RenterProfile {
   _id?: string;
-  userId?: string;
+  userId?: {
+    fullName?: string;
+    email?: string;
+    phoneNumber?: string;
+  };
   email?: string;
   fullName?: string;
   phoneNumber?: string;
@@ -100,6 +104,10 @@ export default function ProfilePage() {
       ? "No pets"
       : "Not specified";
 
+  const profileFullName = profile?.fullName || profile?.userId?.fullName;
+  const profilePhone = profile?.phoneNumber || profile?.userId?.phoneNumber;
+  const profileEmail = profile?.email || profile?.userId?.email;
+
   const avatar = "/profile-image.png";
 
   return (
@@ -151,9 +159,9 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-3 border-b border-gray-200 pb-2">
                   <User className="w-4 h-4 text-blue-600" />
                   <div>
-                    <p className="text-xs text-gray-500">Name</p>
+                    <p className="text-xs text-gray-500">Full name</p>
                     <p className="text-gray-900 font-medium">
-                      {profile?.fullName || "Not provided"}
+                      {profileFullName || "Not provided"}
                     </p>
                   </div>
                 </div>
@@ -163,7 +171,7 @@ export default function ProfilePage() {
                   <div>
                     <p className="text-xs text-gray-500">Phone</p>
                     <p className="text-gray-900 font-medium">
-                      {profile?.phoneNumber || "Not provided"}
+                      {profilePhone || "Not provided"}
                     </p>
                   </div>
                 </div>
@@ -173,7 +181,7 @@ export default function ProfilePage() {
                   <div>
                     <p className="text-xs text-gray-500">Email</p>
                     <p className="text-gray-900 font-medium">
-                      {profile?.email || "Not provided"}
+                      {profileEmail || "Not provided"}
                     </p>
                   </div>
                 </div>

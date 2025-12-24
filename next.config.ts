@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "www.tiktok.com",
       },
+      {
+        protocol: "https",
+        hostname: "hel1.your-objectstorage.com",
+      },
     ],
   },
 };

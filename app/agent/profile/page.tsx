@@ -39,10 +39,12 @@ export default function AgentProfile() {
     };
   }, [profile?.createdAt, profile?.updatedAt]);
 
+  const userInfo = profile?.userInfo ?? profile?.userId;
   const avatar =
-    profile?.userId?.fullName === "Vondo taheri"
+    userInfo?.profileImageUrl ||
+    (userInfo?.fullName === "Vondo taheri"
       ? "https://randomuser.me/api/portraits/men/32.jpg"
-      : "/agent-avatar.jpg";
+      : "/agent-avatar.jpg");
 
   const isLoading = status === "loading" && !profile;
 
@@ -86,11 +88,6 @@ export default function AgentProfile() {
             height={150}
             className="rounded-full object-cover"
           />
-          <div className="mt-3 inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-gray-200 text-gray-700 bg-gray-50">
-            {profile?.userId?.accountStatus
-              ? profile.userId.accountStatus.toUpperCase()
-              : "STATUS UNKNOWN"}
-          </div>
         </div>
 
         {/* Information */}
@@ -115,13 +112,13 @@ export default function AgentProfile() {
             <div>
               <p className="text-gray-500 text-sm">Name</p>
               <p className="font-medium text-gray-900 border-b border-gray-200 pb-1">
-                {profile?.userId?.fullName || "Not provided"}
+                {userInfo?.fullName || "Not provided"}
               </p>
             </div>
             <div>
               <p className="text-gray-500 text-sm">Phone no</p>
               <p className="font-medium text-gray-900 border-b border-gray-200 pb-1">
-                {profile?.userId?.phoneNumber || "Not provided"}
+                {userInfo?.phoneNumber || "Not provided"}
               </p>
             </div>
 
@@ -139,22 +136,16 @@ export default function AgentProfile() {
             </div>
 
             <div>
-              <p className="text-gray-500 text-sm">Referral Code</p>
-              <p className="font-medium text-gray-900 border-b border-gray-200 pb-1">
-                {profile?.userId?.referralCode || "Not available"}
-              </p>
-            </div>
-            <div>
               <p className="text-gray-500 text-sm">Referral Link</p>
               <p className="font-medium text-gray-900 border-b border-gray-200 pb-1 break-all">
-                {profile?.userId?.referralLink || "Not available"}
+                {userInfo?.referralLink || "Not available"}
               </p>
             </div>
 
             <div className="sm:col-span-2">
               <p className="text-gray-500 text-sm">Email</p>
               <p className="font-medium text-gray-900 border-b border-gray-200 pb-1">
-                {profile?.userId?.email || "Not provided"}
+                {userInfo?.email || "Not provided"}
               </p>
             </div>
           </div>

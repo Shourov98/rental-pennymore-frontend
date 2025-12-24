@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
-import { selectAccessToken } from "./authSlice";
+import { selectAccessToken, updateUser } from "./authSlice";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -18,12 +18,14 @@ export interface AgentProfileUser {
   referralCode?: string;
   referralLink?: string;
   canRefer?: boolean;
+  profileImageUrl?: string;
   id?: string;
 }
 
 export interface AgentProfile {
   _id: string;
-  userId: AgentProfileUser;
+  userInfo: AgentProfileUser;
+  userId?: AgentProfileUser;
   licenseNumber?: string;
   brokerageName?: string;
   isActive?: boolean;
@@ -62,7 +64,7 @@ export const fetchAgentProfile = createAsyncThunk<
   AgentProfile,
   void,
   { state: RootState; rejectValue: string }
->("agentProfile/fetch", async (_arg, { getState, rejectWithValue }) => {
+>("agentProfile/fetch", async (_arg, { getState, rejectWithValue, dispatch }) => {
   const state = getState();
   const accessToken = selectAccessToken(state);
 
@@ -88,7 +90,21 @@ export const fetchAgentProfile = createAsyncThunk<
       return rejectWithValue(message);
     }
 
-    return data.data;
+    const normalizedUserInfo =
+      data.data.userInfo ?? data.data.userId ?? ({} as AgentProfileUser);
+    if (normalizedUserInfo?.referralCode || normalizedUserInfo?.referralLink) {
+      dispatch(
+        updateUser({
+          referralCode: normalizedUserInfo?.referralCode ?? null,
+          referralLink: normalizedUserInfo?.referralLink ?? null,
+        })
+      );
+    }
+
+    return {
+      ...data.data,
+      userInfo: normalizedUserInfo,
+    };
   } catch (error) {
     const message =
       error instanceof Error
@@ -143,6 +159,6 @@ export const selectAgentProfileState = (state: RootState) =>
 export const selectAgentProfile = (state: RootState) =>
   state.agentProfile.profile;
 export const selectAgentReferral = (state: RootState) => ({
-  referralCode: state.agentProfile.profile?.userId?.referralCode ?? null,
-  referralLink: state.agentProfile.profile?.userId?.referralLink ?? null,
+  referralCode: state.auth.user?.referralCode ?? null,
+  referralLink: state.auth.user?.referralLink ?? null,
 });
