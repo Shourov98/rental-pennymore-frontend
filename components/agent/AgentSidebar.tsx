@@ -8,6 +8,7 @@ import {
   User,
   LogOut,
   Link as LinkIcon,
+  Settings,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -31,6 +32,11 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
           href: "/agent/refer-link",
         },
         { name: "Notifications", icon: <Bell />, href: "/agent/notifications" },
+        {
+          name: "Settings",
+          icon: <Settings />,
+          href: "/agent/settings",
+        },
       ],
     },
     {
