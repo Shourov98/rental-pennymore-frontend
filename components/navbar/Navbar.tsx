@@ -8,6 +8,10 @@ import { X, ChevronDown, User } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectAuth, logout, selectIsAuthed } from "@/store/slices/authSlice";
 
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
+
 export default function Navbar() {
   const dispatch = useDispatch();
   const auth = useSelector(selectAuth);
@@ -68,9 +72,23 @@ export default function Navbar() {
     setMenuOpen(false);
   };
 
-  const handleLogout = () => {
-    dispatch(logout());
-    router.replace("/signin");
+  const handleLogout = async () => {
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (auth.accessToken) headers.Authorization = `Bearer ${auth.accessToken}`;
+
+      await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: "POST",
+        headers,
+      });
+    } catch (err) {
+      console.error("Logout failed", err);
+    } finally {
+      dispatch(logout());
+      router.replace("/signin");
+    }
   };
 
   // Close drawer when clicking outside

@@ -12,11 +12,21 @@ import {
   Link as LinkIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "@/store/slices/authSlice";
+import type { AppDispatch, RootState } from "@/store/store";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
 
 export default function AgentSidebar({ open }: { open?: boolean }) {
   const pathname = usePathname();
   const [active, setActive] = useState(pathname);
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
 
   const menuSections = [
     {
@@ -63,6 +73,25 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
     },
   ];
 
+  const handleLogout = async () => {
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: "POST",
+        headers,
+      });
+    } catch (err) {
+      console.error("Logout failed", err);
+    } finally {
+      dispatch(logout());
+      router.replace("/signin");
+    }
+  };
+
   return (
     <aside
       className={`fixed lg:static top-[64px] lg:top-0 left-0 h-[calc(100vh-64px)] lg:h-screen w-64 bg-gray-50 border-r border-gray-200 shrink-0 transform transition-transform duration-200 ease-in-out ${
@@ -76,21 +105,33 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
               {section.title}
             </p>
             <div className="flex flex-col gap-2">
-              {section.items.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={() => setActive(item.href)}
-                  className={`flex items-center gap-3 px-4 py-4 rounded-2xl border ${
-                    active === item.href
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-gray-800 hover:bg-gray-100 border-gray-200"
-                  }`}
-                >
-                  <span className="w-5 h-5">{item.icon}</span>
-                  <span className="text-sm font-medium">{item.name}</span>
-                </Link>
-              ))}
+              {section.items.map((item) =>
+                item.name === "Logout" ? (
+                  <button
+                    key={item.name}
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 px-4 py-4 rounded-2xl border bg-white text-gray-800 hover:bg-gray-100 border-gray-200"
+                  >
+                    <span className="w-5 h-5">{item.icon}</span>
+                    <span className="text-sm font-medium">{item.name}</span>
+                  </button>
+                ) : (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setActive(item.href)}
+                    className={`flex items-center gap-3 px-4 py-4 rounded-2xl border ${
+                      active === item.href
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-white text-gray-800 hover:bg-gray-100 border-gray-200"
+                    }`}
+                  >
+                    <span className="w-5 h-5">{item.icon}</span>
+                    <span className="text-sm font-medium">{item.name}</span>
+                  </Link>
+                )
+              )}
             </div>
           </div>
         ))}

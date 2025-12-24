@@ -1,94 +1,325 @@
 "use client";
 
-import { Bell, Handshake, CreditCard, Home } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
+import { Bell, CreditCard, Handshake, Home, Trash2 } from "lucide-react";
+import type { RootState } from "@/store/store";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
+
+type NotificationType =
+  | "info"
+  | "success"
+  | "warning"
+  | "error"
+  | "match"
+  | "payment";
+
+interface NotificationItem {
+  _id: string;
+  title: string;
+  message: string;
+  type?: NotificationType;
+  actionUrl?: string;
+  isRead?: boolean;
+  createdAt?: string;
+}
 
 export default function NotificationsPage() {
-  const notifications = [
-    {
-      id: 1,
-      type: "renter",
-      icon: Home,
-      title: "New Renter Request",
-      message:
-        "A new renter has submitted a request for a 2BR apartment in Manhattan.",
-      time: "2 hours ago",
-      status: "New",
-    },
-    {
-      id: 2,
-      type: "agent",
-      icon: Handshake,
-      title: "Agent Connection Request",
-      message:
-        "Agent John Wick has requested to connect with renter request #102.",
-      time: "Yesterday at 5:12 PM",
-      status: "Pending",
-    },
-    {
-      id: 3,
-      type: "payment",
-      icon: CreditCard,
-      title: "Payment Completed",
-      message:
-        "Agent Alice’s payment for renter connection #205 has been received and marked as Paid.",
-      time: "Nov 12, 2025",
-      status: "Paid",
-    },
-  ];
+  const router = useRouter();
+  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const iconByType = useMemo(
+    () => ({
+      info: Bell,
+      success: Handshake,
+      warning: Home,
+      error: CreditCard,
+      match: Handshake,
+      payment: CreditCard,
+    }),
+    []
+  );
+
+  const fetchUnreadCount = async () => {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+    const response = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
+      method: "GET",
+      headers,
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data?.success === false) {
+      throw new Error(
+        data?.message || "We couldn't load your unread notifications."
+      );
+    }
+    setUnreadCount(Number(data?.data?.unreadCount || 0));
+  };
+
+  const fetchNotifications = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(`${API_BASE_URL}/notifications/user`, {
+        method: "GET",
+        headers,
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message || "We couldn't load your notifications."
+        );
+      }
+      setNotifications(data?.data?.notifications || []);
+      await fetchUnreadCount();
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "We couldn't load your notifications.";
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [accessToken]);
+
+  const markNotificationRead = async (notification: NotificationItem) => {
+    if (notification.isRead) {
+      if (notification.actionUrl) router.push(notification.actionUrl);
+      return;
+    }
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(
+        `${API_BASE_URL}/notifications/${notification._id}/read`,
+        {
+          method: "PATCH",
+          headers,
+        }
+      );
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message || "We couldn't update the notification."
+        );
+      }
+
+      setNotifications((prev) =>
+        prev.map((item) =>
+          item._id === notification._id ? { ...item, isRead: true } : item
+        )
+      );
+      setUnreadCount((prev) => Math.max(prev - 1, 0));
+      if (notification.actionUrl) router.push(notification.actionUrl);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "We couldn't update the notification."
+      );
+    }
+  };
+
+  const markAllRead = async () => {
+    setError(null);
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(`${API_BASE_URL}/notifications/read-all`, {
+        method: "PATCH",
+        headers,
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message || "We couldn't mark notifications as read."
+        );
+      }
+
+      setNotifications((prev) =>
+        prev.map((item) => ({ ...item, isRead: true }))
+      );
+      setUnreadCount(0);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "We couldn't mark notifications as read."
+      );
+    }
+  };
+
+  const deleteNotification = async (notification: NotificationItem) => {
+    setError(null);
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(
+        `${API_BASE_URL}/notifications/${notification._id}`,
+        {
+          method: "DELETE",
+          headers,
+        }
+      );
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message || "We couldn't delete the notification."
+        );
+      }
+
+      setNotifications((prev) =>
+        prev.filter((item) => item._id !== notification._id)
+      );
+      if (!notification.isRead) {
+        setUnreadCount((prev) => Math.max(prev - 1, 0));
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "We couldn't delete the notification."
+      );
+    }
+  };
 
   return (
     <section className="w-full min-h-screen bg-[#F8F9FB] px-4 md:px-8 py-6 space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-xl shadow-sm p-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-[#0A093D]">Notifications</h1>
+      <div className="bg-white rounded-xl shadow-sm p-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-[#0A093D]">
+            Notifications
+          </h1>
+          <p className="text-sm text-gray-500">
+            {unreadCount} unread notification{unreadCount === 1 ? "" : "s"}
+          </p>
+        </div>
+        <button
+          onClick={markAllRead}
+          disabled={unreadCount === 0}
+          className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition disabled:opacity-70"
+        >
+          Mark all as read
+        </button>
       </div>
 
       {/* Notifications List */}
+      {error && (
+        <div className="bg-red-50 text-red-700 border border-red-100 rounded-xl p-4 text-sm">
+          {error}
+        </div>
+      )}
+
       <div className="bg-white rounded-xl shadow-sm divide-y">
-        {notifications.map((n) => {
-          const Icon = n.icon;
-          let badgeColor = "";
-          if (n.status === "New") badgeColor = "bg-blue-100 text-blue-600";
-          if (n.status === "Pending")
-            badgeColor = "bg-yellow-100 text-yellow-700";
-          if (n.status === "Paid") badgeColor = "bg-green-100 text-green-700";
+        {isLoading ? (
+          <div className="px-6 py-8 text-sm text-gray-500">
+            Loading notifications...
+          </div>
+        ) : (
+          notifications.map((notification) => {
+            const Icon = iconByType[notification.type || "info"] || Bell;
+            const isUnread = !notification.isRead;
+            const timeLabel = notification.createdAt
+              ? new Date(notification.createdAt).toLocaleString()
+              : "";
 
-          return (
-            <div
-              key={n.id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-5 hover:bg-gray-50 transition"
-            >
-              {/* Left: Icon + Info */}
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-blue-50 rounded-full">
-                  <Icon size={20} className="text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-[#0A093D] mb-1">
-                    {n.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    {n.message}
-                  </p>
-                </div>
-              </div>
-
-              {/* Right: Time + Status */}
-              <div className="flex flex-col sm:items-end gap-2">
-                <span className="text-xs text-gray-400">{n.time}</span>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-medium ${badgeColor}`}
+            return (
+              <div
+                key={notification._id}
+                className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-5 transition ${
+                  isUnread ? "bg-blue-50/40" : "hover:bg-gray-50"
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => markNotificationRead(notification)}
+                  className="flex flex-1 items-start gap-4 text-left"
                 >
-                  {n.status}
-                </span>
+                  <div
+                    className={`p-3 rounded-full ${
+                      isUnread ? "bg-blue-100" : "bg-gray-100"
+                    }`}
+                  >
+                    <Icon
+                      size={20}
+                      className={isUnread ? "text-blue-600" : "text-gray-500"}
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-[#0A093D] mb-1">
+                      {notification.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      {notification.message}
+                    </p>
+                  </div>
+                </button>
+
+                <div className="flex items-center gap-3 sm:flex-col sm:items-end">
+                  {timeLabel && (
+                    <span className="text-xs text-gray-400">{timeLabel}</span>
+                  )}
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      isUnread
+                        ? "bg-blue-100 text-blue-600"
+                        : "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    {isUnread ? "New" : "Read"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => deleteNotification(notification)}
+                    className="text-gray-400 hover:text-red-500 transition"
+                    aria-label="Delete notification"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
 
       {/* Empty State (optional) */}
-      {notifications.length === 0 && (
+      {!isLoading && notifications.length === 0 && (
         <div className="bg-white rounded-xl shadow-sm p-10 text-center text-gray-500">
           <Bell size={36} className="mx-auto mb-3 text-gray-400" />
           <p>No notifications yet.</p>
