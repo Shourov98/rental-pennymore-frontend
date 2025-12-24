@@ -33,9 +33,26 @@ const baseQueryWithAuth: BaseQueryFn<
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-  const result = await rawBaseQuery(args, api, extraOptions);
+  let result = await rawBaseQuery(args, api, extraOptions);
+  const url = typeof args === "string" ? args : args.url;
 
-  if (result.error?.status === 401) {
+  if (result.error?.status === 401 && !url.includes("/auth/refresh-token")) {
+    const refreshResult = await rawBaseQuery(
+      { url: "/auth/refresh-token", method: "POST" },
+      api,
+      extraOptions
+    );
+
+    const refreshToken = refreshResult.data as RefreshResponse | undefined;
+    const accessToken = refreshToken?.data?.accessToken;
+
+    if (accessToken) {
+      api.dispatch(refreshSuccess({ accessToken }));
+      result = await rawBaseQuery(args, api, extraOptions);
+    } else {
+      api.dispatch(logout());
+    }
+  } else if (result.error?.status === 401) {
     api.dispatch(logout());
   }
 
@@ -160,4 +177,5 @@ export const {
   useRegisterRenterMutation,
   useRefreshTokenMutation,
   useGetProfileQuery,
+  useLazyGetProfileQuery,
 } = api;

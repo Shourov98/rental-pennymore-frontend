@@ -115,6 +115,8 @@ const authSlice = createSlice({
       state.accessToken = action.payload.accessToken;
       state.refreshToken = action.payload.refreshToken ?? state.refreshToken;
       state.expiresIn = action.payload.expiresIn ?? state.expiresIn;
+      state.status = "authenticated";
+      state.error = null;
     },
     authFailure(state, action: PayloadAction<string>) {
       state.status = "error";
@@ -133,6 +135,18 @@ const authSlice = createSlice({
         state.renter = { ...state.renter, ...action.payload };
       }
     },
+    setAuthFromProfile(state, action: PayloadAction<UserBase | RenterProfile>) {
+      const profile = action.payload;
+      if ("role" in profile) {
+        state.user = profile;
+        state.role = profile.role;
+      } else {
+        state.renter = profile;
+        state.role = "Renter";
+      }
+      state.status = "authenticated";
+      state.error = null;
+    },
   },
 });
 
@@ -145,6 +159,7 @@ export const {
   logout,
   updateUser,
   updateRenter,
+  setAuthFromProfile,
 } = authSlice.actions;
 
 export default authSlice.reducer;

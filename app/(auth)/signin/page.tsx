@@ -12,6 +12,7 @@ import {
 } from "@/store/slices/authSlice";
 
 const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
 
@@ -45,6 +46,7 @@ export default function SigninPage() {
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email: email.trim(), password }),
       });
 

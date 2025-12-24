@@ -1,16 +1,25 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
 import AgentNavbar from "@/components/agent/AgentNavbar";
 import RenterSidebar from "@/components/renter/RenterSidebar";
+import { selectAuth, selectIsAuthed } from "@/store/slices/authSlice";
 
 export default function RenterLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const auth = useSelector(selectAuth);
+  const isAuthed = useSelector(selectIsAuthed);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
+  const role = auth.role ?? auth.user?.role ?? null;
+  const isRenter = role === "Renter";
+  const hasRole = Boolean(role);
 
   // Close drawer on outside click
   useEffect(() => {
@@ -22,6 +31,20 @@ export default function RenterLayout({
     if (sidebarOpen) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [sidebarOpen]);
+
+  useEffect(() => {
+    if (!isAuthed) {
+      router.replace("/signin");
+      return;
+    }
+    if (hasRole && !isRenter) {
+      router.replace("/agent/dashboard");
+    }
+  }, [hasRole, isAuthed, isRenter, router]);
+
+  if (!isAuthed || (hasRole && !isRenter)) {
+    return null;
+  }
 
   return (
     <div className="h-screen w-full flex flex-col bg-gray-50">

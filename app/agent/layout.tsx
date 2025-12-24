@@ -19,6 +19,7 @@ export default function AgentLayout({
   const drawerRef = useRef<HTMLDivElement>(null);
   const role = auth.role ?? auth.user?.role ?? null;
   const isAgent = role === "Agent";
+  const hasRole = Boolean(role);
 
   // ✅ Close drawer on outside click
   useEffect(() => {
@@ -38,12 +39,12 @@ export default function AgentLayout({
       router.replace("/signin");
       return;
     }
-    if (!isAgent) {
+    if (hasRole && !isAgent) {
       router.replace("/renter/saved-requests");
     }
-  }, [isAuthed, isAgent, router]);
+  }, [hasRole, isAgent, isAuthed, router]);
 
-  if (!isAuthed || !isAgent) {
+  if (!isAuthed || (hasRole && !isAgent)) {
     return null;
   }
 
