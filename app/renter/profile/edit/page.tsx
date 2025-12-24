@@ -3,17 +3,34 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { ArrowLeft, Edit2, User, Phone } from "lucide-react";
-import { RootState } from "@/store/store";
+import { updateRenter, updateUser } from "@/store/slices/authSlice";
+import type { AppDispatch, RootState } from "@/store/store";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
 
+interface RenterProfile {
+  _id?: string;
+  userId?: string;
+  registrationType?: "normal" | "social";
+  petFriendly?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  userInfo?: {
+    fullName?: string;
+    email?: string;
+    phoneNumber?: string;
+    profileImageUrl?: string | null;
+  };
+}
+
 export default function EditProfilePage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const dispatch = useDispatch<AppDispatch>();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
 
   const [fullName, setFullName] = useState("");
@@ -21,6 +38,7 @@ export default function EditProfilePage() {
   const [image, setImage] = useState("/profile-image.png");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -52,8 +70,31 @@ export default function EditProfilePage() {
           );
         }
 
-        setFullName(data.data.fullName || "");
-        setPhoneNumber(data.data.phoneNumber || "");
+        const profile = data.data as RenterProfile;
+        setFullName(profile.userInfo?.fullName || "");
+        setPhoneNumber(profile.userInfo?.phoneNumber || "");
+        setImage(profile.userInfo?.profileImageUrl || "/profile-image.png");
+
+        dispatch(
+          updateRenter({
+            _id: profile._id || "",
+            userId: profile.userId || "",
+            email: profile.userInfo?.email || "",
+            fullName: profile.userInfo?.fullName || "",
+            phoneNumber: profile.userInfo?.phoneNumber || "",
+            registrationType: profile.registrationType || "normal",
+            petFriendly: profile.petFriendly ?? false,
+            createdAt: profile.createdAt || "",
+            updatedAt: profile.updatedAt || "",
+          })
+        );
+        dispatch(
+          updateUser({
+            fullName: profile.userInfo?.fullName || "",
+            email: profile.userInfo?.email || "",
+            phone: profile.userInfo?.phoneNumber || "",
+          })
+        );
       } catch (err) {
         if (controller.signal.aborted) return;
         const message =
@@ -69,16 +110,68 @@ export default function EditProfilePage() {
     fetchProfile();
 
     return () => controller.abort();
-  }, [accessToken]);
+  }, [accessToken, dispatch]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setImage(event.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setError(null);
+    setSuccess(null);
+    setIsUploading(true);
+
+    const previousImage = image;
+    const previewUrl = URL.createObjectURL(file);
+    setImage(previewUrl);
+
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const headers: Record<string, string> = {};
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(`${API_BASE_URL}/file/upload-profile-image`, {
+        method: "POST",
+        headers,
+        body: formData,
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message ||
+            "We couldn't upload the image right now. Please try again."
+        );
+      }
+
+      const uploadedUrl =
+        data?.data?.profileImageUrl ||
+        data?.data?.profileImage ||
+        data?.data?.url ||
+        data?.data?.imageUrl ||
+        data?.data?.fileUrl ||
+        data?.url ||
+        data?.imageUrl;
+
+      if (uploadedUrl) {
+        setImage(uploadedUrl);
+        setSuccess("Profile image updated.");
+      }
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "We couldn't upload the image right now. Please try again.";
+      setError(message);
+      setImage(previousImage);
+    } finally {
+      setIsUploading(false);
+      URL.revokeObjectURL(previewUrl);
+      event.target.value = "";
     }
   };
 
@@ -100,7 +193,7 @@ export default function EditProfilePage() {
         phoneNumber,
       };
 
-      const response = await fetch(`${API_BASE_URL}/user/profile`, {
+      const response = await fetch(`${API_BASE_URL}/renter/profile`, {
         method: "PUT",
         headers,
         body: JSON.stringify(payload),
@@ -108,12 +201,37 @@ export default function EditProfilePage() {
 
       const data = await response.json().catch(() => ({}));
 
-      if (!response.ok || data?.success === false) {
+      if (!response.ok || data?.success === false || !data?.data) {
         throw new Error(
           data?.message ||
             "We couldn't update your profile right now. Please try again."
         );
       }
+
+      const updatedProfile = data.data as RenterProfile;
+      setImage(
+        updatedProfile.userInfo?.profileImageUrl || "/profile-image.png"
+      );
+      dispatch(
+        updateRenter({
+          _id: updatedProfile._id || "",
+          userId: updatedProfile.userId || "",
+          email: updatedProfile.userInfo?.email || "",
+          fullName: updatedProfile.userInfo?.fullName || "",
+          phoneNumber: updatedProfile.userInfo?.phoneNumber || "",
+          registrationType: updatedProfile.registrationType || "normal",
+          petFriendly: updatedProfile.petFriendly ?? false,
+          createdAt: updatedProfile.createdAt || "",
+          updatedAt: updatedProfile.updatedAt || "",
+        })
+      );
+      dispatch(
+        updateUser({
+          fullName: updatedProfile.userInfo?.fullName || "",
+          email: updatedProfile.userInfo?.email || "",
+          phone: updatedProfile.userInfo?.phoneNumber || "",
+        })
+      );
 
       setSuccess("Profile updated successfully.");
       router.push("/renter/profile");
@@ -181,6 +299,7 @@ export default function EditProfilePage() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
                 className="absolute -bottom-2 -right-2 bg-white shadow-lg p-2 rounded-full hover:bg-gray-100 transition"
               >
                 <Edit2 className="w-4 h-4 text-blue-500" />
@@ -236,6 +355,7 @@ export default function EditProfilePage() {
                     />
                   </div>
                 </div>
+
               </div>
 
               {/* Buttons */}

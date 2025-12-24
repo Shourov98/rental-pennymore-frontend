@@ -1,19 +1,116 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
+import { useDispatch, useSelector } from "react-redux";
+import { logout, updateUser } from "@/store/slices/authSlice";
+import type { AppDispatch, RootState } from "@/store/store";
+import { useRouter } from "next/navigation";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
 
 export default function SettingsPage() {
+  const dispatch = useDispatch<AppDispatch>();
+  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+  const router = useRouter();
+  const agentSubscription = useSelector(
+    (state: RootState) => state.auth.user?.emailSubscriptionEnabled
+  );
   const [subscribed, setSubscribed] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const handleUnsubscribe = () => setSubscribed(false);
-  const handleSubscribe = () => setSubscribed(true);
+  useEffect(() => {
+    if (typeof agentSubscription === "boolean") {
+      setSubscribed(agentSubscription);
+    }
+  }, [agentSubscription]);
 
-  const handleDelete = () => {
-    // TODO: connect delete API
-    setShowDeleteModal(false);
-    alert("Account deleted (mock)");
+  const toggleSubscription = async () => {
+    setError(null);
+    setIsSaving(true);
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(
+        `${API_BASE_URL}/agent/email-subscription/toggle`,
+        {
+          method: "POST",
+          headers,
+        }
+      );
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message ||
+            "We couldn't update your email subscription right now."
+        );
+      }
+
+      const isEnabled = !!data?.data?.emailSubscriptionEnabled;
+      setSubscribed(isEnabled);
+      dispatch(
+        updateUser({
+          emailSubscriptionEnabled: isEnabled,
+        })
+      );
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "We couldn't update your email subscription right now.";
+      setError(message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleteError(null);
+    setIsDeleting(true);
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(`${API_BASE_URL}/agent/profile`, {
+        method: "DELETE",
+        headers,
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message || "We couldn't delete your account right now."
+        );
+      }
+
+      dispatch(logout());
+      setShowDeleteModal(false);
+      router.replace("/signin");
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "We couldn't delete your account right now.";
+      setDeleteError(message);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -56,19 +153,25 @@ export default function SettingsPage() {
               : "Subscribe again to receive search updates and marketing emails."}
           </p>
 
+          {error && (
+            <p className="text-sm text-red-600 mb-3">{error}</p>
+          )}
+
           {subscribed ? (
             <button
-              onClick={handleUnsubscribe}
-              className="px-5 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
+              onClick={toggleSubscription}
+              className="px-5 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition disabled:opacity-70"
+              disabled={isSaving}
             >
-              Unsubscribe to Email
+              {isSaving ? "Updating..." : "Unsubscribe to Email"}
             </button>
           ) : (
             <button
-              onClick={handleSubscribe}
-              className="px-5 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
+              onClick={toggleSubscription}
+              className="px-5 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition disabled:opacity-70"
+              disabled={isSaving}
             >
-              Subscribe to Email
+              {isSaving ? "Updating..." : "Subscribe to Email"}
             </button>
           )}
         </div>
@@ -82,11 +185,16 @@ export default function SettingsPage() {
             This will permanently delete your account from the system.
           </p>
 
+          {deleteError && (
+            <p className="text-sm text-red-600 mb-3">{deleteError}</p>
+          )}
+
           <button
             onClick={() => setShowDeleteModal(true)}
-            className="px-5 py-2 rounded-lg bg-red-100 text-red-600 font-medium hover:bg-red-200 transition"
+            className="px-5 py-2 rounded-lg bg-red-100 text-red-600 font-medium hover:bg-red-200 transition disabled:opacity-70"
+            disabled={isDeleting}
           >
-            Delete Account
+            {isDeleting ? "Deleting..." : "Delete Account"}
           </button>
         </div>
       </div>

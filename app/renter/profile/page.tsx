@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Lock, ArrowRight, Edit2, Phone, Mail, User } from "lucide-react";
-import { RootState } from "@/store/store";
+import { updateRenter, updateUser } from "@/store/slices/authSlice";
+import type { AppDispatch, RootState } from "@/store/store";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -13,10 +14,13 @@ const API_BASE_URL =
 
 interface RenterProfile {
   _id?: string;
-  userId?: {
+  userId?: string;
+  emailSubscriptionEnabled?: boolean;
+  userInfo?: {
     fullName?: string;
     email?: string;
     phoneNumber?: string;
+    profileImageUrl?: string | null;
   };
   email?: string;
   fullName?: string;
@@ -29,6 +33,7 @@ interface RenterProfile {
 
 export default function ProfilePage() {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
 
   const [profile, setProfile] = useState<RenterProfile | null>(null);
@@ -63,7 +68,46 @@ export default function ProfilePage() {
           );
         }
 
-        setProfile(data.data as RenterProfile);
+        const renterProfile = data.data as RenterProfile;
+        setProfile(renterProfile);
+        if (renterProfile) {
+          dispatch(
+            updateRenter({
+              _id: renterProfile._id || "",
+              userId: renterProfile.userId || "",
+              email:
+                renterProfile.userInfo?.email ||
+                renterProfile.email ||
+                "",
+              fullName:
+                renterProfile.userInfo?.fullName ||
+                renterProfile.fullName ||
+                "",
+              phoneNumber:
+                renterProfile.userInfo?.phoneNumber ||
+                renterProfile.phoneNumber ||
+                "",
+              registrationType:
+                (renterProfile.registrationType as "normal" | "social") ||
+                "normal",
+              petFriendly: renterProfile.petFriendly ?? false,
+              emailSubscriptionEnabled:
+                renterProfile.emailSubscriptionEnabled ?? false,
+              createdAt: renterProfile.createdAt || "",
+              updatedAt: renterProfile.updatedAt || "",
+            })
+          );
+          dispatch(
+            updateUser({
+              fullName: renterProfile.userInfo?.fullName || "",
+              email: renterProfile.userInfo?.email || "",
+              phone:
+                renterProfile.userInfo?.phoneNumber ||
+                renterProfile.phoneNumber ||
+                "",
+            })
+          );
+        }
       } catch (err) {
         if (controller.signal.aborted) return;
         const message =
@@ -79,36 +123,13 @@ export default function ProfilePage() {
     fetchProfile();
 
     return () => controller.abort();
-  }, [accessToken]);
+  }, [accessToken, dispatch]);
 
-  const formattedDates = useMemo(() => {
-    const format = (value?: string) =>
-      value
-        ? new Date(value).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })
-        : null;
-
-    return {
-      created: format(profile?.createdAt),
-      updated: format(profile?.updatedAt),
-    };
-  }, [profile?.createdAt, profile?.updatedAt]);
-
-  const petFriendlyLabel =
-    profile?.petFriendly === true
-      ? "Yes, pets allowed"
-      : profile?.petFriendly === false
-      ? "No pets"
-      : "Not specified";
-
-  const profileFullName = profile?.fullName || profile?.userId?.fullName;
-  const profilePhone = profile?.phoneNumber || profile?.userId?.phoneNumber;
-  const profileEmail = profile?.email || profile?.userId?.email;
-
-  const avatar = "/profile-image.png";
+  const profileFullName = profile?.userInfo?.fullName || profile?.fullName;
+  const profilePhone = profile?.userInfo?.phoneNumber || profile?.phoneNumber;
+  const profileEmail = profile?.userInfo?.email || profile?.email;
+  const profileImageUrl = profile?.userInfo?.profileImageUrl || null;
+  const profileInitial = profileFullName?.trim().charAt(0).toUpperCase() || "";
 
   return (
     <section className="w-full bg-gray-50 py-8 px-4 sm:px-8 md:px-12">
@@ -128,8 +149,19 @@ export default function ProfilePage() {
         ) : (
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8 sm:gap-12">
             {/* Profile Picture */}
-            <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-hidden border-4 border-gray-200">
-              <Image src={avatar} alt="User" fill className="object-cover" />
+            <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-hidden border-4 border-gray-200 bg-gray-100 flex items-center justify-center">
+              {profileImageUrl ? (
+                <Image
+                  src={profileImageUrl}
+                  alt="User"
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <span className="text-4xl sm:text-5xl font-semibold text-gray-600">
+                  {profileInitial || "?"}
+                </span>
+              )}
             </div>
 
             {/* Info Section */}
@@ -139,11 +171,6 @@ export default function ProfilePage() {
                   <h2 className="text-xl font-semibold text-gray-900">
                     Personal Information
                   </h2>
-                  {formattedDates.updated && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Updated {formattedDates.updated}
-                    </p>
-                  )}
                 </div>
 
                 <button
@@ -156,22 +183,12 @@ export default function ProfilePage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="flex items-center gap-3 border-b border-gray-200 pb-2">
+                <div className="flex items-center gap-3 border-b border-gray-200 pb-2 sm:col-span-2">
                   <User className="w-4 h-4 text-blue-600" />
                   <div>
                     <p className="text-xs text-gray-500">Full name</p>
                     <p className="text-gray-900 font-medium">
                       {profileFullName || "Not provided"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 border-b border-gray-200 pb-2">
-                  <Phone className="w-4 h-4 text-blue-600" />
-                  <div>
-                    <p className="text-xs text-gray-500">Phone</p>
-                    <p className="text-gray-900 font-medium">
-                      {profilePhone || "Not provided"}
                     </p>
                   </div>
                 </div>
@@ -186,37 +203,15 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 border-b border-gray-200 pb-2">
-                  <div className="w-4 h-4 rounded-full bg-blue-50 border border-blue-200" />
+                <div className="flex items-center gap-3 border-b border-gray-200 pb-2 sm:col-span-2">
+                  <Phone className="w-4 h-4 text-blue-600" />
                   <div>
-                    <p className="text-xs text-gray-500">Registration Type</p>
-                    <p className="text-gray-900 font-medium capitalize">
-                      {profile?.registrationType || "Not specified"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 border-b border-gray-200 pb-2">
-                  <div className="w-4 h-4 rounded-full bg-green-50 border border-green-200" />
-                  <div>
-                    <p className="text-xs text-gray-500">Pet Friendly</p>
+                    <p className="text-xs text-gray-500">Phone</p>
                     <p className="text-gray-900 font-medium">
-                      {petFriendlyLabel}
+                      {profilePhone || "Not provided"}
                     </p>
                   </div>
                 </div>
-
-                {formattedDates.created && (
-                  <div className="flex items-center gap-3 border-b border-gray-200 pb-2 sm:col-span-2">
-                    <div className="w-4 h-4 rounded-full bg-gray-100 border border-gray-200" />
-                    <div>
-                      <p className="text-xs text-gray-500">Member since</p>
-                      <p className="text-gray-900 font-medium">
-                        {formattedDates.created}
-                      </p>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Change Password */}
