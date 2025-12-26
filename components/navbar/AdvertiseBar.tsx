@@ -35,43 +35,37 @@ export default function AdvertiseBar() {
     return () => controller.abort();
   }, []);
 
-  const trackItems = useMemo(() => Array.from({ length: 6 }), []);
-
   if (!isActive || !content) return null;
-
-  const renderTrack = (isAriaHidden?: boolean) => (
-    <div
-      className="flex w-max items-center gap-6 py-2 text-sm text-gray-700 animate-marquee"
-      aria-hidden={isAriaHidden}
-    >
-      {trackItems.map((_, index) => (
-        <React.Fragment key={index}>
-          <span>{content}</span>
-          <span aria-hidden="true">•</span>
-        </React.Fragment>
-      ))}
-    </div>
-  );
 
   return (
     <div className="w-full bg-gray-100 overflow-hidden">
-      <div className="flex whitespace-nowrap">
-        {renderTrack()}
-        {renderTrack(true)}
+      <div className="marquee-track">
+        <span>{content}</span>
+        <span aria-hidden="true">•</span>
+        <span>{content}</span>
       </div>
 
       {/* Infinite scroll animation */}
       <style jsx>{`
         @keyframes marquee {
           0% {
-            transform: translateX(0);
+            transform: translateX(300%);
           }
           100% {
-            transform: translateX(-50%);
+            transform: translateX(-100%);
           }
         }
-        .animate-marquee {
-          animation: marquee 18s linear infinite;
+        .marquee-track {
+          display: inline-flex;
+          align-items: center;
+          gap: 24px;
+          padding: 8px 0;
+          white-space: nowrap;
+          color: rgb(55 65 81);
+          font-size: 0.875rem;
+          min-width: max-content;
+          animation: marquee 25s linear infinite;
+          will-change: transform;
         }
       `}</style>
     </div>
