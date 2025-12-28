@@ -196,13 +196,33 @@ export default function AgentMatchDetailsPage() {
           }).format(priceRange.max)
         : "Not specified";
 
-    const bedroomValue = bedrooms?.[0] || "Not specified";
+    const normalizeBedroom = (value: string) => {
+      if (!value) return "";
+      if (value.toLowerCase() === "studio") return "Studio";
+      if (/br/i.test(value)) return value.toUpperCase();
+      const asNumber = parseInt(value, 10);
+      return Number.isNaN(asNumber) ? value : `${asNumber}BR`;
+    };
 
-    const bathroomFirst = bathrooms?.[0];
-    const bathroomValue =
-      bathroomFirst && !Number.isNaN(parseInt(bathroomFirst, 10))
-        ? parseInt(bathroomFirst, 10)
-        : 0;
+    const normalizeBathroom = (value: string) => {
+      if (!value) return "";
+      if (value.includes("+")) return value;
+      const asNumber = parseInt(value, 10);
+      if (!Number.isNaN(asNumber)) {
+        return asNumber >= 4 ? "4+" : String(asNumber);
+      }
+      return value;
+    };
+
+    const bedroomValues =
+      bedrooms
+        ?.map((value) => normalizeBedroom(value))
+        .filter((value): value is string => Boolean(value)) || [];
+
+    const bathroomValues =
+      bathrooms
+        ?.map((value) => normalizeBathroom(value))
+        .filter((value): value is string => Boolean(value)) || [];
 
     return {
       borough: boroughValue,
@@ -212,8 +232,8 @@ export default function AgentMatchDetailsPage() {
       maxPrice,
       earliestDate: formatDate(movingDateRange?.earliest),
       latestDate: formatDate(movingDateRange?.latest),
-      bedrooms: bedroomValue,
-      bathrooms: bathroomValue,
+      bedrooms: bedroomValues,
+      bathrooms: bathroomValues,
       unitFeatures: unitFeaturesList,
       buildingFeatures: buildingFeaturesList,
       petPolicy: petPolicyList,

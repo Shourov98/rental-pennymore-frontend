@@ -123,23 +123,6 @@ export default function SettingsPage() {
       </div>
 
       <div className="max-w-5xl mx-auto flex flex-col gap-6">
-        {/* Saved Requests */}
-        <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-6 border border-gray-100">
-          <h3 className="text-base font-semibold text-gray-800 mb-1">
-            Saved requests
-          </h3>
-          <p className="text-sm text-gray-600 mb-2">
-            Alerts on every request you have saved
-          </p>
-          <p className="text-xs text-gray-400">
-            <span className="font-semibold text-gray-600">Tip:</span> remove
-            outdated searches in{" "}
-            <a href="#" className="text-blue-500 hover:underline">
-              My Activity
-            </a>
-          </p>
-        </div>
-
         {/* Email Notifications */}
         <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-6 border border-gray-100">
           <h3 className="text-base font-semibold text-gray-800 mb-1">
@@ -153,9 +136,7 @@ export default function SettingsPage() {
               : "Subscribe again to receive search updates and marketing emails."}
           </p>
 
-          {error && (
-            <p className="text-sm text-red-600 mb-3">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
 
           {subscribed ? (
             <button

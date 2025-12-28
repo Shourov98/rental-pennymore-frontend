@@ -245,15 +245,36 @@ export default function AgentRenterRequestsPage() {
                       <td className="py-3 px-5">{req.bedroomsLabel}</td>
                       <td className="py-3 px-5">{req.bathroomsLabel}</td>
                       <td className="py-3 px-5">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            req.status === "active"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-gray-100 text-gray-600"
-                          }`}
-                        >
-                          {req.status === "active" ? "Active" : "Inactive"}
-                        </span>
+                        {(() => {
+                          const rawStatus =
+                            req.raw?.status || req.status || "unknown";
+                          const statusText =
+                            typeof rawStatus === "string"
+                              ? rawStatus
+                                  .split(/[\s-_]+/)
+                                  .filter(Boolean)
+                                  .map(
+                                    (segment) =>
+                                      segment[0]?.toUpperCase() +
+                                      segment.slice(1)
+                                  )
+                                  .join(" ")
+                              : String(rawStatus);
+                          const isActiveStatus = /active|available/i.test(
+                            statusText
+                          );
+                          return (
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                isActiveStatus
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-gray-100 text-gray-600"
+                              }`}
+                            >
+                              {statusText}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="py-3 px-5 flex justify-end gap-2">
                         <button

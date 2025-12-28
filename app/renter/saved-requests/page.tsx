@@ -32,6 +32,7 @@ interface ApiRequest {
   bedrooms?: string[];
   bathrooms?: string[];
   status?: string;
+  isActive?: boolean;
 }
 
 interface ApiResponse {
@@ -206,6 +207,10 @@ export default function RenterDetails() {
           (req: ApiRequest) => {
             const { borough, neighborhoods } = formatLocations(req.locations);
             const expired = isExpired(req.movingDateRange?.latest);
+            const resolvedActive =
+              typeof req.isActive === "boolean"
+                ? req.isActive
+                : req.status?.toLowerCase() === "active";
 
             return {
               id:
@@ -226,8 +231,7 @@ export default function RenterDetails() {
               ),
               bedsLabel: formatBedrooms(req.bedrooms),
               bathsLabel: formatBathrooms(req.bathrooms),
-              status:
-                expired || req.status !== "active" ? "deactive" : "active",
+              status: expired || !resolvedActive ? "deactive" : "active",
               disableActivate: expired,
             };
           }

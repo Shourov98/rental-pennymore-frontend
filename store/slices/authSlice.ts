@@ -13,6 +13,8 @@ export interface UserBase {
   accountStatus: "active" | "pending" | "suspended";
   emailVerified: boolean;
   lastLoginAt?: string;
+  profileImage?: string | null;
+  profileImageUrl?: string | null;
   referralCode?: string | null;
   referralLink?: string | null;
   totalReferrals?: number;
@@ -91,7 +93,10 @@ const authSlice = createSlice({
     agentLoginSuccess(state, action: PayloadAction<AgentLoginPayload>) {
       const { user, accessToken, expiresIn, mustChangePassword } =
         action.payload;
-      state.user = user;
+      state.user = {
+        ...user,
+        profileImage: user.profileImage ?? user.profileImageUrl ?? null,
+      };
       state.role = user.role;
       state.renter = null;
       state.accessToken = accessToken;
@@ -103,7 +108,10 @@ const authSlice = createSlice({
     },
     renterLoginSuccess(state, action: PayloadAction<RenterLoginPayload>) {
       const { user, renter, tokens } = action.payload;
-      state.user = user;
+      state.user = {
+        ...user,
+        profileImage: user.profileImage ?? user.profileImageUrl ?? null,
+      };
       state.role = user.role;
       state.renter = renter;
       state.accessToken = tokens.accessToken;
@@ -140,7 +148,10 @@ const authSlice = createSlice({
     setAuthFromProfile(state, action: PayloadAction<UserBase | RenterProfile>) {
       const profile = action.payload;
       if ("role" in profile) {
-        state.user = profile;
+        state.user = {
+          ...profile,
+          profileImage: profile.profileImage ?? profile.profileImageUrl ?? null,
+        };
         state.role = profile.role;
       } else {
         state.renter = profile;

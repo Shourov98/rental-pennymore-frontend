@@ -29,6 +29,16 @@ export interface ApiAgentRequest {
   status?: string;
   preferences?: string[];
   isActive?: boolean;
+  listingStatus?: string;
+  grantAccessStatus?: string;
+  grantAccessId?: string;
+  accessType?: string;
+  chargeAmount?: number;
+  payment?: {
+    amount?: number;
+    currency?: string;
+    status?: string;
+  };
   renterInfo?: {
     renterId?: string;
     renterName?: string;
@@ -37,6 +47,7 @@ export interface ApiAgentRequest {
     registrationType?: string;
     referrer?: string | null;
   };
+  canRequestAccess?: boolean;
 }
 
 export interface ApiAgentRequestsResponse {

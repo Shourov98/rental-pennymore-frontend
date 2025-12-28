@@ -22,7 +22,9 @@ export default function AgentNavbar({
   const firstName =
     auth.user?.fullName?.split(" ")[0] || auth.user?.fullName || "Guest";
   const role = auth.role || auth.user?.role || "Agent";
-  const avatar = auth.user ? "/agent-avatar.jpg" : "/icons/user.svg";
+  const avatar =
+    auth.user?.profileImage ||
+    (auth.user ? "/agent-avatar.jpg" : "/icons/user.svg");
 
   // Close dropdown on outside click
   useEffect(() => {

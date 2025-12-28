@@ -12,8 +12,8 @@ export default function RenterPreferenceView({
     maxPrice: string;
     earliestDate: string;
     latestDate: string;
-    bedrooms: string;
-    bathrooms: number;
+    bedrooms: string[];
+    bathrooms: string[];
     unitFeatures: string[];
     buildingFeatures: string[];
     petPolicy: string[];
@@ -162,7 +162,7 @@ export default function RenterPreferenceView({
             <div
               key={b}
               className={`py-2 text-center rounded-lg border text-sm font-medium ${
-                data.bedrooms === b
+                data.bedrooms.includes(b)
                   ? "bg-blue-600 text-white border-blue-600"
                   : "bg-gray-50 text-gray-700 border-gray-200"
               }`}
@@ -181,7 +181,7 @@ export default function RenterPreferenceView({
             <div
               key={b}
               className={`py-2 text-center rounded-lg border text-sm font-medium ${
-                String(data.bathrooms) === b
+                data.bathrooms.includes(b)
                   ? "bg-blue-600 text-white border-blue-600"
                   : "bg-gray-50 text-gray-700 border-gray-200"
               }`}
