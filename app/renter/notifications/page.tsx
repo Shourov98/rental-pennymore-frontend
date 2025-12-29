@@ -105,10 +105,10 @@ export default function NotificationsPage() {
   }, [accessToken]);
 
   const markNotificationRead = async (notification: NotificationItem) => {
-    if (notification.isRead) {
-      if (notification.actionUrl) router.push(notification.actionUrl);
-      return;
-    }
+    // if (notification.isRead) {
+    //   if (notification.actionUrl) router.push(notification.actionUrl);
+    //   return;
+    // }
 
     try {
       const headers: Record<string, string> = {
@@ -136,7 +136,7 @@ export default function NotificationsPage() {
         )
       );
       setUnreadCount((prev) => Math.max(prev - 1, 0));
-      if (notification.actionUrl) router.push(notification.actionUrl);
+      // if (notification.actionUrl) router.push(notification.actionUrl);
     } catch (err) {
       setError(
         err instanceof Error
