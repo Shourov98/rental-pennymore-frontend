@@ -258,9 +258,9 @@ export default function AgentMatchDetailsPage() {
   const renterContact = useMemo(() => {
     if (!renterInfo) return null;
     return {
-      name: renterInfo.renterName || "Unknown renter",
-      email: renterInfo.renterEmail || "Not provided",
-      phone: renterInfo.renterPhone || "Not provided",
+      name: renterInfo.renterName || renterInfo.fullName || "Unknown renter",
+      email: renterInfo.renterEmail || renterInfo.email || "Not provided",
+      phone: renterInfo.renterPhone || renterInfo.phoneNumber || "Not provided",
     };
   }, [renterInfo]);
 
@@ -272,7 +272,10 @@ export default function AgentMatchDetailsPage() {
             onClick={() => router.back()}
             className="w-4 h-4 text-gray-600 cursor-pointer"
           />
-          <span onClick={() => router.push("/agent/matches")} className="cursor-pointer">
+          <span
+            onClick={() => router.push("/agent/matches")}
+            className="cursor-pointer"
+          >
             Matched Requests
           </span>
           <span>›</span>
@@ -283,12 +286,12 @@ export default function AgentMatchDetailsPage() {
 
         <span
           className={`px-3 py-1 rounded-full text-xs font-semibold ${
-            request?.status === "active"
+            request?.isActive
               ? "bg-green-100 text-green-700"
               : "bg-gray-100 text-gray-600"
           }`}
         >
-          {request?.status === "active" ? "Active" : "Inactive"}
+          {request?.isActive ? "Active" : "Inactive"}
         </span>
       </div>
 
@@ -317,21 +320,27 @@ export default function AgentMatchDetailsPage() {
                   <User className="w-4 h-4 text-blue-600" />
                   <div>
                     <p className="text-xs text-gray-500">Name</p>
-                    <p className="text-gray-900 font-medium">{renterContact.name}</p>
+                    <p className="text-gray-900 font-medium">
+                      {renterContact.name}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 border-b border-gray-100 pb-2">
                   <Mail className="w-4 h-4 text-blue-600" />
                   <div>
                     <p className="text-xs text-gray-500">Email</p>
-                    <p className="text-gray-900 font-medium">{renterContact.email}</p>
+                    <p className="text-gray-900 font-medium">
+                      {renterContact.email}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 border-b border-gray-100 pb-2">
                   <Phone className="w-4 h-4 text-blue-600" />
                   <div>
                     <p className="text-xs text-gray-500">Phone</p>
-                    <p className="text-gray-900 font-medium">{renterContact.phone}</p>
+                    <p className="text-gray-900 font-medium">
+                      {renterContact.phone}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -344,7 +353,9 @@ export default function AgentMatchDetailsPage() {
               <h2 className="text-xl font-semibold text-[#0A093D]">
                 Renter Preference
               </h2>
-              <div className="text-sm text-gray-600">{request.boroughsLabel}</div>
+              <div className="text-sm text-gray-600">
+                {request.boroughsLabel}
+              </div>
             </div>
 
             <RenterPreferenceView data={renterPreferenceData} />

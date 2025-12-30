@@ -34,6 +34,9 @@ export interface ApiAgentMatch {
     renterName?: string;
     renterEmail?: string;
     renterPhone?: string;
+    fullName?: string;
+    email?: string;
+    phoneNumber?: string;
     registrationType?: string;
     referrer?: string | null;
   };
@@ -65,6 +68,7 @@ export interface NormalizedAgentMatch {
   bedroomsLabel: string;
   bathroomsLabel: string;
   status: string;
+  isActive: boolean;
   preferences: string[];
   renterName?: string;
   renterEmail?: string;
@@ -124,10 +128,11 @@ export const normalizeAgentMatch = (
     bedroomsLabel: formatBedrooms(req.bedrooms),
     bathroomsLabel: formatBathrooms(req.bathrooms),
     status: req.status || (req.isActive ? "active" : "inactive"),
+    isActive: req.isActive ?? false,
     preferences: req.preferences ?? [],
-    renterName: req.renterInfo?.renterName,
-    renterEmail: req.renterInfo?.renterEmail,
-    renterPhone: req.renterInfo?.renterPhone,
+    renterName: req.renterInfo?.renterName || req.renterInfo?.fullName,
+    renterEmail: req.renterInfo?.renterEmail || req.renterInfo?.email,
+    renterPhone: req.renterInfo?.renterPhone || req.renterInfo?.phoneNumber,
     raw: req,
   };
 };

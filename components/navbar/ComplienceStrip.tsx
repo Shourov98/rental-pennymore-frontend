@@ -6,13 +6,19 @@ export default function ComplianceStrip() {
       <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between text-xs md:text-sm">
         {/* Left side */}
         <div className="flex items-center gap-3 text-gray-600">
-          <Image
-            src="/Corcoran_Logo.png"
-            alt="Corcoran"
-            width={130}
-            height={30}
-            priority
-          />
+          <a
+            className="text-cyan-500 hover:underline"
+            href="https://www.corcoran.com"
+            target="blank"
+          >
+            <Image
+              src="/Corcoran_Logo.png"
+              alt="Corcoran"
+              width={130}
+              height={30}
+              priority
+            />
+          </a>
           <span className="hidden sm:inline">
             Website operated by – <br />
             <span className="font-medium ml-1">
@@ -23,16 +29,22 @@ export default function ComplianceStrip() {
 
         {/* Right side */}
         <div className="flex items-center gap-2 text-gray-700">
-          <Image
-            src="/equal-housing-logo-black.svg"
-            alt="Fair Housing"
-            width={50}
-            height={50}
-          />
-          <span className="hidden italic font-semibold md:inline">
-            We are committed to upholding the <br />
-            principles of all applicable fair housing laws.
-          </span>
+          <a
+            className="text-cyan-500 hover:underline"
+            href="https://www.dos.ny.gov/press/2020/docs/FairHousingNotice_new.pdf"
+            target="blank"
+          >
+            <Image
+              src="/equal-housing-logo-black.svg"
+              alt="Fair Housing"
+              width={50}
+              height={50}
+            />
+            <span className="hidden italic font-semibold md:inline">
+              We are committed to upholding the <br />
+              principles of all applicable fair housing laws.
+            </span>
+          </a>
         </div>
       </div>
     </div>

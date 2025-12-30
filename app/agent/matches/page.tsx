@@ -247,12 +247,12 @@ export default function AgentMatchesPage() {
                       <td className="py-3 px-5">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            req.status === "active"
+                            req.isActive
                               ? "bg-green-100 text-green-700"
                               : "bg-gray-100 text-gray-600"
                           }`}
                         >
-                          {req.status === "active" ? "Matched" : "Inactive"}
+                          {req.isActive ? "Matched" : "Inactive"}
                         </span>
                       </td>
                       <td className="py-3 px-5 flex justify-end gap-2">
