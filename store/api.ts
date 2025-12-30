@@ -28,6 +28,27 @@ const rawBaseQuery = fetchBaseQuery({
   },
 });
 
+const getTokenExpiry = (token: string): number | null => {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded =
+      normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+    const json = atob(padded);
+    const data = JSON.parse(json) as { exp?: number };
+    return data.exp ? data.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+};
+
+const isTokenValid = (token: string | null) => {
+  if (!token) return false;
+  const expiry = getTokenExpiry(token);
+  return Boolean(expiry && expiry > Date.now());
+};
+
 const baseQueryWithAuth: BaseQueryFn<
   string | FetchArgs,
   unknown,
@@ -53,7 +74,10 @@ const baseQueryWithAuth: BaseQueryFn<
       api.dispatch(logout());
     }
   } else if (result.error?.status === 401) {
-    api.dispatch(logout());
+    const token = selectAccessToken(api.getState() as RootState);
+    if (!isTokenValid(token)) {
+      api.dispatch(logout());
+    }
   }
 
   return result;

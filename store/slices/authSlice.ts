@@ -56,7 +56,7 @@ export interface Tokens {
   expiresIn?: string; // e.g. "7d"
 }
 
-interface AuthState {
+export interface AuthState {
   user: UserBase | null;
   renter: RenterProfile | null;
   role: Role | null;
