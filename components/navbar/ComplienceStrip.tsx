@@ -30,7 +30,7 @@ export default function ComplianceStrip() {
         {/* Right side */}
         <div className="flex items-center gap-2 text-gray-700">
           <a
-            className="text-cyan-500 hover:underline"
+            className="flex hover:underline"
             href="https://www.dos.ny.gov/press/2020/docs/FairHousingNotice_new.pdf"
             target="blank"
           >
@@ -40,7 +40,7 @@ export default function ComplianceStrip() {
               width={50}
               height={50}
             />
-            <span className="hidden italic font-semibold md:inline">
+            <span className="hidden pt-2 pl-2 italic font-semibold md:inline">
               We are committed to upholding the <br />
               principles of all applicable fair housing laws.
             </span>
