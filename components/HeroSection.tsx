@@ -61,21 +61,15 @@ export default function HeroSection() {
           className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3"
           style={{ textShadow: "0px 2px 3px rgba(255,255,255,0.4)" }}
         >
-          See it first. Rent it first
+          Submit a request
         </h1>
-
-        <p
-          className="text-base sm:text-lg md:text-xl text-gray-100"
-          style={{ textShadow: "0px 1px 1px rgba(255,255,255,0.4)" }}
-        >
-          Get Access to NYC pre-market apartments before they are listed
-        </p>
       </div>
 
       {/* Form */}
       <div className="mt-10 bg-white text-gray-900 rounded-2xl shadow-md w-[90%] sm:w-[85%] md:w-[80%] lg:w-[70%] xl:w-[60%] px-4 sm:px-6 md:px-8 py-6 z-10">
-        <h3 className="text-sm sm:text-base md:text-lg font-semibold mb-4 text-center">
-          Submit your Pre-Market Listing Preferences
+        <h3 className="text-sm text-gray-600 sm:text-base md:text-lg font-semibold mb-4 text-center">
+          Agent Name a licensed real estate agent will search for upcoming
+          rental opportunities on your behalf
         </h3>
 
         <form className="flex flex-col sm:flex-row items-center gap-4 w-full">

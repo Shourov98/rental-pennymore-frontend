@@ -43,6 +43,7 @@ export default function PreMarketListingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [description, setDescription] = useState("");
+  const [isAgreementChecked, setIsAgreementChecked] = useState(false);
 
   // Redux Global States
   const {
@@ -440,14 +441,44 @@ export default function PreMarketListingPage() {
           {errorMessage && (
             <p className="text-sm text-red-600 text-right">{errorMessage}</p>
           )}
-          <div className="flex justify-end">
+          {/* Agreement text + checkbox */}
+          <div className="border-t pt-4 text-xs text-gray-600 space-y-3">
+            <p>
+              To allow your agent, Tuval Mor, to reach out on your behalf,
+              please sign the{" "}
+              <a
+                href="https://www.docusign.net/Member/PowerFormSigning.aspx?PowerFormId=3d78f62d-edfc-4831-890c-5b4e9f71978d&env=na1&acct=2fa1c66f-6e37-4041-962b-95d8532ef250&v=2&renter_name=Michael%20Mor&renter_email=tuvalmor@hotmail.com&renter_phone=646-342-1757&agent_name=Aaron%20Cheskea"
+                className="text-blue-600 underline hover:text-blue-700"
+              >
+                Corcoran client registration
+              </a>
+              . This registration is non-exclusive, and no broker fee is due
+              unless you choose to move forward with a rental presented to you
+              by the agent. Any broker fee may be negotiated.
+            </p>
+
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isAgreementChecked}
+                onChange={(e) => setIsAgreementChecked(e.target.checked)}
+                className="mt-1 w-4 h-4 text-blue-600"
+              />
+              <span>
+                By checking this box, you confirm the document has been signed.
+              </span>
+            </label>
+          </div>
+
+          {/* Submit button */}
+          <div className="flex justify-end mt-4">
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="flex items-center gap-2 bg-blue-500 text-white text-sm sm:text-base font-medium rounded-lg px-5 py-3 hover:bg-blue-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
+              disabled={isSubmitting || !isAgreementChecked}
+              className="flex items-center gap-2 bg-blue-500 text-white text-sm sm:text-base font-medium rounded-lg px-5 py-3 hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Bell size={16} />
-              {isSubmitting ? "Submitting..." : "Save Request & Send to Agents"}
+              {isSubmitting ? "Submitting..." : "Save Request & Send to Agent"}
             </button>
           </div>
         </form>

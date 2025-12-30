@@ -24,11 +24,14 @@ export default function HomePage() {
         </h2>
 
         <p className="w-full max-w-2xl mx-auto text-base font-semibold text-center mb-10">
-          The BeforeListed™ network of top agents gives you early access to
-          rentals before they are listed by contacting trusted owners on your
-          behalf for upcoming units that match your preferences. Discover below
-          market rents and, in some cases, rent stabilized pre market
-          apartments. Pay our broker fee only if you rent.
+          The BeforeListed™ platform supports request-based rental outreach by
+          licensed real estate agents. At your request, an agent may initiate
+          outreach beyond publicly advertised listing platforms.
+        </p>
+
+        <p className="w-full max-w-2xl mx-auto text-base font-semibold text-center mb-10">
+          You will be represented by:
+          <br /> Tuval Mor, The Corcoran Group.
         </p>
 
         {/* Steps with arrows */}
@@ -37,7 +40,7 @@ export default function HomePage() {
             icon="/icons/steps/submit.svg"
             title="Step 1"
             subtitle="Submit Preferences"
-            description="Submit your pre-market request preferences to our agents to search on your behalf."
+            description="Submit your rental request preferences for a licensed agent to search on your behalf"
           />
 
           {/* Arrow between step 1 and 2 */}
@@ -83,8 +86,8 @@ export default function HomePage() {
           <Step
             icon="/icons/steps/connect.svg"
             title="Step 2"
-            subtitle="Get Matched"
-            description="When a matching pre-market listing is found, your agent will contact you with details."
+            subtitle="Opportunity Updates"
+            description="If a rental opportunity matches your criteria is identified prior to public marketing, your agent may then contact you."
           />
 
           {/* Arrow between step 2 and 3 */}
@@ -131,7 +134,7 @@ export default function HomePage() {
             icon="/icons/steps/decide.svg"
             title="Step 3"
             subtitle="View & Decide"
-            description="Register to view the apartment, apply if you choose, and only pay their broker fee at lease signing."
+            description="View and apply to the rental if you choose, and pay a broker fee only if a lease is signed."
           />
         </div>
       </section>

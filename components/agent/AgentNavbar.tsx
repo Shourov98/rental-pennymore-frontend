@@ -19,12 +19,20 @@ export default function AgentNavbar({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const firstName =
-    auth.user?.fullName?.split(" ")[0] || auth.user?.fullName || "Guest";
+  const getFirstName = (fullName?: string | null, email?: string | null) => {
+    const safeFullName = fullName?.trim();
+    if (safeFullName && !safeFullName.includes("@")) {
+      return safeFullName.split(" ")[0] || "Guest";
+    }
+    const emailPrefix = email?.split("@")[0] || "";
+    const cleanedEmail = emailPrefix.replace(/[._-]+/g, " ").trim();
+    return cleanedEmail.split(" ")[0] || "Guest";
+  };
+
+  const firstName = getFirstName(auth.user?.fullName, auth.user?.email);
   const role = auth.role || auth.user?.role || "Agent";
-  const avatar =
-    auth.user?.profileImage ||
-    (auth.user ? "/agent-avatar.jpg" : "/icons/user.svg");
+  const avatarUrl =
+    auth.user?.profileImage ?? auth.user?.profileImageUrl ?? null;
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -81,9 +89,20 @@ export default function AgentNavbar({
       >
         {/* Avatar & Name */}
         <button className="flex items-right md:items-center gap-2 rounded-full hover:bg-gray-100 transition px-2 py-1">
-          <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-300">
-            <Image src={avatar} alt={firstName} fill className="object-cover" />
-          </div>
+          {avatarUrl ? (
+            <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-300">
+              <Image
+                src={avatarUrl}
+                alt={firstName}
+                fill
+                className="object-cover"
+              />
+            </div>
+          ) : (
+            <div className="min-w-[36px] h-9 px-2 rounded-full bg-blue-600 text-white text-xs font-semibold flex items-center justify-center">
+              {firstName}
+            </div>
+          )}
           <div className="text-left">
             <p className="text-sm font-semibold text-gray-800">
               Hello, {firstName}

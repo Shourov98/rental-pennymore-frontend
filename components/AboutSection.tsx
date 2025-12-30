@@ -44,17 +44,33 @@ export default function AboutSection() {
             </div>
 
             {/* Right Side — About Content */}
-            <div className="w-full md:w-2/3 text-center md:text-left">
+            <div className="w-full md:w-4/5 text-center md:text-left">
               {/* Description */}
-              <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
-                BeforeListed™ is a platform that provides renters with early
-                access to pre-market NYC apartments before they appear on sites
-                such as StreetEasy or Zillow. Our network of trusted, licensed
-                rental agents represent the renter and use established
-                relationships with owners and property managers to locate
-                upcoming and unlisted units that match your submitted request. A
-                broker fee is paid only if you rent an apartment found through
-                BeforeListed™, creating a simple and risk-free process.
+              <p className="text-gray-700 font-semibold text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
+                BeforeListed™ is a request-based platform supporting proactive
+                rental outreach by licensed real estate agents beyond publicly
+                advertised listing platforms.
+              </p>
+              <br />
+              <p className="text-gray-700 font-semibold text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
+                Publicly advertised” refers to listings marketed through
+                StreetEasy, Zillow, or the REBNY Listing Service (RLS).
+              </p>
+              <br />
+              <p className="text-gray-700 font-semibold text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
+                At your request, an agent may contact owners or property
+                managers on your behalf regarding upcoming rental opportunities.
+              </p>
+              <br />
+              <p className="text-gray-700 font-semibold text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
+                Additional licensed agents may assist, with any such involvement
+                disclosed. Availability and pricing are subject to owner
+                discretion.
+              </p>
+              <br />
+              <p className="text-gray-700 font-semibold text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
+                Broker fees are only payable if you rent an apartment presented
+                by the agent.
               </p>
             </div>
           </div>

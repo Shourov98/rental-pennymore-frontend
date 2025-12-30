@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { X, ChevronDown, User } from "lucide-react";
+import { X, ChevronDown } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectAuth, logout, selectIsAuthed } from "@/store/slices/authSlice";
 
@@ -24,10 +24,19 @@ export default function Navbar() {
   const drawerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  const firstName =
-    auth.user?.fullName?.split(" ")[0] ||
-    auth.user?.fullName ||
-    "Guest";
+  const getFirstName = (fullName?: string | null, email?: string | null) => {
+    const safeFullName = fullName?.trim();
+    if (safeFullName && !safeFullName.includes("@")) {
+      return safeFullName.split(" ")[0] || "Guest";
+    }
+    const emailPrefix = email?.split("@")[0] || "";
+    const cleanedEmail = emailPrefix.replace(/[._-]+/g, " ").trim();
+    return cleanedEmail.split(" ")[0] || "Guest";
+  };
+
+  const firstName = getFirstName(auth.user?.fullName, auth.user?.email);
+  const avatarUrl =
+    auth.user?.profileImage ?? auth.user?.profileImageUrl ?? null;
 
   const role = auth.role || auth.user?.role || "Guest";
   const menuBasePath =
@@ -172,7 +181,20 @@ export default function Navbar() {
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-gray-100 transition"
               >
-                <User className="w-5 h-5 text-blue-600" />
+                {avatarUrl ? (
+                  <div className="relative w-7 h-7 rounded-full overflow-hidden border border-gray-300">
+                    <Image
+                      src={avatarUrl}
+                      alt={firstName}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="min-w-[28px] h-7 px-2 rounded-full bg-blue-600 text-white text-xs font-semibold flex items-center justify-center">
+                    {firstName}
+                  </div>
+                )}
                 <div className="text-left">
                   <p className="text-sm font-semibold text-gray-800">
                     Hey, {firstName}
@@ -236,7 +258,20 @@ export default function Navbar() {
             <X size={22} />
           ) : (
             <div className="flex items-center gap-2">
-              <User className="w-5 h-5 text-blue-600" />
+              {avatarUrl ? (
+                <div className="relative w-7 h-7 rounded-full overflow-hidden border border-gray-300">
+                  <Image
+                    src={avatarUrl}
+                    alt={firstName}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="min-w-[28px] h-7 px-2 rounded-full bg-blue-600 text-white text-xs font-semibold flex items-center justify-center">
+                  {firstName}
+                </div>
+              )}
               <div className="text-left">
                 <p className="text-sm font-semibold text-gray-800">
                   Hey, {firstName}

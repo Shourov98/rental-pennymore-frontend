@@ -37,6 +37,14 @@ export default function Footer() {
                 Terms &amp; Conditions
               </Link>
             </li>
+            <li>
+              <Link
+                href="/privacy-policy"
+                className="hover:text-white transition"
+              >
+                Privacy Policy
+              </Link>
+            </li>
           </ul>
         </div>
 
@@ -118,12 +126,41 @@ export default function Footer() {
         <br />{" "}
         <span>
           157 Columbus Avenue, Suite 2W, New York, NY 10023 | Office:
-          212-957-4100 x2001 tmor@corcoran.com
+          212-957-4100 x2001 <br />
+          tmor@corcoran.com |{" "}
+          <a
+            className="text-cyan-500 hover:underline"
+            href="https://www.corcoran.com"
+            target="blank"
+          >
+            www.corcoran.com
+          </a>
         </span>
-        <br />{" "}
-        <span className="text-cyan-500">
-          Fair Housing Notice | Standardized Operating Procedures | Reasonable
-          Accommodations | Agency Disclosure
+        <br /> <br />{" "}
+        <span>
+          <a
+            className="text-cyan-500 hover:underline"
+            href="https://beforelisted.com/legal/nys-housing-and-anti-discrimination-notice_02.2025.pdf"
+            target="blank"
+          >
+            Fair Housing Notice
+          </a>{" "}
+          |{" "}
+          <a
+            className="text-cyan-500 hover:underline"
+            href="https://beforelisted.com/legal/Standardized-Operating-Procedure.pdf"
+            target="blank"
+          >
+            Standardized Operating Procedures
+          </a>{" "}
+          |{" "}
+          <a
+            className="text-cyan-500 hover:underline"
+            href="https://beforelisted.com/legal/Reasonable-Accomodations.pdf"
+            target="blank"
+          >
+            Reasonable Accommodations
+          </a>
         </span>
       </div>
 
