@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { X, ChevronDown } from "lucide-react";
+import { X, ChevronDown, User } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectAuth, logout, selectIsAuthed } from "@/store/slices/authSlice";
 
@@ -34,7 +34,9 @@ export default function Navbar() {
     return cleanedEmail.split(" ")[0] || "Guest";
   };
 
-  const firstName = getFirstName(auth.user?.fullName, auth.user?.email);
+  const displayName = isAuthed
+    ? getFirstName(auth.user?.fullName, auth.user?.email)
+    : "Guest";
   const avatarUrl =
     auth.user?.profileImage ?? auth.user?.profileImageUrl ?? null;
 
@@ -185,19 +187,19 @@ export default function Navbar() {
                   <div className="relative w-7 h-7 rounded-full overflow-hidden border border-gray-300">
                     <Image
                       src={avatarUrl}
-                      alt={firstName}
+                      alt="User avatar"
                       fill
                       className="object-cover"
                     />
                   </div>
                 ) : (
-                  <div className="min-w-[28px] h-7 px-2 rounded-full bg-blue-600 text-white text-xs font-semibold flex items-center justify-center">
-                    {firstName}
+                  <div className="min-w-[28px] h-7 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                    <User size={16} />
                   </div>
                 )}
                 <div className="text-left">
                   <p className="text-sm font-semibold text-gray-800">
-                    Hey, {firstName}
+                    Hey, {displayName}
                   </p>
                   <p className="text-xs text-gray-500">{role}</p>
                 </div>
@@ -262,19 +264,19 @@ export default function Navbar() {
                 <div className="relative w-7 h-7 rounded-full overflow-hidden border border-gray-300">
                   <Image
                     src={avatarUrl}
-                    alt={firstName}
+                    alt="User avatar"
                     fill
                     className="object-cover"
                   />
                 </div>
               ) : (
-                <div className="min-w-[28px] h-7 px-2 rounded-full bg-blue-600 text-white text-xs font-semibold flex items-center justify-center">
-                  {firstName}
+                <div className="min-w-[28px] h-7 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                  <User size={16} />
                 </div>
               )}
               <div className="text-left">
                 <p className="text-sm font-semibold text-gray-800">
-                  Hey, {firstName}
+                  Hey, {displayName}
                 </p>
                 <p className="text-xs text-gray-500">{role}</p>
               </div>

@@ -185,6 +185,8 @@ export default function AgentRenterRequestDetailsPage() {
   const [localPaymentStatus, setLocalPaymentStatus] = useState<string | null>(
     null
   );
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isConfirmChecked, setIsConfirmChecked] = useState(false);
 
   useEffect(() => {
     if (!requestId) return;
@@ -759,7 +761,13 @@ export default function AgentRenterRequestDetailsPage() {
               )}
               <button
                 type="button"
-                onClick={handleMatchRequest}
+                onClick={() => {
+                  if (!requestId || shouldDisableMatchRequest || isSubmitting) {
+                    return;
+                  }
+                  setIsConfirmChecked(false);
+                  setIsConfirmOpen(true);
+                }}
                 disabled={
                   !requestId || shouldDisableMatchRequest || isSubmitting
                 }
@@ -778,6 +786,75 @@ export default function AgentRenterRequestDetailsPage() {
             </div>
           </div>
         </>
+      )}
+
+      {isConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Confirm Match Request
+            </h2>
+            <p className="text-sm text-gray-700 mb-3">
+              By proceeding, you confirm that:
+            </p>
+            <ul className="text-sm text-gray-700 space-y-2 mb-4 list-disc pl-5">
+              <li>
+                All required agency disclosures and client registration have
+                been properly completed with the renter to whom this
+                opportunity is being presented.
+              </li>
+              <li>
+                The rental opportunity being presented was identified through
+                outreach to an owner or property manager, which originated from
+                a renter-initiated request for assistance, consistent with
+                standard brokerage practice.
+              </li>
+              <li>
+                At the time this match occurs, the apartment was not publicly
+                advertised on StreetEasy, Zillow, or the REBNY Listing Service
+                (RLS).
+              </li>
+              <li>
+                You do not have an exclusive listing agreement for this
+                apartment, and the property is not being presented as exclusive
+                inventory.
+              </li>
+            </ul>
+            <label className="flex items-start gap-2 text-sm text-gray-700 mb-6">
+              <input
+                type="checkbox"
+                checked={isConfirmChecked}
+                onChange={(e) => setIsConfirmChecked(e.target.checked)}
+                className="mt-1 h-4 w-4 text-blue-600"
+              />
+              <span>
+                I confirm the above and approve presenting this rental
+                opportunity to the renter.
+              </span>
+            </label>
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setIsConfirmOpen(false)}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!isConfirmChecked) return;
+                  setIsConfirmOpen(false);
+                  handleMatchRequest();
+                }}
+                disabled={!isConfirmChecked || isSubmitting}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? "Sending..." : "Confirm & Send"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </section>
   );

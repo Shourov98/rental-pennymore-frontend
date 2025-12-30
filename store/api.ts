@@ -114,16 +114,37 @@ export const api = createApi({
           const isRenterPayload = (
             value: AgentLoginPayload | RenterLoginPayload
           ): value is RenterLoginPayload => {
-            return Boolean(
-              (value as RenterLoginPayload)?.renter &&
-                (value as RenterLoginPayload)?.tokens
-            );
+            return (value as RenterLoginPayload)?.user?.role === "Renter";
           };
 
           if (isRenterPayload(payload)) {
-            dispatch(renterLoginSuccess(payload));
+            const tokens =
+              payload.tokens ??
+              (payload.accessToken
+                ? {
+                    accessToken: payload.accessToken,
+                    refreshToken: payload.refreshToken,
+                    expiresIn: payload.expiresIn,
+                  }
+                : undefined);
+            dispatch(
+              renterLoginSuccess({
+                user: payload.user,
+                renter: payload.renter ?? null,
+                tokens,
+                registrationType: payload.registrationType ?? "normal",
+                referralInfo: payload.referralInfo ?? null,
+              })
+            );
           } else {
-            dispatch(agentLoginSuccess(payload));
+            dispatch(
+              agentLoginSuccess({
+                user: payload.user,
+                accessToken: payload.accessToken,
+                expiresIn: payload.expiresIn ?? "",
+                mustChangePassword: !!payload.mustChangePassword,
+              })
+            );
           }
         } catch {
           // handled by component-level error states

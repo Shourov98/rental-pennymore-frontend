@@ -63,13 +63,23 @@ export default function SigninPage() {
       const payload = data?.data;
       const role = payload?.user?.role;
 
-      if (role === "Renter" && payload?.tokens?.accessToken) {
+      if (role === "Renter") {
+        const tokens =
+          payload?.tokens ??
+          (payload?.accessToken
+            ? {
+                accessToken: payload.accessToken,
+                refreshToken: payload.refreshToken,
+                expiresIn: payload.expiresIn,
+              }
+            : undefined);
         dispatch(
           renterLoginSuccess({
             user: payload.user,
-            renter: payload.renter,
-            tokens: payload.tokens,
+            renter: payload.renter ?? null,
+            tokens,
             registrationType: payload.registrationType ?? "normal",
+            referralInfo: payload.referralInfo ?? null,
           })
         );
       } else if (payload?.user && payload?.accessToken) {

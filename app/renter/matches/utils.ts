@@ -38,6 +38,7 @@ export interface ApiRequestWithAgents {
   guarantorRequired?: Record<string, boolean>;
   preferences?: string[];
   status?: string;
+  isActive?: boolean;
   agentMatches?: {
     totalCount?: number;
     agents?: ApiMatchedAgent[];
@@ -70,6 +71,7 @@ export interface NormalizedMatchRequest {
   bedroomsLabel: string;
   bathroomsLabel: string;
   status: string;
+  isActive: boolean;
   agentMatchCount: number;
   matchedAgents: ApiMatchedAgent[];
   raw: ApiRequestWithAgents;
@@ -157,6 +159,7 @@ export const normalizeRequest = (
     bedroomsLabel: formatBedrooms(req.bedrooms),
     bathroomsLabel: formatBathrooms(req.bathrooms),
     status: req.status || "unknown",
+    isActive: req.isActive ?? true,
     agentMatchCount: req.agentMatches?.totalCount ?? req.agentMatches?.agents?.length ?? 0,
     matchedAgents: req.agentMatches?.agents ?? [],
     raw: req,

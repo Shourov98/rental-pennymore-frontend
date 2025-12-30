@@ -129,7 +129,6 @@ export default function ProfilePage() {
   const profilePhone = profile?.userInfo?.phoneNumber || profile?.phoneNumber;
   const profileEmail = profile?.userInfo?.email || profile?.email;
   const profileImageUrl = profile?.userInfo?.profileImageUrl || null;
-  const profileInitial = profileFullName?.trim().charAt(0).toUpperCase() || "";
 
   return (
     <section className="w-full bg-gray-50 py-8 px-4 sm:px-8 md:px-12">
@@ -158,9 +157,7 @@ export default function ProfilePage() {
                   className="object-cover"
                 />
               ) : (
-                <span className="text-4xl sm:text-5xl font-semibold text-gray-600">
-                  {profileInitial || "?"}
-                </span>
+                <User className="w-16 h-16 text-gray-500" />
               )}
             </div>
 

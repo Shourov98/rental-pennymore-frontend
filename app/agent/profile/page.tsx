@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Edit3, Lock, RefreshCw } from "lucide-react";
+import { Edit3, Lock, RefreshCw, User } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -40,11 +40,7 @@ export default function AgentProfile() {
   }, [profile?.createdAt, profile?.updatedAt]);
 
   const userInfo = profile?.userInfo ?? profile?.userId;
-  const avatar =
-    userInfo?.profileImageUrl ||
-    (userInfo?.fullName === "Vondo taheri"
-      ? "https://randomuser.me/api/portraits/men/32.jpg"
-      : "/agent-avatar.jpg");
+  const avatar = userInfo?.profileImageUrl || null;
 
   const isLoading = status === "loading" && !profile;
 
@@ -81,13 +77,19 @@ export default function AgentProfile() {
       <div className="bg-white rounded-xl shadow-sm p-8 flex flex-col sm:flex-row gap-8">
         {/* Profile Picture */}
         <div className="shrink-0">
-          <Image
-            src={avatar}
-            alt="Profile"
-            width={150}
-            height={150}
-            className="rounded-full object-cover"
-          />
+          {avatar ? (
+            <Image
+              src={avatar}
+              alt="Profile"
+              width={150}
+              height={150}
+              className="rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-[150px] h-[150px] rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
+              <User className="w-16 h-16 text-gray-500" />
+            </div>
+          )}
         </div>
 
         {/* Information */}

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
+import { User } from "lucide-react";
 import { logout, selectAuth, selectIsAuthed } from "@/store/slices/authSlice";
 
 export default function AgentNavbar({
@@ -29,7 +30,9 @@ export default function AgentNavbar({
     return cleanedEmail.split(" ")[0] || "Guest";
   };
 
-  const firstName = getFirstName(auth.user?.fullName, auth.user?.email);
+  const displayName = isAuthed
+    ? getFirstName(auth.user?.fullName, auth.user?.email)
+    : "Guest";
   const role = auth.role || auth.user?.role || "Agent";
   const avatarUrl =
     auth.user?.profileImage ?? auth.user?.profileImageUrl ?? null;
@@ -93,19 +96,19 @@ export default function AgentNavbar({
             <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-300">
               <Image
                 src={avatarUrl}
-                alt={firstName}
+                alt="User avatar"
                 fill
                 className="object-cover"
               />
             </div>
           ) : (
-            <div className="min-w-[36px] h-9 px-2 rounded-full bg-blue-600 text-white text-xs font-semibold flex items-center justify-center">
-              {firstName}
+            <div className="min-w-[36px] h-9 rounded-full bg-blue-600 text-white flex items-center justify-center">
+              <User size={18} />
             </div>
           )}
           <div className="text-left">
             <p className="text-sm font-semibold text-gray-800">
-              Hello, {firstName}
+              Hello, {displayName}
             </p>
             <p className="text-xs text-gray-500">{role}</p>
           </div>

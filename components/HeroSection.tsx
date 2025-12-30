@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { setPriceRange } from "@/store/slices/preferenceSlice";
+import { selectReferrerName } from "@/store/slices/authSlice";
 
 import LocationModal from "./LocationModal";
 
@@ -21,7 +22,7 @@ export default function HeroSection() {
   const priceRange = useSelector(
     (state: RootState) => state.preferences.priceRange
   );
-
+  const referrerName = useSelector(selectReferrerName);
   const handleMinPrice = (value: string) => {
     dispatch(
       setPriceRange({
@@ -68,14 +69,16 @@ export default function HeroSection() {
       {/* Form */}
       <div className="mt-10 bg-white text-gray-900 rounded-2xl shadow-md w-[90%] sm:w-[85%] md:w-[80%] lg:w-[70%] xl:w-[60%] px-4 sm:px-6 md:px-8 py-6 z-10">
         <h3 className="text-sm text-gray-600 sm:text-base md:text-lg font-semibold mb-4 text-center">
-          Agent Name a licensed real estate agent will search for upcoming
-          rental opportunities on your behalf
+          {referrerName || "Tuval Mor"},
+          <br />
+          Agent Name a licensed real estate agent <br />
+          will search for upcoming rental opportunities on your behalf
         </h3>
 
         <form className="flex flex-col sm:flex-row items-center gap-4 w-full">
           {/* Location */}
           <div className="flex flex-col w-full sm:w-2/5">
-            <label className="text-xs font-medium pl-2 mb-1 text-gray-600">
+            <label className="text-xs text-left font-medium pl-2 mb-1 text-gray-600">
               Location
             </label>
 
@@ -92,7 +95,7 @@ export default function HeroSection() {
 
           {/* Price */}
           <div className="flex flex-col w-full sm:w-[20%]">
-            <label className="text-xs font-medium pl-2 mb-1 text-gray-600">
+            <label className="text-xs text-left font-medium pl-2 mb-1 text-gray-600">
               Price
             </label>
             <div className="flex items-center bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5">

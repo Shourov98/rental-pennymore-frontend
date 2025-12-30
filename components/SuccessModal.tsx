@@ -5,9 +5,16 @@ import { useRouter } from "next/navigation";
 interface SuccessModalProps {
   isOpen: boolean;
   onClose: () => void;
+  redirectPath?: string;
+  buttonLabel?: string;
 }
 
-export default function SuccessModal({ isOpen, onClose }: SuccessModalProps) {
+export default function SuccessModal({
+  isOpen,
+  onClose,
+  redirectPath = "/",
+  buttonLabel = "Go to Homepage",
+}: SuccessModalProps) {
   const router = useRouter();
   if (!isOpen) return null;
 
@@ -25,11 +32,11 @@ export default function SuccessModal({ isOpen, onClose }: SuccessModalProps) {
         <button
           onClick={() => {
             onClose();
-            router.push("/");
+            router.push(redirectPath);
           }}
           className="w-full bg-blue-600 text-white font-semibold rounded-lg py-3 hover:bg-blue-700 transition"
         >
-          Go to Homepage
+          {buttonLabel}
         </button>
       </div>
 

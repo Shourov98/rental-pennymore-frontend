@@ -1,11 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MapPin, DollarSign, Calendar, Bell } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
+import { selectReferrerName } from "@/store/slices/authSlice";
 import { RootState } from "@/store/store";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 
 import {
   setMovingDate,
@@ -33,6 +35,7 @@ const API_BASE_URL =
   "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
 
 export default function PreMarketListingPage() {
+  const router = useRouter();
   const dispatch = useDispatch();
   const earliestDateRef = useRef<HTMLInputElement>(null);
   const latestDateRef = useRef<HTMLInputElement>(null);
@@ -44,6 +47,8 @@ export default function PreMarketListingPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [description, setDescription] = useState("");
   const [isAgreementChecked, setIsAgreementChecked] = useState(false);
+  const [agreementWarning, setAgreementWarning] = useState<string | null>(null);
+  const referrerName = useSelector(selectReferrerName);
 
   // Redux Global States
   const {
@@ -59,6 +64,41 @@ export default function PreMarketListingPage() {
     preferences,
   } = useSelector((state: RootState) => state.preferences);
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+  const role = useSelector((state: RootState) => state.auth.role);
+  const user = useSelector((state: RootState) => state.auth.user);
+  const renter = useSelector((state: RootState) => state.auth.renter);
+
+  const renterName = renter?.fullName || user?.fullName || "Unknown renter";
+  const renterEmail = renter?.email || user?.email || "";
+  const renterPhone = renter?.phoneNumber || user?.phone || "";
+
+  const registrationLink = useMemo(() => {
+    const baseQuery = "env=na1";
+    const baseUrl =
+      "https://powerforms.docusign.net/3d78f62d-edfc-4831-890c-5b4e9f71978d";
+
+    const encode = (value: string) => value.replace(/ /g, "%20");
+
+    let url = `${baseUrl}?${baseQuery}`;
+    if (renterName) url += `&renter_name=${encode(renterName)}`;
+    if (renterEmail) url += `&renter_email=${renterEmail}`;
+    if (renterPhone) url += `&renter_phone=${renterPhone}`;
+    if (referrerName) url += `&agent_name=${encode(referrerName)}`;
+
+    return url;
+  }, [renterEmail, renterName, renterPhone, referrerName]);
+
+  useEffect(() => {
+    if (!accessToken) {
+      router.replace("/signin");
+      return;
+    }
+
+    if (role === "Agent") {
+      alert("This page is only available for renters.");
+      router.replace("/");
+    }
+  }, [accessToken, role, router]);
 
   const openDatePicker = (input: HTMLInputElement | null) => {
     if (!input) return;
@@ -120,6 +160,8 @@ export default function PreMarketListingPage() {
         body: JSON.stringify(payload),
       });
 
+      console.log(response);
+
       const data = await response.json().catch(() => null);
 
       if (!response.ok || data?.success === false) {
@@ -130,6 +172,9 @@ export default function PreMarketListingPage() {
       }
 
       setIsSuccessModalOpen(true);
+      if (registrationLink && typeof window !== "undefined") {
+        window.open(registrationLink, "_blank", "noopener,noreferrer");
+      }
     } catch (error) {
       const message =
         error instanceof Error
@@ -444,10 +489,12 @@ export default function PreMarketListingPage() {
           {/* Agreement text + checkbox */}
           <div className="border-t pt-4 text-xs text-gray-600 space-y-3">
             <p>
-              To allow your agent, Tuval Mor, to reach out on your behalf,
-              please sign the{" "}
+              To allow your agent,{" "}
+              <span className="font-bold">{referrerName || "Tuval Mor"}</span>,
+              to reach out on your behalf, please sign the{" "}
               <a
-                href="https://www.docusign.net/Member/PowerFormSigning.aspx?PowerFormId=3d78f62d-edfc-4831-890c-5b4e9f71978d&env=na1&acct=2fa1c66f-6e37-4041-962b-95d8532ef250&v=2&renter_name=Michael%20Mor&renter_email=tuvalmor@hotmail.com&renter_phone=646-342-1757&agent_name=Aaron%20Cheskea"
+                href={registrationLink}
+                target="_blank"
                 className="text-blue-600 underline hover:text-blue-700"
               >
                 Corcoran client registration
@@ -461,13 +508,25 @@ export default function PreMarketListingPage() {
               <input
                 type="checkbox"
                 checked={isAgreementChecked}
-                onChange={(e) => setIsAgreementChecked(e.target.checked)}
+                onChange={(e) => {
+                  if (e.target.checked && !renterPhone) {
+                    setAgreementWarning(
+                      "Please add your phone number in your profile to continue."
+                    );
+                    return;
+                  }
+                  setAgreementWarning(null);
+                  setIsAgreementChecked(e.target.checked);
+                }}
                 className="mt-1 w-4 h-4 text-blue-600"
               />
-              <span>
+              <span className="pt-1">
                 By checking this box, you confirm the document has been signed.
               </span>
             </label>
+            {agreementWarning && (
+              <p className="text-sm text-red-600">{agreementWarning}</p>
+            )}
           </div>
 
           {/* Submit button */}
@@ -494,6 +553,8 @@ export default function PreMarketListingPage() {
       <SuccessModal
         isOpen={isSuccessModalOpen}
         onClose={() => setIsSuccessModalOpen(false)}
+        redirectPath="/renter/saved-requests"
+        buttonLabel="Go to Saved Requests"
       />
     </section>
   );

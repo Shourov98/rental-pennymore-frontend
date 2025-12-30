@@ -38,6 +38,18 @@ export interface RenterProfile {
   updatedAt: string;
 }
 
+export interface ReferralInfo {
+  registrationType?: string;
+  referrer?: {
+    id?: string;
+    role?: string;
+    fullName?: string;
+    email?: string;
+    phoneNumber?: string;
+    referralCode?: string;
+  } | null;
+}
+
 export interface Tokens {
   accessToken: string;
   refreshToken?: string;
@@ -52,6 +64,8 @@ interface AuthState {
   refreshToken: string | null;
   expiresIn: string | null;
   mustChangePassword: boolean;
+  referralRegistrationType: string | null;
+  referrerName: string | null;
   status: "idle" | "loading" | "authenticated" | "error";
   error: string | null;
 }
@@ -64,6 +78,8 @@ const initialState: AuthState = {
   refreshToken: null,
   expiresIn: null,
   mustChangePassword: false,
+  referralRegistrationType: null,
+  referrerName: null,
   status: "idle",
   error: null,
 };
@@ -77,9 +93,13 @@ export type AgentLoginPayload = {
 
 export type RenterLoginPayload = {
   user: UserBase;
-  renter: RenterProfile;
-  tokens: Tokens;
+  renter?: RenterProfile | null;
+  tokens?: Tokens;
+  accessToken?: string;
+  refreshToken?: string;
+  expiresIn?: string;
   registrationType: "normal" | "social";
+  referralInfo?: ReferralInfo | null;
 };
 
 const authSlice = createSlice({
@@ -107,17 +127,29 @@ const authSlice = createSlice({
       state.error = null;
     },
     renterLoginSuccess(state, action: PayloadAction<RenterLoginPayload>) {
-      const { user, renter, tokens } = action.payload;
+      const { user, renter } = action.payload;
+      const tokens =
+        action.payload.tokens ??
+        (action.payload.accessToken
+          ? {
+              accessToken: action.payload.accessToken,
+              refreshToken: action.payload.refreshToken,
+              expiresIn: action.payload.expiresIn,
+            }
+          : null);
+      const referralInfo = action.payload.referralInfo;
       state.user = {
         ...user,
         profileImage: user.profileImage ?? user.profileImageUrl ?? null,
       };
       state.role = user.role;
-      state.renter = renter;
-      state.accessToken = tokens.accessToken;
-      state.refreshToken = tokens.refreshToken ?? null;
-      state.expiresIn = tokens.expiresIn ?? null;
+      state.renter = renter ?? null;
+      state.accessToken = tokens?.accessToken ?? null;
+      state.refreshToken = tokens?.refreshToken ?? null;
+      state.expiresIn = tokens?.expiresIn ?? null;
       state.mustChangePassword = !!user.mustChangePassword;
+      state.referralRegistrationType = referralInfo?.registrationType ?? null;
+      state.referrerName = referralInfo?.referrer?.fullName ?? null;
       state.status = "authenticated";
       state.error = null;
     },
@@ -184,3 +216,7 @@ export const selectRenter = (state: RootState) => state.auth.renter;
 export const selectAccessToken = (state: RootState) => state.auth.accessToken;
 export const selectIsAuthed = (state: RootState) =>
   state.auth.status === "authenticated" && !!state.auth.accessToken;
+export const selectReferralRegistrationType = (state: RootState) =>
+  state.auth.referralRegistrationType;
+export const selectReferrerName = (state: RootState) =>
+  state.auth.referrerName;

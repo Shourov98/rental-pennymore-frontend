@@ -24,7 +24,9 @@ export default function MatchedAgentsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState<ApiMatchesResponse["pagination"]>({
+  const [pagination, setPagination] = useState<
+    ApiMatchesResponse["pagination"]
+  >({
     currentPage: 1,
     totalPages: 1,
     hasNext: false,
@@ -197,12 +199,12 @@ export default function MatchedAgentsPage() {
                     <div className="flex items-center gap-3">
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          req.status === "active"
+                          req.isActive
                             ? "bg-green-100 text-green-700"
                             : "bg-gray-100 text-gray-600"
                         }`}
                       >
-                        {req.status === "active" ? "Active" : "Inactive"}
+                        {req.isActive ? "Active" : "Inactive"}
                       </span>
 
                       <button
@@ -216,7 +218,11 @@ export default function MatchedAgentsPage() {
                       </button>
 
                       <div className="text-gray-500">
-                        {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                        {isOpen ? (
+                          <ChevronUp size={20} />
+                        ) : (
+                          <ChevronDown size={20} />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -231,7 +237,12 @@ export default function MatchedAgentsPage() {
                       ) : (
                         req.matchedAgents.map((agent) => (
                           <AgentContactCard
-                            key={agent._id || agent.userId || agent.email || Math.random()}
+                            key={
+                              agent._id ||
+                              agent.userId ||
+                              agent.email ||
+                              Math.random()
+                            }
                             agent={{
                               image: agent.profileImageUrl,
                               name: agent.fullName,
@@ -256,7 +267,8 @@ export default function MatchedAgentsPage() {
           {pagination && (
             <div className="flex items-center justify-between bg-white rounded-xl shadow-sm p-4 text-sm text-gray-600 mt-4">
               <div>
-                Page {pagination.currentPage ?? page} of {pagination.totalPages ?? 1}
+                Page {pagination.currentPage ?? page} of{" "}
+                {pagination.totalPages ?? 1}
               </div>
               <div className="flex gap-3">
                 <button

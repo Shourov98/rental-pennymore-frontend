@@ -1,12 +1,16 @@
+"use client";
 import AboutSection from "@/components/AboutSection";
 import ContactSection from "@/components/ContactSection";
 import FaqSection from "@/components/FaqSection";
 import HeroSection from "@/components/HeroSection";
 import MonthlyReportSection from "@/components/MonthlyReportSection";
+import { selectReferrerName } from "@/store/slices/authSlice";
+import { useSelector } from "react-redux";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function HomePage() {
+  const referrerName = useSelector(selectReferrerName);
   return (
     <main className="flex flex-col w-full min-h-screen bg-gray-100 text-gray-900">
       <HeroSection />
@@ -31,7 +35,7 @@ export default function HomePage() {
 
         <p className="w-full max-w-2xl mx-auto text-base font-semibold text-center mb-10">
           You will be represented by:
-          <br /> Tuval Mor, The Corcoran Group.
+          <br /> {referrerName || "Tuval Mor"}, The Corcoran Group.
         </p>
 
         {/* Steps with arrows */}
