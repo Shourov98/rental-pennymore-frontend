@@ -20,6 +20,7 @@ export default function AgentLayout({
   const role = auth.role ?? auth.user?.role ?? null;
   const isAgent = role === "Agent";
   const hasRole = Boolean(role);
+  const [mounted, setMounted] = useState(false);
 
   // ✅ Close drawer on outside click
   useEffect(() => {
@@ -35,6 +36,12 @@ export default function AgentLayout({
   }, [sidebarOpen]);
 
   useEffect(() => {
+    // Hydration gate: render null on server/first client pass, then show layout.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     if (!isAuthed) {
       router.replace("/signin");
       return;
@@ -44,7 +51,7 @@ export default function AgentLayout({
     }
   }, [hasRole, isAgent, isAuthed, router]);
 
-  if (!isAuthed || (hasRole && !isAgent)) {
+  if (!mounted || !isAuthed || (hasRole && !isAgent)) {
     return null;
   }
 
