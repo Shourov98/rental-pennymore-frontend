@@ -378,7 +378,7 @@ export default function RenterMatchDetailsPage() {
                   <AgentContactCard
                     key={agent._id || agent.userId || agent.email || Math.random()}
                     agent={{
-                      image: agent.profileImageUrl,
+                      image: agent.profileImage,
                       name: agent.fullName,
                       email: agent.email,
                       phone: agent.phoneNumber,
