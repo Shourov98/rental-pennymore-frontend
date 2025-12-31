@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { User } from "lucide-react";
 
 interface AgentContactCardProps {
   agent: {
@@ -15,32 +16,39 @@ interface AgentContactCardProps {
 }
 
 export default function AgentContactCard({ agent }: AgentContactCardProps) {
-  const placeholder = "/profile-image.png";
   const safeName = agent.name || "Agent";
 
-  let imageSrc = agent.image || placeholder;
+  let imageSrc = agent.image || null;
 
-  try {
-    const url = new URL(imageSrc);
-    const allowedHosts = new Set(["randomuser.me"]);
+  if (imageSrc) {
+    try {
+      const url = new URL(imageSrc);
+      const allowedHosts = new Set(["randomuser.me"]);
 
-    if (url.hostname && !allowedHosts.has(url.hostname)) {
-      imageSrc = placeholder;
+      if (url.hostname && !allowedHosts.has(url.hostname)) {
+        imageSrc = null;
+      }
+    } catch {
+      imageSrc = null;
     }
-  } catch {
-    imageSrc = placeholder;
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100 hover:shadow-md transition flex gap-4 items-start">
+    <div className="bg-white rounded-xl shadow-sm mt-4 p-4 border border-gray-100 hover:shadow-md transition flex gap-4 items-start">
       {/* LEFT — IMAGE */}
-      <Image
-        src={imageSrc}
-        alt={safeName}
-        width={70}
-        height={70}
-        className="rounded-full object-cover border border-gray-200"
-      />
+      {imageSrc ? (
+        <Image
+          src={imageSrc}
+          alt={safeName}
+          width={70}
+          height={70}
+          className="rounded-full object-cover border border-gray-200"
+        />
+      ) : (
+        <div className="w-[70px] h-[70px] rounded-full border border-gray-200 bg-gray-100 flex items-center justify-center">
+          <User className="w-8 h-8 text-gray-500" />
+        </div>
+      )}
 
       {/* RIGHT — INFO */}
       <div className="flex-1">
@@ -79,7 +87,7 @@ export default function AgentContactCard({ agent }: AgentContactCardProps) {
             </span>
           </p>
 
-          {agent.license && (
+          {agent.license && imageSrc && (
             <p className="text-gray-500">
               License:{" "}
               <span className="font-medium text-gray-800">{agent.license}</span>

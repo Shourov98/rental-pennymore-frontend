@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
+import Image from "next/image";
 import { ArrowLeft, Phone, Mail, User } from "lucide-react";
 import RenterPreferenceView from "@/components/RenterPreferenceView";
 import { RootState } from "@/store/store";
@@ -261,6 +262,11 @@ export default function AgentMatchDetailsPage() {
       name: renterInfo.renterName || renterInfo.fullName || "Unknown renter",
       email: renterInfo.renterEmail || renterInfo.email || "Not provided",
       phone: renterInfo.renterPhone || renterInfo.phoneNumber || "Not provided",
+      avatar: renterInfo.profileImage || null,
+      referrerName:
+        (typeof renterInfo.referrer === "string" ? renterInfo.referrer : null) ||
+        renterInfo.referralInfo?.referrer?.fullName ||
+        null,
     };
   }, [renterInfo]);
 
@@ -317,12 +323,30 @@ export default function AgentMatchDetailsPage() {
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="flex items-center gap-3 border-b border-gray-100 pb-2">
-                  <User className="w-4 h-4 text-blue-600" />
+                  {renterContact.avatar ? (
+                    <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-200">
+                      <Image
+                        src={renterContact.avatar}
+                        alt="Renter profile"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <User className="w-4 h-4 text-blue-600" />
+                  )}
                   <div>
                     <p className="text-xs text-gray-500">Name</p>
-                    <p className="text-gray-900 font-medium">
-                      {renterContact.name}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-gray-900 font-medium">
+                        {renterContact.name}
+                      </p>
+                      {renterContact.referrerName && (
+                        <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700">
+                          Referred by {renterContact.referrerName}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 border-b border-gray-100 pb-2">

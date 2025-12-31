@@ -9,7 +9,7 @@ export interface ApiMatchedAgent {
   email?: string;
   phoneNumber?: string;
   licenseNumber?: string;
-  profileImageUrl?: string | null;
+  profileImage?: string | null;
   hasGrantAccess?: boolean;
 }
 
@@ -86,7 +86,8 @@ const formatCurrencyRange = (min?: number, max?: number) => {
     maximumFractionDigits: 0,
   });
 
-  if (min != null && max != null) return `${formatter.format(min)} - ${formatter.format(max)}`;
+  if (min != null && max != null)
+    return `${formatter.format(min)} - ${formatter.format(max)}`;
   if (min != null) return formatter.format(min);
   return formatter.format(max as number);
 };
@@ -150,17 +151,22 @@ export const normalizeRequest = (
   const { boroughsLabel, neighborhoodsLabel } = formatLocations(req.locations);
 
   return {
-    id: req._id || req.id || req.requestId || Math.random().toString(36).slice(2),
+    id:
+      req._id || req.id || req.requestId || Math.random().toString(36).slice(2),
     requestName: req.requestName || req.requestId || "Pre-Market Request",
     boroughsLabel,
     neighborhoodsLabel,
     dateRangeLabel: formatDateRange(req.movingDateRange),
-    priceRangeLabel: formatCurrencyRange(req.priceRange?.min, req.priceRange?.max),
+    priceRangeLabel: formatCurrencyRange(
+      req.priceRange?.min,
+      req.priceRange?.max
+    ),
     bedroomsLabel: formatBedrooms(req.bedrooms),
     bathroomsLabel: formatBathrooms(req.bathrooms),
     status: req.status || "unknown",
     isActive: req.isActive ?? true,
-    agentMatchCount: req.agentMatches?.totalCount ?? req.agentMatches?.agents?.length ?? 0,
+    agentMatchCount:
+      req.agentMatches?.totalCount ?? req.agentMatches?.agents?.length ?? 0,
     matchedAgents: req.agentMatches?.agents ?? [],
     raw: req,
   };

@@ -37,8 +37,14 @@ export interface ApiAgentMatch {
     fullName?: string;
     email?: string;
     phoneNumber?: string;
+    profileImage?: string | null;
     registrationType?: string;
     referrer?: string | null;
+    referralInfo?: {
+      referrer?: {
+        fullName?: string;
+      } | null;
+    } | null;
   };
   createdAt?: string;
 }
