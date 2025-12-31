@@ -82,7 +82,9 @@ export default function RenterMatchDetailsPage() {
       setError(null);
 
       try {
-        const cached = readCachedMatches().find((item) => item.id === requestId);
+        const cached = readCachedMatches().find(
+          (item) => item.id === requestId
+        );
         if (cached) {
           setRequest(cached);
           setIsLoading(false);
@@ -282,12 +284,12 @@ export default function RenterMatchDetailsPage() {
 
         <span
           className={`px-3 py-1 rounded-full text-xs font-semibold ${
-            request?.status === "active"
+            request?.isActive
               ? "bg-green-100 text-green-700"
               : "bg-gray-100 text-gray-600"
           }`}
         >
-          {request?.status === "active" ? "Active" : "Inactive"}
+          {request?.isActive ? "Active" : "Inactive"}
         </span>
       </div>
 
@@ -345,8 +347,8 @@ export default function RenterMatchDetailsPage() {
                   {request.bathroomsLabel}
                 </p>
               </div>
+            </div>
           </div>
-        </div>
 
           {/* Preferences Section */}
           <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
@@ -376,7 +378,9 @@ export default function RenterMatchDetailsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {request.matchedAgents.map((agent) => (
                   <AgentContactCard
-                    key={agent._id || agent.userId || agent.email || Math.random()}
+                    key={
+                      agent._id || agent.userId || agent.email || Math.random()
+                    }
                     agent={{
                       image: agent.profileImage,
                       name: agent.fullName,

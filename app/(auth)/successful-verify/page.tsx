@@ -32,7 +32,7 @@ export default function PasswordChangedPage() {
 
       {/* Back to Login Button */}
       <button
-        onClick={() => router.push("/")}
+        onClick={() => router.push("/signin")}
         className="
           flex items-center justify-center gap-2
           bg-action hover:bg-action-hover
