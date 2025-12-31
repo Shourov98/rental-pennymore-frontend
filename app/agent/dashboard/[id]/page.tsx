@@ -5,7 +5,12 @@ import { useParams, useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { ArrowLeft, Phone, Mail, User } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
-import { CardElement, Elements, useElements, useStripe } from "@stripe/react-stripe-js";
+import {
+  CardElement,
+  Elements,
+  useElements,
+  useStripe,
+} from "@stripe/react-stripe-js";
 import RenterPreferenceView from "@/components/RenterPreferenceView";
 import { RootState } from "@/store/store";
 import {
@@ -109,8 +114,7 @@ function StripePaymentForm({
 
       onSuccess(paymentIntent?.status);
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Payment failed.";
+      const message = err instanceof Error ? err.message : "Payment failed.";
       setErrorMessage(message);
     } finally {
       setIsSubmitting(false);
@@ -625,7 +629,9 @@ export default function AgentRenterRequestDetailsPage() {
                 <div className="text-right">
                   <span
                     className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
-                      isPaid ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
+                      isPaid
+                        ? "bg-green-100 text-green-700"
+                        : "bg-amber-100 text-amber-700"
                     }`}
                   >
                     {isPaid ? "Paid" : paymentStatus || "Pending"}
@@ -664,35 +670,37 @@ export default function AgentRenterRequestDetailsPage() {
             </div>
           )}
 
-          {isPaymentOpen && paymentIntentData?.clientSecret && stripePromise && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-              <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-[#0A093D]">
-                    Complete Payment
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={() => setIsPaymentOpen(false)}
-                    className="text-sm text-gray-500 hover:text-gray-800"
-                  >
-                    Close
-                  </button>
+          {isPaymentOpen &&
+            paymentIntentData?.clientSecret &&
+            stripePromise && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+                <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-[#0A093D]">
+                      Complete Payment
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsPaymentOpen(false)}
+                      className="text-sm text-gray-500 hover:text-gray-800"
+                    >
+                      Close
+                    </button>
+                  </div>
+                  <Elements stripe={stripePromise}>
+                    <StripePaymentForm
+                      amountLabel={formatPaymentAmount(
+                        paymentIntentData.amount ?? paymentAmount,
+                        paymentIntentData.currency ?? paymentCurrency
+                      )}
+                      clientSecret={paymentIntentData.clientSecret}
+                      onClose={() => setIsPaymentOpen(false)}
+                      onSuccess={handlePaymentSuccess}
+                    />
+                  </Elements>
                 </div>
-                <Elements stripe={stripePromise}>
-                  <StripePaymentForm
-                    amountLabel={formatPaymentAmount(
-                      paymentIntentData.amount ?? paymentAmount,
-                      paymentIntentData.currency ?? paymentCurrency
-                    )}
-                    clientSecret={paymentIntentData.clientSecret}
-                    onClose={() => setIsPaymentOpen(false)}
-                    onSuccess={handlePaymentSuccess}
-                  />
-                </Elements>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Renter Contact */}
           {renterContact && (
@@ -777,7 +785,7 @@ export default function AgentRenterRequestDetailsPage() {
                     : "bg-blue-600 text-white hover:bg-blue-700"
                 }`}
               >
-                {shouldDisableMatchRequest
+                {canRequestAccess
                   ? "Request Sent"
                   : isSubmitting
                   ? "Sending..."
@@ -800,8 +808,8 @@ export default function AgentRenterRequestDetailsPage() {
             <ul className="text-sm text-gray-700 space-y-2 mb-4 list-disc pl-5">
               <li>
                 All required agency disclosures and client registration have
-                been properly completed with the renter to whom this
-                opportunity is being presented.
+                been properly completed with the renter to whom this opportunity
+                is being presented.
               </li>
               <li>
                 The rental opportunity being presented was identified through

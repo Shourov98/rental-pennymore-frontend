@@ -81,6 +81,7 @@ export interface NormalizedAgentRequest {
   renterEmail?: string;
   renterPhone?: string;
   raw: ApiAgentRequest;
+  canRequestAccess?: boolean;
 }
 
 const formatCurrency = (value?: number) => {
@@ -147,12 +148,16 @@ const formatBathrooms = (bathrooms?: string[]) =>
   bathrooms?.length ? bathrooms.join(", ") : "Not specified";
 
 export const normalizeAgentRequest = (
-  req: ApiAgentRequest & { createdAt?: string; renterInfo?: ApiAgentRequest["renterInfo"] }
+  req: ApiAgentRequest & {
+    createdAt?: string;
+    renterInfo?: ApiAgentRequest["renterInfo"];
+  }
 ): NormalizedAgentRequest => {
   const { boroughsLabel, neighborhoodsLabel } = formatLocations(req.locations);
 
   return {
-    id: req._id || req.id || req.requestId || Math.random().toString(36).slice(2),
+    id:
+      req._id || req.id || req.requestId || Math.random().toString(36).slice(2),
     requestName: req.requestName || req.requestId || "Pre-Market Request",
     boroughsLabel,
     neighborhoodsLabel,
