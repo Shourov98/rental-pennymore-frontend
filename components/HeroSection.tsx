@@ -71,7 +71,7 @@ export default function HeroSection() {
         <h3 className="text-sm text-gray-600 sm:text-base md:text-lg font-semibold mb-4 text-center">
           {referrerName || "Tuval Mor"},
           <br />
-          Agent Name a licensed real estate agent <br />
+          a licensed real estate agent <br />
           will search for upcoming rental opportunities on your behalf
         </h3>
 

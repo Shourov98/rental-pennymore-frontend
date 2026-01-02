@@ -2,8 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { selectReferrerName } from "@/store/slices/authSlice";
+import { useSelector } from "react-redux";
 
 export default function AboutSection() {
+  const referrerName = useSelector(selectReferrerName);
   return (
     <section className="md:mx-3 md:mt-3 lg:mx-6 lg:mt-6">
       <div className="relative w-full py-16 px-6 rounded-2xl md:px-16 lg:px-24 bg-white">
@@ -48,27 +51,31 @@ export default function AboutSection() {
               {/* Description */}
               <p className="text-gray-700 font-semibold text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
                 BeforeListed™ is a request-based platform supporting proactive
-                rental outreach by licensed real estate agents beyond publicly
-                advertised listing platforms.
+                rental outreach by{" "}
+                <span className="text-gray-950">
+                  {referrerName || "Tuval Mor"}
+                </span>
+                , licensed real estate agents beyond publicly advertised listing
+                platforms.
               </p>
               <br />
-              <p className="text-gray-700 font-semibold text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
+              <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
                 Publicly advertised” refers to listings marketed through
                 StreetEasy, Zillow, or the REBNY Listing Service (RLS).
               </p>
               <br />
-              <p className="text-gray-700 font-semibold text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
+              <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
                 At your request, an agent may contact owners or property
                 managers on your behalf regarding upcoming rental opportunities.
               </p>
               <br />
-              <p className="text-gray-700 font-semibold text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
+              <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
                 Additional licensed agents may assist, with any such involvement
                 disclosed. Availability and pricing are subject to owner
                 discretion.
               </p>
               <br />
-              <p className="text-gray-700 font-semibold text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
+              <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
                 Broker fees are only payable if you rent an apartment presented
                 by the agent.
               </p>

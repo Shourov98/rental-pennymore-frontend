@@ -100,10 +100,7 @@ export default function ContactSection() {
                 <Image src="/Logo_1.svg" alt="Logo" width={250} height={200} />
               </Link>
               <p className="text-gray-700 text-sm sm:text-base text-center leading-relaxed">
-                Rent your next apartment before it is listed. <br />
-                <span className="font-medium text-gray-900">
-                  See it first – Rent it first.
-                </span>
+                Rent your next apartment before it is listed.
               </p>
             </div>
 
