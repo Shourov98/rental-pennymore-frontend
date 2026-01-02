@@ -54,8 +54,7 @@ interface ApiResponse {
 interface Request {
   id: string;
   requestName: string;
-  borough: string;
-  neighborhood: string;
+  locationEntries: { borough: string; neighborhoods: string }[];
   dateRange: string;
   priceRange: string;
   bedsLabel: string;
@@ -101,32 +100,39 @@ const formatDateRange = (range?: ApiRequest["movingDateRange"]) => {
   return "Not specified";
 };
 
-const formatLocations = (locations?: ApiRequest["locations"]) => {
-  if (!locations?.length) {
-    return {
-      borough: "Not specified",
-      neighborhoods: "Not specified",
-    };
-  }
+const formatLocationEntries = (locations?: ApiRequest["locations"]) => {
+  if (!locations?.length) return [];
 
-  const boroughs = Array.from(
-    new Set(
-      locations
-        .map((loc) => loc?.borough)
-        .filter((loc): loc is string => Boolean(loc))
-    )
-  );
+  const entries: { borough: string; neighborhoods: string[] }[] = [];
+  const indexByBorough = new Map<string, number>();
 
-  const neighborhoods = locations
-    .flatMap((loc) => loc?.neighborhoods ?? [])
-    .filter((n): n is string => Boolean(n));
+  locations.forEach((loc) => {
+    const borough = loc?.borough || "";
+    if (!borough) return;
 
-  return {
-    borough: boroughs.length ? boroughs.join(", ") : "Not specified",
-    neighborhoods: neighborhoods.length
-      ? neighborhoods.join(", ")
-      : "Not specified",
-  };
+    let entryIndex = indexByBorough.get(borough);
+    if (entryIndex == null) {
+      entryIndex = entries.length;
+      indexByBorough.set(borough, entryIndex);
+      entries.push({ borough, neighborhoods: [] });
+    }
+
+    (loc?.neighborhoods ?? []).forEach((neighborhood) => {
+      if (neighborhood) {
+        entries[entryIndex].neighborhoods.push(neighborhood);
+      }
+    });
+  });
+
+  return entries
+    .map((entry) => {
+      const uniqueNeighborhoods = Array.from(new Set(entry.neighborhoods));
+      return {
+        borough: entry.borough,
+        neighborhoods: uniqueNeighborhoods.join(" • "),
+      };
+    })
+    .filter((entry) => entry.neighborhoods);
 };
 
 const formatBedrooms = (bedrooms?: string[]) =>
@@ -205,7 +211,7 @@ export default function RenterDetails() {
 
         const normalizedRequests: Request[] = (data.data ?? []).map(
           (req: ApiRequest) => {
-            const { borough, neighborhoods } = formatLocations(req.locations);
+            const locationEntries = formatLocationEntries(req.locations);
             const expired = isExpired(req.movingDateRange?.latest);
             const resolvedActive =
               typeof req.isActive === "boolean"
@@ -222,8 +228,7 @@ export default function RenterDetails() {
                 req.requestName ||
                 req.requestId ||
                 "Pre-Market Listing Request",
-              borough,
-              neighborhood: neighborhoods,
+              locationEntries,
               dateRange: formatDateRange(req.movingDateRange),
               priceRange: formatCurrencyRange(
                 req.priceRange?.min,
@@ -392,8 +397,7 @@ export default function RenterDetails() {
               <RequestCard
                 key={req.id}
                 requestName={req.requestName}
-                borough={req.borough}
-                neighborhood={req.neighborhood}
+                locationEntries={req.locationEntries}
                 dateRange={req.dateRange}
                 priceRange={req.priceRange}
                 bedsLabel={req.bedsLabel}

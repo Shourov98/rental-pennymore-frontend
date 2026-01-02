@@ -456,7 +456,7 @@ export default function PreMarketListingPage() {
           {/* Guarantor */}
           <div className="mb-6">
             <p className="text-sm font-semibold text-gray-700 mb-2">
-              Check if you need a guarantor
+              Check to include only owners who accept guarantors
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3">

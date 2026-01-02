@@ -87,7 +87,9 @@ export default function EditPreMarketListingPage() {
   >([]);
   const [selectedPets, setSelectedPets] = useState<string[]>([]);
   const [selectedGuarantor, setSelectedGuarantor] = useState<string[]>([]);
-  const [preferences, setPreferences] = useState<string[]>(defaultPreferencesList);
+  const [preferences, setPreferences] = useState<string[]>(
+    defaultPreferencesList
+  );
   const [locations, setLocations] = useState<
     { borough?: string; neighborhoods?: string[] }[]
   >([]);
@@ -131,9 +133,7 @@ export default function EditPreMarketListingPage() {
         setMaxPrice(req.priceRange?.max ?? "");
         setStartDate(
           req.movingDateRange?.earliest
-            ? new Date(req.movingDateRange.earliest)
-                .toISOString()
-                .slice(0, 10)
+            ? new Date(req.movingDateRange.earliest).toISOString().slice(0, 10)
             : ""
         );
         setEndDate(
@@ -161,7 +161,9 @@ export default function EditPreMarketListingPage() {
         };
 
         setSelectedUnitFeatures(mapFeatures("unit", req.unitFeatures));
-        setSelectedBuildingFeatures(mapFeatures("building", req.buildingFeatures));
+        setSelectedBuildingFeatures(
+          mapFeatures("building", req.buildingFeatures)
+        );
         setSelectedPets(mapFeatures("pet", req.petPolicy));
         setSelectedGuarantor(mapFeatures("guarantor", req.guarantorRequired));
       } catch (err) {
@@ -181,15 +183,12 @@ export default function EditPreMarketListingPage() {
     return () => controller.abort();
   }, [accessToken, requestId]);
 
-  const locationsLabel = useMemo(() => {
-    if (!locations?.length) return "Add locations";
-    return locations
-      .map((loc) => {
-        const borough = loc.borough || "Borough";
-        const neighborhoods = loc.neighborhoods?.join(", ") || "Neighborhoods";
-        return `${borough} • ${neighborhoods}`;
-      })
-      .join(" | ");
+  const locationEntries = useMemo(() => {
+    if (!locations?.length) return [];
+    return locations.map((loc) => ({
+      borough: loc.borough || "Borough",
+      neighborhoods: loc.neighborhoods?.join(" • ") || "Neighborhoods",
+    }));
   }, [locations]);
 
   // Toggles
@@ -255,8 +254,9 @@ export default function EditPreMarketListingPage() {
         buildingFeatures: {
           doorman: selectedBuildingFeatures.includes("Doorman"),
           elevator: selectedBuildingFeatures.includes("Elevator"),
-          laundryInBuilding:
-            selectedBuildingFeatures.includes("Laundry in building"),
+          laundryInBuilding: selectedBuildingFeatures.includes(
+            "Laundry in building"
+          ),
         },
         petPolicy: {
           catsAllowed: selectedPets.includes("Cats allowed"),
@@ -411,7 +411,23 @@ export default function EditPreMarketListingPage() {
                 className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 cursor-pointer hover:border-blue-500 transition"
               >
                 <MapPin size={16} className="text-blue-600 mr-2 shrink-0" />
-                <span className="text-gray-700 text-sm">{locationsLabel}</span>
+                {locationEntries.length === 0 ? (
+                  <span className="text-gray-700 text-sm">Add locations</span>
+                ) : (
+                  <div className="flex flex-col gap-2 text-sm text-gray-700">
+                    {locationEntries.map((loc, index) => (
+                      <div
+                        key={`${loc.borough}-${index}`}
+                        className="flex flex-col leading-snug"
+                      >
+                        <span className="font-semibold">{loc.borough}</span>
+                        <span className="text-gray-600">
+                          {loc.neighborhoods}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -534,7 +550,9 @@ export default function EditPreMarketListingPage() {
                     <input
                       type="checkbox"
                       checked={selectedPets.includes(f)}
-                      onChange={() => toggleItem(f, setSelectedPets, selectedPets)}
+                      onChange={() =>
+                        toggleItem(f, setSelectedPets, selectedPets)
+                      }
                       className="w-4 h-4 text-blue-600"
                     />
                     {f}

@@ -2,8 +2,7 @@ import { CalendarDays, BedDouble, Bath, Pencil, Trash2 } from "lucide-react";
 
 interface RequestCardProps {
   requestName: string;
-  borough: string;
-  neighborhood: string;
+  locationEntries?: { borough: string; neighborhoods: string }[];
   dateRange: string;
   priceRange: string;
   bedsLabel: string;
@@ -18,8 +17,7 @@ interface RequestCardProps {
 
 export default function RequestCard({
   requestName,
-  borough,
-  neighborhood,
+  locationEntries = [],
   dateRange,
   priceRange,
   bedsLabel,
@@ -49,13 +47,19 @@ export default function RequestCard({
       </div>
 
       {/* Borough + Neighborhood */}
-      <div className="mt-1">
-        <p className="text-gray-500 text-sm">Borough</p>
-        <p className="font-medium text-gray-900">{borough}</p>
-
-        <p className="text-gray-500 text-sm mt-2">Neighborhood</p>
-        <p className="font-medium text-gray-900">{neighborhood}</p>
-      </div>
+      {locationEntries.length > 0 && (
+        <div className="mt-1 flex flex-col gap-2">
+          {locationEntries.map((loc, index) => (
+            <div
+              key={`${loc.borough}-${index}`}
+              className="flex flex-col leading-snug"
+            >
+              <span className="font-semibold text-gray-900">{loc.borough}</span>
+              <span className="text-gray-600">{loc.neighborhoods}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Date */}
       <div className="flex items-center gap-2 text-gray-500 text-sm mt-4">
@@ -105,27 +109,23 @@ export default function RequestCard({
           </button>
         </div>
 
-      {/* Second Row: Activate / Deactivate */}
-      <button
-        disabled={isMutating || (!isActive && disableActivate)}
-        onClick={onToggleStatus}
-        className={`w-full py-2.5 font-medium text-sm rounded-2xl transition-all
+        {/* Second Row: Activate / Deactivate */}
+        <button
+          disabled={isMutating || (!isActive && disableActivate)}
+          onClick={onToggleStatus}
+          className={`w-full py-2.5 font-medium text-sm rounded-2xl transition-all
           ${
             isActive
               ? "bg-red-50 text-red-600 hover:bg-red-500 hover:text-white"
-            : disableActivate
-            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-            : "bg-green-50 text-green-600 hover:bg-green-500 hover:text-white"
+              : disableActivate
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+              : "bg-green-50 text-green-600 hover:bg-green-500 hover:text-white"
           }
           ${isMutating ? "opacity-70 cursor-not-allowed" : ""}
         `}
-      >
-        {isMutating
-          ? "Please wait..."
-          : isActive
-          ? "Deactivate"
-          : "Activate"}
-      </button>
+        >
+          {isMutating ? "Please wait..." : isActive ? "Deactivate" : "Activate"}
+        </button>
       </div>
     </div>
   );
