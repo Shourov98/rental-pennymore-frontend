@@ -163,7 +163,10 @@ export default function EditPreMarketListingPage() {
         setLocations(nextLocations);
         dispatch(
           setPreferenceLocations(
-            nextLocations as { borough: "Manhattan" | "Brooklyn"; neighborhoods: string[] }[]
+            nextLocations as {
+              borough: "Manhattan" | "Brooklyn";
+              neighborhoods: string[];
+            }[]
           )
         );
 
@@ -581,7 +584,7 @@ export default function EditPreMarketListingPage() {
             {/* Guarantor */}
             <div>
               <p className="text-sm font-semibold text-gray-700 mb-2">
-                Check if you need a guarantor to qualify
+                Check to include only owners who accept guarantors
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 {guarantorOptions.map((f) => (
