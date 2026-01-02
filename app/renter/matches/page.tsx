@@ -181,9 +181,23 @@ export default function MatchedAgentsPage() {
                         {req.requestName}
                       </h2>
 
-                      <p className="text-sm text-gray-600">
-                        {req.boroughsLabel} • {req.neighborhoodsLabel}
-                      </p>
+                      {(req.locationEntries ?? []).length > 0 && (
+                        <div className="mt-1 flex flex-col gap-2 text-sm text-gray-600">
+                          {(req.locationEntries ?? []).map((loc, index) => (
+                            <div
+                              key={`${loc.borough}-${index}`}
+                              className="flex flex-col leading-snug"
+                            >
+                              <span className="font-semibold text-gray-900">
+                                {loc.borough}
+                              </span>
+                              <span className="text-gray-600">
+                                {loc.neighborhoods}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
 
                       <p className="text-sm text-gray-400">
                         {req.dateRangeLabel} • {req.priceRangeLabel}

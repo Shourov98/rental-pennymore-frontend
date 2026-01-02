@@ -3,12 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { MapPin, DollarSign, Calendar, Bell } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import dynamic from "next/dynamic";
 import LocationModal from "@/components/LocationModal";
 import SuccessModal from "@/components/SuccessModal";
 import { RootState } from "@/store/store";
-import { defaultPreferencesList } from "@/store/slices/preferenceSlice";
+import {
+  defaultPreferencesList,
+  setLocations as setPreferenceLocations,
+} from "@/store/slices/preferenceSlice";
 
 const PreferencesDragList = dynamic(
   () => import("@/components/PreferencesDragList"),
@@ -62,6 +65,10 @@ export default function EditPreMarketListingPage() {
   const params = useParams();
   const requestId = params?.id as string | undefined;
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+  const dispatch = useDispatch();
+  const preferenceLocations = useSelector(
+    (state: RootState) => state.preferences.locations
+  );
 
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
@@ -93,6 +100,10 @@ export default function EditPreMarketListingPage() {
   const [locations, setLocations] = useState<
     { borough?: string; neighborhoods?: string[] }[]
   >([]);
+
+  useEffect(() => {
+    setLocations(preferenceLocations);
+  }, [preferenceLocations]);
 
   // Fetch request details
   useEffect(() => {
@@ -148,7 +159,13 @@ export default function EditPreMarketListingPage() {
             ? req.preferences
             : defaultPreferencesList;
         setPreferences(apiPreferences);
-        setLocations(req.locations ?? []);
+        const nextLocations = req.locations ?? [];
+        setLocations(nextLocations);
+        dispatch(
+          setPreferenceLocations(
+            nextLocations as { borough: "Manhattan" | "Brooklyn"; neighborhoods: string[] }[]
+          )
+        );
 
         const mapFeatures = (
           group: FeatureGroup,

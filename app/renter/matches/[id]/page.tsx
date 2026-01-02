@@ -9,7 +9,6 @@ import {
   BedDouble,
   CalendarDays,
   DollarSign,
-  MapPin,
 } from "lucide-react";
 import AgentContactCard from "@/components/AgentContactCard";
 import { RootState } from "@/store/store";
@@ -61,6 +60,43 @@ const formatFeatureGroup = (
   Object.entries(values || {})
     .filter(([, value]) => value)
     .map(([key]) => labels[key] || key);
+
+const formatLocationEntries = (
+  locations?: { borough?: string; neighborhoods?: string[] }[]
+) => {
+  if (!locations?.length) return [];
+
+  const entries: { borough: string; neighborhoods: string[] }[] = [];
+  const indexByBorough = new Map<string, number>();
+
+  locations.forEach((loc) => {
+    const borough = loc?.borough || "";
+    if (!borough) return;
+
+    let entryIndex = indexByBorough.get(borough);
+    if (entryIndex == null) {
+      entryIndex = entries.length;
+      indexByBorough.set(borough, entryIndex);
+      entries.push({ borough, neighborhoods: [] });
+    }
+
+    (loc?.neighborhoods ?? []).forEach((neighborhood) => {
+      if (neighborhood) {
+        entries[entryIndex].neighborhoods.push(neighborhood);
+      }
+    });
+  });
+
+  return entries
+    .map((entry) => {
+      const uniqueNeighborhoods = Array.from(new Set(entry.neighborhoods));
+      return {
+        borough: entry.borough,
+        neighborhoods: uniqueNeighborhoods.join(" • "),
+      };
+    })
+    .filter((entry) => entry.neighborhoods);
+};
 
 export default function RenterMatchDetailsPage() {
   const params = useParams();
@@ -179,6 +215,7 @@ export default function RenterMatchDetailsPage() {
   );
 
   const renterPreferenceData = useMemo(() => {
+    const locationEntries = formatLocationEntries(locations);
     const boroughValue = locations?.[0]?.borough || "Not specified";
     const neighborhoodsList =
       locations
@@ -233,6 +270,7 @@ export default function RenterMatchDetailsPage() {
 
     return {
       borough: boroughValue,
+      locationEntries,
       neighborhoods:
         neighborhoodsList.length > 0 ? neighborhoodsList : ["Not specified"],
       minPrice,
@@ -356,10 +394,6 @@ export default function RenterMatchDetailsPage() {
               <h2 className="text-xl font-semibold text-[#0A093D]">
                 Request Preferences
               </h2>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <MapPin className="w-4 h-4" />
-                {request.boroughsLabel}
-              </div>
             </div>
             <RenterPreferenceView data={renterPreferenceData} />
           </div>

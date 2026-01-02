@@ -8,6 +8,7 @@ export default function RenterPreferenceView({
   data: {
     borough: string;
     neighborhoods: string[];
+    locationEntries?: { borough: string; neighborhoods: string }[];
     minPrice: string;
     maxPrice: string;
     earliestDate: string;
@@ -94,6 +95,13 @@ export default function RenterPreferenceView({
     );
   };
 
+  const locationEntries = data.locationEntries ?? [];
+  const fallbackBorough = data.borough || "Not specified";
+  const fallbackNeighborhoods =
+    data.neighborhoods.length > 0
+      ? data.neighborhoods.join(" • ")
+      : "Not specified";
+
   return (
     <div className="space-y-6 text-sm text-gray-700">
       {/* Moving Date */}
@@ -141,16 +149,28 @@ export default function RenterPreferenceView({
       {/* Location */}
       <div>
         <p className="text-sm font-semibold text-gray-900 mb-2">Location</p>
-        <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
-          <MapPin size={16} className="text-blue-600 mr-2 shrink-0" />
-          <div>
-            <p className="font-medium text-gray-900">{data.borough}</p>
-            <p className="text-gray-700">
-              {data.neighborhoods.length
-                ? data.neighborhoods.join(", ")
-                : "Not specified"}
-            </p>
-          </div>
+        <div className="flex items-start bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+          <MapPin size={16} className="text-blue-600 mr-2 mt-0.5 shrink-0" />
+          {locationEntries.length > 0 ? (
+            <div className="flex flex-col gap-2">
+              {locationEntries.map((loc, index) => (
+                <div
+                  key={`${loc.borough}-${index}`}
+                  className="flex flex-col leading-snug"
+                >
+                  <span className="font-semibold text-gray-900">
+                    {loc.borough}
+                  </span>
+                  <span className="text-gray-700">{loc.neighborhoods}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div>
+              <p className="font-medium text-gray-900">{fallbackBorough}</p>
+              <p className="text-gray-700">{fallbackNeighborhoods}</p>
+            </div>
+          )}
         </div>
       </div>
 

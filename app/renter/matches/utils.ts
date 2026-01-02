@@ -64,8 +64,7 @@ export interface ApiMatchesResponse {
 export interface NormalizedMatchRequest {
   id: string;
   requestName: string;
-  boroughsLabel: string;
-  neighborhoodsLabel: string;
+  locationEntries: { borough: string; neighborhoods: string }[];
   dateRangeLabel: string;
   priceRangeLabel: string;
   bedroomsLabel: string;
@@ -111,32 +110,39 @@ const formatDateRange = (range?: ApiRequestWithAgents["movingDateRange"]) => {
   return "Not specified";
 };
 
-const formatLocations = (locations?: ApiRequestWithAgents["locations"]) => {
-  if (!locations?.length) {
-    return {
-      boroughsLabel: "Not specified",
-      neighborhoodsLabel: "Not specified",
-    };
-  }
+const formatLocationEntries = (locations?: ApiRequestWithAgents["locations"]) => {
+  if (!locations?.length) return [];
 
-  const boroughs = Array.from(
-    new Set(
-      locations
-        .map((loc) => loc?.borough)
-        .filter((loc): loc is string => Boolean(loc))
-    )
-  );
+  const entries: { borough: string; neighborhoods: string[] }[] = [];
+  const indexByBorough = new Map<string, number>();
 
-  const neighborhoods = locations
-    .flatMap((loc) => loc?.neighborhoods ?? [])
-    .filter((n): n is string => Boolean(n));
+  locations.forEach((loc) => {
+    const borough = loc?.borough || "";
+    if (!borough) return;
 
-  return {
-    boroughsLabel: boroughs.length ? boroughs.join(", ") : "Not specified",
-    neighborhoodsLabel: neighborhoods.length
-      ? neighborhoods.join(", ")
-      : "Not specified",
-  };
+    let entryIndex = indexByBorough.get(borough);
+    if (entryIndex == null) {
+      entryIndex = entries.length;
+      indexByBorough.set(borough, entryIndex);
+      entries.push({ borough, neighborhoods: [] });
+    }
+
+    (loc?.neighborhoods ?? []).forEach((neighborhood) => {
+      if (neighborhood) {
+        entries[entryIndex].neighborhoods.push(neighborhood);
+      }
+    });
+  });
+
+  return entries
+    .map((entry) => {
+      const uniqueNeighborhoods = Array.from(new Set(entry.neighborhoods));
+      return {
+        borough: entry.borough,
+        neighborhoods: uniqueNeighborhoods.join(" • "),
+      };
+    })
+    .filter((entry) => entry.neighborhoods);
 };
 
 const formatBedrooms = (bedrooms?: string[]) =>
@@ -148,14 +154,13 @@ const formatBathrooms = (bathrooms?: string[]) =>
 export const normalizeRequest = (
   req: ApiRequestWithAgents
 ): NormalizedMatchRequest => {
-  const { boroughsLabel, neighborhoodsLabel } = formatLocations(req.locations);
+  const locationEntries = formatLocationEntries(req.locations);
 
   return {
     id:
       req._id || req.id || req.requestId || Math.random().toString(36).slice(2),
     requestName: req.requestName || req.requestId || "Pre-Market Request",
-    boroughsLabel,
-    neighborhoodsLabel,
+    locationEntries,
     dateRangeLabel: formatDateRange(req.movingDateRange),
     priceRangeLabel: formatCurrencyRange(
       req.priceRange?.min,

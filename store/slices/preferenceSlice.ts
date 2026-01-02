@@ -89,6 +89,9 @@ export const preferenceSlice = createSlice({
     // ===============================
     // LOCATION SELECTOR
     // ===============================
+    setLocations(state, action: PayloadAction<LocationEntry[]>) {
+      state.locations = action.payload;
+    },
 
     addNeighborhood(
       state,
@@ -206,6 +209,7 @@ export const preferenceSlice = createSlice({
 export const {
   setMovingDate,
   setPriceRange,
+  setLocations,
   addNeighborhood,
   removeNeighborhood,
   toggleBedroom,
