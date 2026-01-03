@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatch } from "react-redux";
@@ -17,7 +17,7 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
 
-export default function SigninPage() {
+function SigninPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useDispatch();
@@ -243,5 +243,13 @@ export default function SigninPage() {
         </p>
       </form>
     </div>
+  );
+}
+
+export default function SigninPage() {
+  return (
+    <Suspense fallback={null}>
+      <SigninPageContent />
+    </Suspense>
   );
 }
