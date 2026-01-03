@@ -87,8 +87,11 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
     } catch (err) {
       console.error("Logout failed", err);
     } finally {
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem("logout_redirect_home", "1");
+      }
       dispatch(logout());
-      router.replace("/signin");
+      router.replace("/");
     }
   };
 

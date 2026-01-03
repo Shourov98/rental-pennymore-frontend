@@ -32,9 +32,17 @@ export default function RenterLayout({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [sidebarOpen]);
 
+  const shouldRedirectHomeOnLogout = () => {
+    if (typeof window === "undefined") return false;
+    const flag = window.sessionStorage.getItem("logout_redirect_home");
+    if (!flag) return false;
+    window.sessionStorage.removeItem("logout_redirect_home");
+    return true;
+  };
+
   useEffect(() => {
     if (!isAuthed) {
-      router.replace("/signin");
+      router.replace(shouldRedirectHomeOnLogout() ? "/" : "/signin");
       return;
     }
     if (hasRole && !isRenter) {
