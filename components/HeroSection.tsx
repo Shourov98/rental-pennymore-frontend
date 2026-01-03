@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { MapPin, DollarSign } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 // Redux
@@ -12,6 +12,7 @@ import { setPriceRange } from "@/store/slices/preferenceSlice";
 import { selectReferrerName } from "@/store/slices/authSlice";
 
 import LocationModal from "./LocationModal";
+import boroughNeighborhoods from "@/data/neighborhoods.manhattan-brooklyn";
 
 export default function HeroSection() {
   const router = useRouter();
@@ -19,10 +20,28 @@ export default function HeroSection() {
 
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
-  const priceRange = useSelector(
-    (state: RootState) => state.preferences.priceRange
-  );
+  const priceRange = useSelector<
+    RootState,
+    RootState["preferences"]["priceRange"]
+  >((state) => state.preferences.priceRange);
   const referrerName = useSelector(selectReferrerName);
+  const locations = useSelector<
+    RootState,
+    RootState["preferences"]["locations"]
+  >((state) => state.preferences.locations);
+  const neighborhoodLabelByKey = useMemo(() => {
+    const map = new globalThis.Map<string, string>();
+    (
+      Object.keys(boroughNeighborhoods) as Array<"Manhattan" | "Brooklyn">
+    ).forEach((borough) => {
+      boroughNeighborhoods[borough].sections.forEach((section) => {
+        section.items.forEach((item) => {
+          map.set(`${borough}:${item.key}`, item.label);
+        });
+      });
+    });
+    return map;
+  }, []);
   const handleMinPrice = (value: string) => {
     dispatch(
       setPriceRange({
@@ -84,11 +103,26 @@ export default function HeroSection() {
 
             <div
               onClick={() => setIsLocationModalOpen(true)}
-              className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 cursor-pointer hover:border-blue-500 transition"
+              className="flex max-h-20 overflow-y-auto items-start bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 cursor-pointer hover:border-blue-500 transition"
             >
-              <MapPin size={16} className="text-blue-600 mr-2 shrink-0" />
-              <span className="text-gray-500 text-sm">
-                Choose Borough and neighborhoods
+              <MapPin size={20} className="text-blue-600 mr-2 shrink-0" />
+              <span className="text-gray-500 text-xs leading-5">
+                {locations.length === 0
+                  ? "Choose Borough and neighborhoods"
+                  : locations.map((loc) => {
+                      const labels = (loc.neighborhoods || []).map(
+                        (key) =>
+                          neighborhoodLabelByKey.get(`${loc.borough}:${key}`) ??
+                          key
+                      );
+
+                      return (
+                        <span key={loc.borough} className="block">
+                          <span className="font-semibold">{loc.borough}</span>
+                          <span className="block">{labels.join(", ")}</span>
+                        </span>
+                      );
+                    })}
               </span>
             </div>
           </div>
@@ -99,7 +133,7 @@ export default function HeroSection() {
               Price
             </label>
             <div className="flex items-center bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5">
-              <DollarSign size={16} className="text-blue-600 mr-2" />
+              <DollarSign size={20} className="text-blue-600 mr-2" />
               <input
                 type="number"
                 placeholder="Min"
@@ -116,7 +150,7 @@ export default function HeroSection() {
               &nbsp;
             </label>
             <div className="flex items-center bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5">
-              <DollarSign size={16} className="text-blue-600 mr-2" />
+              <DollarSign size={20} className="text-blue-600 mr-2" />
               <input
                 type="number"
                 placeholder="Max"

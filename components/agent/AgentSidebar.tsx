@@ -83,7 +83,7 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
       console.error("Logout failed", err);
     } finally {
       dispatch(logout());
-      router.replace("/signin");
+      router.replace("/");
     }
   };
 

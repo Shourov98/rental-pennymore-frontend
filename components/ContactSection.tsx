@@ -99,9 +99,6 @@ export default function ContactSection() {
               <Link href="/">
                 <Image src="/Logo_1.svg" alt="Logo" width={250} height={200} />
               </Link>
-              <p className="text-gray-700 text-sm sm:text-base text-center leading-relaxed">
-                Rent your next apartment before it is listed.
-              </p>
             </div>
 
             {/* Right Side — Form */}

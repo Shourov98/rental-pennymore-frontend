@@ -88,7 +88,8 @@ export default function Navbar() {
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
       };
-      if (auth.accessToken) headers.Authorization = `Bearer ${auth.accessToken}`;
+      if (auth.accessToken)
+        headers.Authorization = `Bearer ${auth.accessToken}`;
 
       await fetch(`${API_BASE_URL}/auth/logout`, {
         method: "POST",
@@ -98,7 +99,7 @@ export default function Navbar() {
       console.error("Logout failed", err);
     } finally {
       dispatch(logout());
-      router.replace("/signin");
+      router.replace("/");
     }
   };
 

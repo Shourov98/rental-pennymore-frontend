@@ -286,33 +286,33 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
         ],
       },
 
-      {
-        title: "Parks & Special Areas",
-        items: [
-          { key: "Prospect Park", label: "Prospect Park" },
-          { key: "Green-Wood Cemetery", label: "Green-Wood Cemetery" },
-          { key: "The Evergreens Cemetery", label: "The Evergreens Cemetery" },
-          { key: "Holy Cross Cemetery", label: "Holy Cross Cemetery" },
-          { key: "Calvert Vaux Park", label: "Calvert Vaux Park" },
-          { key: "Dyker Beach Park", label: "Dyker Beach Park" },
-          {
-            key: "Barren Island-Floyd Bennett Field",
-            label: "Barren Island-Floyd Bennett Field",
-          },
-          { key: "Jamaica Bay (West)", label: "Jamaica Bay (West)" },
-          {
-            key: "Shirley Chisholm State Park",
-            label: "Shirley Chisholm State Park",
-          },
-          { key: "McGuire Fields", label: "McGuire Fields" },
-          { key: "Canarsie Park & Pier", label: "Canarsie Park & Pier" },
-          {
-            key: "Highland Park-Cypress Hills Cemeteries (South)",
-            label: "Highland Park-Cypress Hills Cemeteries (South)",
-          },
-          { key: "Lincoln Terrace Park", label: "Lincoln Terrace Park" },
-        ],
-      },
+      // {
+      //   title: "Parks & Special Areas",
+      //   items: [
+      //     { key: "Prospect Park", label: "Prospect Park" },
+      //     { key: "Green-Wood Cemetery", label: "Green-Wood Cemetery" },
+      //     { key: "The Evergreens Cemetery", label: "The Evergreens Cemetery" },
+      //     { key: "Holy Cross Cemetery", label: "Holy Cross Cemetery" },
+      //     { key: "Calvert Vaux Park", label: "Calvert Vaux Park" },
+      //     { key: "Dyker Beach Park", label: "Dyker Beach Park" },
+      //     {
+      //       key: "Barren Island-Floyd Bennett Field",
+      //       label: "Barren Island-Floyd Bennett Field",
+      //     },
+      //     { key: "Jamaica Bay (West)", label: "Jamaica Bay (West)" },
+      //     {
+      //       key: "Shirley Chisholm State Park",
+      //       label: "Shirley Chisholm State Park",
+      //     },
+      //     { key: "McGuire Fields", label: "McGuire Fields" },
+      //     { key: "Canarsie Park & Pier", label: "Canarsie Park & Pier" },
+      //     {
+      //       key: "Highland Park-Cypress Hills Cemeteries (South)",
+      //       label: "Highland Park-Cypress Hills Cemeteries (South)",
+      //     },
+      //     { key: "Lincoln Terrace Park", label: "Lincoln Terrace Park" },
+      //   ],
+      // },
     ],
   },
 } as const;

@@ -46,6 +46,8 @@ export default function PreMarketListingPage() {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [description, setDescription] = useState("");
   const [isAgreementChecked, setIsAgreementChecked] = useState(false);
   const [agreementWarning, setAgreementWarning] = useState<string | null>(null);
@@ -110,6 +112,42 @@ export default function PreMarketListingPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage(null);
+    setFormError(null);
+
+    const nextFieldErrors: Record<string, string> = {};
+
+    if (!movingDate.earliest || !movingDate.latest) {
+      nextFieldErrors.movingDate = "Please select your earliest and latest dates.";
+    }
+
+    if (!priceRange.min || !priceRange.max) {
+      nextFieldErrors.priceRange = "Please enter a minimum and maximum price.";
+    }
+
+    if (locations.length === 0) {
+      nextFieldErrors.locations = "Please select at least one location.";
+    }
+
+    if (bedrooms.length === 0) {
+      nextFieldErrors.bedrooms = "Please select at least one bedroom option.";
+    }
+
+    if (bathrooms.length === 0) {
+      nextFieldErrors.bathrooms = "Please select at least one bathroom option.";
+    }
+
+    if (!isAgreementChecked) {
+      nextFieldErrors.agreement =
+        "Please confirm the registration has been signed.";
+    }
+
+    if (Object.keys(nextFieldErrors).length > 0) {
+      setFieldErrors(nextFieldErrors);
+      setFormError("Please fill out the required fields before submitting.");
+      return;
+    }
+
+    setFieldErrors({});
 
     const toIsoDate = (date: string, endOfDay?: boolean) =>
       date ? `${date}T${endOfDay ? "23:59:59" : "00:00:00"}Z` : "";
@@ -276,6 +314,9 @@ export default function PreMarketListingPage() {
               </div>
             </div>
           </div>
+          {fieldErrors.movingDate && (
+            <p className="text-sm text-red-600">{fieldErrors.movingDate}</p>
+          )}
 
           {/* Price Range */}
           <div className="mb-2">
@@ -329,6 +370,9 @@ export default function PreMarketListingPage() {
               </div>
             </div>
           </div>
+          {fieldErrors.priceRange && (
+            <p className="text-sm text-red-600">{fieldErrors.priceRange}</p>
+          )}
 
           {/* Location */}
           <div className="flex flex-col mb-4">
@@ -354,6 +398,9 @@ export default function PreMarketListingPage() {
               </span>
             </div>
           </div>
+          {fieldErrors.locations && (
+            <p className="text-sm text-red-600">{fieldErrors.locations}</p>
+          )}
 
           {/* Bedrooms */}
           <div className="mb-4">
@@ -375,6 +422,11 @@ export default function PreMarketListingPage() {
                 </button>
               ))}
             </div>
+            {fieldErrors.bedrooms && (
+              <p className="text-sm text-red-600 mt-2">
+                {fieldErrors.bedrooms}
+              </p>
+            )}
           </div>
 
           {/* Bathrooms */}
@@ -399,6 +451,11 @@ export default function PreMarketListingPage() {
                 </button>
               ))}
             </div>
+            {fieldErrors.bathrooms && (
+              <p className="text-sm text-red-600 mt-2">
+                {fieldErrors.bathrooms}
+              </p>
+            )}
           </div>
 
           {/* Features */}
@@ -491,6 +548,9 @@ export default function PreMarketListingPage() {
           {errorMessage && (
             <p className="text-sm text-red-600 text-right">{errorMessage}</p>
           )}
+          {formError && (
+            <p className="text-sm text-red-600 text-right">{formError}</p>
+          )}
           {/* Agreement text + checkbox */}
           <div className="border-t pt-4 text-xs text-gray-600 space-y-3">
             <p>
@@ -531,6 +591,9 @@ export default function PreMarketListingPage() {
             </label>
             {agreementWarning && (
               <p className="text-sm text-red-600">{agreementWarning}</p>
+            )}
+            {fieldErrors.agreement && (
+              <p className="text-sm text-red-600">{fieldErrors.agreement}</p>
             )}
           </div>
 
