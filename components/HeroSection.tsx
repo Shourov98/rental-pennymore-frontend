@@ -9,7 +9,11 @@ import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { setPriceRange } from "@/store/slices/preferenceSlice";
-import { selectReferrerName } from "@/store/slices/authSlice";
+import {
+  selectAuth,
+  selectIsAuthed,
+  selectReferrerName,
+} from "@/store/slices/authSlice";
 
 import LocationModal from "./LocationModal";
 import boroughNeighborhoods from "@/data/neighborhoods.manhattan-brooklyn";
@@ -25,10 +29,14 @@ export default function HeroSection() {
     RootState["preferences"]["priceRange"]
   >((state) => state.preferences.priceRange);
   const referrerName = useSelector(selectReferrerName);
+  const auth = useSelector(selectAuth);
+  const isAuthed = useSelector(selectIsAuthed);
   const locations = useSelector<
     RootState,
     RootState["preferences"]["locations"]
   >((state) => state.preferences.locations);
+  const role = auth.role ?? auth.user?.role ?? null;
+  const isRenter = role === "Renter";
   const neighborhoodLabelByKey = useMemo(() => {
     const map = new globalThis.Map<string, string>();
     (
@@ -165,7 +173,13 @@ export default function HeroSection() {
           {/* Next */}
           <button
             type="button"
-            onClick={() => router.push("/signin?redirect=pre-market-listing")}
+            onClick={() =>
+              router.push(
+                isAuthed && isRenter
+                  ? "/pre-market-listing"
+                  : "/signin?redirect=pre-market-listing"
+              )
+            }
             className="w-full sm:w-[20%] bg-blue-500 text-white text-sm font-semibold rounded-xl mt-5 px-6 py-2 hover:bg-blue-700"
           >
             Next

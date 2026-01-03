@@ -50,34 +50,31 @@ export default function AboutSection() {
             <div className="w-full md:w-4/5 text-center md:text-left">
               {/* Description */}
               <p className="text-gray-700 font-semibold text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
-                BeforeListed™ is a request-based platform supporting proactive
-                rental outreach by{" "}
-                <span className="text-gray-950">
-                  {referrerName || "Tuval Mor"}
-                </span>
-                , licensed real estate agents beyond publicly advertised listing
-                platforms.
+                BeforeListed™ is a real estate marketing and intake website
+                designed to collect renter inquiries and support proactive
+                rental outreach beyond publicly advertised listing platforms.
               </p>
               <br />
               <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
-                Publicly advertised” refers to listings marketed through
+                “Publicly advertised” refers to rental listings marketed through
                 StreetEasy, Zillow, or the REBNY Listing Service (RLS).
               </p>
               <br />
               <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
-                At your request, an agent may contact owners or property
-                managers on your behalf regarding upcoming rental opportunities.
+                At a renter’s request, the representing agent may contact
+                property owners or property managers on the renter’s behalf
+                regarding upcoming rental opportunities.
               </p>
               <br />
               <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
-                Additional licensed agents may assist, with any such involvement
-                disclosed. Availability and pricing are subject to owner
-                discretion.
+                Additional licensed agents may assist at the representing
+                agent’s discretion, with any such involvement disclosed.
+                Availability and pricing are subject to owner discretion.
               </p>
               <br />
               <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
                 Broker fees are only payable if you rent an apartment presented
-                by the agent.
+                by the representing agent.
               </p>
             </div>
           </div>
