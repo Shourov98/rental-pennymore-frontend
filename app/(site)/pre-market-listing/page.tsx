@@ -117,7 +117,8 @@ export default function PreMarketListingPage() {
     const nextFieldErrors: Record<string, string> = {};
 
     if (!movingDate.earliest || !movingDate.latest) {
-      nextFieldErrors.movingDate = "Please select your earliest and latest dates.";
+      nextFieldErrors.movingDate =
+        "Please select your earliest and latest dates.";
     }
 
     if (!priceRange.min || !priceRange.max) {
@@ -564,9 +565,10 @@ export default function PreMarketListingPage() {
               >
                 Corcoran client registration
               </a>
-              . This registration is non-exclusive, and no broker fee is due
-              unless you choose to move forward with a rental presented to you
-              by the agent. Any broker fee may be negotiated.
+              unless you have already done so. It opens in a new tab. Please
+              return here after signing. This registration is non-exclusive, the
+              broker fee may be negotiated, and no broker fee is due unless you
+              choose to move forward with a rental presented by the agent.
             </p>
 
             <label className="flex items-start gap-2 cursor-pointer">
