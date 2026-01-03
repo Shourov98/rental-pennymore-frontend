@@ -19,6 +19,7 @@ import {
   togglePetPolicy,
   toggleGuarantor,
   setPreferencesList,
+  resetPreferences,
 } from "@/store/slices/preferenceSlice";
 
 import LocationModal from "@/components/LocationModal";
@@ -172,6 +173,10 @@ export default function PreMarketListingPage() {
       }
 
       setIsSuccessModalOpen(true);
+      dispatch(resetPreferences());
+      setDescription("");
+      setIsAgreementChecked(false);
+      setAgreementWarning(null);
       if (registrationLink && typeof window !== "undefined") {
         window.open(registrationLink, "_blank", "noopener,noreferrer");
       }

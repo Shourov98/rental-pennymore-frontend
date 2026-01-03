@@ -131,7 +131,7 @@ export default function HeroSection() {
           {/* Next */}
           <button
             type="button"
-            onClick={() => router.push("/pre-market-listing")}
+            onClick={() => router.push("/signin?redirect=pre-market-listing")}
             className="w-full sm:w-[20%] bg-blue-500 text-white text-sm font-semibold rounded-xl mt-5 px-6 py-2 hover:bg-blue-700"
           >
             Next

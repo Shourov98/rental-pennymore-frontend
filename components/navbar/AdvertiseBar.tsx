@@ -49,7 +49,7 @@ export default function AdvertiseBar() {
       <style jsx>{`
         @keyframes marquee {
           0% {
-            transform: translateX(300%);
+            transform: translateX(150%);
           }
           100% {
             transform: translateX(-100%);
@@ -64,7 +64,7 @@ export default function AdvertiseBar() {
           color: rgb(55 65 81);
           font-size: 0.875rem;
           min-width: max-content;
-          animation: marquee 25s linear infinite;
+          animation: marquee 40s linear infinite;
           will-change: transform;
         }
       `}</style>

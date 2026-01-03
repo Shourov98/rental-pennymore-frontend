@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatch } from "react-redux";
 import {
   agentLoginSuccess,
@@ -19,6 +19,7 @@ const API_BASE_URL =
 
 export default function SigninPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -93,7 +94,9 @@ export default function SigninPage() {
         );
       }
 
-      const destination = "/";
+      const redirectTarget = searchParams.get("redirect");
+      const destination =
+        redirectTarget === "pre-market-listing" ? "/pre-market-listing" : "/";
       setStatusMessage({
         type: "success",
         message: data.message || "Login successful.",
