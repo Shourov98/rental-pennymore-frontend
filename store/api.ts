@@ -13,6 +13,7 @@ import {
   type AgentLoginPayload,
   type RenterLoginPayload,
 } from "./slices/authSlice";
+import { fetchAgentProfile } from "./slices/agentProfileSlice";
 import type { RootState } from "./store";
 import type { Tokens, UserBase, RenterProfile } from "./slices/authSlice";
 
@@ -169,6 +170,7 @@ export const api = createApi({
                 mustChangePassword: !!payload.mustChangePassword,
               })
             );
+            dispatch(fetchAgentProfile());
           }
         } catch {
           // handled by component-level error states

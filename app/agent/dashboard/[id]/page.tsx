@@ -20,6 +20,7 @@ import {
   readCachedAgentRequests,
 } from "../utils";
 import { readCachedAgentMatches } from "../../matches/utils";
+import { selectAgentHasGrantAccess } from "@/store/slices/authSlice";
 
 const unitFeatureLabels: Record<string, string> = {
   laundryInUnit: "Laundry in unit",
@@ -161,6 +162,7 @@ export default function AgentRenterRequestDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+  const hasGrantAccess = useSelector(selectAgentHasGrantAccess);
 
   const requestId = params?.id as string | undefined;
 
@@ -398,8 +400,12 @@ export default function AgentRenterRequestDetailsPage() {
   const isRequestSentByStatus =
     requestStatus === "sent" || requestStatus === "requested";
   const canRequestAccess = request?.raw?.canRequestAccess ?? true;
-  const shouldDisableMatchRequest =
-    !canRequestAccess || isRequestSentByStatus || isRequestSent;
+  const listingStatus = request?.raw?.listingStatus || "";
+  const isListingMatched = listingStatus.toLowerCase() === "matched";
+  const grantAccessEnabled = hasGrantAccess === true;
+  const shouldDisableMatchRequest = grantAccessEnabled
+    ? isListingMatched
+    : !canRequestAccess || isRequestSentByStatus || isRequestSent;
   const showPaymentCard =
     request?.raw?.status?.toLowerCase() === "approved" ||
     request?.raw?.grantAccessStatus?.toLowerCase() === "approved";
@@ -430,28 +436,66 @@ export default function AgentRenterRequestDetailsPage() {
       };
       if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
-      const response = await fetch(
-        `${API_BASE_URL}/pre-market/grant-access/request`,
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ preMarketRequestId: requestId }),
+      if (grantAccessEnabled) {
+        const response = await fetch(
+          `${API_BASE_URL}/pre-market/agent/${requestId}/match`,
+          {
+            method: "POST",
+            headers,
+          }
+        );
+
+        const data = await response
+          .json()
+          .catch(() => ({} as { success?: boolean; message?: string }));
+
+        if (!response.ok || data?.success === false) {
+          const errorMessage =
+            data?.message || "Match request failed. Please try again.";
+          throw new Error(errorMessage);
         }
-      );
 
-      const data = await response.json();
+        setRequest((prev) =>
+          prev
+            ? {
+                ...prev,
+                raw: {
+                  ...prev.raw,
+                  listingStatus: "matched",
+                },
+              }
+            : prev
+        );
+        setStatusMessage({
+          type: "success",
+          message: data?.message || "Match request created.",
+        });
+      } else {
+        const response = await fetch(
+          `${API_BASE_URL}/pre-market/grant-access/request`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify({ preMarketRequestId: requestId }),
+          }
+        );
 
-      if (!response.ok || !data?.success) {
-        const errorMessage =
-          data?.message || "Match request failed. Please try again.";
-        throw new Error(errorMessage);
+        const data = await response
+          .json()
+          .catch(() => ({} as { success?: boolean; message?: string }));
+
+        if (!response.ok || data?.success === false) {
+          const errorMessage =
+            data?.message || "Match request failed. Please try again.";
+          throw new Error(errorMessage);
+        }
+
+        setIsRequestSent(true);
+        setStatusMessage({
+          type: "success",
+          message: data?.message || "Access request created.",
+        });
       }
-
-      setIsRequestSent(true);
-      setStatusMessage({
-        type: "success",
-        message: data?.message || "Access request created.",
-      });
     } catch (err) {
       const errorMessage =
         err instanceof Error
@@ -785,7 +829,13 @@ export default function AgentRenterRequestDetailsPage() {
                     : "bg-blue-600 text-white hover:bg-blue-700"
                 }`}
               >
-                {canRequestAccess
+                {grantAccessEnabled
+                  ? isListingMatched
+                    ? "Already Matched"
+                    : isSubmitting
+                    ? "Matching..."
+                    : "Match Request"
+                  : shouldDisableMatchRequest
                   ? "Request Sent"
                   : isSubmitting
                   ? "Sending..."

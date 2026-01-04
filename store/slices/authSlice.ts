@@ -38,6 +38,42 @@ export interface RenterProfile {
   updatedAt: string;
 }
 
+export interface AgentProfileUser {
+  _id: string;
+  email: string;
+  phoneNumber: string;
+  fullName: string;
+  role: "Agent" | string;
+  accountStatus: "active" | "pending" | "suspended" | string;
+  totalReferrals?: number;
+  emailVerified?: boolean;
+  referralCode?: string;
+  referralLink?: string;
+  canRefer?: boolean;
+  profileImageUrl?: string;
+  id?: string;
+}
+
+export interface AgentProfile {
+  _id: string;
+  userInfo: AgentProfileUser;
+  userId?: AgentProfileUser;
+  licenseNumber?: string;
+  brokerageName?: string;
+  isActive?: boolean;
+  totalRentersReferred?: number;
+  activeReferrals?: number;
+  referralConversionRate?: number;
+  hasGrantAccess?: boolean;
+  lastAccessToggleAt?: string;
+  grantAccessCount?: number;
+  totalMatches?: number;
+  successfulMatches?: number;
+  profileCompleteness?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface ReferralInfo {
   registrationType?: string;
   referrer?: {
@@ -59,6 +95,7 @@ export interface Tokens {
 export interface AuthState {
   user: UserBase | null;
   renter: RenterProfile | null;
+  agentProfile: AgentProfile | null;
   role: Role | null;
   accessToken: string | null;
   refreshToken: string | null;
@@ -73,6 +110,7 @@ export interface AuthState {
 const initialState: AuthState = {
   user: null,
   renter: null,
+  agentProfile: null,
   role: null,
   accessToken: null,
   refreshToken: null,
@@ -117,6 +155,7 @@ const authSlice = createSlice({
         ...user,
         profileImage: user.profileImage ?? user.profileImageUrl ?? null,
       };
+      state.agentProfile = null;
       state.role = user.role;
       state.renter = null;
       state.accessToken = accessToken;
@@ -142,6 +181,7 @@ const authSlice = createSlice({
         ...user,
         profileImage: user.profileImage ?? user.profileImageUrl ?? null,
       };
+      state.agentProfile = null;
       state.role = user.role;
       state.renter = renter ?? null;
       state.accessToken = tokens?.accessToken ?? null;
@@ -171,6 +211,9 @@ const authSlice = createSlice({
       if (state.user) {
         state.user = { ...state.user, ...action.payload };
       }
+    },
+    setAgentProfile(state, action: PayloadAction<AgentProfile | null>) {
+      state.agentProfile = action.payload;
     },
     updateRenter(state, action: PayloadAction<Partial<RenterProfile>>) {
       if (state.renter) {
@@ -203,6 +246,7 @@ export const {
   authFailure,
   logout,
   updateUser,
+  setAgentProfile,
   updateRenter,
   setAuthFromProfile,
 } = authSlice.actions;
@@ -218,5 +262,9 @@ export const selectIsAuthed = (state: RootState) =>
   state.auth.status === "authenticated" && !!state.auth.accessToken;
 export const selectReferralRegistrationType = (state: RootState) =>
   state.auth.referralRegistrationType;
+export const selectAuthAgentProfile = (state: RootState) =>
+  state.auth.agentProfile;
+export const selectAgentHasGrantAccess = (state: RootState) =>
+  state.auth.agentProfile?.hasGrantAccess ?? null;
 export const selectReferrerName = (state: RootState) =>
   state.auth.referrerName;

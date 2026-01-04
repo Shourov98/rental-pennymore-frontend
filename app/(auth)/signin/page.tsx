@@ -10,6 +10,7 @@ import {
   authStart,
   renterLoginSuccess,
 } from "@/store/slices/authSlice";
+import { fetchAgentProfile } from "@/store/slices/agentProfileSlice";
 import Link from "next/link";
 
 const API_BASE_URL =
@@ -92,6 +93,7 @@ function SigninPageContent() {
             mustChangePassword: !!payload.mustChangePassword,
           })
         );
+        dispatch(fetchAgentProfile());
       }
 
       const redirectTarget = searchParams.get("redirect");

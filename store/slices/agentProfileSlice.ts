@@ -1,46 +1,16 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
-import { selectAccessToken, updateUser } from "./authSlice";
+import {
+  selectAccessToken,
+  setAgentProfile,
+  updateUser,
+  type AgentProfile,
+  type AgentProfileUser,
+} from "./authSlice";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
-
-export interface AgentProfileUser {
-  _id: string;
-  email: string;
-  phoneNumber: string;
-  fullName: string;
-  role: "Agent" | string;
-  accountStatus: "active" | "pending" | "suspended" | string;
-  totalReferrals?: number;
-  emailVerified?: boolean;
-  referralCode?: string;
-  referralLink?: string;
-  canRefer?: boolean;
-  profileImageUrl?: string;
-  id?: string;
-}
-
-export interface AgentProfile {
-  _id: string;
-  userInfo: AgentProfileUser;
-  userId?: AgentProfileUser;
-  licenseNumber?: string;
-  brokerageName?: string;
-  isActive?: boolean;
-  totalRentersReferred?: number;
-  activeReferrals?: number;
-  referralConversionRate?: number;
-  hasGrantAccess?: boolean;
-  lastAccessToggleAt?: string;
-  grantAccessCount?: number;
-  totalMatches?: number;
-  successfulMatches?: number;
-  profileCompleteness?: number;
-  createdAt?: string;
-  updatedAt?: string;
-}
 
 interface AgentProfileResponse {
   success?: boolean;
@@ -101,10 +71,12 @@ export const fetchAgentProfile = createAsyncThunk<
       );
     }
 
-    return {
+    const normalizedProfile = {
       ...data.data,
       userInfo: normalizedUserInfo,
     };
+    dispatch(setAgentProfile(normalizedProfile));
+    return normalizedProfile;
   } catch (error) {
     const message =
       error instanceof Error
