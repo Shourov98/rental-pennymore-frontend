@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { X, ChevronDown, User } from "lucide-react";
+import { X, ChevronDown, User, SearchCheck } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectAuth, logout, selectIsAuthed } from "@/store/slices/authSlice";
 
@@ -41,6 +41,7 @@ export default function Navbar() {
     auth.user?.profileImage ?? auth.user?.profileImageUrl ?? null;
 
   const role = auth.role || auth.user?.role || "Guest";
+  const isRenter = role === "Renter";
   const menuBasePath =
     role === "Agent" ? "/agent" : role === "Renter" ? "/renter" : "";
 
@@ -63,6 +64,15 @@ export default function Navbar() {
           icon: "/icons/notification-01.svg",
           path: `${menuBasePath}/notifications`,
         },
+        ...(isRenter
+          ? [
+              {
+                label: "Requests",
+                icon: <SearchCheck size={18} className="text-gray-700" />,
+                path: "/renter/saved-requests",
+              },
+            ]
+          : []),
         {
           label: "Settings",
           icon: "/icons/settings-01.svg",
@@ -221,12 +231,16 @@ export default function Navbar() {
                         }
                         className="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-blue-100 text-gray-800 text-sm"
                       >
-                        <Image
-                          src={menu.icon}
-                          alt={menu.label}
-                          width={18}
-                          height={18}
-                        />
+                        {typeof menu.icon === "string" ? (
+                          <Image
+                            src={menu.icon}
+                            alt={menu.label}
+                            width={18}
+                            height={18}
+                          />
+                        ) : (
+                          menu.icon
+                        )}
                         {menu.label}
                       </button>
                     );
@@ -338,12 +352,16 @@ export default function Navbar() {
                     }
                     className="w-full text-left flex items-center gap-3 px-2 py-2 hover:bg-blue-50 text-gray-800 text-sm"
                   >
-                    <Image
-                      src={menu.icon}
-                      alt={menu.label}
-                      width={18}
-                      height={18}
-                    />
+                    {typeof menu.icon === "string" ? (
+                      <Image
+                        src={menu.icon}
+                        alt={menu.label}
+                        width={18}
+                        height={18}
+                      />
+                    ) : (
+                      menu.icon
+                    )}
                     {menu.label}
                   </button>
                 ))

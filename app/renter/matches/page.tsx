@@ -127,6 +127,10 @@ export default function MatchedAgentsPage() {
     }
   };
 
+  const visibleRequests = requests.filter(
+    (req) => (req.agentMatchCount ?? 0) > 0
+  );
+
   return (
     <section className="w-full min-h-screen bg-[#F8F9FB] px-4 md:px-8 py-6">
       {/* Header */}
@@ -147,7 +151,7 @@ export default function MatchedAgentsPage() {
         <div className="bg-red-50 text-red-700 border border-red-100 rounded-xl p-4 text-sm">
           {error}
         </div>
-      ) : requests.length === 0 ? (
+      ) : visibleRequests.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-6 text-gray-600">
           No matched requests yet.
         </div>
@@ -155,8 +159,9 @@ export default function MatchedAgentsPage() {
         <>
           {/* Accordion List */}
           <div className="space-y-4">
-            {requests.map((req) => {
+            {visibleRequests.map((req) => {
               const isOpen = openRequestId === req.id;
+              const matchCount = req.agentMatchCount ?? 0;
 
               return (
                 <div
@@ -205,8 +210,9 @@ export default function MatchedAgentsPage() {
 
                       {/* Agent Count */}
                       <p className="mt-1 text-sm font-medium text-blue-600">
-                        {req.agentMatchCount} Agent
-                        {req.agentMatchCount !== 1 ? "s" : ""} Matched
+                        {matchCount === 1
+                          ? "Agent found a possible match"
+                          : `${matchCount} agents found a possible match`}
                       </p>
                     </div>
 
