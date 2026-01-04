@@ -6,7 +6,7 @@ const API_BASE_URL =
   "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
 
 export default function AdvertiseBar() {
-  const [content, setContent] = useState("Advertising text");
+  const [content, setContent] = useState("");
   const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {

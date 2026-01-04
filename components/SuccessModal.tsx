@@ -12,8 +12,8 @@ interface SuccessModalProps {
 export default function SuccessModal({
   isOpen,
   onClose,
-  redirectPath = "/",
-  buttonLabel = "Go to Homepage",
+  redirectPath = "/renter/saved-requests",
+  buttonLabel = "Go to Requests",
 }: SuccessModalProps) {
   const router = useRouter();
   if (!isOpen) return null;
@@ -21,12 +21,13 @@ export default function SuccessModal({
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex justify-center items-center">
       <div className="bg-white rounded-2xl shadow-xl w-[90%] sm:w-[420px] max-w-md p-8 text-center animate-fadeIn">
-        <h2 className="text-2xl font-bold text-gray-900 mb-3">We are on it</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-3">We’re on it</h2>
         <p className="text-gray-700 text-sm sm:text-base leading-relaxed mb-6">
-          Thank you for submitting your search preferences. Our team is now
-          reviewing your request and will connect with you through the email
-          address you’ve provided. Keep an eye on your inbox — you’ll receive
-          updates and matching listings as soon as they become available.
+          Thank you for submitting your preferences. Your request has been saved
+          and shared with your registered agent. It will appear in your Requests
+          section. If an opportunity aligns with one of your requests, it will
+          appear in the Matches section of your dashboard and you’ll be notified
+          by email.
         </p>
 
         <button
