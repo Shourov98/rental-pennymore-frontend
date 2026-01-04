@@ -11,6 +11,7 @@ import {
   renterLoginSuccess,
 } from "@/store/slices/authSlice";
 import { fetchAgentProfile } from "@/store/slices/agentProfileSlice";
+import type { AppDispatch } from "@/store/store";
 import Link from "next/link";
 
 const API_BASE_URL =
@@ -21,7 +22,7 @@ const API_BASE_URL =
 function SigninPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);

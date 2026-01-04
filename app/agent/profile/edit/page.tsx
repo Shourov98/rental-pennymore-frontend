@@ -5,11 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ArrowLeft, Save, Phone, IdCard, User, Building2 } from "lucide-react";
-import {
-  updateAgentProfile,
-  type AgentProfile,
-} from "@/store/slices/agentProfileSlice";
-import { updateUser } from "@/store/slices/authSlice";
+import { updateAgentProfile } from "@/store/slices/agentProfileSlice";
+import { updateUser, type AgentProfile } from "@/store/slices/authSlice";
 import type { AppDispatch, RootState } from "@/store/store";
 
 const API_BASE_URL =
