@@ -6,7 +6,7 @@ import {
   HomeIcon,
   List,
   Bell,
-  Handshake,
+  SearchCheck,
   User,
   LogOut,
   Link as LinkIcon,
@@ -53,12 +53,12 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
       title: "Listing & Match",
       items: [
         {
-          name: "Agents Matches",
-          icon: <Handshake />,
+          name: "Matches",
+          icon: <SearchCheck />,
           href: "/renter/matches",
         },
         {
-          name: "Request Lists",
+          name: "Requests",
           icon: <List />,
           href: "/renter/saved-requests",
         },
