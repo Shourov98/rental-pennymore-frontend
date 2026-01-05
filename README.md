@@ -1,7 +1,7 @@
 # BeforeListed - Pre-Market Rental Platform
 
 <div align="center">
-  <img src="public/logo.png" alt="BeforeListed Logo" width="200"/>
+  <img src="public/Logo_2.svg" alt="BeforeListed Logo" width="200"/>
   
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
   [![Next.js](https://img.shields.io/badge/Next.js-13+-black?logo=next.js)](https://nextjs.org/)
