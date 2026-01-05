@@ -5,7 +5,7 @@ export default function ComplianceStrip() {
     <div className="w-full bg-white border-b border-gray-200">
       <div className="max-w-8/10 mx-auto px-4 py-2 flex items-center justify-between text-xs md:text-sm">
         {/* Left side */}
-        <div className="flex flex-col items-center text-gray-600">
+        <div className="flex flex-col items-left text-gray-600">
           <a
             className="text-cyan-500 hover:underline"
             href="https://www.corcoran.com"
@@ -19,9 +19,9 @@ export default function ComplianceStrip() {
               priority
             />
           </a>
-          <span className="hidden font-sm md:font-md sm:inline">
+          <span className="hidden font-xs md:font-md sm:inline">
             Website operated by – <br />
-            <span className="ml-1">TUVAL MOR AT THE CORCORAN GROUP</span>
+            <span>TUVAL MOR AT THE CORCORAN GROUP</span>
           </span>
         </div>
 
