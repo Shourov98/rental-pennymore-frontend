@@ -857,25 +857,32 @@ export default function AgentRenterRequestDetailsPage() {
             </p>
             <ul className="text-sm text-gray-700 space-y-2 mb-4 list-disc pl-5">
               <li>
-                All required agency disclosures and client registration have
-                been properly completed with the renter to whom this opportunity
-                is being presented.
+                The renter has completed the required Corcoran agency
+                disclosures and client registration.
               </li>
               <li>
-                The rental opportunity being presented was identified through
-                outreach to an owner or property manager, which originated from
-                a renter-initiated request for assistance, consistent with
-                standard brokerage practice.
+                Any information about the apartment being presented to this
+                renter arose from tenant-initiated outreach or follow-up
+                inquiries made in response to renter requests.
               </li>
               <li>
-                At the time this match occurs, the apartment was not publicly
+                You have not been retained by the owner to procure a tenant or
+                market this apartment.
+              </li>
+              <li>
+                To the best of your knowledge, this apartment was not publicly
                 advertised on StreetEasy, Zillow, or the REBNY Listing Service
-                (RLS).
+                (RLS) at the time of this match.
               </li>
               <li>
-                You do not have an exclusive listing agreement for this
-                apartment, and the property is not being presented as exclusive
-                inventory.
+                If you are the agent identified in the renter’s disclosure, you
+                may pursue this opportunity on the renter’s behalf.
+              </li>
+              <li>
+                If you are not identified in the renter’s disclosure, you will
+                not take steps on the renter’s behalf until you are properly
+                identified through an additional agency disclosure signed by the
+                renter.
               </li>
             </ul>
             <label className="flex items-start gap-2 text-sm text-gray-700 mb-6">
@@ -885,9 +892,8 @@ export default function AgentRenterRequestDetailsPage() {
                 onChange={(e) => setIsConfirmChecked(e.target.checked)}
                 className="mt-1 h-4 w-4 text-blue-600"
               />
-              <span>
-                I confirm the above and approve presenting this rental
-                opportunity to the renter.
+              <span className="font-semibold">
+                I confirm the above and approve proceeding with this match.
               </span>
             </label>
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
