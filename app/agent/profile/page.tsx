@@ -3,19 +3,30 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Edit3, Lock, RefreshCw, User } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchAgentProfile,
   selectAgentProfileState,
 } from "@/store/slices/agentProfileSlice";
+import { logout } from "@/store/slices/authSlice";
 import type { AppDispatch, RootState } from "@/store/store";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
 
 export default function AgentProfile() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const { profile, status, error } = useSelector(selectAgentProfileState);
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+  const [isChangeOpen, setIsChangeOpen] = useState(false);
+  const [isChanging, setIsChanging] = useState(false);
+  const [changeError, setChangeError] = useState<string | null>(null);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
     if (!profile && status === "idle" && accessToken) {
@@ -43,6 +54,64 @@ export default function AgentProfile() {
   const avatar = userInfo?.profileImageUrl || null;
 
   const isLoading = status === "loading" && !profile;
+
+  const handleChangePassword = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+    setChangeError(null);
+
+    if (!currentPassword || !newPassword) {
+      setChangeError("Please enter your current and new password.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setChangeError("New password and confirmation do not match.");
+      return;
+    }
+
+    setIsChanging(true);
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message ||
+            "Unable to change your password right now. Please try again."
+        );
+      }
+
+      await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: "POST",
+        headers,
+      });
+
+      dispatch(logout());
+      router.replace("/signin");
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Unable to change your password right now. Please try again.";
+      setChangeError(message);
+    } finally {
+      setIsChanging(false);
+    }
+  };
 
   return (
     <section className="bg-gray-50 min-h-screen px-4 md:px-8 py-6">
@@ -153,12 +222,94 @@ export default function AgentProfile() {
           </div>
 
           {/* Change Password */}
-          <button className="flex items-center gap-2 text-blue-600 font-medium mt-6 hover:text-blue-700 transition">
+          <button
+            onClick={() => {
+              setChangeError(null);
+              setCurrentPassword("");
+              setNewPassword("");
+              setConfirmPassword("");
+              setIsChangeOpen(true);
+            }}
+            className="flex items-center gap-2 text-blue-600 font-medium mt-6 hover:text-blue-700 transition"
+          >
             <Lock className="w-4 h-4" />
             Change Password →
           </button>
         </div>
       </div>
+
+      {isChangeOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Change Password
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsChangeOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <span className="sr-only">Close</span>
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              <div>
+                <label className="text-sm text-gray-600">Current Password</label>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(event) => setCurrentPassword(event.target.value)}
+                  className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-600">New Password</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(event) => setNewPassword(event.target.value)}
+                  className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-600">
+                  Confirm New Password
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {changeError && (
+                <p className="text-sm text-red-600">{changeError}</p>
+              )}
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsChangeOpen(false)}
+                  className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isChanging}
+                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+                >
+                  {isChanging ? "Updating..." : "Update Password"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
