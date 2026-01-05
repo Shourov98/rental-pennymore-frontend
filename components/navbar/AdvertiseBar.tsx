@@ -41,8 +41,6 @@ export default function AdvertiseBar() {
     <div className="w-full bg-gray-100 overflow-hidden">
       <div className="marquee-track">
         <span>{content}</span>
-        <span aria-hidden="true">•</span>
-        <span>{content}</span>
       </div>
 
       {/* Infinite scroll animation */}
@@ -64,7 +62,7 @@ export default function AdvertiseBar() {
           color: rgb(55 65 81);
           font-size: 0.875rem;
           min-width: max-content;
-          animation: marquee 40s linear infinite;
+          animation: marquee 30s linear infinite;
           will-change: transform;
         }
       `}</style>
