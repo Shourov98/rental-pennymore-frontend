@@ -130,11 +130,11 @@ export default function PreMarketListingPage() {
     }
 
     if (bedrooms.length === 0) {
-      nextFieldErrors.bedrooms = "Please select at least one bedroom option.";
+      nextFieldErrors.bedrooms = "Please select at least one option.";
     }
 
     if (bathrooms.length === 0) {
-      nextFieldErrors.bathrooms = "Please select at least one bathroom option.";
+      nextFieldErrors.bathrooms = "Please select at least one option.";
     }
 
     if (!isAgreementChecked) {
@@ -563,7 +563,7 @@ export default function PreMarketListingPage() {
                 target="_blank"
                 className="text-blue-600 underline hover:text-blue-700"
               >
-                Corcoran client registration
+                Corcoran client registration{" "}
               </a>
               unless you have already done so. It opens in a new tab. Please
               return here after signing. This registration is non-exclusive, the

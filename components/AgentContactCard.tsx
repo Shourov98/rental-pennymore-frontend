@@ -54,10 +54,10 @@ export default function AgentContactCard({ agent }: AgentContactCardProps) {
       <div className="flex-1">
         {/* Name + Brokerage */}
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold text-gray-900 leading-tight">
+          <h3 className="text-md font-semibold text-gray-900 leading-tight">
             {safeName}
           </h3>
-          {agent.hasGrantAccess != null && (
+          {/* {agent.hasGrantAccess != null && (
             <span
               className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                 agent.hasGrantAccess
@@ -67,32 +67,34 @@ export default function AgentContactCard({ agent }: AgentContactCardProps) {
             >
               {agent.hasGrantAccess ? "Access granted" : "Awaiting access"}
             </span>
-          )}
+          )} */}
         </div>
-        {agent.brokerage && (
+        {/* {agent.brokerage && (
           <p className="text-xs text-gray-500 mb-2">{agent.brokerage}</p>
-        )}
+        )} */}
 
         {/* Details */}
-        <div className="space-y-1 text-xs">
+        <div className="space-y-1 text-sm">
           <p className="text-gray-500">
             <span className="font-medium text-gray-800">
+              <span className="font-semibold">Email:</span>{" "}
               {agent.email || "Email not provided"}
             </span>
           </p>
 
           <p className="text-gray-500">
             <span className="font-medium text-gray-800">
+              <span className="font-semibold">Phone:</span>{" "}
               {agent.phone || "Phone not provided"}
             </span>
           </p>
 
-          {agent.license && imageSrc && (
+          {/* {agent.license && imageSrc && (
             <p className="text-gray-500">
               License:{" "}
               <span className="font-medium text-gray-800">{agent.license}</span>
             </p>
-          )}
+          )} */}
         </div>
       </div>
     </div>

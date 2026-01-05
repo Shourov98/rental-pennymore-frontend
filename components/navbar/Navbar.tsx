@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { X, ChevronDown, User } from "lucide-react";
+import { X, ChevronDown, User, ClipboardList } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectAuth, logout, selectIsAuthed } from "@/store/slices/authSlice";
 
@@ -51,31 +51,80 @@ export default function Navbar() {
     { name: "Contact Us", id: "#contact" },
   ];
 
-  const userMenu = menuBasePath
-    ? [
-        {
-          label: "Dashboard",
-          icon: "/icons/dashboard-square-01.svg",
-          path: `${menuBasePath}/dashboard`,
-        },
-        {
-          label: "Notifications",
-          icon: "/icons/notification-01.svg",
-          path: `${menuBasePath}/notifications`,
-        },
-        {
-          label: "Settings",
-          icon: "/icons/settings-01.svg",
-          path: `${menuBasePath}/settings`,
-        },
-        {
-          label: "Profile",
-          icon: "/icons/user.svg",
-          path: `${menuBasePath}/profile`,
-        },
-        { label: "Logout", icon: "/icons/logout-01.svg", path: "/" },
-      ]
-    : [];
+  const userMenu: { label: string; icon: ReactNode; path: string }[] =
+    menuBasePath
+      ? [
+          {
+            label: "Dashboard",
+            icon: (
+              <Image
+                src="/icons/dashboard-square-01.svg"
+                alt="Dashboard"
+                width={18}
+                height={18}
+              />
+            ),
+            path: `${menuBasePath}/dashboard`,
+          },
+          {
+            label: "Notifications",
+            icon: (
+              <Image
+                src="/icons/notification-01.svg"
+                alt="Notifications"
+                width={18}
+                height={18}
+              />
+            ),
+            path: `${menuBasePath}/notifications`,
+          },
+          ...(role === "Renter"
+            ? [
+                {
+                  label: "Requests",
+                  icon: <ClipboardList size={18} />,
+                  path: "/renter/saved-requests",
+                },
+              ]
+            : []),
+          {
+            label: "Settings",
+            icon: (
+              <Image
+                src="/icons/settings-01.svg"
+                alt="Settings"
+                width={18}
+                height={18}
+              />
+            ),
+            path: `${menuBasePath}/settings`,
+          },
+          {
+            label: "Profile",
+            icon: (
+              <Image
+                src="/icons/user.svg"
+                alt="Profile"
+                width={18}
+                height={18}
+              />
+            ),
+            path: `${menuBasePath}/profile`,
+          },
+          {
+            label: "Logout",
+            icon: (
+              <Image
+                src="/icons/logout-01.svg"
+                alt="Logout"
+                width={18}
+                height={18}
+              />
+            ),
+            path: "/",
+          },
+        ]
+      : [];
 
   const handleMenuItemClick = (path: string) => {
     router.push(path);
@@ -221,12 +270,7 @@ export default function Navbar() {
                         }
                         className="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-blue-100 text-gray-800 text-sm"
                       >
-                        <Image
-                          src={menu.icon}
-                          alt={menu.label}
-                          width={18}
-                          height={18}
-                        />
+                        {menu.icon}
                         {menu.label}
                       </button>
                     );
@@ -338,12 +382,7 @@ export default function Navbar() {
                     }
                     className="w-full text-left flex items-center gap-3 px-2 py-2 hover:bg-blue-50 text-gray-800 text-sm"
                   >
-                    <Image
-                      src={menu.icon}
-                      alt={menu.label}
-                      width={18}
-                      height={18}
-                    />
+                    {menu.icon}
                     {menu.label}
                   </button>
                 ))

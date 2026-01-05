@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import RequestCard from "@/components/RequestCard";
 import { RootState } from "@/store/store";
+import Link from "next/link";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -388,7 +389,8 @@ export default function RenterDetails() {
         </div>
       ) : requests.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-sm p-6 text-center text-gray-500">
-          No saved requests yet.
+          To get started, submit your first request from the{" "}
+          <Link href="/pre-market-listing/">form page</Link>.
         </div>
       ) : (
         <>

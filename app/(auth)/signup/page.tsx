@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, type ReactNode } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -17,9 +18,10 @@ function SignupPageInner() {
   const [agree, setAgree] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<
-    { type: "success" | "error"; message: string } | null
-  >(null);
+  const [statusMessage, setStatusMessage] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
   const [formData, setFormData] = useState({
     fullName: "",
     phoneNumber: "",
@@ -163,8 +165,7 @@ function SignupPageInner() {
 
       if (!response.ok || !data?.success) {
         throw new Error(
-          data?.message ||
-            "Unable to sign up at the moment. Please try again."
+          data?.message || "Unable to sign up at the moment. Please try again."
         );
       }
 
@@ -318,7 +319,13 @@ function SignupPageInner() {
           label="Password"
           type={showPassword ? "text" : "password"}
           placeholder="Enter password"
-          rightIcon={showPassword ? "/icons/eye-off.svg" : "/icons/eye.svg"}
+          rightIcon={
+            showPassword ? (
+              <EyeOff className="text-black w-5 h-5" />
+            ) : (
+              <Eye className="text-black w-5 h-5" />
+            )
+          }
           onRightIconClick={() => setShowPassword((prev) => !prev)}
           value={formData.password}
           onChange={(value) =>
@@ -348,9 +355,7 @@ function SignupPageInner() {
         {statusMessage && (
           <div
             className={`text-sm sm:text-base ${
-              statusMessage.type === "error"
-                ? "text-red-600"
-                : "text-green-600"
+              statusMessage.type === "error" ? "text-red-600" : "text-green-600"
             }`}
           >
             {statusMessage.message}
@@ -413,7 +418,7 @@ function InputField({
   onChange,
 }: {
   icon: string;
-  rightIcon?: string;
+  rightIcon?: ReactNode;
   label: string;
   placeholder: string;
   type?: string;
@@ -444,14 +449,14 @@ function InputField({
           />
         </div>
         {rightIcon && (
-          <Image
-            src={rightIcon}
-            alt="toggle visibility"
-            width={20}
-            height={20}
+          <button
+            type="button"
             onClick={onRightIconClick}
-            className="w-5 h-5 opacity-70 cursor-pointer ml-2 hover:opacity-100 transition"
-          />
+            className="ml-2 opacity-70 hover:opacity-100 transition"
+            aria-label="Toggle password visibility"
+          >
+            {rightIcon}
+          </button>
         )}
       </div>
     </div>

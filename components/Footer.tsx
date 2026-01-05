@@ -168,9 +168,9 @@ export default function Footer() {
       </div>
 
       <div className="mt-5 pt-3 text-center text-gray-400 text-sm">
-        © {new Date().getFullYear()}{" "}
-        <span className="font-medium text-white">BeforeListed™ |</span> All
-        rights reserved.
+        © {new Date().getFullYear()} Happy Click Shop, LLC. All rights reserved.
+        <br />
+        <span className="font-medium text-white">BeforeListed™ (TM)</span>
       </div>
     </footer>
   );
