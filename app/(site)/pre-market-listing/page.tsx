@@ -91,6 +91,29 @@ export default function PreMarketListingPage() {
     return url;
   }, [renterEmail, renterName, renterPhone, referrerName]);
 
+  const toInputDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const today = useMemo(() => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }, []);
+
+  const earliestMinDate = toInputDate(today);
+
+  const latestMinDate = useMemo(() => {
+    if (!movingDate.earliest) return earliestMinDate;
+    const date = new Date(`${movingDate.earliest}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return earliestMinDate;
+    date.setDate(date.getDate() + 1);
+    return toInputDate(date);
+  }, [earliestMinDate, movingDate.earliest]);
+
   useEffect(() => {
     if (!accessToken) {
       router.replace("/signin");
@@ -119,10 +142,26 @@ export default function PreMarketListingPage() {
     if (!movingDate.earliest || !movingDate.latest) {
       nextFieldErrors.movingDate =
         "Please select your earliest and latest dates.";
+    } else {
+      const earliestDate = new Date(`${movingDate.earliest}T00:00:00`);
+      const latestDate = new Date(`${movingDate.latest}T00:00:00`);
+      const minLatestDate = new Date(earliestDate);
+      minLatestDate.setDate(minLatestDate.getDate() + 1);
+
+      if (earliestDate < today) {
+        nextFieldErrors.movingDate =
+          "Earliest date cannot be earlier than today.";
+      } else if (latestDate < minLatestDate) {
+        nextFieldErrors.movingDate =
+          "Latest date must be at least 1 day after the earliest date.";
+      }
     }
 
-    if (!priceRange.min || !priceRange.max) {
-      nextFieldErrors.priceRange = "Please enter a minimum and maximum price.";
+    const minPrice = Number.isFinite(priceRange.min) ? priceRange.min : 0;
+    const maxPrice = Number.isFinite(priceRange.max) ? priceRange.max : 0;
+
+    if (!maxPrice) {
+      nextFieldErrors.priceRange = "Please enter a maximum price.";
     }
 
     if (locations.length === 0) {
@@ -158,7 +197,10 @@ export default function PreMarketListingPage() {
         earliest: toIsoDate(movingDate.earliest),
         latest: toIsoDate(movingDate.latest, true),
       },
-      priceRange,
+      priceRange: {
+        min: minPrice || 0,
+        max: maxPrice,
+      },
       locations,
       bedrooms,
       bathrooms,
@@ -277,6 +319,7 @@ export default function PreMarketListingPage() {
                   type="date"
                   ref={earliestDateRef}
                   value={movingDate.earliest}
+                  min={earliestMinDate}
                   onChange={(e) =>
                     dispatch(
                       setMovingDate({
@@ -302,6 +345,7 @@ export default function PreMarketListingPage() {
                   type="date"
                   ref={latestDateRef}
                   value={movingDate.latest}
+                  min={latestMinDate}
                   onChange={(e) =>
                     dispatch(
                       setMovingDate({
@@ -338,7 +382,7 @@ export default function PreMarketListingPage() {
                   onChange={(e) =>
                     dispatch(
                       setPriceRange({
-                        min: Number(e.target.value),
+                        min: e.target.value === "" ? 0 : Number(e.target.value),
                         max: priceRange.max,
                       })
                     )
@@ -360,7 +404,7 @@ export default function PreMarketListingPage() {
                   onChange={(e) =>
                     dispatch(
                       setPriceRange({
-                        max: Number(e.target.value),
+                        max: e.target.value === "" ? 0 : Number(e.target.value),
                         min: priceRange.min,
                       })
                     )

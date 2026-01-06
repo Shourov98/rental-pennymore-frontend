@@ -19,6 +19,7 @@ function OtpVerifyPageInner() {
     message: string;
   } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   const handleChange = (index: number, value: string) => {
@@ -99,9 +100,49 @@ function OtpVerifyPageInner() {
       .finally(() => setLoading(false));
   };
 
-  const handleResend = () => {
-    console.log("Resend OTP triggered");
-    // resend logic here
+  const handleResend = async () => {
+    if (!email) {
+      setStatusMessage({
+        type: "error",
+        message: "Missing email. Please restart the flow.",
+      });
+      return;
+    }
+
+    setStatusMessage(null);
+    setResendLoading(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message ||
+            "Unable to resend right now. Please try again in a moment."
+        );
+      }
+
+      setStatusMessage({
+        type: "success",
+        message: data?.message || "Verification code resent successfully.",
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Unable to resend right now. Please try again in a moment.";
+      setStatusMessage({
+        type: "error",
+        message,
+      });
+    } finally {
+      setResendLoading(false);
+    }
   };
 
   return (
@@ -126,7 +167,7 @@ function OtpVerifyPageInner() {
       <p className="text-center text-text-secondary mb-6 text-sm sm:text-base">
         We’ve sent a one-time verification code to your email: <br />
         <span className="text-blue-700 font-medium">
-          {email || "your email"}
+          {email || "your email"}{" "}
         </span>
         Please enter the code below to verify within 5 minute. If you don’t see
         the email, please check your junk or spam folder. If it’s there, mark it
@@ -193,9 +234,10 @@ function OtpVerifyPageInner() {
             <button
               type="button"
               onClick={handleResend}
-              className="text-action hover:text-action-hover font-semibold"
+              disabled={resendLoading}
+              className="text-action hover:text-action-hover font-semibold disabled:opacity-60"
             >
-              Resend again
+              {resendLoading ? "Resending..." : "Resend again"}
             </button>
           </p>
 
