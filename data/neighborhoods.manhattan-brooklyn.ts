@@ -114,7 +114,6 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
           { key: "Chelsea-Hudson Yards", label: "Chelsea-Hudson Yards" },
           { key: "Flatiron - Union Square", label: "Flatiron - Union Square" },
           { key: "SoHo-Hudson Square", label: "SoHo-Hudson Square" },
-          { key: "Gramercy", label: "Gramercy" },
           { key: "Kips Bay", label: "Kips Bay" },
           { key: "Gramercy Park", label: "Gramercy Park" },
           {
@@ -158,7 +157,6 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
             key: "Carroll Gardens-Cobble Hill-Gowanus-Red Hook",
             label: "Carroll Gardens-Cobble Hill-Gowanus-Red Hook",
           },
-          { key: "Brooklyn Navy Yard", label: "Brooklyn Navy Yard" },
         ],
       },
 
@@ -172,6 +170,7 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
           },
           { key: "Fort Greene", label: "Fort Greene" },
           { key: "Clinton Hill", label: "Clinton Hill" },
+          { key: "Brooklyn Navy Yard", label: "Brooklyn Navy Yard" },
           {
             key: "Bedford-Stuyvesant (West)",
             label: "Bedford-Stuyvesant (West)",
