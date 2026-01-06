@@ -187,7 +187,7 @@ export default function AgentRenterRequestsPage() {
         </div>
         <button
           onClick={() => setIsFilterOpen(true)}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full font-medium hover:bg-blue-700 transition"
         >
           <Filter className="w-4 h-4" />
           Filter

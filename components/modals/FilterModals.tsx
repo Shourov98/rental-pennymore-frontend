@@ -113,7 +113,7 @@ export default function FilterModal({
                     setBorough(b);
                     setSelectedNeighborhoods([]); // reset neighborhoods on borough switch
                   }}
-                  className={`py-2 rounded-lg border text-sm font-medium ${
+                  className={`py-2 rounded-full border text-sm font-medium ${
                     borough === b
                       ? "bg-blue-600 text-white border-blue-600"
                       : "bg-gray-50 text-gray-700 border-gray-200"
