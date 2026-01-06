@@ -89,8 +89,14 @@ export default function FilterModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/30 text-black z-50 flex justify-end">
-      <div className="bg-white h-full w-[85%] sm:w-[350px] shadow-xl animate-slideIn flex flex-col">
+    <div
+      className="fixed inset-0 bg-black/30 text-black z-50 flex justify-end"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white h-full w-[85%] sm:w-[350px] shadow-xl animate-slideIn flex flex-col"
+        onClick={(event) => event.stopPropagation()}
+      >
         {/* HEADER (fixed) */}
         <div className="p-5 flex border border-gray-300 justify-between items-center shrink-0">
           <h2 className="text-lg font-semibold text-gray-900">Filter</h2>
@@ -254,13 +260,13 @@ export default function FilterModal({
         <div className="p-5 border-t border-gray-300 bg-white flex gap-3 shrink-0">
           <button
             onClick={resetAll}
-            className="flex-1 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium"
+            className="flex-1 py-2 border border-gray-300 rounded-full text-gray-700 font-medium"
           >
             Reset
           </button>
           <button
             onClick={applyFilters}
-            className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-medium"
+            className="flex-1 py-2 bg-blue-600 text-white rounded-full font-medium"
           >
             Apply
           </button>
