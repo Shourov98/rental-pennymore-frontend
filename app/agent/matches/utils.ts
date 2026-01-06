@@ -41,6 +41,7 @@ export interface ApiAgentMatch {
     registrationType?: string;
     referrer?: string | null;
     referralInfo?: {
+      referrerCode?: string | null;
       referrer?: {
         fullName?: string;
       } | null;

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import FilterModal from "@/components/modals/FilterModals";
 import { RootState } from "@/store/store";
+import { selectAgentReferral } from "@/store/slices/agentProfileSlice";
 import {
   API_BASE_URL,
   ApiAgentMatchesResponse,
@@ -18,6 +19,7 @@ import {
 export default function AgentMatchesPage() {
   const router = useRouter();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+  const { referralCode } = useSelector(selectAgentReferral);
 
   const [requests, setRequests] = useState<NormalizedAgentMatch[]>([]);
   const [filters, setFilters] = useState<{
@@ -34,6 +36,7 @@ export default function AgentMatchesPage() {
     maxPrice: null,
   });
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [showOwnReferrals, setShowOwnReferrals] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -157,9 +160,15 @@ export default function AgentMatchesPage() {
         if (max != null && max > filters.maxPrice) return false;
       }
 
+      if (showOwnReferrals) {
+        if (!referralCode) return false;
+        const referrerCode = raw.renterInfo?.referralInfo?.referrerCode;
+        if (!referrerCode || referrerCode !== referralCode) return false;
+      }
+
       return true;
     });
-  }, [filters, requests]);
+  }, [filters, referralCode, requests, showOwnReferrals]);
 
   const handleView = (req: NormalizedAgentMatch) => {
     cacheSingleAgentMatch(req);
@@ -185,13 +194,25 @@ export default function AgentMatchesPage() {
             Pre-market renter requests matched to you.
           </p>
         </div>
-        <button
-          onClick={() => setIsFilterOpen(true)}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
-        >
-          <Filter className="w-4 h-4" />
-          Filter
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowOwnReferrals((prev) => !prev)}
+            className={`px-4 py-2 rounded-lg font-medium border transition ${
+              showOwnReferrals
+                ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100"
+            }`}
+          >
+            My Referrals
+          </button>
+          <button
+            onClick={() => setIsFilterOpen(true)}
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
+          >
+            <Filter className="w-4 h-4" />
+            Filter
+          </button>
+        </div>
       </div>
 
       {isLoading ? (
