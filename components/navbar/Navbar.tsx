@@ -16,6 +16,7 @@ export default function Navbar() {
   const dispatch = useDispatch();
   const auth = useSelector(selectAuth);
   const isAuthed = useSelector(selectIsAuthed);
+  const [isClient, setIsClient] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activeItem, setActiveItem] = useState("Home");
@@ -34,13 +35,17 @@ export default function Navbar() {
     return cleanedEmail.split(" ")[0] || "Guest";
   };
 
-  const displayName = isAuthed
+  const canShowAuthed = isClient && isAuthed;
+  const displayName = canShowAuthed
     ? getFirstName(auth.user?.fullName, auth.user?.email)
     : "Guest";
-  const avatarUrl =
-    auth.user?.profileImage ?? auth.user?.profileImageUrl ?? null;
+  const avatarUrl = canShowAuthed
+    ? auth.user?.profileImage ?? auth.user?.profileImageUrl ?? null
+    : null;
 
-  const role = auth.role || auth.user?.role || "Guest";
+  const role = canShowAuthed
+    ? auth.role || auth.user?.role || "Guest"
+    : "Guest";
   const menuBasePath =
     role === "Agent" ? "/agent" : role === "Renter" ? "/renter" : "";
 
@@ -154,6 +159,10 @@ export default function Navbar() {
 
   // Close drawer when clicking outside
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         drawerRef.current &&
@@ -227,7 +236,7 @@ export default function Navbar() {
           ref={dropdownRef}
           onMouseLeave={handleMouseLeave}
         >
-          {isAuthed ? (
+          {canShowAuthed ? (
             <>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -371,7 +380,7 @@ export default function Navbar() {
 
               <hr />
 
-              {isAuthed ? (
+              {canShowAuthed ? (
                 userMenu.map((menu) => (
                   <button
                     key={menu.label}

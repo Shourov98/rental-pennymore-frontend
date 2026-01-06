@@ -47,9 +47,7 @@ export default function ComplianceStrip() {
 
         {/* Right side */}
         <div className="flex items-center gap-2 text-gray-700">
-          <span className="hidden text-white pt-2 pl-2 italic font-semibold md:inline">
-            text yguyfguyfguyf
-          </span>
+          <Image src="/white_space.png" alt="" width={70} height={70} />
         </div>
       </div>
     </div>
