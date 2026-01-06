@@ -197,17 +197,17 @@ export default function AgentMatchesPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowOwnReferrals((prev) => !prev)}
-            className={`px-4 py-2 rounded-lg font-medium border transition ${
+            className={`px-4 py-1 rounded-full font-medium border transition ${
               showOwnReferrals
                 ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
-                : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100"
+                : "bg-white text-blue-500 border-gray-200 hover:bg-gray-100"
             }`}
           >
             My Referrals
           </button>
           <button
             onClick={() => setIsFilterOpen(true)}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-1 rounded-full font-medium hover:bg-blue-700 transition"
           >
             <Filter className="w-4 h-4" />
             Filter
