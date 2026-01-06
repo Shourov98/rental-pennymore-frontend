@@ -12,12 +12,18 @@ interface FilterType {
   maxPrice: number | null;
 }
 
+const uniqueLabels = (labels: string[]) => Array.from(new Set(labels));
+
 const boroughNeighborhoods: Record<string, string[]> = {
-  Manhattan: boroughNeighborhoodsData.Manhattan.sections.flatMap((section) =>
-    section.items.map((item) => item.label)
+  Manhattan: uniqueLabels(
+    boroughNeighborhoodsData.Manhattan.sections.flatMap((section) =>
+      section.items.map((item) => item.label)
+    )
   ),
-  Brooklyn: boroughNeighborhoodsData.Brooklyn.sections.flatMap((section) =>
-    section.items.map((item) => item.label)
+  Brooklyn: uniqueLabels(
+    boroughNeighborhoodsData.Brooklyn.sections.flatMap((section) =>
+      section.items.map((item) => item.label)
+    )
   ),
 };
 
