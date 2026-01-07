@@ -7,7 +7,7 @@ export default function ReferConfirmationPage() {
   const router = useRouter();
 
   const handleNext = () => {
-    router.push("/mor-team-form"); // navigate to next step (change if needed)
+    router.push("/signin"); // navigate to next step (change if needed)
   };
 
   return (

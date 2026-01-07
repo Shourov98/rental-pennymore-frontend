@@ -409,10 +409,11 @@ export default function AgentRenterRequestDetailsPage() {
   const canRequestAccess = request?.raw?.canRequestAccess ?? true;
   const listingStatus = request?.raw?.listingStatus || "";
   const isListingMatched = listingStatus.toLowerCase() === "matched";
+  const isRequested = !request?.raw?.canRequestAccess;
   const grantAccessEnabled = hasGrantAccess === true;
-  const shouldDisableMatchRequest = grantAccessEnabled
-    ? isListingMatched
-    : !canRequestAccess || isRequestSentByStatus || isRequestSent;
+  // const shouldDisableMatchRequest = grantAccessEnabled
+  //   ? isListingMatched
+  //   : !canRequestAccess || isRequestSentByStatus || isRequestSent;
   const showPaymentCard =
     request?.raw?.status?.toLowerCase() === "approved" ||
     request?.raw?.grantAccessStatus?.toLowerCase() === "approved";
@@ -433,7 +434,7 @@ export default function AgentRenterRequestDetailsPage() {
   };
 
   const handleMatchRequest = async () => {
-    if (!requestId || shouldDisableMatchRequest || isSubmitting) return;
+    if (!requestId || isRequested || isSubmitting) return;
     setStatusMessage(null);
 
     try {
@@ -821,17 +822,15 @@ export default function AgentRenterRequestDetailsPage() {
               <button
                 type="button"
                 onClick={() => {
-                  if (!requestId || shouldDisableMatchRequest || isSubmitting) {
+                  if (!requestId || isRequested || isSubmitting) {
                     return;
                   }
                   setIsConfirmChecked(false);
                   setIsConfirmOpen(true);
                 }}
-                disabled={
-                  !requestId || shouldDisableMatchRequest || isSubmitting
-                }
+                disabled={!requestId || isRequested || isSubmitting}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-60 disabled:cursor-not-allowed ${
-                  shouldDisableMatchRequest
+                  isRequested
                     ? "bg-gray-200 text-gray-600"
                     : "bg-blue-600 text-white hover:bg-blue-700"
                 }`}
@@ -842,7 +841,7 @@ export default function AgentRenterRequestDetailsPage() {
                     : isSubmitting
                     ? "Matching..."
                     : "Match Request"
-                  : shouldDisableMatchRequest
+                  : isRequested
                   ? "Request Sent"
                   : isSubmitting
                   ? "Sending..."

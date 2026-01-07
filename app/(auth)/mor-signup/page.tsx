@@ -257,7 +257,7 @@ function SignupPageInner() {
             </a>
           </p>
           <a
-            href="#"
+            href="/terms-conditions"
             className="text-action hover:text-action-hover text-sm mt-2 inline-block"
           >
             Terms & Conditions

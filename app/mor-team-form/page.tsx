@@ -221,7 +221,11 @@ function RentersEdgeFormInner() {
               />
               I agree to the terms and conditions
             </label>
-            <a href="#" className="text-blue-600 text-sm hover:underline mb-4">
+            <a
+              href="/terms-conditions"
+              target="_blank"
+              className="text-blue-600 text-sm hover:underline mb-4"
+            >
               Terms & Conditions
             </a>
             <button
