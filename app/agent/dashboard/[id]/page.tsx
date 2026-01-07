@@ -407,7 +407,8 @@ export default function AgentRenterRequestDetailsPage() {
   const isRequestSentByStatus =
     requestStatus === "sent" || requestStatus === "requested";
   const canRequestAccess =
-    request?.raw?.canRequestAccess && request?.raw?.status === "available";
+    (request?.raw?.canRequestAccess && request?.raw?.status === "Available") ||
+    "available";
   const listingStatus = request?.raw?.listingStatus || "";
   const isListingMatched = listingStatus.toLowerCase() === "matched";
   const isRequested = !request?.raw?.canRequestAccess;
