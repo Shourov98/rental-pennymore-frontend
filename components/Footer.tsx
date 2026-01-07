@@ -67,12 +67,15 @@ export default function Footer() {
 
           {/* Social Icons */}
           <div className="flex items-center gap-4 mt-3">
-            <Link href="#" className="hover:opacity-80 transition">
+            <Link
+              href="https://www.tiktok.com/@beforelisted"
+              className="hover:opacity-80 transition"
+            >
               <Image
-                src="/icons/facebook.svg"
-                alt="Facebook"
-                width={20}
-                height={20}
+                src="/icons/tiktok.svg"
+                alt="TikTok"
+                width={30}
+                height={30}
               />
             </Link>
             <Link
@@ -82,27 +85,8 @@ export default function Footer() {
               <Image
                 src="/icons/instagram.svg"
                 alt="Instagram"
-                width={20}
-                height={20}
-              />
-            </Link>
-            <Link href="#" className="hover:opacity-80 transition">
-              <Image
-                src="/icons/youtube.svg"
-                alt="YouTube"
-                width={20}
-                height={20}
-              />
-            </Link>
-            <Link
-              href="https://www.tiktok.com/@beforelisted"
-              className="hover:opacity-80 transition"
-            >
-              <Image
-                src="/icons/tiktok.svg"
-                alt="TikTok"
-                width={20}
-                height={20}
+                width={30}
+                height={30}
               />
             </Link>
           </div>
