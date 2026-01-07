@@ -24,11 +24,11 @@ export default function AgentRenterRequestsPage() {
   const { referralCode } = useSelector(selectAgentReferral);
   const formatReferralName = (name: string) => {
     const trimmed = name.trim();
-    if (!trimmed) return name;
-    const parts = trimmed.split(/\s+/);
-    if (parts.length === 1) return parts[0];
-    const lastInitial = parts[1]?.[0]?.toUpperCase();
-    return lastInitial ? `${parts[0]} ${lastInitial}.` : parts[0];
+    const parts = trimmed.trim().split(/\s+/);
+    if (parts.length === 0) return name;
+    const firstInitial = parts[0][0]?.toUpperCase() ?? "";
+    const lastName = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+    return `${firstInitial}.${lastName}`;
   };
 
   const [requests, setRequests] = useState<NormalizedAgentRequest[]>([]);

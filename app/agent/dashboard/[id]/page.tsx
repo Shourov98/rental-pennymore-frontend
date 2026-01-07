@@ -406,11 +406,13 @@ export default function AgentRenterRequestDetailsPage() {
   ).toLowerCase();
   const isRequestSentByStatus =
     requestStatus === "sent" || requestStatus === "requested";
-  const canRequestAccess = request?.raw?.canRequestAccess ?? true;
+  const canRequestAccess =
+    request?.raw?.canRequestAccess && request?.raw?.status === "available";
   const listingStatus = request?.raw?.listingStatus || "";
   const isListingMatched = listingStatus.toLowerCase() === "matched";
   const isRequested = !request?.raw?.canRequestAccess;
-  const hasSentAccessRequest = isRequested || isRequestSent || isRequestSentByStatus;
+  const hasSentAccessRequest =
+    isRequested || isRequestSent || isRequestSentByStatus;
   const grantAccessEnabled = hasGrantAccess === true;
   // const shouldDisableMatchRequest = grantAccessEnabled
   //   ? isListingMatched
@@ -842,7 +844,7 @@ export default function AgentRenterRequestDetailsPage() {
                     : isSubmitting
                     ? "Matching..."
                     : "Match Request"
-                  : hasSentAccessRequest
+                  : !canRequestAccess
                   ? "Request Sent"
                   : isSubmitting
                   ? "Sending..."
