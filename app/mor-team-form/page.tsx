@@ -51,8 +51,8 @@ function RentersEdgeFormInner() {
             The Mor Team &quot;Renters Edge&quot; Specification Form
           </h2>
           <p className="text-gray-600 mt-2 max-w-2xl mx-auto text-sm md:text-base">
-            Providing you with options to view upcoming rentals that aren’t
-            publicly marketed and a 15-second market report read.
+            Providing you with the opportunity to view upcoming rentals that
+            aren’t publicly advertised, along with a 15-second market report.
           </p>
         </div>
 
@@ -70,14 +70,12 @@ function RentersEdgeFormInner() {
             </Link>
           </div>
           <h4 className="text-base font-semibold text-gray-700">
-            See it first, Rent it First
+            Be ahead of the market
           </h4>
           <p className="text-gray-600 text-sm mt-1">
-            The BeforeListed™ network of top agents gives you early access to
-            rentals before they are listed by contacting trusted owners on your
-            behalf for upcoming units that match your preferences. Discover
-            below market rents and, in some cases, rent stabilized pre market
-            apartments. Pay our broker fee only if you rent.
+            BeforeListed™ supports request-based rental outreach by licensed
+            real estate agents. At your request, an agent may initiate outreach
+            beyond publicly advertised listings.
           </p>
         </div>
 
@@ -98,8 +96,8 @@ function RentersEdgeFormInner() {
           <Step
             icon="/icons/steps/connect.svg"
             title="Step 2"
-            subtitle="Get Matched"
-            description="When a matching pre-market listing is found, your agent will contact you with details."
+            subtitle="Opportunity Updates"
+            description="If a rental opportunity matching your criteria is identified prior to public advertising, your agent may then contact you"
           />
 
           {/* Arrow */}
@@ -131,8 +129,8 @@ function RentersEdgeFormInner() {
                   onChange={(e) => setRegisterOption(e.target.value)}
                   className="accent-blue-600"
                 />
-                Yes, I would like to get access to apartments before they are
-                listed.
+                Yes, I would like to submit a request for potential rental
+                opportunities prior to public advertising.
               </label>
               <label className="flex items-center gap-2">
                 <input
@@ -170,8 +168,10 @@ function RentersEdgeFormInner() {
               renter specialists.
             </p>
             <p className="text-gray-600 text-sm mb-4">
-              This expert has helped countless renters secure their ideal homes
-              and can do the same for you.
+              Our licensed rental expert has successfully worked with many
+              renters and offers full-service representation across publicly
+              advertised and off-market rentals, guiding you through the
+              process.
             </p>
             <div className="space-y-2 text-sm text-gray-700">
               <label className="flex items-center gap-2">

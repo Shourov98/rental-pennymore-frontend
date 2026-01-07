@@ -28,9 +28,9 @@ export default function HomePage() {
         </h2>
 
         <p className="w-full max-w-2xl mx-auto text-base font-semibold text-center mb-10">
-          The BeforeListed™ platform supports request-based rental outreach by
-          licensed real estate agents. At your request, an agent may initiate
-          outreach beyond publicly advertised listing platforms.
+          BeforeListed™ supports request-based rental outreach by licensed real
+          estate agents. At your request, an agent may initiate outreach beyond
+          publicly advertised listings.
         </p>
 
         <p className="w-full max-w-2xl mx-auto text-base font-semibold text-center mb-10">
@@ -91,7 +91,7 @@ export default function HomePage() {
             icon="/icons/steps/connect.svg"
             title="Step 2"
             subtitle="Opportunity Updates"
-            description="If a rental opportunity matches your criteria is identified prior to public marketing, your agent may then contact you."
+            description="If a rental opportunity matching your criteria is identified prior to public advertising, your agent may then contact you."
           />
 
           {/* Arrow between step 2 and 3 */}
@@ -138,7 +138,7 @@ export default function HomePage() {
             icon="/icons/steps/decide.svg"
             title="Step 3"
             subtitle="View & Decide"
-            description="View and apply to the rental if you choose, and pay a broker fee only if a lease is signed."
+            description="View the rental, apply if you choose, pay a broker fee only if a lease is signed."
           />
         </div>
       </section>

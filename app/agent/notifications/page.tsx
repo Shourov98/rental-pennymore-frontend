@@ -261,7 +261,7 @@ export default function NotificationsPage() {
             return (
               <div
                 key={notification._id}
-                className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-5 transition ${
+                className={`flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-200 gap-4 px-6 py-5 transition ${
                   isUnread ? "bg-blue-50/40" : "hover:bg-gray-50"
                 }`}
               >
