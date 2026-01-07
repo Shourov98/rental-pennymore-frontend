@@ -3,8 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Eye, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store/store";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/store/store";
+import { selectAgentReferral } from "@/store/slices/agentProfileSlice";
+import { fetchAgentProfile } from "@/store/slices/agentProfileSlice";
 import FilterModal from "@/components/modals/FilterModals";
 import {
   API_BASE_URL,
@@ -17,7 +19,17 @@ import {
 
 export default function AgentRenterRequestsPage() {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+  const { referralCode } = useSelector(selectAgentReferral);
+  const formatReferralName = (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return name;
+    const parts = trimmed.split(/\s+/);
+    if (parts.length === 1) return parts[0];
+    const lastInitial = parts[parts.length - 1]?.[0]?.toUpperCase();
+    return lastInitial ? `${parts[0]} ${lastInitial}.` : parts[0];
+  };
 
   const [requests, setRequests] = useState<NormalizedAgentRequest[]>([]);
   const [filters, setFilters] = useState<{
@@ -34,6 +46,7 @@ export default function AgentRenterRequestsPage() {
     maxPrice: null,
   });
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [showOwnReferrals, setShowOwnReferrals] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -47,6 +60,11 @@ export default function AgentRenterRequestsPage() {
   });
 
   const limit = 10;
+
+  useEffect(() => {
+    if (!accessToken) return;
+    dispatch(fetchAgentProfile());
+  }, [accessToken, dispatch]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -157,9 +175,16 @@ export default function AgentRenterRequestsPage() {
         if (max != null && max > filters.maxPrice) return false;
       }
 
+      if (showOwnReferrals) {
+        if (!referralCode) return false;
+        const referrerCode =
+          raw.referralInfo?.referrer?.referralCode ?? null;
+        if (!referrerCode || referrerCode !== referralCode) return false;
+      }
+
       return true;
     });
-  }, [filters, requests]);
+  }, [filters, referralCode, requests, showOwnReferrals]);
 
   const handleView = (req: NormalizedAgentRequest) => {
     cacheSingleAgentRequest(req);
@@ -185,13 +210,25 @@ export default function AgentRenterRequestsPage() {
             View all available pre-market requests from renters.
           </p>
         </div>
-        <button
-          onClick={() => setIsFilterOpen(true)}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full font-medium hover:bg-blue-700 transition"
-        >
-          <Filter className="w-4 h-4" />
-          Filter
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowOwnReferrals((prev) => !prev)}
+            className={`px-4 py-2 rounded-full font-medium border transition ${
+              showOwnReferrals
+                ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100"
+            }`}
+          >
+            My Referrals
+          </button>
+          <button
+            onClick={() => setIsFilterOpen(true)}
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full font-medium hover:bg-blue-700 transition"
+          >
+            <Filter className="w-4 h-4" />
+            Filter
+          </button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -210,11 +247,12 @@ export default function AgentRenterRequestsPage() {
         <>
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-[900px] w-full text-sm">
+              <table className="min-w-[1000px] w-full text-sm">
                 <thead className="bg-blue-100 text-gray-800">
                   <tr>
                     <th className="py-3 px-5 text-left">Date</th>
                     <th className="py-3 px-5 text-left">Request</th>
+                    <th className="py-3 px-5 text-left">Referral</th>
                     <th className="py-3 px-5 text-left">Borough</th>
                     <th className="py-3 px-5 text-left">Price (Max)</th>
                     <th className="py-3 px-5 text-left">Beds</th>
@@ -237,6 +275,29 @@ export default function AgentRenterRequestsPage() {
                       </td>
                       <td className="py-3 px-5">
                         <div className="text-gray-900">{req.requestName}</div>
+                      </td>
+                      <td className="py-3 px-5">
+                        {(() => {
+                          const referralType =
+                            req.raw?.referralInfo?.registrationType;
+                          const referralName =
+                            req.raw?.referralInfo?.referrer?.referrerName ||
+                            req.raw?.referralInfo?.referrer?.fullName ||
+                            "";
+                          if (!referralName) {
+                            return (
+                              <span className="text-gray-400 text-xs">—</span>
+                            );
+                          }
+                          return (
+                            <span className="inline-flex items-center rounded-full border border-blue-500 text-blue-600 px-2.5 py-0.5 text-xs font-semibold">
+                              {referralType === "agent_referral" &&
+                              referralName
+                                ? formatReferralName(referralName)
+                                : referralName}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="py-3 px-5">
                         <div className="text-gray-900">{req.boroughsLabel}</div>

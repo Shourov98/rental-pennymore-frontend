@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { ArrowLeft, Phone, Mail, User } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
@@ -12,7 +12,7 @@ import {
   useStripe,
 } from "@stripe/react-stripe-js";
 import RenterPreferenceView from "@/components/RenterPreferenceView";
-import { RootState } from "@/store/store";
+import type { AppDispatch, RootState } from "@/store/store";
 import {
   API_BASE_URL,
   NormalizedAgentRequest,
@@ -21,6 +21,7 @@ import {
 } from "../utils";
 import { readCachedAgentMatches } from "../../matches/utils";
 import { selectAgentHasGrantAccess } from "@/store/slices/authSlice";
+import { fetchAgentProfile } from "@/store/slices/agentProfileSlice";
 
 const unitFeatureLabels: Record<string, string> = {
   laundryInUnit: "Laundry in unit",
@@ -161,6 +162,7 @@ function StripePaymentForm({
 export default function AgentRenterRequestDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
   const hasGrantAccess = useSelector(selectAgentHasGrantAccess);
 
@@ -193,6 +195,11 @@ export default function AgentRenterRequestDetailsPage() {
   );
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isConfirmChecked, setIsConfirmChecked] = useState(false);
+
+  useEffect(() => {
+    if (!accessToken) return;
+    dispatch(fetchAgentProfile());
+  }, [accessToken, dispatch]);
 
   useEffect(() => {
     if (!requestId) return;

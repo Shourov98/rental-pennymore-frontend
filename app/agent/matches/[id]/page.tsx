@@ -265,7 +265,8 @@ export default function AgentMatchDetailsPage() {
       avatar: renterInfo.profileImage || null,
       referrerName:
         (typeof renterInfo.referrer === "string" ? renterInfo.referrer : null) ||
-        renterInfo.referralInfo?.referrer?.fullName ||
+        renterInfo.referralInfo?.referrerName ||
+        renterInfo.referralInfo?.fullName ||
         null,
     };
   }, [renterInfo]);

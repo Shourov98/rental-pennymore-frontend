@@ -20,6 +20,14 @@ export default function AgentMatchesPage() {
   const router = useRouter();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
   const { referralCode } = useSelector(selectAgentReferral);
+  const formatReferralName = (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return name;
+    const parts = trimmed.split(/\s+/);
+    if (parts.length === 1) return parts[0];
+    const lastInitial = parts[parts.length - 1]?.[0]?.toUpperCase();
+    return lastInitial ? `${parts[0]} ${lastInitial}.` : parts[0];
+  };
 
   const [requests, setRequests] = useState<NormalizedAgentMatch[]>([]);
   const [filters, setFilters] = useState<{
@@ -162,7 +170,8 @@ export default function AgentMatchesPage() {
 
       if (showOwnReferrals) {
         if (!referralCode) return false;
-        const referrerCode = raw.renterInfo?.referralInfo?.referrerCode;
+        const referrerCode =
+          raw.renterInfo?.referralInfo?.referralCode ?? null;
         if (!referrerCode || referrerCode !== referralCode) return false;
       }
 
@@ -231,11 +240,12 @@ export default function AgentMatchesPage() {
         <>
           <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-[900px] w-full text-sm">
+              <table className="min-w-[1000px] w-full text-sm">
                 <thead className="bg-blue-100 text-gray-800">
                   <tr>
                     <th className="py-3 px-5 text-left">Date</th>
                     <th className="py-3 px-5 text-left">Request</th>
+                    <th className="py-3 px-5 text-left">Referral</th>
                     <th className="py-3 px-5 text-left">Borough</th>
                     <th className="py-3 px-5 text-left">Price (Max)</th>
                     <th className="py-3 px-5 text-left">Beds</th>
@@ -258,6 +268,31 @@ export default function AgentMatchesPage() {
                       </td>
                       <td className="py-3 px-5 text-gray-900">
                         {req.requestName}
+                      </td>
+                      <td className="py-3 px-5">
+                        {(() => {
+                          const referralType =
+                            req.raw?.renterInfo?.referralInfo
+                              ?.registrationType ??
+                            req.raw?.renterInfo?.registrationType;
+                          const referralName =
+                            req.raw?.renterInfo?.referralInfo?.referrerName ||
+                            req.raw?.renterInfo?.referralInfo?.fullName ||
+                            "";
+                          if (!referralName) {
+                            return (
+                              <span className="text-gray-400 text-xs">—</span>
+                            );
+                          }
+                          return (
+                            <span className="inline-flex items-center rounded-full border border-blue-500 text-blue-600 px-2.5 py-0.5 text-xs font-semibold">
+                              {referralType === "agent_referral" &&
+                              referralName
+                                ? formatReferralName(referralName)
+                                : referralName}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="py-3 px-5 text-gray-900">
                         {req.boroughsLabel}

@@ -41,10 +41,14 @@ export interface ApiAgentMatch {
     registrationType?: string;
     referrer?: string | null;
     referralInfo?: {
-      referrerCode?: string | null;
-      referrer?: {
-        fullName?: string;
-      } | null;
+      registrationType?: string;
+      referrerId?: string;
+      referrerName?: string;
+      fullName?: string;
+      referrerEmail?: string;
+      referrerPhoneNumber?: string;
+      referralCode?: string;
+      referrerType?: string;
     } | null;
   };
   createdAt?: string;
