@@ -72,7 +72,7 @@ export default function Footer() {
               className="hover:opacity-80 transition"
             >
               <Image
-                src="/icons/tiktok.svg"
+                src="/tiktok-white-icon.svg"
                 alt="TikTok"
                 width={30}
                 height={30}
