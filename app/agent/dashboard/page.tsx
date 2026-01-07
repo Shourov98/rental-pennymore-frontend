@@ -27,7 +27,7 @@ export default function AgentRenterRequestsPage() {
     if (!trimmed) return name;
     const parts = trimmed.split(/\s+/);
     if (parts.length === 1) return parts[0];
-    const lastInitial = parts[parts.length - 1]?.[0]?.toUpperCase();
+    const lastInitial = parts[1]?.[0]?.toUpperCase();
     return lastInitial ? `${parts[0]} ${lastInitial}.` : parts[0];
   };
 
@@ -177,8 +177,7 @@ export default function AgentRenterRequestsPage() {
 
       if (showOwnReferrals) {
         if (!referralCode) return false;
-        const referrerCode =
-          raw.referralInfo?.referrer?.referralCode ?? null;
+        const referrerCode = raw.referralInfo?.referrer?.referralCode ?? null;
         if (!referrerCode || referrerCode !== referralCode) return false;
       }
 
@@ -291,8 +290,7 @@ export default function AgentRenterRequestsPage() {
                           }
                           return (
                             <span className="inline-flex items-center rounded-full border border-blue-500 text-blue-600 px-2.5 py-0.5 text-xs font-semibold">
-                              {referralType === "agent_referral" &&
-                              referralName
+                              {referralType === "agent_referral" && referralName
                                 ? formatReferralName(referralName)
                                 : referralName}
                             </span>

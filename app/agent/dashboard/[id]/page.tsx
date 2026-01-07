@@ -410,6 +410,7 @@ export default function AgentRenterRequestDetailsPage() {
   const listingStatus = request?.raw?.listingStatus || "";
   const isListingMatched = listingStatus.toLowerCase() === "matched";
   const isRequested = !request?.raw?.canRequestAccess;
+  const hasSentAccessRequest = isRequested || isRequestSent || isRequestSentByStatus;
   const grantAccessEnabled = hasGrantAccess === true;
   // const shouldDisableMatchRequest = grantAccessEnabled
   //   ? isListingMatched
@@ -434,7 +435,7 @@ export default function AgentRenterRequestDetailsPage() {
   };
 
   const handleMatchRequest = async () => {
-    if (!requestId || isRequested || isSubmitting) return;
+    if (!requestId || hasSentAccessRequest || isSubmitting) return;
     setStatusMessage(null);
 
     try {
@@ -822,15 +823,15 @@ export default function AgentRenterRequestDetailsPage() {
               <button
                 type="button"
                 onClick={() => {
-                  if (!requestId || isRequested || isSubmitting) {
+                  if (!requestId || hasSentAccessRequest || isSubmitting) {
                     return;
                   }
                   setIsConfirmChecked(false);
                   setIsConfirmOpen(true);
                 }}
-                disabled={!requestId || isRequested || isSubmitting}
+                disabled={!requestId || hasSentAccessRequest || isSubmitting}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-60 disabled:cursor-not-allowed ${
-                  isRequested
+                  hasSentAccessRequest
                     ? "bg-gray-200 text-gray-600"
                     : "bg-blue-600 text-white hover:bg-blue-700"
                 }`}
@@ -841,7 +842,7 @@ export default function AgentRenterRequestDetailsPage() {
                     : isSubmitting
                     ? "Matching..."
                     : "Match Request"
-                  : isRequested
+                  : hasSentAccessRequest
                   ? "Request Sent"
                   : isSubmitting
                   ? "Sending..."
