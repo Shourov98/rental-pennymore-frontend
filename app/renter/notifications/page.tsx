@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { Bell, CreditCard, Handshake, Home, Trash2 } from "lucide-react";
 import type { RootState } from "@/store/store";
@@ -28,8 +27,89 @@ interface NotificationItem {
   createdAt?: string;
 }
 
+const extractQuotedName = (message: string) => {
+  const match = message.match(/"([^"]+)"/);
+  return match?.[1];
+};
+
+const extractBorough = (message: string) => {
+  const match = message.match(/borough:\s*'([^']+)'/i);
+  return match?.[1];
+};
+
+const formatWithBoldRequestName = (message: string, requestName?: string) => {
+  if (!requestName) return message;
+  const token = `"${requestName}"`;
+  const parts = message.split(token);
+  if (parts.length === 1) return message;
+  return (
+    <>
+      {parts.map((part, index) => (
+        <span key={`${requestName}-${index}`}>
+          {part}
+          {index < parts.length - 1 && (
+            <span className="font-semibold text-gray-800">{token}</span>
+          )}
+        </span>
+      ))}
+    </>
+  );
+};
+
+const formatNotificationMessage = (notification: NotificationItem) => {
+  const message = notification.message || "";
+  const requestName = extractQuotedName(message);
+  const reasonMatch = message.match(/Reason:\s*(.+)$/i);
+  const reason = reasonMatch?.[1]?.trim();
+  const messageWithoutReason = reasonMatch
+    ? message.replace(reasonMatch[0], "").trim()
+    : message;
+
+  if (message.toLowerCase().includes("account has been activated by admin")) {
+    return {
+      primary: (
+        <>
+          Your account has been activated by{" "}
+          <span className="font-semibold text-gray-800">Admin</span>. You can
+          now log in to the system.
+        </>
+      ),
+    };
+  }
+
+  if (notification.title?.toLowerCase().includes("new pre-market listing")) {
+    const borough = extractBorough(message);
+    if (borough) {
+      return {
+        primary: (
+          <>
+            A new listing{" "}
+            {requestName ? (
+              <span className="font-semibold text-gray-800">
+                &quot;{requestName}&quot;
+              </span>
+            ) : (
+              "has been posted"
+            )}{" "}
+            was posted in{" "}
+            <span className="font-semibold text-gray-800">{borough}</span>.
+          </>
+        ),
+      };
+    }
+  }
+
+  return {
+    primary: formatWithBoldRequestName(messageWithoutReason, requestName),
+    secondary: reason ? (
+      <>
+        <span className="font-medium text-gray-800">Reason:</span> {reason}
+      </>
+    ) : null,
+  };
+};
+
 export default function NotificationsPage() {
-  const router = useRouter();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -48,7 +128,7 @@ export default function NotificationsPage() {
     []
   );
 
-  const fetchUnreadCount = async () => {
+  const fetchUnreadCount = useCallback(async () => {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
     };
@@ -65,9 +145,9 @@ export default function NotificationsPage() {
       );
     }
     setUnreadCount(Number(data?.data?.unreadCount || 0));
-  };
+  }, [accessToken]);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
@@ -98,11 +178,11 @@ export default function NotificationsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [accessToken, fetchUnreadCount]);
 
   useEffect(() => {
     fetchNotifications();
-  }, [accessToken]);
+  }, [fetchNotifications]);
 
   const markNotificationRead = async (notification: NotificationItem) => {
     // if (notification.isRead) {
@@ -257,6 +337,8 @@ export default function NotificationsPage() {
             const timeLabel = notification.createdAt
               ? new Date(notification.createdAt).toLocaleString()
               : "";
+            const { primary, secondary } =
+              formatNotificationMessage(notification);
 
             return (
               <div
@@ -284,9 +366,12 @@ export default function NotificationsPage() {
                     <h3 className="text-sm font-semibold text-[#0A093D] mb-1">
                       {notification.title}
                     </h3>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {notification.message}
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      {primary}
                     </p>
+                    {secondary && (
+                      <p className="mt-1 text-sm text-gray-600">{secondary}</p>
+                    )}
                   </div>
                 </button>
 
