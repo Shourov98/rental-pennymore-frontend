@@ -1,9 +1,8 @@
-"use client";
-
 import Image from "next/image";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function ReferConfirmationPage() {
+function ReferConfirmationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const userEmail = searchParams.get("email") || "your email";
@@ -42,5 +41,13 @@ export default function ReferConfirmationPage() {
         Next
       </button>
     </div>
+  );
+}
+
+export default function ReferConfirmationPage() {
+  return (
+    <Suspense fallback={<div className="w-full" />}>
+      <ReferConfirmationContent />
+    </Suspense>
   );
 }
