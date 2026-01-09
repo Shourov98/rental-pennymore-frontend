@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { MapPin, DollarSign } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 // Redux
@@ -23,6 +23,8 @@ export default function HeroSection() {
   const dispatch = useDispatch();
 
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const [showAgentNotice, setShowAgentNotice] = useState(false);
+  const agentNoticeTimeoutRef = useRef<number | null>(null);
 
   const priceRange = useSelector<
     RootState,
@@ -37,6 +39,7 @@ export default function HeroSection() {
   >((state) => state.preferences.locations);
   const role = auth.role ?? auth.user?.role ?? null;
   const isRenter = role === "Renter";
+  const isAgent = role === "Agent";
   const neighborhoodLabelByKey = useMemo(() => {
     const map = new globalThis.Map<string, string>();
     (
@@ -67,6 +70,14 @@ export default function HeroSection() {
       })
     );
   };
+
+  useEffect(() => {
+    return () => {
+      if (agentNoticeTimeoutRef.current) {
+        window.clearTimeout(agentNoticeTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <section className="relative w-full min-h-[85vh] flex flex-col justify-center items-center text-center text-white">
@@ -173,19 +184,37 @@ export default function HeroSection() {
           {/* Next */}
           <button
             type="button"
-            onClick={() =>
-              router.push(
-                isAuthed && isRenter
-                  ? "/pre-market-listing"
-                  : "/signin?redirect=pre-market-listing"
-              )
-            }
+            onClick={() => {
+              if (isAuthed && isRenter) {
+                router.push("/pre-market-listing");
+                return;
+              }
+
+              if (isAuthed && isAgent) {
+                setShowAgentNotice(true);
+                if (agentNoticeTimeoutRef.current) {
+                  window.clearTimeout(agentNoticeTimeoutRef.current);
+                }
+                agentNoticeTimeoutRef.current = window.setTimeout(() => {
+                  setShowAgentNotice(false);
+                }, 2000);
+                return;
+              }
+
+              router.push("/signin?redirect=pre-market-listing");
+            }}
             className="w-full sm:w-[20%] bg-blue-500 text-white text-sm font-semibold rounded-xl mt-5 px-6 py-2 hover:bg-blue-700"
           >
             Next
           </button>
         </form>
       </div>
+
+      {showAgentNotice ? (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-white text-gray-900 border border-gray-200 shadow-lg rounded-xl px-4 py-3 text-sm z-50">
+          Request form is only for renters, not for agents.
+        </div>
+      ) : null}
 
       {/* Location Modal */}
       <LocationModal

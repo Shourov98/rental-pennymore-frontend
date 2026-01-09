@@ -389,8 +389,9 @@ export default function RenterDetails() {
         </div>
       ) : requests.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-sm p-6 text-center text-gray-500">
-          To get started, submit your first request from the{" "}
-          <Link href="/pre-market-listing/">form page</Link>.
+          No saved requests yet. To get started, submit your first request from
+          the homepage.
+          <br /> <Link href="/pre-market-listing/">Listing form page</Link>.
         </div>
       ) : (
         <>

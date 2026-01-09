@@ -159,7 +159,6 @@ export default function EditAgentProfile() {
       if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
       const payload = {
-        fullName,
         phoneNumber,
         licenseNumber,
         brokerageName,

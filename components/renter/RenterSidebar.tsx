@@ -50,17 +50,17 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
       ],
     },
     {
-      title: "Listing & Match",
+      title: "Requests & Opportunities",
       items: [
-        {
-          name: "Matches",
-          icon: <SearchCheck />,
-          href: "/renter/matches",
-        },
         {
           name: "Requests",
           icon: <List />,
           href: "/renter/saved-requests",
+        },
+        {
+          name: "Matches",
+          icon: <SearchCheck />,
+          href: "/renter/matches",
         },
       ],
     },

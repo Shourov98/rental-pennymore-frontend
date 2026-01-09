@@ -63,11 +63,12 @@ function SignupPageInner() {
 
     try {
       setLoading(true);
+      const email = formData.email.trim();
       const response = await fetch(`${API_BASE_URL}/renter/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: formData.email.trim(),
+          email,
           fullName: formData.fullName.trim(),
           phoneNumber: formData.phoneNumber.trim(),
           referralCode,
@@ -89,7 +90,7 @@ function SignupPageInner() {
         type: "success",
         message: data?.message || "Registration complete.",
       });
-      router.push("/mor-confirmation");
+      router.push(`/mor-confirmation?email=${encodeURIComponent(email)}`);
     } catch (error) {
       const message =
         error instanceof Error

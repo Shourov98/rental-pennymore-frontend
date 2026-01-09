@@ -189,7 +189,6 @@ export default function EditProfilePage() {
       if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
       const payload = {
-        fullName,
         phoneNumber,
       };
 

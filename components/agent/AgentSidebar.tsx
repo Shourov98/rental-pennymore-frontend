@@ -32,11 +32,6 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
       title: "Main",
       items: [
         {
-          name: "Renter Requests",
-          icon: <SearchSlash />,
-          href: "/agent/dashboard",
-        },
-        {
           name: "Refer Link",
           icon: <LinkIcon />,
           href: "/agent/refer-link",
@@ -50,8 +45,13 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
       ],
     },
     {
-      title: "Listing & Match",
+      title: "Requests & Matches",
       items: [
+        {
+          name: "Renter Requests",
+          icon: <SearchSlash />,
+          href: "/agent/dashboard",
+        },
         {
           name: "Renter Matches",
           icon: <Handshake />,
