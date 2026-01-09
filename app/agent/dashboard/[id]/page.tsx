@@ -428,6 +428,20 @@ export default function AgentRenterRequestDetailsPage() {
     request?.raw?.payment?.amount ?? request?.raw?.chargeAmount;
   const paymentCurrency = request?.raw?.payment?.currency || "USD";
 
+  const isDisabled = grantAccessEnabled ? isListingMatched : false;
+
+  // {grantAccessEnabled
+  //                 ? isListingMatched
+  //                   ? "Already Matched"
+  //                   : isSubmitting
+  //                   ? "Matching..."
+  //                   : "Match Request"
+  //                 : !canRequestAccess
+  //                 ? "Request Sent"
+  //                 : isSubmitting
+  //                 ? "Sending..."
+  //                 : "Match Request"}
+
   const formatPaymentAmount = (amount?: number, currency?: string) => {
     if (amount == null) return "Not specified";
     return new Intl.NumberFormat("en-US", {
@@ -438,7 +452,7 @@ export default function AgentRenterRequestDetailsPage() {
   };
 
   const handleMatchRequest = async () => {
-    if (!requestId || hasSentAccessRequest || isSubmitting) return;
+    if (!requestId || isDisabled || isSubmitting) return;
     setStatusMessage(null);
 
     try {
@@ -826,15 +840,15 @@ export default function AgentRenterRequestDetailsPage() {
               <button
                 type="button"
                 onClick={() => {
-                  if (!requestId || hasSentAccessRequest || isSubmitting) {
+                  if (!requestId || isDisabled || isSubmitting) {
                     return;
                   }
                   setIsConfirmChecked(false);
                   setIsConfirmOpen(true);
                 }}
-                disabled={!requestId || hasSentAccessRequest || isSubmitting}
+                disabled={isDisabled}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-60 disabled:cursor-not-allowed ${
-                  hasSentAccessRequest
+                  isDisabled
                     ? "bg-gray-200 text-gray-600"
                     : "bg-blue-600 text-white hover:bg-blue-700"
                 }`}
