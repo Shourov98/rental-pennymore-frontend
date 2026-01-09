@@ -211,7 +211,7 @@ export default function HeroSection() {
       </div>
 
       {showAgentNotice ? (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-white text-gray-900 border border-gray-200 shadow-lg rounded-xl px-4 py-3 text-sm z-50">
+        <div className="fixed bottom-6 right-6 -translate-x-1/2 bg-red-400 text-white shadow-lg rounded-xl px-4 py-3 text-sm z-50">
           Request form is only for renters, not for agents.
         </div>
       ) : null}
