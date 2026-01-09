@@ -22,11 +22,11 @@ export default function AgentMatchesPage() {
   const { referralCode } = useSelector(selectAgentReferral);
   const formatReferralName = (name: string) => {
     const trimmed = name.trim();
-    if (!trimmed) return name;
-    const parts = trimmed.split(/\s+/);
-    if (parts.length === 1) return parts[0];
-    const lastInitial = parts[parts.length - 1]?.[0]?.toUpperCase();
-    return lastInitial ? `${parts[0]} ${lastInitial}.` : parts[0];
+    const parts = trimmed.trim().split(/\s+/);
+    if (parts.length === 0) return name;
+    const firstInitial = parts[0][0]?.toUpperCase() ?? "";
+    const lastName = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+    return `${firstInitial}.${lastName}`;
   };
 
   const [requests, setRequests] = useState<NormalizedAgentMatch[]>([]);
@@ -170,8 +170,7 @@ export default function AgentMatchesPage() {
 
       if (showOwnReferrals) {
         if (!referralCode) return false;
-        const referrerCode =
-          raw.renterInfo?.referralInfo?.referralCode ?? null;
+        const referrerCode = raw.renterInfo?.referralInfo?.referralCode ?? null;
         if (!referrerCode || referrerCode !== referralCode) return false;
       }
 
@@ -271,25 +270,17 @@ export default function AgentMatchesPage() {
                       </td>
                       <td className="py-3 px-5">
                         {(() => {
-                          const referralType =
-                            req.raw?.renterInfo?.referralInfo
-                              ?.registrationType ??
-                            req.raw?.renterInfo?.registrationType;
+                          const fallbackReferrerName = "Tuval Mor";
                           const referralName =
                             req.raw?.renterInfo?.referralInfo?.referrerName ||
                             req.raw?.renterInfo?.referralInfo?.fullName ||
                             "";
-                          if (!referralName) {
-                            return (
-                              <span className="text-gray-400 text-xs">—</span>
-                            );
-                          }
+                          const displayName = referralName.trim()
+                            ? referralName
+                            : fallbackReferrerName;
                           return (
                             <span className="inline-flex items-center rounded-full border border-blue-500 text-blue-600 px-2.5 py-0.5 text-xs font-semibold">
-                              {referralType === "agent_referral" &&
-                              referralName
-                                ? formatReferralName(referralName)
-                                : referralName}
+                              {formatReferralName(displayName)}
                             </span>
                           );
                         })()}

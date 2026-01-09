@@ -277,22 +277,17 @@ export default function AgentRenterRequestsPage() {
                       </td>
                       <td className="py-3 px-5">
                         {(() => {
-                          const referralType =
-                            req.raw?.referralInfo?.registrationType;
+                          const fallbackReferrerName = "Tuval Mor";
                           const referralName =
                             req.raw?.referralInfo?.referrer?.referrerName ||
                             req.raw?.referralInfo?.referrer?.fullName ||
                             "";
-                          if (!referralName) {
-                            return (
-                              <span className="text-gray-400 text-xs">—</span>
-                            );
-                          }
+                          const displayName = referralName.trim()
+                            ? referralName
+                            : fallbackReferrerName;
                           return (
                             <span className="inline-flex items-center rounded-full border border-blue-500 text-blue-600 px-2.5 py-0.5 text-xs font-semibold">
-                              {referralType === "agent_referral" && referralName
-                                ? formatReferralName(referralName)
-                                : referralName}
+                              {formatReferralName(displayName)}
                             </span>
                           );
                         })()}
