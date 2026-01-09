@@ -99,21 +99,20 @@ export default function MonthlyReportSection() {
   }, []);
 
   const monthLabel = useMemo(
-    () =>
-      [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-      ],
+    () => [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ],
     []
   );
 
@@ -139,7 +138,9 @@ export default function MonthlyReportSection() {
       {isLoading ? (
         <p className="text-center text-gray-500">Loading reports...</p>
       ) : reports.length === 0 ? (
-        <p className="text-center text-gray-500">No monthly reports available.</p>
+        <p className="text-center text-gray-500">
+          No monthly reports available.
+        </p>
       ) : (
         <div className="relative max-w-7xl mx-auto px-4 sm:px-8 w-full overflow-x-hidden">
           <div className="overflow-hidden" ref={emblaRef}>
@@ -174,9 +175,6 @@ export default function MonthlyReportSection() {
                       <Link2 size={16} />
                       View Report
                     </a>
-                    <p className="text-gray-400 text-xs mt-4">
-                      Latest updated: {updatedLabel}
-                    </p>
                   </div>
                 );
               })}
