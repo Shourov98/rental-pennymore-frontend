@@ -45,6 +45,11 @@ export interface ApiAgentMatch {
       referrerId?: string;
       referrerName?: string;
       fullName?: string;
+      referredByAdmin?: {
+        referredBy?: string;
+        referrerName?: string;
+        referrerEmail?: string;
+      } | null;
       referrerEmail?: string;
       referrerPhoneNumber?: string;
       referralCode?: string;

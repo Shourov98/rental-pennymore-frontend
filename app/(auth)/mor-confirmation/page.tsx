@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -10,38 +9,59 @@ function ReferConfirmationContent() {
   const userEmail = searchParams.get("email") || "your email";
 
   const handleNext = () => {
-    router.push("/signin"); // navigate to next step (change if needed)
+    router.push("/signin");
   };
 
   return (
-    <div className="w-full flex flex-col items-center justify-center">
-      {/* Confirmation Card */}
+    <div className="w-full">
+      <div className="text-center">
+        <h2 className="text-xl sm:text-2xl font-semibold text-text-primary">
+          You’re one step away
+        </h2>
+        <p className="mt-2 text-sm sm:text-base text-text-secondary leading-relaxed">
+          We sent a temporary password to:
+        </p>
 
-      <h2 className="text-lg text-center sm:text-xl font-semibold text-text-primary mb-4">
-        You’re one step away to complete registration
-      </h2>
-      <p className="text-text-secondary text-center text-sm sm:text-base leading-relaxed mb-5 max-w-[420px]">
-        We’ve sent a temporary password to your email: {userEmail}
-        <br />
-        <br />
-        Please enter your email and temporary password in signin page.
-        <br />
-        If you don’t see the email, please check your junk or spam folder.
-        <br />
-        If it’s there, mark it as “Not Junk” so future emails are delivered
-        correctly.
-      </p>
+        <div className="mt-3 inline-flex items-center justify-center rounded-full bg-blue-50 px-4 py-1.5">
+          <span className="text-sm sm:text-base font-semibold text-blue-700">
+            {userEmail}
+          </span>
+        </div>
+      </div>
 
-      <button
-        onClick={handleNext}
-        className="
-            mt-2 sm:mt-3 bg-action hover:bg-action-hover
-            text-text-inverted text-sm sm:text-base
-            font-semibold px-8 py-2.5 sm:py-3 rounded-lg transition
-          "
-      >
-        Next
-      </button>
+      <div className="mt-6 space-y-3 text-sm sm:text-base text-text-secondary leading-relaxed">
+        <p>
+          Please go to the sign-in page and enter your email plus the temporary
+          password.If you don’t see the email, check your{" "}
+          <span className="font-medium">Spam</span> or{" "}
+          <span className="font-medium">Junk</span> folder.
+        </p>
+
+        <p></p>
+
+        <p>
+          If it’s there, mark it as{" "}
+          <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 font-semibold text-gray-900">
+            Not Junk
+          </span>{" "}
+          so future emails arrive correctly.
+        </p>
+      </div>
+
+      <div className="mt-7 flex flex-col sm:flex-row gap-3 sm:justify-center">
+        <button
+          onClick={handleNext}
+          className="
+              w-full sm:w-auto
+              bg-action hover:bg-action-hover
+              text-text-inverted text-sm sm:text-base
+              font-semibold px-8 py-2.5 sm:py-3 rounded-lg transition
+              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
+            "
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }

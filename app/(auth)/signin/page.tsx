@@ -134,7 +134,7 @@ function SigninPageContent() {
 
       {/* Headings */}
       <h2 className="text-2xl sm:text-3xl font-semibold text-center text-black mb-2">
-        Welcome Back!
+        Welcome!
       </h2>
       <p className="text-text-tertiary text-center mb-6 text-sm sm:text-base">
         To login, enter your credentials

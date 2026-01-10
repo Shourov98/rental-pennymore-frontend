@@ -258,16 +258,36 @@ export default function AgentMatchDetailsPage() {
 
   const renterContact = useMemo(() => {
     if (!renterInfo) return null;
+    const referralInfo = renterInfo.referralInfo;
+    const isAdminReferral = referralInfo?.registrationType === "admin_referral";
+    const adminReferrerName = referralInfo?.referredByAdmin?.referrerName;
+    const formatShortName = (name: string) => {
+      const parts = name.trim().split(/\s+/).filter(Boolean);
+      if (parts.length < 2) return name.trim();
+      const firstInitial = parts[0][0]?.toUpperCase() || "";
+      const lastName = parts[parts.length - 1];
+      return `${firstInitial}.${lastName}`;
+    };
+    const referralName = isAdminReferral
+      ? adminReferrerName
+        ? formatShortName(adminReferrerName)
+        : null
+      : (typeof renterInfo.referrer === "string"
+          ? renterInfo.referrer
+          : null) ||
+        referralInfo?.referrerName ||
+        referralInfo?.fullName ||
+        null;
+    const fullName =
+      renterInfo.renterName || renterInfo.fullName || "Unknown renter";
+    const firstName = fullName.trim().split(/\s+/)[0] || "Renter";
     return {
-      name: renterInfo.renterName || renterInfo.fullName || "Unknown renter",
+      name: fullName,
       email: renterInfo.renterEmail || renterInfo.email || "Not provided",
       phone: renterInfo.renterPhone || renterInfo.phoneNumber || "Not provided",
       avatar: renterInfo.profileImage || null,
-      referrerName:
-        (typeof renterInfo.referrer === "string" ? renterInfo.referrer : null) ||
-        renterInfo.referralInfo?.referrerName ||
-        renterInfo.referralInfo?.fullName ||
-        null,
+      referrerName: referralName,
+      firstName,
     };
   }, [renterInfo]);
 
@@ -334,7 +354,9 @@ export default function AgentMatchDetailsPage() {
                       />
                     </div>
                   ) : (
-                    <User className="w-4 h-4 text-blue-600" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 px-1 text-[10px] font-semibold text-blue-700">
+                      {renterContact.firstName}
+                    </div>
                   )}
                   <div>
                     <p className="text-xs text-gray-500">Name</p>

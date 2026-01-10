@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Plus, Minus, CircleHelp } from "lucide-react";
 
@@ -8,6 +8,22 @@ interface FaqItem {
   question: string;
   answer: string;
 }
+
+interface ApiFaqItem {
+  question?: string;
+  answer?: string;
+  isActive?: boolean;
+}
+
+interface ApiFaqResponse {
+  success?: boolean;
+  message?: string;
+  data?: ApiFaqItem[];
+}
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
 
 const faqs: FaqItem[] = [
   {
@@ -36,6 +52,45 @@ const faqs: FaqItem[] = [
 
 export default function FaqSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [faqItems, setFaqItems] = useState<FaqItem[]>(faqs);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const loadFaqs = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/faq`, {
+          method: "GET",
+          signal: controller.signal,
+        });
+        const data: ApiFaqResponse = await response
+          .json()
+          .catch(() => ({} as ApiFaqResponse));
+
+        if (!response.ok || data?.success === false) {
+          return;
+        }
+
+        const items =
+          data.data
+            ?.filter((item) => item?.isActive !== false)
+            .map((item) => ({
+              question: item?.question?.trim() || "Question",
+              answer: item?.answer?.trim() || "Answer",
+            })) || [];
+
+        if (items.length > 0) {
+          setFaqItems(items);
+        }
+      } catch (err) {
+        if (controller.signal.aborted) return;
+      }
+    };
+
+    loadFaqs();
+
+    return () => controller.abort();
+  }, []);
 
   const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -60,7 +115,7 @@ export default function FaqSection() {
 
         {/* FAQ List */}
         <div className="w-full mx-auto space-y-3">
-          {faqs.map((faq, index) => (
+          {faqItems.map((faq, index) => (
             <div
               key={index}
               className="border border-gray-300 rounded-lg overflow-hidden transition-all"

@@ -121,10 +121,6 @@ function SignupPageInner() {
       <h2 className="text-xl sm:text-2xl font-semibold text-center text-text-primary mb-2">
         Mor Team “Renters Edge” Registration Form
       </h2>
-      <p className="text-text-secondary text-center mb-6 text-sm sm:text-base leading-relaxed max-w-[400px] mx-auto">
-        Providing you with options to view upcoming rentals that aren’t publicly
-        marked and a 15 second market report read.
-      </p>
 
       {/* Form */}
       <form

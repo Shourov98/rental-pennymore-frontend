@@ -250,7 +250,8 @@ function SignupPageInner() {
         Create an Account
       </h2>
       <p className="text-center text-text-secondary mb-6 text-sm sm:text-base">
-        One sign-up, seamless connection whether you’re a customer or an agent.
+        Create an Account One sign-up, seamless connection whether you’re a
+        renter or an agent.
       </p>
 
       {/* Form */}
