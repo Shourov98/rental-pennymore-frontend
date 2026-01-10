@@ -38,13 +38,20 @@ export default function FilterModal({
   onApply: (filters: FilterType) => void;
   resultCount?: number;
 }) {
-  const [borough, setBorough] = useState<string | null>("Manhattan");
+  const [borough, setBorough] = useState<string | null>(null);
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<string[]>(
     []
   );
   const [bedrooms, setBedrooms] = useState<number[]>([]);
   const [bathrooms, setBathrooms] = useState<number[]>([]);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
+  const defaultFilters: FilterType = {
+    borough: null,
+    neighborhoods: [],
+    bedrooms: [],
+    bathrooms: [],
+    maxPrice: null,
+  };
 
   const neighborhoods = useMemo(
     () => (borough ? boroughNeighborhoods[borough] : []),
@@ -76,11 +83,12 @@ export default function FilterModal({
   };
 
   const resetAll = () => {
-    setBorough("Manhattan");
-    setSelectedNeighborhoods([]);
-    setBedrooms([]);
-    setBathrooms([]);
-    setMaxPrice(null);
+    setBorough(defaultFilters.borough);
+    setSelectedNeighborhoods(defaultFilters.neighborhoods);
+    setBedrooms(defaultFilters.bedrooms);
+    setBathrooms(defaultFilters.bathrooms);
+    setMaxPrice(defaultFilters.maxPrice);
+    onApply(defaultFilters);
   };
 
   const applyFilters = () => {
