@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { X, ChevronDown, User, ClipboardList } from "lucide-react";
@@ -24,6 +24,7 @@ export default function Navbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
   const getFirstName = (fullName?: string | null, email?: string | null) => {
     const safeFullName = fullName?.trim();
@@ -137,6 +138,33 @@ export default function Navbar() {
     setMenuOpen(false);
   };
 
+  const scrollToSection = (hash: string) => {
+    if (hash === "#") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    const target = document.querySelector(hash);
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handleNavClick = (hash: string, name: string) => {
+    setActiveItem(name);
+    setMenuOpen(false);
+    setDropdownOpen(false);
+
+    if (pathname !== "/") {
+      router.push(`/${hash}`);
+      return;
+    }
+
+    scrollToSection(hash);
+    if (hash !== "#") {
+      window.history.pushState(null, "", hash);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       const headers: Record<string, string> = {
@@ -175,6 +203,17 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [menuOpen]);
 
+  useEffect(() => {
+    if (pathname !== "/") return;
+    const handleHashChange = () => {
+      const hash = window.location.hash || "#";
+      scrollToSection(hash);
+    };
+    handleHashChange();
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, [pathname]);
+
   // Auto-close desktop dropdown
   const handleMouseLeave = () => setTimeout(() => setDropdownOpen(false), 150);
 
@@ -203,14 +242,7 @@ export default function Navbar() {
               href={item.id}
               onClick={(e) => {
                 e.preventDefault();
-                setActiveItem(item.name);
-                if (item.id === "#") {
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                } else {
-                  document
-                    .querySelector(item.id)
-                    ?.scrollIntoView({ behavior: "smooth" });
-                }
+                handleNavClick(item.id, item.name);
               }}
               className={`relative pb-1 lg:px-2 transition ${
                 activeItem === item.name
@@ -362,11 +394,7 @@ export default function Navbar() {
                 <button
                   key={item.name}
                   onClick={() => {
-                    setActiveItem(item.name);
-                    setMenuOpen(false);
-                    document
-                      .querySelector(item.id)
-                      ?.scrollIntoView({ behavior: "smooth" });
+                    handleNavClick(item.id, item.name);
                   }}
                   className={`text-left text-gray-700 py-2 ${
                     activeItem === item.name
