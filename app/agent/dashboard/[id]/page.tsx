@@ -415,6 +415,7 @@ export default function AgentRenterRequestDetailsPage() {
   const hasSentAccessRequest =
     isRequested || isRequestSent || isRequestSentByStatus;
   const grantAccessEnabled = hasGrantAccess === true;
+  const isAccessRequestLocked = !grantAccessEnabled && hasSentAccessRequest;
   // const shouldDisableMatchRequest = grantAccessEnabled
   //   ? isListingMatched
   //   : !canRequestAccess || isRequestSentByStatus || isRequestSent;
@@ -428,7 +429,11 @@ export default function AgentRenterRequestDetailsPage() {
     request?.raw?.payment?.amount ?? request?.raw?.chargeAmount;
   const paymentCurrency = request?.raw?.payment?.currency || "USD";
 
-  const isDisabled = grantAccessEnabled ? isListingMatched : false;
+  const isDisabled = grantAccessEnabled
+    ? isListingMatched
+    : canRequestAccess === false || isSubmitting
+    ? true
+    : false;
 
   // {grantAccessEnabled
   //                 ? isListingMatched
@@ -846,9 +851,9 @@ export default function AgentRenterRequestDetailsPage() {
                   setIsConfirmChecked(false);
                   setIsConfirmOpen(true);
                 }}
-                disabled={isDisabled}
+                disabled={isDisabled || isAccessRequestLocked}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-60 disabled:cursor-not-allowed ${
-                  isDisabled
+                  isDisabled || isAccessRequestLocked
                     ? "bg-gray-200 text-gray-600"
                     : "bg-blue-600 text-white hover:bg-blue-700"
                 }`}
