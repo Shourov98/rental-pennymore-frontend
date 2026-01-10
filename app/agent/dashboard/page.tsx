@@ -198,6 +198,15 @@ export default function AgentRenterRequestsPage() {
     if (pagination?.hasNext) setPage((prev) => prev + 1);
   };
 
+  const totalPages = Math.max(1, pagination?.totalPages ?? 1);
+  const currentPage = pagination?.currentPage ?? page;
+  const totalItems = pagination?.totalItems ?? filteredRequests.length;
+  const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
+  const handlePageSelect = (value: number) => {
+    if (value === currentPage) return;
+    setPage(value);
+  };
+
   return (
     <section className="bg-gray-50 min-h-screen px-4 lg:px-6 py-6 overflow-y-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 bg-white p-5 rounded-xl shadow-sm gap-3">
@@ -347,12 +356,22 @@ export default function AgentRenterRequestsPage() {
 
           {pagination && (
             <div className="flex flex-col sm:flex-row justify-between items-center mt-6 text-sm text-gray-600 gap-3">
-              <div>
-                Page {pagination.currentPage ?? page} of{" "}
-                {pagination.totalPages ?? 1}
+              <div className="flex flex-wrap items-center gap-2">
+                <span>
+                  Showing {filteredRequests.length} item
+                  {filteredRequests.length === 1 ? "" : "s"}
+                </span>
+                <span className="text-gray-300">•</span>
+                <span>
+                  Total items {totalItems}
+                </span>
+                <span className="text-gray-300">•</span>
+                <span>
+                  Page {currentPage} of {totalPages}
+                </span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   onClick={handlePreviousPage}
                   disabled={!pagination.hasPrev}
@@ -360,6 +379,19 @@ export default function AgentRenterRequestsPage() {
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
+                {pages.map((pageNumber) => (
+                  <button
+                    key={pageNumber}
+                    onClick={() => handlePageSelect(pageNumber)}
+                    className={`min-w-[32px] px-2 py-1 rounded-full border text-sm font-medium transition ${
+                      pageNumber === currentPage
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100"
+                    }`}
+                  >
+                    {pageNumber}
+                  </button>
+                ))}
                 <button
                   onClick={handleNextPage}
                   disabled={!pagination.hasNext}
@@ -375,6 +407,7 @@ export default function AgentRenterRequestsPage() {
             isOpen={isFilterOpen}
             onClose={() => setIsFilterOpen(false)}
             onApply={(f) => setFilters(f)}
+            resultCount={filteredRequests.length}
           />
         </>
       )}

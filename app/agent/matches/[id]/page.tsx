@@ -261,6 +261,14 @@ export default function AgentMatchDetailsPage() {
     const referralInfo = renterInfo.referralInfo;
     const isAdminReferral = referralInfo?.registrationType === "admin_referral";
     const adminReferrerName = referralInfo?.referredByAdmin?.referrerName;
+    const formatReferralName = (name: string) => {
+      const trimmed = name.trim();
+      const parts = trimmed.split(/\s+/);
+      if (parts.length === 0) return name;
+      const firstInitial = parts[0][0]?.toUpperCase() ?? "";
+      const lastName = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+      return `${firstInitial}.${lastName}`;
+    };
     const formatShortName = (name: string) => {
       const parts = name.trim().split(/\s+/).filter(Boolean);
       if (parts.length < 2) return name.trim();
@@ -280,14 +288,18 @@ export default function AgentMatchDetailsPage() {
         null;
     const fullName =
       renterInfo.renterName || renterInfo.fullName || "Unknown renter";
-    const firstName = fullName.trim().split(/\s+/)[0] || "Renter";
+    const firstLetter = fullName.trim()[0]?.toUpperCase() || "R";
+    const fallbackReferrerName = "Tuval Mor";
+    const referrerDisplayName = referralName?.trim()
+      ? formatReferralName(referralName)
+      : formatReferralName(fallbackReferrerName);
     return {
       name: fullName,
       email: renterInfo.renterEmail || renterInfo.email || "Not provided",
       phone: renterInfo.renterPhone || renterInfo.phoneNumber || "Not provided",
       avatar: renterInfo.profileImage || null,
-      referrerName: referralName,
-      firstName,
+      referrerName: referrerDisplayName,
+      firstLetter,
     };
   }, [renterInfo]);
 
@@ -354,8 +366,8 @@ export default function AgentMatchDetailsPage() {
                       />
                     </div>
                   ) : (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 px-1 text-[10px] font-semibold text-blue-700">
-                      {renterContact.firstName}
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
+                      {renterContact.firstLetter}
                     </div>
                   )}
                   <div>
@@ -365,8 +377,8 @@ export default function AgentMatchDetailsPage() {
                         {renterContact.name}
                       </p>
                       {renterContact.referrerName && (
-                        <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700">
-                          Referred by {renterContact.referrerName}
+                        <span className="inline-flex items-center rounded-full border border-blue-500 text-blue-600 px-2.5 py-0.5 text-xs font-semibold">
+                          {renterContact.referrerName}
                         </span>
                       )}
                     </div>

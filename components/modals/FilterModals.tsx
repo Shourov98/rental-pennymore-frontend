@@ -31,10 +31,12 @@ export default function FilterModal({
   isOpen,
   onClose,
   onApply,
+  resultCount,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onApply: (filters: FilterType) => void;
+  resultCount?: number;
 }) {
   const [borough, setBorough] = useState<string | null>("Manhattan");
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<string[]>(
@@ -263,19 +265,26 @@ export default function FilterModal({
         </div>
 
         {/* FOOTER (fixed) */}
-        <div className="p-5 border-t border-gray-300 bg-white flex gap-3 shrink-0">
-          <button
-            onClick={resetAll}
-            className="flex-1 py-2 border border-gray-300 rounded-full text-gray-700 font-medium"
-          >
-            Reset
-          </button>
-          <button
-            onClick={applyFilters}
-            className="flex-1 py-2 bg-blue-600 text-white rounded-full font-medium"
-          >
-            Apply
-          </button>
+        <div className="p-5 border-t border-gray-300 bg-white flex flex-col gap-3 shrink-0">
+          {typeof resultCount === "number" && (
+            <div className="text-xs text-gray-500">
+              Showing {resultCount} request{resultCount === 1 ? "" : "s"}
+            </div>
+          )}
+          <div className="flex gap-3">
+            <button
+              onClick={resetAll}
+              className="flex-1 py-2 border border-gray-300 rounded-full text-gray-700 font-medium"
+            >
+              Reset
+            </button>
+            <button
+              onClick={applyFilters}
+              className="flex-1 py-2 bg-blue-600 text-white rounded-full font-medium"
+            >
+              Apply
+            </button>
+          </div>
         </div>
       </div>
 
