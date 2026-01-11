@@ -14,10 +14,7 @@ import { fetchAgentProfile } from "@/store/slices/agentProfileSlice";
 import type { AppDispatch } from "@/store/store";
 import Link from "next/link";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
 
 function SigninPageContent() {
   const router = useRouter();
