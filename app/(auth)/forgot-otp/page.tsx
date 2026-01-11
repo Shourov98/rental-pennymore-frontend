@@ -65,7 +65,7 @@ function OtpVerifyPageInner() {
     setStatusMessage(null);
     setLoading(true);
 
-    fetch(`${API_BASE_URL}/auth/verify-password-otp`, {
+    fetch(`${API_BASE_URL}/auth/resend-password-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, otp: code }),

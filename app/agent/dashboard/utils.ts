@@ -109,7 +109,7 @@ const formatCurrency = (value?: number) => {
 
 const formatDate = (date?: string) =>
   date
-    ? new Date(date).toLocaleDateString("en-GB", {
+    ? new Date(date).toLocaleDateString("en-US", {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
