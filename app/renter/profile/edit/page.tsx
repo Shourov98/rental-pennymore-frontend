@@ -22,6 +22,7 @@ interface RenterProfile {
     email?: string;
     phoneNumber?: string;
     profileImageUrl?: string | null;
+    profileImage?: string | null;
   };
 }
 
@@ -33,7 +34,7 @@ export default function EditProfilePage() {
 
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [image, setImage] = useState("/profile-image.png");
+  const [image, setImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -71,7 +72,11 @@ export default function EditProfilePage() {
         const profile = data.data as RenterProfile;
         setFullName(profile.userInfo?.fullName || "");
         setPhoneNumber(profile.userInfo?.phoneNumber || "");
-        setImage(profile.userInfo?.profileImageUrl || "/profile-image.png");
+        const profileImage =
+          profile.userInfo?.profileImageUrl ??
+          profile.userInfo?.profileImage ??
+          null;
+        setImage(profileImage);
 
         dispatch(
           updateRenter({
@@ -91,6 +96,8 @@ export default function EditProfilePage() {
             fullName: profile.userInfo?.fullName || "",
             email: profile.userInfo?.email || "",
             phone: profile.userInfo?.phoneNumber || "",
+            profileImage: profileImage,
+            profileImageUrl: profileImage,
           })
         );
       } catch (err) {
@@ -131,11 +138,14 @@ export default function EditProfilePage() {
       const headers: Record<string, string> = {};
       if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
-      const response = await fetch(`${API_BASE_URL}/file/upload-profile-image`, {
-        method: "POST",
-        headers,
-        body: formData,
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/file/upload-profile-image`,
+        {
+          method: "POST",
+          headers,
+          body: formData,
+        }
+      );
 
       const data = await response.json().catch(() => ({}));
 
@@ -157,6 +167,12 @@ export default function EditProfilePage() {
 
       if (uploadedUrl) {
         setImage(uploadedUrl);
+        dispatch(
+          updateUser({
+            profileImage: uploadedUrl,
+            profileImageUrl: uploadedUrl,
+          })
+        );
         setSuccess("Profile image updated.");
       }
     } catch (err) {
@@ -206,9 +222,11 @@ export default function EditProfilePage() {
       }
 
       const updatedProfile = data.data as RenterProfile;
-      setImage(
-        updatedProfile.userInfo?.profileImageUrl || "/profile-image.png"
-      );
+      const updatedImage =
+        updatedProfile.userInfo?.profileImageUrl ??
+        updatedProfile.userInfo?.profileImage ??
+        null;
+      setImage(updatedImage);
       dispatch(
         updateRenter({
           _id: updatedProfile._id || "",
@@ -227,6 +245,8 @@ export default function EditProfilePage() {
           fullName: updatedProfile.userInfo?.fullName || "",
           email: updatedProfile.userInfo?.email || "",
           phone: updatedProfile.userInfo?.phoneNumber || "",
+          profileImage: updatedImage,
+          profileImageUrl: updatedImage,
         })
       );
 
@@ -277,13 +297,19 @@ export default function EditProfilePage() {
             className="flex flex-col sm:flex-row items-center sm:items-start gap-8 sm:gap-12"
           >
             {/* Profile Picture */}
-            <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-visible border-4 border-gray-200">
-              <Image
-                src={image}
-                alt="User"
-                fill
-                className="object-cover rounded-full"
-              />
+            <div
+              className={`relative w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-visible ${
+                image ? "border-4 border-gray-200" : ""
+              }`}
+            >
+              {image ? (
+                <Image
+                  src={image}
+                  alt="User"
+                  fill
+                  className="object-cover rounded-full"
+                />
+              ) : null}
 
               <input
                 type="file"
@@ -327,7 +353,7 @@ export default function EditProfilePage() {
                       type="text"
                       name="fullName"
                       value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
+                      readOnly
                       placeholder="Name"
                       className="w-full bg-transparent outline-none text-gray-800"
                       required
@@ -352,7 +378,6 @@ export default function EditProfilePage() {
                     />
                   </div>
                 </div>
-
               </div>
 
               {/* Buttons */}

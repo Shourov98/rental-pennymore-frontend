@@ -27,7 +27,23 @@ export default function AgentReferLink() {
   const handleCopy = async (value?: string, type?: "link" | "code") => {
     if (!value) return;
     try {
-      await navigator.clipboard.writeText(value);
+      const canUseClipboard =
+        typeof navigator !== "undefined" &&
+        !!navigator.clipboard &&
+        (window.isSecureContext ?? false);
+      if (canUseClipboard) {
+        await navigator.clipboard.writeText(value);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = value;
+        textarea.setAttribute("readonly", "true");
+        textarea.style.position = "fixed";
+        textarea.style.top = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
       setCopied(type ?? null);
       setTimeout(() => setCopied(null), 2000);
     } catch {

@@ -21,7 +21,7 @@ export default function EditAgentProfile() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [licenseNumber, setLicenseNumber] = useState("");
   const [brokerageName, setBrokerageName] = useState("");
-  const [image, setImage] = useState("/agent-avatar.jpg");
+  const [image, setImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -63,7 +63,15 @@ export default function EditAgentProfile() {
         setPhoneNumber(userInfo?.phoneNumber || "");
         setLicenseNumber(profile.licenseNumber || "");
         setBrokerageName(profile.brokerageName || "");
-        setImage(userInfo?.profileImageUrl || "/agent-avatar.jpg");
+        const profileImage =
+          userInfo?.profileImageUrl ?? userInfo?.profileImage ?? null;
+        setImage(profileImage);
+        dispatch(
+          updateUser({
+            profileImage: profileImage,
+            profileImageUrl: profileImage,
+          })
+        );
       } catch (err) {
         if (controller.signal.aborted) return;
         const message =
@@ -79,7 +87,7 @@ export default function EditAgentProfile() {
     fetchProfile();
 
     return () => controller.abort();
-  }, [accessToken]);
+  }, [accessToken, dispatch]);
 
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -128,6 +136,12 @@ export default function EditAgentProfile() {
 
       if (uploadedUrl) {
         setImage(uploadedUrl);
+        dispatch(
+          updateUser({
+            profileImage: uploadedUrl,
+            profileImageUrl: uploadedUrl,
+          })
+        );
         setSuccess("Profile image updated.");
       }
     } catch (err) {
@@ -237,14 +251,16 @@ export default function EditAgentProfile() {
       {/* Form Section */}
       <div className="bg-white rounded-xl shadow-sm p-8 flex flex-col sm:flex-row gap-8">
         {/* Profile Image Upload */}
-        <div className="relative flex-shrink-0">
-          <Image
-            src={image}
-            alt="Profile"
-            width={150}
-            height={150}
-            className="rounded-full object-cover"
-          />
+        <div className="relative shrink-0 w-[150px] h-[150px]">
+          {image ? (
+            <Image
+              src={image}
+              alt="Profile"
+              width={150}
+              height={150}
+              className="rounded-full object-cover"
+            />
+          ) : null}
           <input
             type="file"
             accept="image/*"
@@ -289,7 +305,7 @@ export default function EditAgentProfile() {
                 type="text"
                 placeholder="Name"
                 value={fullName}
-                onChange={(event) => setFullName(event.target.value)}
+                readOnly
                 className="pl-9 w-full border border-gray-200 rounded-lg p-2.5 text-gray-700 bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>

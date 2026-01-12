@@ -51,6 +51,7 @@ export interface AgentProfileUser {
   referralLink?: string;
   canRefer?: boolean;
   profileImageUrl?: string;
+  profileImage?: string | null;
   id?: string;
 }
 
