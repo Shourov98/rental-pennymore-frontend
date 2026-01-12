@@ -9,9 +9,7 @@ import { updateAgentProfile } from "@/store/slices/agentProfileSlice";
 import { updateUser, type AgentProfile } from "@/store/slices/authSlice";
 import type { AppDispatch, RootState } from "@/store/store";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function EditAgentProfile() {
   const router = useRouter();

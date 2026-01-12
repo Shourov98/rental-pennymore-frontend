@@ -2,9 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const SPEED_PX_PER_SECOND = 80;
 

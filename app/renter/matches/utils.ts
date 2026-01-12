@@ -1,6 +1,4 @@
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export interface ApiMatchedAgent {
   _id?: string;

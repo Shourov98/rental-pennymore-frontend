@@ -1,6 +1,4 @@
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export interface ApiAgentMatch {
   _id?: string;
@@ -136,7 +134,8 @@ export const normalizeAgentMatch = (
   req: ApiAgentMatch
 ): NormalizedAgentMatch => {
   return {
-    id: req._id || req.id || req.requestId || Math.random().toString(36).slice(2),
+    id:
+      req._id || req.id || req.requestId || Math.random().toString(36).slice(2),
     requestName: req.requestName || req.requestId || "Pre-Market Request",
     boroughsLabel: formatLocations(req.locations),
     dateLabel: formatDate(req.createdAt || req.movingDateRange?.earliest),

@@ -7,9 +7,7 @@ import RequestCard from "@/components/RequestCard";
 import { RootState } from "@/store/store";
 import Link from "next/link";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 type RequestStatus = "active" | "deactive";
 

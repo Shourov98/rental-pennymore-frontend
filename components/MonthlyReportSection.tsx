@@ -5,9 +5,7 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight, Link2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 type MonthlyReport = {
   _id: string;

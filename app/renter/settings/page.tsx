@@ -7,9 +7,7 @@ import { logout, updateRenter } from "@/store/slices/authSlice";
 import type { AppDispatch, RootState } from "@/store/store";
 import { useRouter } from "next/navigation";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function SettingsPage() {
   const dispatch = useDispatch<AppDispatch>();

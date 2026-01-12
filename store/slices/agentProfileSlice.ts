@@ -10,9 +10,7 @@ import {
 
 export type { AgentProfile, AgentProfileUser } from "./authSlice";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 interface AgentProfileResponse {
   success?: boolean;

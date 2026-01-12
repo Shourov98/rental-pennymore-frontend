@@ -5,9 +5,7 @@ import { useSelector } from "react-redux";
 import { Bell, CreditCard, Handshake, Home, Trash2 } from "lucide-react";
 import type { RootState } from "@/store/store";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 type NotificationType =
   | "info"

@@ -17,8 +17,10 @@ import { fetchAgentProfile } from "./slices/agentProfileSlice";
 import type { RootState } from "./store";
 import type { Tokens, UserBase, RenterProfile } from "./slices/authSlice";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || "",
+  baseUrl: API_BASE_URL,
   credentials: "include",
   prepareHeaders: (headers, { getState }) => {
     const token = selectAccessToken(getState() as RootState);

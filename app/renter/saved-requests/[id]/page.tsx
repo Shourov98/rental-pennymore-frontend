@@ -18,9 +18,7 @@ const PreferencesDragList = dynamic(
   { ssr: false }
 );
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://pos-exterior-researchers-vegetarian.trycloudflare.com/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 type FeatureGroup = "unit" | "building" | "pet" | "guarantor";
 

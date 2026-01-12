@@ -119,7 +119,7 @@ frontend/
 
    ```env
    # API Configuration
-   NEXT_PUBLIC_API_URL=your_api_url
+   NEXT_PUBLIC_API_BASE_URL=your_api_url
 
    # Authentication
    NEXTAUTH_SECRET=generate_secure_random_string
