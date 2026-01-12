@@ -342,7 +342,7 @@ function SignupPageInner() {
           <label className="text-sm sm:text-base text-text-secondary">
             I agree to the{" "}
             <a
-              href="#"
+              href="/terms-conditions"
               className="text-action hover:text-action-hover font-semibold"
             >
               terms and conditions

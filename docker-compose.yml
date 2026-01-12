@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  frontend:
+    container_name: penny-more-frontend
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        args:
+          NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+    ports:
+      - "3030:3030"
+    restart: unless-stopped
