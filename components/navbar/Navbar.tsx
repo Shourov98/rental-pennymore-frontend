@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { X, ChevronDown, User, ClipboardList } from "lucide-react";
+import { X, ChevronDown, User, ClipboardList, Menu } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectAuth, logout, selectIsAuthed } from "@/store/slices/authSlice";
 
@@ -27,24 +27,22 @@ export default function Navbar() {
   const getFirstName = (fullName?: string | null, email?: string | null) => {
     const safeFullName = fullName?.trim();
     if (safeFullName && !safeFullName.includes("@")) {
-      return safeFullName.split(" ")[0] || "Guest";
+      return safeFullName.split(" ")[0] || "User";
     }
     const emailPrefix = email?.split("@")[0] || "";
     const cleanedEmail = emailPrefix.replace(/[._-]+/g, " ").trim();
-    return cleanedEmail.split(" ")[0] || "Guest";
+    return cleanedEmail.split(" ")[0] || "User";
   };
 
   const canShowAuthed = isClient && isAuthed;
   const displayName = canShowAuthed
     ? getFirstName(auth.user?.fullName, auth.user?.email)
-    : "Guest";
+    : "";
   const avatarUrl = canShowAuthed
     ? auth.user?.profileImage ?? auth.user?.profileImageUrl ?? null
     : null;
 
-  const role = canShowAuthed
-    ? auth.role || auth.user?.role || "Guest"
-    : "Guest";
+  const role = canShowAuthed ? auth.role || auth.user?.role || "User" : "";
   const menuBasePath =
     role === "Agent" ? "/agent" : role === "Renter" ? "/renter" : "";
 
@@ -336,38 +334,59 @@ export default function Navbar() {
         </div>
 
         {/* Mobile + Tablet Menu Trigger (shown until lg) */}
-        <button
-          className="lg:hidden p-2 rounded-md hover:bg-gray-100"
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
-          {menuOpen ? (
-            <X size={22} />
-          ) : (
-            <div className="flex items-center gap-2">
-              {avatarUrl ? (
-                <div className="relative w-7 h-7 rounded-full overflow-hidden border border-gray-300">
-                  <Image
-                    src={avatarUrl}
-                    alt="User avatar"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="min-w-[28px] h-7 rounded-full bg-blue-600 text-white flex items-center justify-center">
-                  <User size={16} />
-                </div>
-              )}
-              <div className="text-left">
-                <p className="text-sm font-semibold text-gray-800">
-                  Hey, {displayName}
-                </p>
-                <p className="text-xs text-gray-500">{role}</p>
-              </div>
-              <ChevronDown size={18} className="text-gray-600" />
-            </div>
+        <div className="lg:hidden flex items-center gap-3">
+          {!canShowAuthed && (
+            <>
+              <button
+                onClick={() => router.push("/signin")}
+                className="px-3 py-1.5 rounded-md bg-blue-600 text-white text-xs hover:bg-blue-700"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => router.push("/signup")}
+                className="px-3 py-1.5 rounded-md border border-blue-600 text-blue-600 text-xs hover:bg-blue-50"
+              >
+                Sign Up
+              </button>
+            </>
           )}
-        </button>
+          <button
+            className="p-2 rounded-md hover:bg-gray-100"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? (
+              <X size={22} />
+            ) : canShowAuthed ? (
+              <div className="flex items-center gap-2">
+                {avatarUrl ? (
+                  <div className="relative w-7 h-7 rounded-full overflow-hidden border border-gray-300">
+                    <Image
+                      src={avatarUrl}
+                      alt="User avatar"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="min-w-[28px] h-7 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                    <User size={16} />
+                  </div>
+                )}
+                <div className="text-left">
+                  <p className="text-sm font-semibold text-gray-800">
+                    Hey, {displayName}
+                  </p>
+                  <p className="text-xs text-gray-500">{role}</p>
+                </div>
+                <ChevronDown size={18} className="text-gray-600" />
+              </div>
+            ) : (
+              <Menu size={22} />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Mobile/Tablet Drawer */}

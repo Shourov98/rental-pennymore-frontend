@@ -23,19 +23,21 @@ export default function AgentNavbar({
   const getFirstName = (fullName?: string | null, email?: string | null) => {
     const safeFullName = fullName?.trim();
     if (safeFullName && !safeFullName.includes("@")) {
-      return safeFullName.split(" ")[0] || "Guest";
+      return safeFullName.split(" ")[0] || "User";
     }
     const emailPrefix = email?.split("@")[0] || "";
     const cleanedEmail = emailPrefix.replace(/[._-]+/g, " ").trim();
-    return cleanedEmail.split(" ")[0] || "Guest";
+    return cleanedEmail.split(" ")[0] || "User";
   };
 
-  const displayName = isAuthed
+  const canShowAuthed = isAuthed;
+  const displayName = canShowAuthed
     ? getFirstName(auth.user?.fullName, auth.user?.email)
-    : "Guest";
-  const role = auth.role || auth.user?.role || "Agent";
-  const avatarUrl =
-    auth.user?.profileImage ?? auth.user?.profileImageUrl ?? null;
+    : "";
+  const role = canShowAuthed ? auth.role || auth.user?.role || "Agent" : "";
+  const avatarUrl = canShowAuthed
+    ? auth.user?.profileImage ?? auth.user?.profileImageUrl ?? null
+    : null;
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -90,29 +92,45 @@ export default function AgentNavbar({
         className="relative flex items-center gap-2 md:gap-3 lg:gap-4"
         ref={dropdownRef}
       >
-        {/* Avatar & Name */}
-        <button className="flex items-right md:items-center gap-2 rounded-full hover:bg-gray-100 transition px-2 py-1">
-          {avatarUrl ? (
-            <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-300">
-              <Image
-                src={avatarUrl}
-                alt="User avatar"
-                fill
-                className="object-cover"
-              />
+        {canShowAuthed ? (
+          <button className="flex items-right md:items-center gap-2 rounded-full hover:bg-gray-100 transition px-2 py-1">
+            {avatarUrl ? (
+              <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-300">
+                <Image
+                  src={avatarUrl}
+                  alt="User avatar"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              <div className="min-w-[36px] h-9 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                <User size={18} />
+              </div>
+            )}
+            <div className="text-left">
+              <p className="text-sm font-semibold text-gray-800">
+                Hello, {displayName}
+              </p>
+              <p className="text-xs text-gray-500">{role}</p>
             </div>
-          ) : (
-            <div className="min-w-[36px] h-9 rounded-full bg-blue-600 text-white flex items-center justify-center">
-              <User size={18} />
-            </div>
-          )}
-          <div className="text-left">
-            <p className="text-sm font-semibold text-gray-800">
-              Hello, {displayName}
-            </p>
-            <p className="text-xs text-gray-500">{role}</p>
+          </button>
+        ) : (
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push("/signin")}
+              className="px-3 py-1.5 rounded-md bg-blue-600 text-white text-xs hover:bg-blue-700"
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => router.push("/signup")}
+              className="px-3 py-1.5 rounded-md border border-blue-600 text-blue-600 text-xs hover:bg-blue-50"
+            >
+              Sign Up
+            </button>
           </div>
-        </button>
+        )}
       </div>
 
       {/* Fade-in animation */}
