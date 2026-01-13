@@ -27,11 +27,11 @@ export default function Navbar() {
   const getFirstName = (fullName?: string | null, email?: string | null) => {
     const safeFullName = fullName?.trim();
     if (safeFullName && !safeFullName.includes("@")) {
-      return safeFullName.split(" ")[0] || "User";
+      return safeFullName.split(" ")[0];
     }
     const emailPrefix = email?.split("@")[0] || "";
     const cleanedEmail = emailPrefix.replace(/[._-]+/g, " ").trim();
-    return cleanedEmail.split(" ")[0] || "User";
+    return cleanedEmail.split(" ")[0];
   };
 
   const canShowAuthed = isClient && isAuthed;
@@ -42,7 +42,7 @@ export default function Navbar() {
     ? auth.user?.profileImage ?? auth.user?.profileImageUrl ?? null
     : null;
 
-  const role = canShowAuthed ? auth.role || auth.user?.role || "User" : "";
+  const role = canShowAuthed ? auth.role || auth.user?.role : "";
   const menuBasePath =
     role === "Agent" ? "/agent" : role === "Renter" ? "/renter" : "";
 
