@@ -12,8 +12,14 @@ import {
 
 export default function AgentReferLink() {
   const dispatch = useDispatch<AppDispatch>();
-  const { profile, status, error } = useSelector(selectAgentProfileState);
-  const { referralLink, referralCode } = useSelector(selectAgentReferral);
+  const { profile, status, error } = useSelector<
+    RootState,
+    ReturnType<typeof selectAgentProfileState>
+  >(selectAgentProfileState);
+  const { referralLink } = useSelector<
+    RootState,
+    ReturnType<typeof selectAgentReferral>
+  >(selectAgentReferral);
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
 
   const [copied, setCopied] = useState<"link" | "code" | null>(null);

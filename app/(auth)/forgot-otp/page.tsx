@@ -111,7 +111,7 @@ function OtpVerifyPageInner() {
     setResendLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
+      const response = await fetch(`${API_BASE_URL}/auth/resend-password-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -127,7 +127,7 @@ function OtpVerifyPageInner() {
 
       setStatusMessage({
         type: "success",
-        message: data?.message || "Verification code resent successfully.",
+        message: "Verification code resent successfully.",
       });
     } catch (err) {
       const message =

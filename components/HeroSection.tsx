@@ -84,10 +84,11 @@ export default function HeroSection() {
       {/* Background */}
       <div className="absolute inset-0 z-10">
         <Image
-          src="/hero-bg.svg"
+          src="/hero-bg.png"
           alt="NYC Skyline"
           fill
           priority
+          sizes="100vw"
           className="object-cover object-center"
         />
       </div>
