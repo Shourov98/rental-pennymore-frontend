@@ -375,14 +375,14 @@ export default function AgentMatchesPage() {
             </div>
           )}
 
-          <FilterModal
-            isOpen={isFilterOpen}
-            onClose={() => setIsFilterOpen(false)}
-            onApply={(f) => setFilters(f)}
-            resultCount={filteredRequests.length}
-          />
         </>
       )}
+      <FilterModal
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        onApply={(f) => setFilters(f)}
+        resultCount={filteredRequests.length}
+      />
     </section>
   );
 }
