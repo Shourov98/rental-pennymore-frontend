@@ -23,17 +23,18 @@ export default function AgentNavbar({
   const getFirstName = (fullName?: string | null, email?: string | null) => {
     const safeFullName = fullName?.trim();
     if (safeFullName && !safeFullName.includes("@")) {
-      return safeFullName.split(" ")[0] || "User";
+      return safeFullName.split(" ")[0] || "";
     }
     const emailPrefix = email?.split("@")[0] || "";
     const cleanedEmail = emailPrefix.replace(/[._-]+/g, " ").trim();
-    return cleanedEmail.split(" ")[0] || "User";
+    return cleanedEmail.split(" ")[0] || "";
   };
 
   const canShowAuthed = isAuthed;
   const displayName = canShowAuthed
     ? getFirstName(auth.user?.fullName, auth.user?.email)
     : "";
+  const hasDisplayName = Boolean(displayName);
   const role = canShowAuthed ? auth.role || auth.user?.role || "Agent" : "";
   const avatarUrl = canShowAuthed
     ? auth.user?.profileImage ?? auth.user?.profileImageUrl ?? null
@@ -92,7 +93,7 @@ export default function AgentNavbar({
         className="relative flex items-center gap-2 md:gap-3 lg:gap-4"
         ref={dropdownRef}
       >
-        {canShowAuthed ? (
+        {canShowAuthed && hasDisplayName ? (
           <button className="flex items-right md:items-center gap-2 rounded-full hover:bg-gray-100 transition px-2 py-1">
             {avatarUrl ? (
               <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-300">

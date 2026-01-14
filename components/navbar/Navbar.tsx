@@ -38,6 +38,7 @@ export default function Navbar() {
   const displayName = canShowAuthed
     ? getFirstName(auth.user?.fullName, auth.user?.email)
     : "";
+  const hasDisplayName = Boolean(displayName);
   const avatarUrl = canShowAuthed
     ? auth.user?.profileImage ?? auth.user?.profileImageUrl ?? null
     : null;
@@ -264,7 +265,7 @@ export default function Navbar() {
           ref={dropdownRef}
           onMouseLeave={handleMouseLeave}
         >
-          {canShowAuthed ? (
+          {canShowAuthed && hasDisplayName ? (
             <>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -358,7 +359,7 @@ export default function Navbar() {
           >
             {menuOpen ? (
               <X size={22} />
-            ) : canShowAuthed ? (
+            ) : canShowAuthed && hasDisplayName ? (
               <div className="flex items-center gap-2">
                 {avatarUrl ? (
                   <div className="relative w-7 h-7 rounded-full overflow-hidden border border-gray-300">
