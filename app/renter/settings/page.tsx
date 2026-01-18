@@ -44,6 +44,7 @@ export default function SettingsPage() {
         {
           method: "POST",
           headers,
+          body: JSON.stringify({}),
         }
       );
 
@@ -56,7 +57,10 @@ export default function SettingsPage() {
         );
       }
 
-      const isEnabled = !!data?.data?.emailSubscriptionEnabled;
+      const isEnabled =
+        typeof data?.data?.emailSubscriptionEnabled === "boolean"
+          ? data.data.emailSubscriptionEnabled
+          : !subscribed;
       setSubscribed(isEnabled);
       dispatch(
         updateRenter({
