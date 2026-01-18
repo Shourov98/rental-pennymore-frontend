@@ -39,7 +39,7 @@ export default function HomePage() {
         </p>
 
         {/* Steps with arrows */}
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-12 relative">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between mb-12 relative">
           <Step
             icon="/icons/steps/submit.svg"
             title="Step 1"
@@ -48,7 +48,7 @@ export default function HomePage() {
           />
 
           {/* Arrow between step 1 and 2 */}
-          <div className="hidden sm:block mx-2 lg:mx-4 shrink-0">
+          <div className="hidden sm:block mx-2 lg:mx-4 shrink-0 sm:mt-6">
             <svg
               width="24"
               height="24"
@@ -95,7 +95,7 @@ export default function HomePage() {
           />
 
           {/* Arrow between step 2 and 3 */}
-          <div className="hidden sm:block mx-2 lg:mx-4">
+          <div className="hidden sm:block mx-2 lg:mx-4 sm:mt-6">
             <svg
               width="24"
               height="24"

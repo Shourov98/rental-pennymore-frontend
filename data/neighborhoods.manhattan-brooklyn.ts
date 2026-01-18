@@ -104,7 +104,7 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
             label: "Midtown West – Hell’s Kitchen",
           },
           { key: "Murray Hill", label: "Murray Hill" },
-          { key: "Union Square Park", label: "Union Square" },
+          // { key: "Union Square Park", label: "Union Square" },
         ],
       },
 
