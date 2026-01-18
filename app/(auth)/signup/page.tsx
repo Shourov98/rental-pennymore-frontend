@@ -84,6 +84,17 @@ function SignupPageInner() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmedFullName = formData.fullName.trim();
+    const hasFullNameSpace = /\s+/.test(trimmedFullName);
+
+    if (!trimmedFullName || !hasFullNameSpace) {
+      setStatusMessage({
+        type: "error",
+        message: "Please enter your full name.",
+      });
+      return;
+    }
+
     if (!agree) {
       setStatusMessage({
         type: "error",
@@ -186,8 +197,13 @@ function SignupPageInner() {
           normalized.includes("registered") ||
           normalized.includes("used") ||
           normalized.includes("taken"));
+      const renterAlreadyRegistered =
+        isRenter &&
+        email &&
+        normalized.trim() === "email already registered";
+      const shouldAttemptResend = looksLikeExistingEmail || renterAlreadyRegistered;
 
-      if (looksLikeExistingEmail) {
+      if (shouldAttemptResend) {
         try {
           const data = await resendVerification(email);
           setStatusMessage({
@@ -203,6 +219,13 @@ function SignupPageInner() {
             resendError instanceof Error
               ? resendError.message
               : "Unable to resend verification. Please try again.";
+          if (resendMessage.toLowerCase().includes("email already verified")) {
+            setStatusMessage({ type: "error", message: resendMessage });
+            setTimeout(() => {
+              router.push("/signin");
+            }, 1500);
+            return;
+          }
           setStatusMessage({ type: "error", message: resendMessage });
           return;
         }

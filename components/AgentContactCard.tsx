@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { User } from "lucide-react";
+import { log } from "console";
 
 interface AgentContactCardProps {
   agent: {
@@ -19,6 +20,7 @@ export default function AgentContactCard({ agent }: AgentContactCardProps) {
   const safeName = agent.name || "Agent";
 
   let imageSrc = agent.image || null;
+  console.log(imageSrc);
 
   if (imageSrc) {
     try {

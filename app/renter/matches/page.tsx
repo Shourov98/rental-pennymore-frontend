@@ -264,7 +264,7 @@ export default function MatchedAgentsPage() {
                               Math.random()
                             }
                             agent={{
-                              image: agent.profileImage,
+                              image: agent.profileImageUrl,
                               name: agent.fullName,
                               email: agent.email,
                               phone: agent.phoneNumber,

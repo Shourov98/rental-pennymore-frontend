@@ -44,7 +44,7 @@ export default function HomePage() {
             icon="/icons/steps/submit.svg"
             title="Step 1"
             subtitle="Submit Preferences"
-            description="Submit your rental request preferences for a licensed agent to search on your behalf"
+            description="Submit your rental request preferences for a licensed agent to search on your behalf."
           />
 
           {/* Arrow between step 1 and 2 */}

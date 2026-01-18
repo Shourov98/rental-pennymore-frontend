@@ -7,7 +7,7 @@ export interface ApiMatchedAgent {
   email?: string;
   phoneNumber?: string;
   licenseNumber?: string;
-  profileImage?: string | null;
+  profileImageUrl?: string | null;
   hasGrantAccess?: boolean;
 }
 

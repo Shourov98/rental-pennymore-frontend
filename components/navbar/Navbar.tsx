@@ -215,142 +215,204 @@ export default function Navbar() {
   const handleMouseLeave = () => setTimeout(() => setDropdownOpen(false), 150);
 
   return (
-    <nav className="w-full bg-white shadow-sm sticky top-0 z-50">
-      <div className="max-w-full md:max-w-11/12 lg:max-w-10/12 mx-auto px-2 md:px-8 flex justify-between items-center py-4">
+    <nav className="w-full flex flex-row bg-white shadow-sm sticky top-0 z-50">
+      <div className="max-w-full md:max-w-11/12 lg:max-w-10/12 mx-auto px-2 md:px-8 py-4 flex w-full items-stretch justify-between gap-4">
         {/* Logo */}
-        <Link
-          href="/"
-          className="text-2xl items-start justify-start font-bold text-black pr-3"
-        >
-          <Image
-            src="/Logo_1.svg"
-            alt="Logo"
-            width={200}
-            height={150}
-            className="w-[120px] md:w-[160px] lg:w-[200px] h-auto"
-          />
-        </Link>
+        <div className="flex flex-col items-start justify-between gap-3">
+          {/* Left side */}
+          <div className="flex flex-col items-start text-gray-600">
+            <a
+              className="text-cyan-500 hover:underline"
+              href="https://www.corcoran.com"
+              target="blank"
+            >
+              <Image
+                src="/Corcoran_Logo.png"
+                alt="Corcoran"
+                width={170}
+                height={30}
+                priority
+              />
+            </a>
+            <span className="hidden text-[11px] leading-snug lg:inline">
+              Website operated by – <br />
+              <span>TUVAL MOR AT THE CORCORAN GROUP</span>
+            </span>
+          </div>
+          <Link
+            href="/"
+            className="text-2xl items-start justify-start font-bold text-black"
+          >
+            <Image
+              src="/Logo_1.svg"
+              alt="Logo"
+              width={200}
+              height={150}
+              className="w-[120px] md:w-[160px] lg:w-[200px] h-auto"
+            />
+          </Link>
+        </div>
+
 
         {/* Desktop Navbar Links (only show on lg+) */}
-        <div className="hidden lg:flex items-center gap-8 text-sm font-medium text-gray-800">
-          {navItems.map((item) => (
+        <div className="hidden lg:flex flex-col items-center justify-between gap-8 text-sm font-medium text-gray-800">
+          {/* Middle side */}
+          <div className="flex items-center gap-2 text-gray-700">
             <a
-              key={item.name}
-              href={item.id}
-              onClick={(e) => {
-                e.preventDefault();
-                handleNavClick(item.id, item.name);
-              }}
-              className={`relative pb-1 lg:px-2 transition ${
-                activeItem === item.name
-                  ? "text-blue-600"
-                  : "hover:text-blue-600"
-              }`}
+              className="flex items-center hover:underline"
+              href="https://www.dos.ny.gov/press/2020/docs/FairHousingNotice_new.pdf"
+              target="blank"
             >
-              {item.name}
-              <span
-                className={`absolute left-0 bottom-0 h-[3px] rounded-full bg-blue-600 transition-all duration-300 ${
-                  activeItem === item.name
-                    ? "w-full opacity-100"
-                    : "w-0 opacity-0"
-                }`}
-              ></span>
+              <Image
+                src="/equal-housing-logo-black.svg"
+                alt="Fair Housing"
+                width={48}
+                height={48}
+                className="w-10 h-10 lg:w-12 lg:h-12"
+              />
+              <span className="hidden font-xs lg:font-md pt-1 pl-2 italic font-semibold lg:inline">
+                We are committed to upholding the <br />
+                principles of all applicable fair housing laws.
+              </span>
             </a>
-          ))}
+          </div>
+          <div className="flex items-center justify-center gap-4">
+            {navItems.map((item) => (
+              <a
+                key={item.name}
+                href={item.id}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavClick(item.id, item.name);
+                }}
+                className={`relative pb-1 lg:px-2 transition ${
+                  activeItem === item.name
+                    ? "text-blue-600"
+                    : "hover:text-blue-600"
+                }`}
+              >
+                {item.name}
+                <span
+                  className={`absolute left-0 bottom-0 h-[3px] rounded-full bg-blue-600 transition-all duration-300 ${
+                    activeItem === item.name
+                      ? "w-full opacity-100"
+                      : "w-0 opacity-0"
+                  }`}
+                ></span>
+              </a>
+            ))}
+          </div>
         </div>
 
         {/* Desktop User Dropdown (lg+) */}
-        <div
-          className="hidden lg:flex items-center relative"
-          ref={dropdownRef}
-          onMouseLeave={handleMouseLeave}
-        >
-          {canShowAuthed && hasDisplayName ? (
-            <>
-              <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-gray-100 transition"
-              >
-                {avatarUrl ? (
-                  <div className="relative w-7 h-7 rounded-full overflow-hidden border border-gray-300">
-                    <Image
-                      src={avatarUrl}
-                      alt="User avatar"
-                      fill
-                      className="object-cover"
-                    />
+        <div className="hidden lg:flex flex-col items-end justify-end">
+          <div
+            className="relative"
+            ref={dropdownRef}
+            onMouseLeave={handleMouseLeave}
+          >
+            {canShowAuthed && hasDisplayName ? (
+              <>
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-gray-100 transition"
+                >
+                  {avatarUrl ? (
+                    <div className="relative w-7 h-7 rounded-full overflow-hidden border border-gray-300">
+                      <Image
+                        src={avatarUrl}
+                        alt="User avatar"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="min-w-[28px] h-7 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                      <User size={16} />
+                    </div>
+                  )}
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-gray-800">
+                      Hey, {displayName}
+                    </p>
+                    <p className="text-xs text-gray-500">{role}</p>
                   </div>
-                ) : (
-                  <div className="min-w-[28px] h-7 rounded-full bg-blue-600 text-white flex items-center justify-center">
-                    <User size={16} />
+                  <ChevronDown size={18} className="text-gray-600" />
+                </button>
+
+                {dropdownOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white shadow-lg rounded-lg animate-fadeIn">
+                    {userMenu.map((menu) => {
+                      const isLogout = menu.label === "Logout";
+                      return (
+                        <button
+                          key={menu.label}
+                          onClick={() =>
+                            isLogout
+                              ? handleLogout()
+                              : handleMenuItemClick(menu.path)
+                          }
+                          className="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-blue-100 text-gray-800 text-sm"
+                        >
+                          {menu.icon}
+                          {menu.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
-                <div className="text-left">
-                  <p className="text-sm font-semibold text-gray-800">
-                    Hey, {displayName}
-                  </p>
-                  <p className="text-xs text-gray-500">{role}</p>
-                </div>
-                <ChevronDown size={18} className="text-gray-600" />
-              </button>
-
-              {dropdownOpen && (
-                <div className="absolute right-0 top-12 w-56 bg-white shadow-lg rounded-lg animate-fadeIn">
-                  {userMenu.map((menu) => {
-                    const isLogout = menu.label === "Logout";
-                    return (
-                      <button
-                        key={menu.label}
-                        onClick={() =>
-                          isLogout
-                            ? handleLogout()
-                            : handleMenuItemClick(menu.path)
-                        }
-                        className="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-blue-100 text-gray-800 text-sm"
-                      >
-                        {menu.icon}
-                        {menu.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => router.push("/signin")}
-                className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700"
-              >
-                Sign In
-              </button>
-              <button
-                onClick={() => router.push("/signup")}
-                className="px-4 py-2 rounded-md border border-blue-600 text-blue-600 text-sm hover:bg-blue-50"
-              >
-                Sign Up
-              </button>
-            </div>
-          )}
+              </>
+            ) : (
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => router.push("/signin")}
+                  className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => router.push("/signup")}
+                  className="px-4 py-2 rounded-md border border-blue-600 text-blue-600 text-sm hover:bg-blue-50"
+                >
+                  Sign Up
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Mobile + Tablet Menu Trigger (shown until lg) */}
-        <div className="lg:hidden flex items-center gap-3">
+        <div className="lg:hidden flex items-end gap-3">
           {!canShowAuthed && (
-            <>
-              <button
-                onClick={() => router.push("/signin")}
-                className="px-3 py-1.5 rounded-md bg-blue-600 text-white text-xs hover:bg-blue-700"
+            <div className="flex flex-col items-start gap-2">
+              <a
+                className="flex items-start"
+                href="https://www.dos.ny.gov/press/2020/docs/FairHousingNotice_new.pdf"
+                target="blank"
               >
-                Sign In
-              </button>
-              <button
-                onClick={() => router.push("/signup")}
-                className="px-3 py-1.5 rounded-md border border-blue-600 text-blue-600 text-xs hover:bg-blue-50"
-              >
-                Sign Up
-              </button>
-            </>
+                <Image
+                  src="/equal-housing-logo-black.svg"
+                  alt="Fair Housing"
+                  width={40}
+                  height={40}
+                  className="w-9 h-9"
+                />
+              </a>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => router.push("/signin")}
+                  className="px-3 py-1.5 rounded-md bg-blue-600 text-white text-xs hover:bg-blue-700"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => router.push("/signup")}
+                  className="px-3 py-1.5 rounded-md border border-blue-600 text-blue-600 text-xs hover:bg-blue-50"
+                >
+                  Sign Up
+                </button>
+              </div>
+            </div>
           )}
           <button
             className="p-2 rounded-md hover:bg-gray-100"

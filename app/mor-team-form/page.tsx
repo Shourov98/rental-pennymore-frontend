@@ -86,7 +86,7 @@ function RentersEdgeFormInner() {
             icon="/icons/steps/submit.svg"
             title="Step 1"
             subtitle="Submit Preferences"
-            description="Submit your pre-market request preferences to our agents to search on your behalf."
+            description="Submit your rental request preferences for a licensed agent to search on your behalf."
           />
 
           {/* Arrow */}
@@ -108,7 +108,7 @@ function RentersEdgeFormInner() {
             icon="/icons/steps/decide.svg"
             title="Step 3"
             subtitle="View & Decide"
-            description="Register to view the apartment, apply if you choose, and only pay their broker fee at lease signing."
+            description="View the rental, apply if you choose, and pay a broker fee only if a lease is signed."
           />
         </div>
 

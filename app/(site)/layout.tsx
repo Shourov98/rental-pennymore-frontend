@@ -14,7 +14,7 @@ export default function SiteLayout({
       {/* --- Top Advertising Text Bar --- */}
 
       {/* --- Navbar --- */}
-      <ComplianceStrip />
+      
       <Navbar />
       <AdvertiseBar />
 

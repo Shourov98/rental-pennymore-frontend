@@ -416,7 +416,7 @@ export default function RenterMatchDetailsPage() {
                       agent._id || agent.userId || agent.email || Math.random()
                     }
                     agent={{
-                      image: agent.profileImage,
+                      image: agent.profileImageUrl,
                       name: agent.fullName,
                       email: agent.email,
                       phone: agent.phoneNumber,
