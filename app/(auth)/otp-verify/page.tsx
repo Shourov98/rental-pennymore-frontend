@@ -34,7 +34,7 @@ function OtpVerifyPageInner() {
 
   const handleKeyDown = (
     index: number,
-    e: React.KeyboardEvent<HTMLInputElement>
+    e: React.KeyboardEvent<HTMLInputElement>,
   ) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
@@ -72,7 +72,7 @@ function OtpVerifyPageInner() {
         const data = await res.json();
         if (!res.ok || !data?.success) {
           throw new Error(
-            data?.message || "Invalid or expired code. Please try again."
+            data?.message || "Invalid or expired code. Please try again.",
           );
         }
         setStatusMessage({
@@ -117,7 +117,7 @@ function OtpVerifyPageInner() {
       if (!response.ok || data?.success === false) {
         throw new Error(
           data?.message ||
-            "Unable to resend right now. Please try again in a moment."
+            "Unable to resend right now. Please try again in a moment.",
         );
       }
 
@@ -161,7 +161,7 @@ function OtpVerifyPageInner() {
       <p className="text-center text-text-secondary mb-6 text-sm sm:text-base">
         We’ve sent a one-time verification code to your email: <br />
         <span className="text-blue-700 font-medium">
-          {email || "your email"}
+          {email || "your email"}{" "}
         </span>
         Please enter the code below to verify within 5 minute. If you don’t see
         the email, please check your junk or spam folder. If it’s there, mark it
