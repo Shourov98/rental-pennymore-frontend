@@ -1,7 +1,6 @@
-version: "3.9"
-
 services:
   frontend:
+    platform: ${DOCKER_DEFAULT_PLATFORM:-linux/amd64}
     container_name: penny-more-frontend
     build:
       context: .

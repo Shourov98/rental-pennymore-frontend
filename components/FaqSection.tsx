@@ -70,6 +70,9 @@ const ALLOWED_ATTRS: Record<string, Set<string>> = {
 
 const sanitizeHtml = (input: string) => {
   if (!input) return "";
+  if (typeof window === "undefined" || typeof DOMParser === "undefined") {
+    return input;
+  }
   const doc = new DOMParser().parseFromString(input, "text/html");
 
   const sanitizeNode = (node: Element) => {

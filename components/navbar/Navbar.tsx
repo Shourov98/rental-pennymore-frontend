@@ -422,28 +422,37 @@ export default function Navbar() {
             {menuOpen ? (
               <X size={22} />
             ) : canShowAuthed && hasDisplayName ? (
-              <div className="flex items-center gap-2">
-                {avatarUrl ? (
-                  <div className="relative w-7 h-7 rounded-full overflow-hidden border border-gray-300">
-                    <Image
-                      src={avatarUrl}
-                      alt="User avatar"
-                      fill
-                      className="object-cover"
-                    />
+              <div className="flex flex-col items-end gap-2">
+                <Image
+                  src="/equal-housing-logo-black.svg"
+                  alt="Fair Housing"
+                  width={40}
+                  height={40}
+                  className="w-9 h-9"
+                />
+                <div className="flex items-center gap-2">
+                  {avatarUrl ? (
+                    <div className="relative w-7 h-7 rounded-full overflow-hidden border border-gray-300">
+                      <Image
+                        src={avatarUrl}
+                        alt="User avatar"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="min-w-[28px] h-7 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                      <User size={16} />
+                    </div>
+                  )}
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-gray-800">
+                      Hey, {displayName}
+                    </p>
+                    <p className="text-xs text-gray-500">{role}</p>
                   </div>
-                ) : (
-                  <div className="min-w-[28px] h-7 rounded-full bg-blue-600 text-white flex items-center justify-center">
-                    <User size={16} />
-                  </div>
-                )}
-                <div className="text-left">
-                  <p className="text-sm font-semibold text-gray-800">
-                    Hey, {displayName}
-                  </p>
-                  <p className="text-xs text-gray-500">{role}</p>
+                  <ChevronDown size={18} className="text-gray-600" />
                 </div>
-                <ChevronDown size={18} className="text-gray-600" />
               </div>
             ) : (
               <Menu size={22} />
