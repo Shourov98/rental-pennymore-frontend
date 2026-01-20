@@ -164,9 +164,9 @@ function OtpVerifyPageInner() {
           {email || "your email"}{" "}
         </span>
         Please enter the code below to verify within 5 minute. If you don’t see
-        the email, please check your junk or spam folder. If it’s there, mark it
-        as <span className="font-semibold">“Not Junk”</span> so future emails
-        are delivered correctly.
+        &apos; the email, please check your junk or spam folder. If it’s there,
+        mark it as <span className="font-semibold">“Not Junk”</span> so future
+        emails are delivered correctly.
       </p>
 
       {/* OTP Input Fields */}

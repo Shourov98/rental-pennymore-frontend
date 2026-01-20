@@ -48,6 +48,60 @@ const faqs: FaqItem[] = [
   },
 ];
 
+const ALLOWED_TAGS = new Set([
+  "a",
+  "br",
+  "div",
+  "em",
+  "li",
+  "ol",
+  "p",
+  "span",
+  "strong",
+  "ul",
+]);
+
+const ALLOWED_ATTRS: Record<string, Set<string>> = {
+  a: new Set(["href", "rel", "target"]),
+  div: new Set(["style"]),
+  p: new Set(["style"]),
+  span: new Set(["style"]),
+};
+
+const sanitizeHtml = (input: string) => {
+  if (!input) return "";
+  const doc = new DOMParser().parseFromString(input, "text/html");
+
+  const sanitizeNode = (node: Element) => {
+    const tagName = node.tagName.toLowerCase();
+    if (!ALLOWED_TAGS.has(tagName)) {
+      node.replaceWith(...Array.from(node.childNodes));
+      return;
+    }
+
+    const allowedAttrs = ALLOWED_ATTRS[tagName];
+    Array.from(node.attributes).forEach((attr) => {
+      const attrName = attr.name.toLowerCase();
+      if (!allowedAttrs || !allowedAttrs.has(attrName)) {
+        node.removeAttribute(attr.name);
+      }
+    });
+
+    if (tagName === "a") {
+      const target = node.getAttribute("target");
+      const rel = node.getAttribute("rel");
+      if (target === "_blank" && !rel) {
+        node.setAttribute("rel", "noopener noreferrer");
+      }
+    }
+
+    Array.from(node.children).forEach((child) => sanitizeNode(child));
+  };
+
+  Array.from(doc.body.children).forEach((child) => sanitizeNode(child));
+  return doc.body.innerHTML;
+};
+
 export default function FaqSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [faqItems, setFaqItems] = useState<FaqItem[]>(faqs);
@@ -137,11 +191,13 @@ export default function FaqSection() {
               <div
                 className={`px-5 pb-4 text-gray-700 text-sm md:text-base leading-relaxed transition-all duration-300 ${
                   openIndex === index
-                    ? "max-h-40 opacity-100"
+                    ? "max-h-[1000px] opacity-100"
                     : "max-h-0 opacity-0 overflow-hidden"
                 }`}
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeHtml(faq.answer),
+                }}
               >
-                {faq.answer}
               </div>
             </div>
           ))}
