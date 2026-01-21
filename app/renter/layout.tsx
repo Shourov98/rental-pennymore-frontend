@@ -20,6 +20,7 @@ export default function RenterLayout({
   const role = auth.role ?? auth.user?.role ?? null;
   const isRenter = role === "Renter";
   const hasRole = Boolean(role);
+  const [mounted, setMounted] = useState(false);
 
   // Close drawer on outside click
   useEffect(() => {
@@ -31,6 +32,12 @@ export default function RenterLayout({
     if (sidebarOpen) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [sidebarOpen]);
+
+  useEffect(() => {
+    // Hydration gate: render null on server/first client pass, then show layout.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
 
   const shouldRedirectHomeOnLogout = () => {
     if (typeof window === "undefined") return false;
@@ -50,7 +57,7 @@ export default function RenterLayout({
     }
   }, [hasRole, isAuthed, isRenter, router]);
 
-  if (!isAuthed || (hasRole && !isRenter)) {
+  if (!mounted || !isAuthed || (hasRole && !isRenter)) {
     return null;
   }
 

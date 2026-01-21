@@ -211,8 +211,32 @@ export default function Navbar() {
     return () => window.removeEventListener("hashchange", handleHashChange);
   }, [pathname]);
 
-  // Auto-close desktop dropdown
-  const handleMouseLeave = () => setTimeout(() => setDropdownOpen(false), 150);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setDropdownOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setDropdownOpen(false);
+      }
+    };
+
+    if (dropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [dropdownOpen]);
 
   return (
     <nav className="w-full flex flex-row bg-white shadow-sm sticky top-0 z-50">
@@ -306,11 +330,7 @@ export default function Navbar() {
 
         {/* Desktop User Dropdown (lg+) */}
         <div className="hidden lg:flex flex-col items-end justify-end">
-          <div
-            className="relative"
-            ref={dropdownRef}
-            onMouseLeave={handleMouseLeave}
-          >
+          <div className="relative" ref={dropdownRef}>
             {canShowAuthed && hasDisplayName ? (
               <>
                 <button

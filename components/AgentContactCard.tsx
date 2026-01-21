@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { User } from "lucide-react";
-import { log } from "console";
 
 interface AgentContactCardProps {
   agent: {
@@ -20,12 +19,14 @@ export default function AgentContactCard({ agent }: AgentContactCardProps) {
   const safeName = agent.name || "Agent";
 
   let imageSrc = agent.image || null;
-  console.log(imageSrc);
 
   if (imageSrc) {
     try {
       const url = new URL(imageSrc);
-      const allowedHosts = new Set(["randomuser.me"]);
+      const allowedHosts = new Set([
+        "randomuser.me",
+        "hel1.your-objectstorage.com",
+      ]);
 
       if (url.hostname && !allowedHosts.has(url.hostname)) {
         imageSrc = null;
