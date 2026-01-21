@@ -22,12 +22,91 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [acceptingRequests, setAcceptingRequests] = useState(true);
+  const [isTogglingRequests, setIsTogglingRequests] = useState(false);
+  const [requestsError, setRequestsError] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof agentSubscription === "boolean") {
       setSubscribed(agentSubscription);
     }
   }, [agentSubscription]);
+
+  useEffect(() => {
+    const fetchAcceptingRequests = async () => {
+      setRequestsError(null);
+      try {
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+        const response = await fetch(
+          `${API_BASE_URL}/agent/accepting-requests/status`,
+          {
+            method: "GET",
+            headers,
+          }
+        );
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || data?.success === false) {
+          throw new Error(
+            data?.message || "We couldn't load your request status right now."
+          );
+        }
+
+        setAcceptingRequests(Boolean(data?.data?.acceptingRequests));
+      } catch (err) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "We couldn't load your request status right now.";
+        setRequestsError(message);
+      }
+    };
+
+    fetchAcceptingRequests();
+  }, [accessToken]);
+
+  const toggleAcceptingRequests = async () => {
+    setRequestsError(null);
+    setIsTogglingRequests(true);
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(
+        `${API_BASE_URL}/agent/accepting-requests/toggle`,
+        {
+          method: "POST",
+          headers,
+        }
+      );
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message || "We couldn't update your request status right now."
+        );
+      }
+
+      setAcceptingRequests(Boolean(data?.data?.acceptingRequests));
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "We couldn't update your request status right now.";
+      setRequestsError(message);
+    } finally {
+      setIsTogglingRequests(false);
+    }
+  };
 
   const toggleSubscription = async () => {
     setError(null);
@@ -156,6 +235,48 @@ export default function SettingsPage() {
         </div>
 
         {/* Delete Account */}
+        <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-6 border border-gray-100">
+          <h3 className="text-base font-semibold text-gray-800 mb-1">
+            Accept renter requests
+          </h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Toggle whether you want to receive new renter requests.
+          </p>
+
+          {requestsError && (
+            <p className="text-sm text-red-600 mb-3">{requestsError}</p>
+          )}
+
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={acceptingRequests}
+              aria-label="Accept renter requests"
+              onClick={toggleAcceptingRequests}
+              disabled={isTogglingRequests}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-70 ${
+                acceptingRequests
+                  ? "bg-blue-600"
+                  : "bg-gray-300 hover:bg-gray-400"
+              }`}
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${
+                  acceptingRequests ? "translate-x-5" : "translate-x-1"
+                }`}
+              />
+            </button>
+            <span className="text-sm font-medium text-gray-700">
+              {isTogglingRequests
+                ? "Updating..."
+                : acceptingRequests
+                ? "Accepting requests"
+                : "Not accepting requests"}
+            </span>
+          </div>
+        </div>
+
         <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-6 border border-gray-100">
           <h3 className="text-base font-semibold text-gray-800 mb-1">
             Delete your Account
