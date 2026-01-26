@@ -192,7 +192,7 @@ export default function FaqSection() {
 
               {/* Animated answer section */}
               <div
-                className={`px-5 pb-4 text-gray-700 text-sm md:text-base leading-relaxed transition-all duration-300 ${
+                className={`faq-answer px-5 pb-4 text-gray-700 text-sm md:text-base leading-relaxed transition-all duration-300 ${
                   openIndex === index
                     ? "max-h-[1000px] opacity-100"
                     : "max-h-0 opacity-0 overflow-hidden"

@@ -53,3 +53,29 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@layer components {
+  .faq-answer {
+    @apply leading-relaxed;
+  }
+
+  .faq-answer p {
+    @apply mt-2;
+  }
+
+  .faq-answer ol {
+    @apply list-decimal pl-6 mt-2;
+  }
+
+  .faq-answer ul {
+    @apply list-disc pl-6 mt-2;
+  }
+
+  .faq-answer li {
+    @apply mt-1;
+  }
+
+  .faq-answer a {
+    @apply text-[color:var(--color-action)] underline underline-offset-2;
+  }
+}
