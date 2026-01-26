@@ -23,7 +23,7 @@ export default function PasswordChangedPage() {
 
       {/* Title + Subtitle */}
       <h2 className="text-2xl font-semibold text-text-primary mb-2">
-        Successfully verified
+        You’re almost there!
       </h2>
       <p className="text-text-secondary mb-6 text-sm sm:text-base max-w-xs sm:max-w-sm">
         Your email has been verified, now you have to submit your preference to

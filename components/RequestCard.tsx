@@ -110,7 +110,7 @@ export default function RequestCard({
         </div>
 
         {/* Second Row: Activate / Deactivate */}
-        <button
+        {/* <button
           disabled={isMutating || (!isActive && disableActivate)}
           onClick={onToggleStatus}
           className={`w-full py-2.5 font-medium text-sm rounded-2xl transition-all
@@ -125,7 +125,7 @@ export default function RequestCard({
         `}
         >
           {isMutating ? "Please wait..." : isActive ? "Deactivate" : "Activate"}
-        </button>
+        </button> */}
       </div>
     </div>
   );

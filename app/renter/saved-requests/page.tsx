@@ -196,7 +196,7 @@ export default function RenterDetails() {
             method: "GET",
             headers,
             signal: controller.signal,
-          }
+          },
         );
 
         const data: ApiResponse = await response.json().catch(() => ({}));
@@ -204,7 +204,7 @@ export default function RenterDetails() {
         if (!response.ok || data?.success === false) {
           throw new Error(
             data?.message ||
-              "We couldn't load your saved requests right now. Please try again."
+              "We couldn't load your saved requests right now. Please try again.",
           );
         }
 
@@ -231,14 +231,14 @@ export default function RenterDetails() {
               dateRange: formatDateRange(req.movingDateRange),
               priceRange: formatCurrencyRange(
                 req.priceRange?.min,
-                req.priceRange?.max
+                req.priceRange?.max,
               ),
               bedsLabel: formatBedrooms(req.bedrooms),
               bathsLabel: formatBathrooms(req.bathrooms),
               status: expired || !resolvedActive ? "deactive" : "active",
               disableActivate: expired,
             };
-          }
+          },
         );
 
         setRequests(normalizedRequests);
@@ -290,13 +290,13 @@ export default function RenterDetails() {
           method: "PUT",
           headers,
           body: JSON.stringify({ isActive: nextActive }),
-        }
+        },
       );
       const data = await response.json().catch(() => ({}));
       if (!response.ok || data?.success === false) {
         throw new Error(
           data?.message ||
-            "We couldn't update the status right now. Please try again."
+            "We couldn't update the status right now. Please try again.",
         );
       }
 
@@ -307,7 +307,7 @@ export default function RenterDetails() {
             ...req,
             status: nextActive ? "active" : "deactive",
           };
-        })
+        }),
       );
     } catch (err) {
       const message =
@@ -343,7 +343,7 @@ export default function RenterDetails() {
       if (!response.ok || data?.success === false) {
         throw new Error(
           data?.message ||
-            "We couldn't delete this request right now. Please try again."
+            "We couldn't delete this request right now. Please try again.",
         );
       }
 
@@ -417,7 +417,7 @@ export default function RenterDetails() {
             ))}
           </div>
 
-          {pagination && (
+          {/* {pagination && (
             <div className="flex items-center justify-between bg-white rounded-2xl shadow-sm p-4 text-sm text-gray-600">
               <div>
                 Page {pagination.currentPage ?? page} of{" "}
@@ -448,7 +448,7 @@ export default function RenterDetails() {
                 </button>
               </div>
             </div>
-          )}
+          )} */}
         </>
       )}
     </div>
