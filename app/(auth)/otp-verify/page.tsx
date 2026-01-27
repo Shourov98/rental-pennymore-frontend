@@ -79,7 +79,14 @@ function OtpVerifyPageInner() {
           type: "success",
           message: data.message || "Email verified successfully.",
         });
-        router.push("/successful-verify");
+        const role =
+          data?.data?.role ||
+          data?.data?.user?.role ||
+          "";
+        const target = role
+          ? `/successful-verify?role=${encodeURIComponent(role)}`
+          : "/successful-verify";
+        router.push(target);
       })
       .catch((err: unknown) => {
         const message =

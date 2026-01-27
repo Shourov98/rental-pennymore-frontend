@@ -1,10 +1,21 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 
-export default function PasswordChangedPage() {
+export default function SuccessfulVerifyPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const roleParam = searchParams.get("role") || "";
+  const role = roleParam.toLowerCase();
+  const isAgent = role === "agent";
+  const isRenter = role === "renter" || !isAgent;
+
+  const title = isAgent ? "Registration request submitted" : "You’re almost there!";
+  const buttonText = isAgent ? "Done" : "Get Started";
+  const handleClick = () => {
+    router.push("/signin");
+  };
 
   return (
     <div className="w-full flex flex-col items-center justify-center text-center">
@@ -23,16 +34,33 @@ export default function PasswordChangedPage() {
 
       {/* Title + Subtitle */}
       <h2 className="text-2xl font-semibold text-text-primary mb-2">
-        You’re almost there!
+        {title}
       </h2>
       <p className="text-text-secondary mb-6 text-sm sm:text-base max-w-xs sm:max-w-sm">
-        Your email has been verified, now you have to submit your preference to
-        get listing according to your needs.
+        {isAgent ? (
+          <>
+            <span className="font-semibold">Your email has been verified.</span>
+            <br />
+            Agent registration is subject to review and approval.
+            <br />
+            If approved, you’ll be able to access your account and receive renter
+            requests.
+            <br />
+            We may contact you if additional information is needed during the
+            review.
+          </>
+        ) : (
+          <>
+            <span className="font-semibold">Your email is verified.</span>
+            <br />
+            Go ahead and submit your first request when you’re ready.
+          </>
+        )}
       </p>
 
-      {/* Back to Login Button */}
+      {/* Action Button */}
       <button
-        onClick={() => router.push("/signin")}
+        onClick={handleClick}
         className="
           flex items-center justify-center gap-2
           bg-action hover:bg-action-hover
@@ -40,7 +68,7 @@ export default function PasswordChangedPage() {
           px-6 py-2.5 sm:px-8 sm:py-3 rounded-xl transition
         "
       >
-        Done
+        {buttonText}
       </button>
     </div>
   );
