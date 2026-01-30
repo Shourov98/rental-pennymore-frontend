@@ -25,7 +25,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const faqs: FaqItem[] = [
   {
-    question: "FARE Act Compliance?",
+    question: "FARE Act Compliance? Do I only owe a fee if I rented a unit the agent introduced or showed? Yes. Our platform complies fully with the FARE Act by ensuring transparency and adherence to fair housing regulations when connecting renters with licensed agents.",
     answer:
       "Yes. Our platform complies fully with the FARE Act by ensuring transparency and adherence to fair housing regulations when connecting renters with licensed agents.",
   },
@@ -180,7 +180,7 @@ export default function FaqSection() {
                 className="w-full flex justify-between items-center text-left px-5 py-4 text-gray-900 font-medium hover:bg-gray-50"
               >
                 <div className="flex items-center gap-2">
-                  <CircleHelp className="w-5 h-5 text-gray-800" />
+                  <CircleHelp className="w-5 h-5 shrink-0 text-gray-800" />
                   <span className="font-semibold">{faq.question}</span>
                 </div>
                 {openIndex === index ? (

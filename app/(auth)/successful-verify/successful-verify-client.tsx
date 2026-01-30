@@ -15,11 +15,7 @@ export default function SuccessfulVerifyClient() {
     : "You’re almost there!";
   const buttonText = isAgent ? "Done" : "Get Started";
   const handleClick = () => {
-    if (isAgent) {
-      router.push("/signin");
-      return;
-    }
-    router.push("/successful-verify");
+    router.push("/signin");
   };
 
   return (
@@ -38,9 +34,7 @@ export default function SuccessfulVerifyClient() {
       </div>
 
       {/* Title + Subtitle */}
-      <h2 className="text-2xl font-semibold text-text-primary mb-2">
-        {title}
-      </h2>
+      <h2 className="text-2xl font-semibold text-text-primary mb-2">{title}</h2>
       <p className="text-text-secondary mb-6 text-sm sm:text-base max-w-xs sm:max-w-sm">
         {isAgent ? (
           <>
@@ -48,8 +42,8 @@ export default function SuccessfulVerifyClient() {
             <br />
             Agent registration is subject to review and approval.
             <br />
-            If approved, you’ll be able to access your account and receive renter
-            requests.
+            If approved, you’ll be able to access your account and receive
+            renter requests.
             <br />
             We may contact you if additional information is needed during the
             review.
