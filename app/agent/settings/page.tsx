@@ -135,7 +135,10 @@ export default function SettingsPage() {
         );
       }
 
-      const isEnabled = !!data?.data?.emailSubscriptionEnabled;
+      const isEnabled =
+        typeof data?.data?.emailSubscriptionEnabled === "boolean"
+          ? data.data.emailSubscriptionEnabled
+          : !subscribed;
       setSubscribed(isEnabled);
       dispatch(
         updateUser({

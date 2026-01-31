@@ -227,10 +227,18 @@ const authSlice = createSlice({
         state.user = {
           ...profile,
           profileImage: profile.profileImage ?? profile.profileImageUrl ?? null,
+          emailSubscriptionEnabled:
+            profile.emailSubscriptionEnabled ??
+            state.user?.emailSubscriptionEnabled,
         };
         state.role = profile.role;
       } else {
-        state.renter = profile;
+        state.renter = {
+          ...profile,
+          emailSubscriptionEnabled:
+            profile.emailSubscriptionEnabled ??
+            state.renter?.emailSubscriptionEnabled,
+        };
         state.role = "Renter";
       }
       state.status = "authenticated";
