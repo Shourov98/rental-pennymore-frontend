@@ -14,7 +14,7 @@ export default function SettingsPage() {
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
   const router = useRouter();
   const agentSubscription = useSelector(
-    (state: RootState) => state.auth.user?.emailSubscriptionEnabled
+    (state: RootState) => state.auth.user?.emailSubscriptionEnabled,
   );
   const [subscribed, setSubscribed] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -46,14 +46,14 @@ export default function SettingsPage() {
           {
             method: "GET",
             headers,
-          }
+          },
         );
 
         const data = await response.json().catch(() => ({}));
 
         if (!response.ok || data?.success === false) {
           throw new Error(
-            data?.message || "We couldn't load your request status right now."
+            data?.message || "We couldn't load your request status right now.",
           );
         }
 
@@ -85,14 +85,14 @@ export default function SettingsPage() {
         {
           method: "POST",
           headers,
-        }
+        },
       );
 
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok || data?.success === false) {
         throw new Error(
-          data?.message || "We couldn't update your request status right now."
+          data?.message || "We couldn't update your request status right now.",
         );
       }
 
@@ -123,7 +123,7 @@ export default function SettingsPage() {
         {
           method: "POST",
           headers,
-        }
+        },
       );
 
       const data = await response.json().catch(() => ({}));
@@ -131,7 +131,7 @@ export default function SettingsPage() {
       if (!response.ok || data?.success === false) {
         throw new Error(
           data?.message ||
-            "We couldn't update your email subscription right now."
+            "We couldn't update your email subscription right now.",
         );
       }
 
@@ -143,7 +143,7 @@ export default function SettingsPage() {
       dispatch(
         updateUser({
           emailSubscriptionEnabled: isEnabled,
-        })
+        }),
       );
     } catch (err) {
       const message =
@@ -175,7 +175,7 @@ export default function SettingsPage() {
 
       if (!response.ok || data?.success === false) {
         throw new Error(
-          data?.message || "We couldn't delete your account right now."
+          data?.message || "We couldn't delete your account right now.",
         );
       }
 
@@ -204,7 +204,7 @@ export default function SettingsPage() {
 
       <div className="max-w-5xl mx-auto flex flex-col gap-6">
         {/* Email Notifications */}
-        <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-6 border border-gray-100">
+        {/* <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-6 border border-gray-100">
           <h3 className="text-base font-semibold text-gray-800 mb-1">
             {subscribed
               ? "Unsubscribe from email notification"
@@ -235,7 +235,7 @@ export default function SettingsPage() {
               {isSaving ? "Updating..." : "Subscribe to Email"}
             </button>
           )}
-        </div>
+        </div> */}
 
         {/* Delete Account */}
         <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-6 border border-gray-100">
@@ -274,8 +274,8 @@ export default function SettingsPage() {
               {isTogglingRequests
                 ? "Updating..."
                 : acceptingRequests
-                ? "Accepting requests"
-                : "Not accepting requests"}
+                  ? "Accepting requests"
+                  : "Not accepting requests"}
             </span>
           </div>
         </div>
