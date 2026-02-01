@@ -22,13 +22,16 @@ function RentersEdgeFormInner() {
       return;
     }
 
-    if (registerOption === "no" || buyerOption === "none") {
+    const wantsBeforeListed = registerOption === "yes";
+    const wantsSpecialist = buyerOption === "buyer" || buyerOption === "renter";
+
+    if (!wantsBeforeListed && !wantsSpecialist) {
       router.push("/");
       return;
     }
 
     const questionnaire = {
-      lookingToPurchase: registerOption === "yes",
+      lookingToPurchase: wantsBeforeListed,
       purchaseTimeline: purchaseTimeline.trim(),
       buyerSpecialistNeeded: buyerOption === "buyer",
       renterSpecialistNeeded: buyerOption === "renter",
