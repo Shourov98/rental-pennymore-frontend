@@ -63,12 +63,38 @@ body {
     @apply mt-2;
   }
 
+  .faq-answer h1 {
+    @apply text-2xl font-semibold mt-3;
+  }
+
+  .faq-answer h2 {
+    @apply text-xl font-semibold mt-3;
+  }
+
+  .faq-answer h3 {
+    @apply text-lg font-semibold mt-3;
+  }
+
   .faq-answer ol {
     @apply list-decimal pl-6 mt-2;
   }
 
   .faq-answer ul {
     @apply list-disc pl-6 mt-2;
+  }
+
+  .faq-answer b,
+  .faq-answer strong {
+    @apply font-semibold;
+  }
+
+  .faq-answer i,
+  .faq-answer em {
+    @apply italic;
+  }
+
+  .faq-answer u {
+    @apply underline;
   }
 
   .faq-answer li {

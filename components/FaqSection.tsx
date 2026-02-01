@@ -50,14 +50,20 @@ const faqs: FaqItem[] = [
 
 const ALLOWED_TAGS = new Set([
   "a",
+  "b",
   "br",
   "div",
   "em",
+  "h1",
+  "h2",
+  "h3",
+  "i",
   "li",
   "ol",
   "p",
   "span",
   "strong",
+  "u",
   "ul",
 ]);
 
