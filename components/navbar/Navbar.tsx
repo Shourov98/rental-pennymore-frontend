@@ -23,6 +23,7 @@ export default function Navbar() {
   const drawerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
+  const hideNavItems = pathname === "/about" || pathname === "/brucher";
 
   const getFirstName = (fullName?: string | null, email?: string | null) => {
     const safeFullName = fullName?.trim();
@@ -300,32 +301,34 @@ export default function Navbar() {
               </span>
             </a>
           </div>
-          <div className="flex items-center justify-center gap-4">
-            {navItems.map((item) => (
-              <a
-                key={item.name}
-                href={item.id}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleNavClick(item.id, item.name);
-                }}
-                className={`relative pb-1 lg:px-2 transition ${
-                  activeItem === item.name
-                    ? "text-blue-600"
-                    : "hover:text-blue-600"
-                }`}
-              >
-                {item.name}
-                <span
-                  className={`absolute left-0 bottom-0 h-[3px] rounded-full bg-blue-600 transition-all duration-300 ${
+          {!hideNavItems && (
+            <div className="flex items-center justify-center gap-4">
+              {navItems.map((item) => (
+                <a
+                  key={item.name}
+                  href={item.id}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNavClick(item.id, item.name);
+                  }}
+                  className={`relative pb-1 lg:px-2 transition ${
                     activeItem === item.name
-                      ? "w-full opacity-100"
-                      : "w-0 opacity-0"
+                      ? "text-blue-600"
+                      : "hover:text-blue-600"
                   }`}
-                ></span>
-              </a>
-            ))}
-          </div>
+                >
+                  {item.name}
+                  <span
+                    className={`absolute left-0 bottom-0 h-[3px] rounded-full bg-blue-600 transition-all duration-300 ${
+                      activeItem === item.name
+                        ? "w-full opacity-100"
+                        : "w-0 opacity-0"
+                    }`}
+                  ></span>
+                </a>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Desktop User Dropdown (lg+) */}
@@ -499,23 +502,26 @@ export default function Navbar() {
 
             {/* Drawer Content */}
             <div className="flex flex-col gap-4">
-              {navItems.map((item) => (
-                <button
-                  key={item.name}
-                  onClick={() => {
-                    handleNavClick(item.id, item.name);
-                  }}
-                  className={`text-left text-gray-700 py-2 ${
-                    activeItem === item.name
-                      ? "text-blue-600 font-semibold"
-                      : ""
-                  }`}
-                >
-                  {item.name}
-                </button>
-              ))}
-
-              <hr />
+              {!hideNavItems && (
+                <>
+                  {navItems.map((item) => (
+                    <button
+                      key={item.name}
+                      onClick={() => {
+                        handleNavClick(item.id, item.name);
+                      }}
+                      className={`text-left text-gray-700 py-2 ${
+                        activeItem === item.name
+                          ? "text-blue-600 font-semibold"
+                          : ""
+                      }`}
+                    >
+                      {item.name}
+                    </button>
+                  ))}
+                  <hr />
+                </>
+              )}
 
               {canShowAuthed ? (
                 userMenu.map((menu) => (
