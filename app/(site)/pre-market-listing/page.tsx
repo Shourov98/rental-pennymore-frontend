@@ -48,6 +48,7 @@ export default function PreMarketListingPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [description, setDescription] = useState("");
   const [isAgreementChecked, setIsAgreementChecked] = useState(false);
+  const [shareWithOtherAgents, setShareWithOtherAgents] = useState(false);
   const [agreementWarning, setAgreementWarning] = useState<string | null>(null);
   const referrerName = useSelector(selectReferrerName);
 
@@ -222,6 +223,7 @@ export default function PreMarketListingPage() {
         thirdPartyGuarantor: guarantor.includes("Third party guarantor"),
       },
       preferences,
+      shareRequestWithOtherAgents: shareWithOtherAgents,
     };
 
     try {
@@ -255,6 +257,7 @@ export default function PreMarketListingPage() {
       dispatch(resetPreferences());
       setDescription("");
       setIsAgreementChecked(false);
+      setShareWithOtherAgents(false);
       setAgreementWarning(null);
       if (registrationLink && typeof window !== "undefined") {
         window.open(registrationLink, "_blank", "noopener,noreferrer");
@@ -596,6 +599,29 @@ export default function PreMarketListingPage() {
           )}
           {/* Agreement text + checkbox */}
           <div className="border-t pt-4 text-xs text-gray-600 space-y-3">
+            <div className="space-y-2">
+              <p className="font-semibold text-gray-700">Checkbox (optional):</p>
+              <p>
+                To receive assistance beyond one agent, you may choose to allow
+                your request to be shared with other licensed New York real
+                estate agents who could assist in identifying potential rental
+                opportunities that may not yet be publicly advertised.
+              </p>
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={shareWithOtherAgents}
+                  onChange={(e) => setShareWithOtherAgents(e.target.checked)}
+                  className="mt-1 w-4 h-4 text-blue-600"
+                />
+                <span className="pt-1">
+                  By checking this box, I consent to my request being shared
+                  with other licensed New York real estate agents and to being
+                  contacted by such agents.
+                </span>
+              </label>
+            </div>
+
             <p>
               To allow your agent,{" "}
               <span className="font-bold">{referrerName || "Tuval Mor"}</span>,
