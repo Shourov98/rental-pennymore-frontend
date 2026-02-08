@@ -56,16 +56,16 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
           { key: "East Harlem (North)", label: "East Harlem (North)" },
           { key: "East Harlem (South)", label: "East Harlem (South)" },
           { key: "Morningside Heights", label: "Morningside Heights" },
+          {
+            key: "Upper West Side-Manhattan Valley",
+            label: "Upper West Side-Manhattan Valley",
+          },
         ],
       },
 
       {
         title: "Uptown Manhattan",
         items: [
-          {
-            key: "Upper West Side-Manhattan Valley",
-            label: "Upper West Side-Manhattan Valley",
-          },
           {
             key: "Upper West Side (Central)",
             label: "Upper West Side (Central)",
@@ -113,7 +113,7 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
         items: [
           { key: "Chelsea-Hudson Yards", label: "Chelsea-Hudson Yards" },
           { key: "Flatiron - Union Square", label: "Flatiron - Union Square" },
-          { key: "SoHo-Hudson Square", label: "SoHo-Hudson Square" },
+
           { key: "Kips Bay", label: "Kips Bay" },
           { key: "Gramercy Park", label: "Gramercy Park" },
           {
@@ -121,6 +121,7 @@ const boroughNeighborhoods: BoroughNeighborhoods = {
             label: "Stuyvesant Town-Peter Cooper Village",
           },
           { key: "Greenwich Village", label: "Greenwich Village" },
+          { key: "SoHo-Hudson Square", label: "SoHo-Hudson Square" },
           { key: "West Village", label: "West Village" },
           { key: "East Village", label: "East Village" },
           { key: "Lower East Side", label: "Lower East Side" },
