@@ -421,7 +421,7 @@ function InputField({
       <label className="block text-sm font-semibold text-text-tertiary mb-2">
         {label}
       </label>
-      <div className="flex items-center justify-between bg-surface-secondary border border-border-secondary rounded-xl px-4 py-3 sm:py-3.5">
+      <div className="flex items-center justify-between bg-surface-secondary border border-border-secondary rounded-xl px-4 py-3 sm:py-3.5 transition focus-within:ring-2 focus-within:ring-blue-200 focus-within:border-blue-400">
         <div className="flex items-center flex-1">
           <Image
             src={icon}
