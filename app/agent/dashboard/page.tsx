@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Eye, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { Eye, Filter, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -255,12 +255,14 @@ export default function AgentRenterRequestsPage() {
         <>
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-[1000px] w-full text-sm">
+              <table className="min-w-[1200px] w-full text-sm">
                 <thead className="bg-blue-100 text-gray-800">
                   <tr>
                     <th className="py-3 px-5 text-left">Date</th>
                     <th className="py-3 px-5 text-left">Request</th>
                     <th className="py-3 px-5 text-left">Referral</th>
+                    <th className="py-3 px-5 text-left">Scope</th>
+                    <th className="py-3 px-5 text-left">Visibility</th>
                     <th className="py-3 px-5 text-left">Borough</th>
                     <th className="py-3 px-5 text-left">Price (Max)</th>
                     <th className="py-3 px-5 text-left">Beds</th>
@@ -300,6 +302,25 @@ export default function AgentRenterRequestsPage() {
                             </span>
                           );
                         })()}
+                      </td>
+                      <td className="py-3 px-5">
+                        <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+                          {req.scopeLabel}
+                        </span>
+                      </td>
+                      <td className="py-3 px-5">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                            req.isPrivateVisibility
+                              ? "bg-gray-100 text-gray-700 border border-gray-300"
+                              : "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                          }`}
+                        >
+                          {req.visibilityLabel}
+                          {req.isPrivateVisibility && (
+                            <Lock className="w-3.5 h-3.5" />
+                          )}
+                        </span>
                       </td>
                       <td className="py-3 px-5">
                         <div className="text-gray-900">{req.boroughsLabel}</div>

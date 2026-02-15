@@ -24,6 +24,9 @@ export interface ApiAgentRequest {
   buildingFeatures?: Record<string, boolean>;
   petPolicy?: Record<string, boolean>;
   guarantorRequired?: Record<string, boolean>;
+  shareConsent?: boolean;
+  scope?: string;
+  visibility?: string;
   status?: string;
   preferences?: string[];
   isActive?: boolean;
@@ -85,6 +88,9 @@ export interface NormalizedAgentRequest {
   priceMaxLabel: string;
   bedroomsLabel: string;
   bathroomsLabel: string;
+  scopeLabel: string;
+  visibilityLabel: string;
+  isPrivateVisibility: boolean;
   status: string;
   preferences: string[];
   renterName?: string;
@@ -157,6 +163,36 @@ const formatBedrooms = (bedrooms?: string[]) =>
 const formatBathrooms = (bathrooms?: string[]) =>
   bathrooms?.length ? bathrooms.join(", ") : "Not specified";
 
+const formatScope = (scope?: string) => {
+  const value = scope?.trim();
+  return value ? value : "Not specified";
+};
+
+const formatVisibility = (
+  visibility?: string,
+  shareConsent?: boolean
+): { visibilityLabel: string; isPrivateVisibility: boolean } => {
+  if (visibility && visibility.trim()) {
+    const normalized = visibility.trim().toLowerCase();
+    const isPrivate = normalized === "private";
+    const label =
+      normalized === "shared"
+        ? "Shared"
+        : normalized === "private"
+          ? "Private"
+          : visibility;
+    return { visibilityLabel: label, isPrivateVisibility: isPrivate };
+  }
+
+  if (typeof shareConsent === "boolean") {
+    return shareConsent
+      ? { visibilityLabel: "Shared", isPrivateVisibility: false }
+      : { visibilityLabel: "Private", isPrivateVisibility: true };
+  }
+
+  return { visibilityLabel: "Not specified", isPrivateVisibility: false };
+};
+
 export const normalizeAgentRequest = (
   req: ApiAgentRequest & {
     createdAt?: string;
@@ -164,6 +200,10 @@ export const normalizeAgentRequest = (
   }
 ): NormalizedAgentRequest => {
   const { boroughsLabel, neighborhoodsLabel } = formatLocations(req.locations);
+  const { visibilityLabel, isPrivateVisibility } = formatVisibility(
+    req.visibility,
+    req.shareConsent
+  );
 
   return {
     id:
@@ -175,6 +215,9 @@ export const normalizeAgentRequest = (
     priceMaxLabel: formatCurrency(req.priceRange?.max ?? req.priceRange?.min),
     bedroomsLabel: formatBedrooms(req.bedrooms),
     bathroomsLabel: formatBathrooms(req.bathrooms),
+    scopeLabel: formatScope(req.scope),
+    visibilityLabel,
+    isPrivateVisibility,
     status: req.status || (req.isActive ? "active" : "inactive"),
     preferences: req.preferences ?? [],
     renterName: req.renterInfo?.renterName,
