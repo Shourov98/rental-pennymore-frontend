@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, UsersRound } from "lucide-react";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -288,6 +288,7 @@ export default function SignupForm({ role }: { role: SignupRole }) {
               onChange={(value) =>
                 setFormData((prev) => ({ ...prev, title: value }))
               }
+              icon={<UsersRound className="w-5 h-5 text-action mr-2" />}
               options={[
                 "Licensed Real Estate Salesperson",
                 "Associate Real Estate Broker",
@@ -457,11 +458,13 @@ function SelectField({
   label,
   value,
   onChange,
+  icon,
   options,
 }: {
   label: string;
   value?: string;
   onChange?: (value: string) => void;
+  icon?: ReactNode;
   options: string[];
 }) {
   return (
@@ -470,6 +473,7 @@ function SelectField({
         {label}
       </label>
       <div className="flex items-center justify-between bg-surface-secondary border border-border-secondary rounded-xl px-4 py-3 sm:py-3.5">
+        {icon}
         <select
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
