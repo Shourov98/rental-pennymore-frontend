@@ -25,6 +25,7 @@ export default function SignupForm({ role }: { role: SignupRole }) {
     fullName: "",
     phoneNumber: "",
     licenseNumber: "",
+    title: "",
     brokerageName: "",
     email: "",
     password: "",
@@ -38,6 +39,7 @@ export default function SignupForm({ role }: { role: SignupRole }) {
     (!formData.fullName ||
       !formData.phoneNumber ||
       !formData.licenseNumber ||
+      !formData.title ||
       !formData.brokerageName ||
       !formData.email ||
       !formData.password);
@@ -114,6 +116,7 @@ export default function SignupForm({ role }: { role: SignupRole }) {
             fullName: formData.fullName.trim(),
             phoneNumber: formData.phoneNumber.trim(),
             licenseNumber: formData.licenseNumber.trim(),
+            title: formData.title,
             brokerageName: formData.brokerageName.trim(),
             email,
             password: formData.password,
@@ -296,6 +299,17 @@ export default function SignupForm({ role }: { role: SignupRole }) {
                 setFormData((prev) => ({ ...prev, licenseNumber: value }))
               }
             />
+            <SelectField
+              label="Title"
+              value={formData.title}
+              onChange={(value) =>
+                setFormData((prev) => ({ ...prev, title: value }))
+              }
+              options={[
+                "Licensed Real Estate Salesperson",
+                "Associate Real Estate Broker",
+              ]}
+            />
             <InputField
               icon="/icons/user.svg"
               label="Brokerage Name"
@@ -451,6 +465,40 @@ function InputField({
             {rightIcon}
           </button>
         )}
+      </div>
+    </div>
+  );
+}
+
+function SelectField({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value?: string;
+  onChange?: (value: string) => void;
+  options: string[];
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-semibold text-text-tertiary mb-2">
+        {label}
+      </label>
+      <div className="flex items-center justify-between bg-surface-secondary border border-border-secondary rounded-xl px-4 py-3 sm:py-3.5">
+        <select
+          value={value}
+          onChange={(e) => onChange?.(e.target.value)}
+          className="w-full bg-transparent focus:outline-none text-text-secondary text-sm sm:text-base"
+        >
+          <option value="">Select title</option>
+          {options.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );
