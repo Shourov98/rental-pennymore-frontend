@@ -4,13 +4,35 @@ import ContactSection from "@/components/ContactSection";
 import FaqSection from "@/components/FaqSection";
 import HeroSection from "@/components/HeroSection";
 import MonthlyReportSection from "@/components/MonthlyReportSection";
-import { selectReferrerName } from "@/store/slices/authSlice";
+import {
+  selectAccessToken,
+  selectReferrerName,
+  selectRenter,
+  selectUser,
+} from "@/store/slices/authSlice";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function HomePage() {
+  const router = useRouter();
+  const accessToken = useSelector(selectAccessToken);
+  const user = useSelector(selectUser);
+  const renter = useSelector(selectRenter);
   const referrerName = useSelector(selectReferrerName);
+
+  const hasSession = Boolean(accessToken || user || renter);
+
+  useEffect(() => {
+    if (!hasSession) {
+      router.replace("/brucher");
+    }
+  }, [hasSession, router]);
+
+  if (!hasSession) return null;
+
   return (
     <main className="flex flex-col w-full min-h-screen bg-gray-100 text-gray-900">
       <HeroSection />
