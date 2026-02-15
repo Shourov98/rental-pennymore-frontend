@@ -73,7 +73,7 @@ export default function SignupForm({ role }: { role: SignupRole }) {
     if (!response.ok || !data?.success) {
       throw new Error(
         data?.message ||
-          "Unable to resend verification. Please try again shortly."
+          "Unable to resend verification. Please try again shortly.",
       );
     }
     return data;
@@ -128,7 +128,7 @@ export default function SignupForm({ role }: { role: SignupRole }) {
         if (!response.ok || !data?.success) {
           throw new Error(
             data?.message ||
-              "Unable to sign up at the moment. Please try again."
+              "Unable to sign up at the moment. Please try again.",
           );
         }
 
@@ -170,7 +170,7 @@ export default function SignupForm({ role }: { role: SignupRole }) {
 
       if (!response.ok || !data?.success) {
         throw new Error(
-          data?.message || "Unable to sign up at the moment. Please try again."
+          data?.message || "Unable to sign up at the moment. Please try again.",
         );
       }
 
@@ -195,9 +195,7 @@ export default function SignupForm({ role }: { role: SignupRole }) {
           normalized.includes("used") ||
           normalized.includes("taken"));
       const renterAlreadyRegistered =
-        isRenter &&
-        email &&
-        normalized.trim() === "email already registered";
+        isRenter && email && normalized.trim() === "email already registered";
       const shouldAttemptResend =
         looksLikeExistingEmail || renterAlreadyRegistered;
 
@@ -240,32 +238,17 @@ export default function SignupForm({ role }: { role: SignupRole }) {
       <h2 className="text-2xl font-semibold text-center text-text-primary mb-1">
         Create an Account
       </h2>
-      <p className="text-center text-text-secondary mb-1 text-sm sm:text-base">
-        {isAgent ? "Agent sign up" : "Renter sign up"}
-      </p>
-      <p className="text-center text-text-secondary mb-6 text-sm sm:text-base">
-        {isAgent ? (
-          <>
-            Looking for renter access instead?{" "}
-            <Link
-              href="/signup/renter"
-              className="text-action hover:text-action-hover font-semibold"
-            >
-              Sign up as renter
-            </Link>
-          </>
-        ) : (
-          <>
-            Looking for agent access instead?{" "}
-            <Link
-              href="/signup/agent"
-              className="text-action hover:text-action-hover font-semibold"
-            >
-              Sign up as agent
-            </Link>
-          </>
-        )}
-      </p>
+      <div className="flex justify-center mb-2">
+        <span
+          className={`inline-flex items-center rounded-full px-4 py-1 text-xs sm:text-sm font-semibold border ${
+            isAgent
+              ? "bg-blue-400 text-white border-[#CFE1FF]"
+              : "bg-blue-400 text-white border-[#ABEFC6]"
+          }`}
+        >
+          {isAgent ? "Agent" : "Renter"}
+        </span>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
         <InputField
