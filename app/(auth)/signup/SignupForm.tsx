@@ -2,9 +2,8 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Eye, EyeOff, UsersRound } from "lucide-react";
+import { ChevronDown, Eye, EyeOff, UsersRound } from "lucide-react";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -288,7 +287,7 @@ export default function SignupForm({ role }: { role: SignupRole }) {
               onChange={(value) =>
                 setFormData((prev) => ({ ...prev, title: value }))
               }
-              icon={<UsersRound className="w-5 h-5 text-action mr-2" />}
+              icon={<UsersRound className="w-5 h-5 text-blue-600 mr-2" />}
               options={[
                 "Licensed Real Estate Salesperson",
                 "Associate Real Estate Broker",
@@ -472,12 +471,14 @@ function SelectField({
       <label className="block text-sm font-semibold text-text-tertiary mb-2">
         {label}
       </label>
-      <div className="flex items-center justify-between bg-surface-secondary border border-border-secondary rounded-xl px-4 py-3 sm:py-3.5">
-        {icon}
+      <div className="relative flex items-center bg-surface-secondary border border-border-secondary rounded-xl px-4 py-3 sm:py-3.5 transition focus-within:ring-2 focus-within:ring-blue-200 focus-within:border-blue-400">
+        {icon ? <span className="shrink-0">{icon}</span> : null}
         <select
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
-          className="w-full bg-transparent focus:outline-none text-text-secondary text-sm sm:text-base"
+          className={`w-full bg-transparent focus:outline-none text-sm sm:text-base appearance-none pr-7 ${
+            value ? "text-text-secondary" : "text-gray-400"
+          }`}
         >
           <option value="">Select title</option>
           {options.map((option) => (
@@ -486,6 +487,10 @@ function SelectField({
             </option>
           ))}
         </select>
+        <ChevronDown
+          className="w-4 h-4 text-blue-500 pointer-events-none absolute right-4"
+          aria-hidden="true"
+        />
       </div>
     </div>
   );
