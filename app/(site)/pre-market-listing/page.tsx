@@ -48,7 +48,8 @@ export default function PreMarketListingPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [description, setDescription] = useState("");
   const [isAgreementChecked, setIsAgreementChecked] = useState(false);
-  const [shareWithOtherAgents, setShareWithOtherAgents] = useState(false);
+  const [shareConsent, setShareConsent] = useState(false);
+  const [marketScope, setMarketScope] = useState<"" | "Upcoming" | "All Market">("");
   const [agreementWarning, setAgreementWarning] = useState<string | null>(null);
   const referrerName = useSelector(selectReferrerName);
 
@@ -180,6 +181,10 @@ export default function PreMarketListingPage() {
         "Please confirm the registration has been signed.";
     }
 
+    if (!marketScope) {
+      nextFieldErrors.scope = "Please select one market scope option.";
+    }
+
     if (Object.keys(nextFieldErrors).length > 0) {
       setFieldErrors(nextFieldErrors);
       setFormError("Please fill out the required fields before submitting.");
@@ -223,7 +228,8 @@ export default function PreMarketListingPage() {
         thirdPartyGuarantor: guarantor.includes("Third party guarantor"),
       },
       preferences,
-      shareRequestWithOtherAgents: shareWithOtherAgents,
+      shareConsent,
+      scope: marketScope,
     };
 
     try {
@@ -257,7 +263,8 @@ export default function PreMarketListingPage() {
       dispatch(resetPreferences());
       setDescription("");
       setIsAgreementChecked(false);
-      setShareWithOtherAgents(false);
+      setShareConsent(false);
+      setMarketScope("");
       setAgreementWarning(null);
       if (registrationLink && typeof window !== "undefined") {
         window.open(registrationLink, "_blank", "noopener,noreferrer");
@@ -590,6 +597,43 @@ export default function PreMarketListingPage() {
             />
           </div>
 
+          <div className="border-t border-gray-300 pt-5 space-y-3">
+            <p className="text-xl font-semibold text-gray-900">
+              In order to match your request, which market scope should the agent focus on?
+            </p>
+            <p className="text-lg text-gray-700">
+              Your agent will assist you throughout the process, including guidance,
+              scheduling, tour coordination, and protecting your interests.
+            </p>
+
+            <div className="space-y-3 text-lg text-gray-800">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="marketScope"
+                  checked={marketScope === "Upcoming"}
+                  onChange={() => setMarketScope("Upcoming")}
+                  className="w-5 h-5 accent-blue-600"
+                />
+                <span>Rentals not publicly advertised only</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="marketScope"
+                  checked={marketScope === "All Market"}
+                  onChange={() => setMarketScope("All Market")}
+                  className="w-5 h-5 accent-blue-600"
+                />
+                <span>Rentals not publicly advertised and publicly listed</span>
+              </label>
+            </div>
+            {fieldErrors.scope && (
+              <p className="text-sm text-red-600">{fieldErrors.scope}</p>
+            )}
+          </div>
+
           {/* Submit */}
           {errorMessage && (
             <p className="text-sm text-red-600 text-right">{errorMessage}</p>
@@ -610,8 +654,8 @@ export default function PreMarketListingPage() {
               <label className="flex items-start gap-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={shareWithOtherAgents}
-                  onChange={(e) => setShareWithOtherAgents(e.target.checked)}
+                  checked={shareConsent}
+                  onChange={(e) => setShareConsent(e.target.checked)}
                   className="mt-1 w-4 h-4 text-blue-600"
                 />
                 <span className="pt-1">
@@ -671,7 +715,7 @@ export default function PreMarketListingPage() {
           <div className="flex justify-end mt-4">
             <button
               type="submit"
-              disabled={isSubmitting || !isAgreementChecked}
+              disabled={isSubmitting || !isAgreementChecked || !marketScope}
               className="flex items-center gap-2 bg-blue-500 text-white text-sm sm:text-base font-medium rounded-lg px-5 py-3 hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Bell size={16} />
