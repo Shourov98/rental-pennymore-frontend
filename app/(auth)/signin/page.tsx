@@ -80,7 +80,7 @@ function SigninPageContent() {
             tokens,
             registrationType: payload.registrationType ?? "normal",
             referralInfo: payload.referralInfo ?? null,
-          })
+          }),
         );
       } else if (payload?.user && payload?.accessToken) {
         dispatch(
@@ -89,7 +89,7 @@ function SigninPageContent() {
             accessToken: payload.accessToken,
             expiresIn: payload.expiresIn ?? "",
             mustChangePassword: !!payload.mustChangePassword,
-          })
+          }),
         );
         dispatch(fetchAgentProfile());
       }
@@ -237,7 +237,10 @@ function SigninPageContent() {
         {/* Footer */}
         <p className="text-text-tertiary text-center text-sm sm:text-base">
           Don’t have an account?{" "}
-          <a href="/signup/renter" className="text-action hover:text-action-hover">
+          <a
+            href="/signup/agent"
+            className="text-action hover:text-action-hover"
+          >
             Create an account
           </a>
         </p>

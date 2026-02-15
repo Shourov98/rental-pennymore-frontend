@@ -287,7 +287,7 @@ export default function SignupForm({ role }: { role: SignupRole }) {
               onChange={(value) =>
                 setFormData((prev) => ({ ...prev, title: value }))
               }
-              icon={<UsersRound className="w-5 h-5 text-blue-600 mr-2" />}
+              icon={<UsersRound className="w-5 h-5 text-black mr-2" />}
               options={[
                 "Licensed Real Estate Salesperson",
                 "Associate Real Estate Broker",
