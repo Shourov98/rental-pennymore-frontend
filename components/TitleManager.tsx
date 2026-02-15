@@ -13,6 +13,8 @@ const STATIC_TITLES: Record<string, string> = {
   "/terms-conditions": "Terms & Conditions",
   "/signin": "Sign In",
   "/signup": "Sign Up",
+  "/signup/renter": "Renter Sign Up",
+  "/signup/agent": "Agent Sign Up",
   "/forget-password": "Forgot Password",
   "/reset-password": "Reset Password",
   "/set-new-password": "Set New Password",

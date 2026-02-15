@@ -237,7 +237,7 @@ function SigninPageContent() {
         {/* Footer */}
         <p className="text-text-tertiary text-center text-sm sm:text-base">
           Don’t have an account?{" "}
-          <a href="/signup" className="text-action hover:text-action-hover">
+          <a href="/signup/renter" className="text-action hover:text-action-hover">
             Create an account
           </a>
         </p>
