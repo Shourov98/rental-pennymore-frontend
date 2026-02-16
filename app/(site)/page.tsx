@@ -10,7 +10,7 @@ import {
   selectRenter,
   selectUser,
 } from "@/store/slices/authSlice";
-import { useEffect } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import Image from "next/image";
@@ -22,16 +22,22 @@ export default function HomePage() {
   const user = useSelector(selectUser);
   const renter = useSelector(selectRenter);
   const referrerName = useSelector(selectReferrerName);
+  const isHydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
   const hasSession = Boolean(accessToken || user || renter);
 
   useEffect(() => {
+    if (!isHydrated) return;
     if (!hasSession) {
       router.replace("/brucher");
     }
-  }, [hasSession, router]);
+  }, [hasSession, isHydrated, router]);
 
-  if (!hasSession) return null;
+  if (!isHydrated || !hasSession) return null;
 
   return (
     <main className="flex flex-col w-full min-h-screen bg-gray-100 text-gray-900">
