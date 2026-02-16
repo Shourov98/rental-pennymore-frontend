@@ -62,17 +62,17 @@ export default function MatchedAgentsPage() {
             method: "GET",
             headers,
             signal: controller.signal,
-          }
+          },
         );
 
         const data: ApiMatchesResponse = await response
           .json()
-          .catch(() => ({} as ApiMatchesResponse));
+          .catch(() => ({}) as ApiMatchesResponse);
 
         if (!response.ok || data?.success === false) {
           throw new Error(
             data?.message ||
-              "We couldn't load your matched requests right now. Please try again."
+              "We couldn't load your matched requests right now. Please try again.",
           );
         }
 
@@ -128,7 +128,7 @@ export default function MatchedAgentsPage() {
   };
 
   const visibleRequests = requests.filter(
-    (req) => (req.agentMatchCount ?? 0) > 0
+    (req) => (req.agentMatchCount ?? 0) > 0,
   );
 
   return (
@@ -284,7 +284,7 @@ export default function MatchedAgentsPage() {
             })}
           </div>
 
-          {pagination && (
+          {/* {pagination && (
             <div className="flex items-center justify-between bg-white rounded-xl shadow-sm p-4 text-sm text-gray-600 mt-4">
               <div>
                 Page {pagination.currentPage ?? page} of{" "}
@@ -315,7 +315,7 @@ export default function MatchedAgentsPage() {
                 </button>
               </div>
             </div>
-          )}
+          )} */}
         </>
       )}
     </section>
