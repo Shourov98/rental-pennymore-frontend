@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Eye, Filter, ChevronLeft, ChevronRight, Lock } from "lucide-react";
+import { Eye, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -91,17 +91,17 @@ export default function AgentRenterRequestsPage() {
             method: "GET",
             headers,
             signal: controller.signal,
-          }
+          },
         );
 
         const data: ApiAgentRequestsResponse = await response
           .json()
-          .catch(() => ({} as ApiAgentRequestsResponse));
+          .catch(() => ({}) as ApiAgentRequestsResponse);
 
         if (!response.ok || data?.success === false) {
           throw new Error(
             data?.message ||
-              "We couldn't load renter requests right now. Please try again."
+              "We couldn't load renter requests right now. Please try again.",
           );
         }
 
@@ -138,7 +138,7 @@ export default function AgentRenterRequestsPage() {
       const { raw } = req;
       if (filters.borough) {
         const hasBorough = raw.locations?.some(
-          (loc) => loc?.borough === filters.borough
+          (loc) => loc?.borough === filters.borough,
         );
         if (!hasBorough) return false;
       }
@@ -148,7 +148,7 @@ export default function AgentRenterRequestsPage() {
           ?.flatMap((loc) => loc?.neighborhoods || [])
           .filter(Boolean) as string[];
         const hasNeighborhood = filters.neighborhoods.some((n) =>
-          neighborhoods.includes(n)
+          neighborhoods.includes(n),
         );
         if (!hasNeighborhood) return false;
       }
@@ -158,7 +158,7 @@ export default function AgentRenterRequestsPage() {
           raw.bedrooms?.map((b) => (b === "Studio" ? 0 : parseInt(b, 10))) ||
           [];
         const hasBedroom = filters.bedrooms.some((b) =>
-          bedroomValues.includes(b)
+          bedroomValues.includes(b),
         );
         if (!hasBedroom) return false;
       }
@@ -166,7 +166,7 @@ export default function AgentRenterRequestsPage() {
       if (filters.bathrooms.length) {
         const bathroomValues = raw.bathrooms?.map((b) => parseInt(b, 10)) || [];
         const hasBathroom = filters.bathrooms.some((b) =>
-          bathroomValues.includes(b)
+          bathroomValues.includes(b),
         );
         if (!hasBathroom) return false;
       }
@@ -191,9 +191,12 @@ export default function AgentRenterRequestsPage() {
     router.push(`/agent/dashboard/${req.id}`);
   };
 
-  const handleToggleShare = async (requestId: string) => {
+  const handleToggleShare = async (request: NormalizedAgentRequest) => {
+    const localId = request.id;
+    const apiRequestId = request.raw?._id;
+
     setError(null);
-    setMutatingShareId(requestId);
+    setMutatingShareId(localId);
 
     try {
       const headers: Record<string, string> = {
@@ -202,27 +205,27 @@ export default function AgentRenterRequestsPage() {
       if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
       const response = await fetch(
-        `${API_BASE_URL}/pre-market/${requestId}/toggle-share`,
+        `${API_BASE_URL}/pre-market/${apiRequestId}/toggle-share`,
         {
-          method: "POST",
+          method: "PATCH",
           headers,
-        }
+        },
       );
 
       const data = await response
         .json()
-        .catch(() => ({} as { success?: boolean; message?: string }));
+        .catch(() => ({}) as { success?: boolean; message?: string });
 
       if (!response.ok || data?.success === false) {
         throw new Error(
           data?.message ||
-            "We couldn't update request visibility right now. Please try again."
+            "We couldn't update request visibility right now. Please try again.",
         );
       }
 
       setRequests((prev) => {
         const next = prev.map((req) => {
-          if (req.id !== requestId) return req;
+          if (req.id !== localId) return req;
 
           const isPrivateVisibility = !req.isPrivateVisibility;
           return {
@@ -369,32 +372,47 @@ export default function AgentRenterRequestsPage() {
                         </span>
                       </td>
                       <td className="py-3 px-5">
-                        <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleShare(req)}
+                          disabled={mutatingShareId === req.id}
+                          className="inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                          aria-label={`Toggle visibility for ${req.requestName}`}
+                        >
                           <span
-                            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                            className={`text-xs font-medium ${
                               req.isPrivateVisibility
-                                ? "bg-gray-100 text-gray-700 border border-gray-300"
-                                : "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                                ? "text-gray-700"
+                                : "text-gray-400"
                             }`}
                           >
-                            {req.visibilityLabel}
-                            {req.isPrivateVisibility && (
-                              <Lock className="w-3.5 h-3.5" />
-                            )}
+                            Private
                           </span>
-                          {req.isPrivateVisibility && (
-                            <button
-                              type="button"
-                              onClick={() => handleToggleShare(req.id)}
-                              disabled={mutatingShareId === req.id}
-                              className="text-xs font-medium text-blue-600 hover:text-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
-                            >
-                              {mutatingShareId === req.id
-                                ? "Sharing..."
-                                : "Share"}
-                            </button>
-                          )}
-                        </div>
+                          <span
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                              req.isPrivateVisibility
+                                ? "bg-gray-300"
+                                : "bg-blue-400"
+                            }`}
+                          >
+                            <span
+                              className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                                req.isPrivateVisibility
+                                  ? "translate-x-1"
+                                  : "translate-x-5"
+                              }`}
+                            />
+                          </span>
+                          <span
+                            className={`text-xs font-medium ${
+                              req.isPrivateVisibility
+                                ? "text-gray-400"
+                                : "text-emerald-700"
+                            }`}
+                          >
+                            Shared
+                          </span>
+                        </button>
                       </td>
                       <td className="py-3 px-5">
                         <div className="text-gray-900">{req.boroughsLabel}</div>
@@ -414,12 +432,12 @@ export default function AgentRenterRequestsPage() {
                                   .map(
                                     (segment) =>
                                       segment[0]?.toUpperCase() +
-                                      segment.slice(1)
+                                      segment.slice(1),
                                   )
                                   .join(" ")
                               : String(rawStatus);
                           const isActiveStatus = /active|available/i.test(
-                            statusText
+                            statusText,
                           );
                           return (
                             <span
@@ -457,9 +475,7 @@ export default function AgentRenterRequestsPage() {
                   {filteredRequests.length === 1 ? "" : "s"}
                 </span>
                 <span className="text-gray-300">•</span>
-                <span>
-                  Total items {totalItems}
-                </span>
+                <span>Total items {totalItems}</span>
                 <span className="text-gray-300">•</span>
                 <span>
                   Page {currentPage} of {totalPages}
@@ -497,7 +513,6 @@ export default function AgentRenterRequestsPage() {
               </div>
             </div>
           )}
-
         </>
       )}
       <FilterModal
