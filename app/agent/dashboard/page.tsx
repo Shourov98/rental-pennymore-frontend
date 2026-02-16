@@ -49,6 +49,7 @@ export default function AgentRenterRequestsPage() {
   const [showOwnReferrals, setShowOwnReferrals] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mutatingShareId, setMutatingShareId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState<
     ApiAgentRequestsResponse["pagination"]
@@ -190,6 +191,65 @@ export default function AgentRenterRequestsPage() {
     router.push(`/agent/dashboard/${req.id}`);
   };
 
+  const handleToggleShare = async (requestId: string) => {
+    setError(null);
+    setMutatingShareId(requestId);
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(
+        `${API_BASE_URL}/pre-market/${requestId}/toggle-share`,
+        {
+          method: "POST",
+          headers,
+        }
+      );
+
+      const data = await response
+        .json()
+        .catch(() => ({} as { success?: boolean; message?: string }));
+
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message ||
+            "We couldn't update request visibility right now. Please try again."
+        );
+      }
+
+      setRequests((prev) => {
+        const next = prev.map((req) => {
+          if (req.id !== requestId) return req;
+
+          const isPrivateVisibility = !req.isPrivateVisibility;
+          return {
+            ...req,
+            isPrivateVisibility,
+            visibilityLabel: isPrivateVisibility ? "Private" : "Shared",
+            raw: {
+              ...req.raw,
+              visibility: isPrivateVisibility ? "private" : "shared",
+              shareConsent: !isPrivateVisibility,
+            },
+          };
+        });
+        cacheAgentRequests(next);
+        return next;
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "We couldn't update request visibility right now. Please try again.";
+      setError(message);
+    } finally {
+      setMutatingShareId(null);
+    }
+  };
+
   const handlePreviousPage = () => {
     if (pagination?.hasPrev) setPage((prev) => Math.max(1, prev - 1));
   };
@@ -309,18 +369,32 @@ export default function AgentRenterRequestsPage() {
                         </span>
                       </td>
                       <td className="py-3 px-5">
-                        <span
-                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                            req.isPrivateVisibility
-                              ? "bg-gray-100 text-gray-700 border border-gray-300"
-                              : "bg-emerald-100 text-emerald-700 border border-emerald-200"
-                          }`}
-                        >
-                          {req.visibilityLabel}
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                              req.isPrivateVisibility
+                                ? "bg-gray-100 text-gray-700 border border-gray-300"
+                                : "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                            }`}
+                          >
+                            {req.visibilityLabel}
+                            {req.isPrivateVisibility && (
+                              <Lock className="w-3.5 h-3.5" />
+                            )}
+                          </span>
                           {req.isPrivateVisibility && (
-                            <Lock className="w-3.5 h-3.5" />
+                            <button
+                              type="button"
+                              onClick={() => handleToggleShare(req.id)}
+                              disabled={mutatingShareId === req.id}
+                              className="text-xs font-medium text-blue-600 hover:text-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                            >
+                              {mutatingShareId === req.id
+                                ? "Sharing..."
+                                : "Share"}
+                            </button>
                           )}
-                        </span>
+                        </div>
                       </td>
                       <td className="py-3 px-5">
                         <div className="text-gray-900">{req.boroughsLabel}</div>
