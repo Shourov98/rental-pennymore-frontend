@@ -45,7 +45,7 @@ export default function Navbar() {
     ? getFirstName(authName, authEmail)
     : "";
   const avatarUrl = canShowAuthed
-    ? auth.user?.profileImage ?? auth.user?.profileImageUrl ?? null
+    ? (auth.user?.profileImage ?? auth.user?.profileImageUrl ?? null)
     : null;
 
   const role = canShowAuthed ? auth.role || auth.user?.role : "";
@@ -281,7 +281,6 @@ export default function Navbar() {
             />
           </Link>
         </div>
-
 
         {/* Desktop Navbar Links (only show on lg+) */}
         <div className="hidden lg:flex flex-col items-center justify-between gap-8 text-sm font-medium text-gray-800">
