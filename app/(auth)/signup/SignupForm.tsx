@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronDown, Eye, EyeOff, UsersRound } from "lucide-react";
+import { getSavedReferralCode, saveReferralCode } from "@/lib/referralCode";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -14,6 +15,9 @@ export default function SignupForm({ role }: { role: SignupRole }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const referralFromUrl = searchParams.get("ref");
+  const [savedReferralCode, setSavedReferralCode] = useState<string | null>(
+    null
+  );
   const [agree, setAgree] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -54,13 +58,28 @@ export default function SignupForm({ role }: { role: SignupRole }) {
     : isRenterFormIncomplete;
 
   useEffect(() => {
-    if (!isRenter || !referralFromUrl) return;
+    const nextSaved = referralFromUrl
+      ? saveReferralCode(referralFromUrl)
+      : getSavedReferralCode();
+    setSavedReferralCode(nextSaved);
+  }, [referralFromUrl]);
+
+  useEffect(() => {
+    if (!isRenter) return;
+    const referralCode = referralFromUrl || savedReferralCode;
+    if (!referralCode) return;
 
     setFormData((prev) => ({
       ...prev,
-      referralCode: prev.referralCode || referralFromUrl,
+      referralCode: prev.referralCode || referralCode,
     }));
-  }, [isRenter, referralFromUrl]);
+  }, [isRenter, referralFromUrl, savedReferralCode]);
+
+  const signinHref = (() => {
+    const referralCode = referralFromUrl || savedReferralCode;
+    if (!referralCode) return "/signin";
+    return `/signin?ref=${encodeURIComponent(referralCode)}`;
+  })();
 
   const resendVerification = async (email: string) => {
     const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
@@ -391,7 +410,7 @@ export default function SignupForm({ role }: { role: SignupRole }) {
           <p className="text-text-tertiary">
             Already have an account?{" "}
             <a
-              href="/signin"
+              href={signinHref}
               className="text-action hover:text-action-hover font-semibold"
             >
               Login

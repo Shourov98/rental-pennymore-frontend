@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatch } from "react-redux";
@@ -13,21 +13,39 @@ import {
 import { fetchAgentProfile } from "@/store/slices/agentProfileSlice";
 import type { AppDispatch } from "@/store/store";
 import Link from "next/link";
+import { getSavedReferralCode, saveReferralCode } from "@/lib/referralCode";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 function SigninPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const referralFromUrl = searchParams.get("ref");
   const dispatch = useDispatch<AppDispatch>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [savedReferralCode, setSavedReferralCode] = useState<string | null>(
+    null
+  );
   const [statusMessage, setStatusMessage] = useState<{
     type: "success" | "error";
     message: string;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const nextSaved = referralFromUrl
+      ? saveReferralCode(referralFromUrl)
+      : getSavedReferralCode();
+    setSavedReferralCode(nextSaved);
+  }, [referralFromUrl]);
+
+  const signupHref = (() => {
+    const referralCode = referralFromUrl || savedReferralCode;
+    if (!referralCode) return "/signup/renter";
+    return `/signup/renter?ref=${encodeURIComponent(referralCode)}`;
+  })();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -238,7 +256,7 @@ function SigninPageContent() {
         <p className="text-text-tertiary text-center text-sm sm:text-base">
           Don’t have an account?{" "}
           <a
-            href="/signup/agent"
+            href={signupHref}
             className="text-action hover:text-action-hover"
           >
             Create an account
