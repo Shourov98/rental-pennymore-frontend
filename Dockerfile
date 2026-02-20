@@ -11,7 +11,23 @@ RUN corepack enable
 FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 RUN corepack prepare pnpm@9.15.0 --activate || npm i -g pnpm@9.15.0
-RUN pnpm install --frozen-lockfile --force
+ARG PNPM_REGISTRY=https://registry.npmjs.org
+ARG PNPM_FETCH_RETRIES=6
+ARG PNPM_FETCH_RETRY_MINTIMEOUT=10000
+ARG PNPM_FETCH_RETRY_MAXTIMEOUT=120000
+RUN pnpm config set registry "$PNPM_REGISTRY" \
+  && pnpm config set fetch-retries "$PNPM_FETCH_RETRIES" \
+  && pnpm config set fetch-retry-mintimeout "$PNPM_FETCH_RETRY_MINTIMEOUT" \
+  && pnpm config set fetch-retry-maxtimeout "$PNPM_FETCH_RETRY_MAXTIMEOUT"
+RUN set -eux; \
+  attempt=1; \
+  until [ "$attempt" -gt 4 ]; do \
+    pnpm install --frozen-lockfile --force && break; \
+    echo "pnpm install failed (attempt $attempt). Retrying..."; \
+    sleep $((attempt * 8)); \
+    attempt=$((attempt + 1)); \
+  done; \
+  [ "$attempt" -le 4 ]
 
 # -----------------------------
 # Build
