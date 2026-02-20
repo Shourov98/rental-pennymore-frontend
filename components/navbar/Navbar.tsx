@@ -23,7 +23,7 @@ export default function Navbar() {
   const drawerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const hasSession = Boolean(auth.accessToken || auth.user || auth.renter);
+  const hasSession = isClient && isAuthed;
   const isBrucherView =
     pathname === "/brucher" || (pathname === "/" && !hasSession);
   const hideNavItems = pathname === "/about" || isBrucherView;
@@ -39,10 +39,11 @@ export default function Navbar() {
   };
 
   const canShowAuthed = isClient && isAuthed;
+  const authName = auth.user?.fullName ?? auth.renter?.fullName ?? null;
+  const authEmail = auth.user?.email ?? auth.renter?.email ?? null;
   const displayName = canShowAuthed
-    ? getFirstName(auth.user?.fullName, auth.user?.email)
+    ? getFirstName(authName, authEmail)
     : "";
-  const hasDisplayName = Boolean(displayName);
   const avatarUrl = canShowAuthed
     ? auth.user?.profileImage ?? auth.user?.profileImageUrl ?? null
     : null;
@@ -337,7 +338,7 @@ export default function Navbar() {
         {/* Desktop User Dropdown (lg+) */}
         <div className="hidden lg:flex flex-col items-end justify-end">
           <div className="relative" ref={dropdownRef}>
-            {canShowAuthed && hasDisplayName ? (
+            {canShowAuthed ? (
               <>
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -447,7 +448,7 @@ export default function Navbar() {
           >
             {menuOpen ? (
               <X size={22} />
-            ) : canShowAuthed && hasDisplayName ? (
+            ) : canShowAuthed ? (
               <div className="flex flex-col items-end gap-2">
                 <Image
                   src="/equal-housing-logo-black.svg"

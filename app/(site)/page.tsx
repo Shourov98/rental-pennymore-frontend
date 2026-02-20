@@ -6,10 +6,8 @@ import FaqSection from "@/components/FaqSection";
 import HeroSection from "@/components/HeroSection";
 import MonthlyReportSection from "@/components/MonthlyReportSection";
 import {
-  selectAccessToken,
+  selectIsAuthed,
   selectReferrerName,
-  selectRenter,
-  selectUser,
 } from "@/store/slices/authSlice";
 import { useSyncExternalStore } from "react";
 import { useSelector } from "react-redux";
@@ -17,9 +15,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 export default function HomePage() {
-  const accessToken = useSelector(selectAccessToken);
-  const user = useSelector(selectUser);
-  const renter = useSelector(selectRenter);
+  const isAuthed = useSelector(selectIsAuthed);
   const referrerName = useSelector(selectReferrerName);
   const isHydrated = useSyncExternalStore(
     () => () => {},
@@ -27,10 +23,8 @@ export default function HomePage() {
     () => false
   );
 
-  const hasSession = Boolean(accessToken || user || renter);
-
   if (!isHydrated) return null;
-  if (!hasSession) return <BrucherLanding />;
+  if (!isAuthed) return <BrucherLanding />;
 
   return (
     <main className="flex flex-col w-full min-h-screen bg-gray-100 text-gray-900">
