@@ -13,7 +13,6 @@ import {
   selectAuth,
   selectIsAuthed,
   selectReferrerName,
-  selectReferrerTitle,
 } from "@/store/slices/authSlice";
 
 import LocationModal from "./LocationModal";
@@ -31,21 +30,22 @@ export default function HeroSection() {
     (state: RootState) => state.preferences.priceRange
   );
   const referrerName = useSelector(selectReferrerName);
-  const referrerTitle = useSelector(selectReferrerTitle);
   const auth = useSelector(selectAuth);
   const isAuthed = useSelector(selectIsAuthed);
   const locations = useSelector(
     (state: RootState) => state.preferences.locations
   );
+  const authReferrerTitle =
+    (auth as { referrerTitle?: string | null }).referrerTitle ?? null;
+  const agentTitle =
+    (auth.user as { title?: string | null } | null)?.title ?? null;
   const role = auth.role ?? auth.user?.role ?? null;
   const isRenter = role === "Renter";
   const isAgent = role === "Agent";
   const headingName = isAgent
     ? auth.user?.fullName ?? "Tuval Mor"
     : referrerName || "Tuval Mor";
-  const headingTitle = isAgent
-    ? auth.user?.title ?? null
-    : referrerTitle ?? null;
+  const headingTitle = isAgent ? agentTitle : authReferrerTitle;
   const neighborhoodLabelByKey = useMemo(() => {
     const map = new globalThis.Map<string, string>();
     (

@@ -9,9 +9,9 @@ RUN corepack enable
 # Dependencies
 # -----------------------------
 FROM base AS deps
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 RUN corepack prepare pnpm@9.15.0 --activate || npm i -g pnpm@9.15.0
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --force
 
 # -----------------------------
 # Build
