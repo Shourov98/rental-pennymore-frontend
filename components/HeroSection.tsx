@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 
 // Redux
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/store/store";
+import type { RootState } from "@/store/store";
 import { setPriceRange } from "@/store/slices/preferenceSlice";
 import {
   selectAuth,
@@ -26,17 +26,15 @@ export default function HeroSection() {
   const [showAgentNotice, setShowAgentNotice] = useState(false);
   const agentNoticeTimeoutRef = useRef<number | null>(null);
 
-  const priceRange = useSelector<
-    RootState,
-    RootState["preferences"]["priceRange"]
-  >((state) => state.preferences.priceRange);
+  const priceRange = useSelector(
+    (state: RootState) => state.preferences.priceRange
+  );
   const referrerName = useSelector(selectReferrerName);
   const auth = useSelector(selectAuth);
   const isAuthed = useSelector(selectIsAuthed);
-  const locations = useSelector<
-    RootState,
-    RootState["preferences"]["locations"]
-  >((state) => state.preferences.locations);
+  const locations = useSelector(
+    (state: RootState) => state.preferences.locations
+  );
   const role = auth.role ?? auth.user?.role ?? null;
   const isRenter = role === "Renter";
   const isAgent = role === "Agent";
@@ -129,9 +127,9 @@ export default function HeroSection() {
               <span className="text-gray-500 text-xs leading-5">
                 {locations.length === 0
                   ? "Choose Borough and neighborhoods"
-                  : locations.map((loc) => {
+                  : locations.map((loc: RootState["preferences"]["locations"][number]) => {
                       const labels = (loc.neighborhoods || []).map(
-                        (key) =>
+                        (key: string) =>
                           neighborhoodLabelByKey.get(`${loc.borough}:${key}`) ??
                           key
                       );
