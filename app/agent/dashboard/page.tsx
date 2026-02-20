@@ -336,7 +336,15 @@ export default function AgentRenterRequestsPage() {
                 </thead>
 
                 <tbody>
-                  {filteredRequests.map((req) => (
+                  {filteredRequests.map((req) => {
+                    const requestReferralCode =
+                      req.raw?.referralInfo?.referrer?.referralCode ?? null;
+                    const canViewRequest =
+                      Boolean(referralCode) &&
+                      Boolean(requestReferralCode) &&
+                      referralCode === requestReferralCode;
+
+                    return (
                     <tr
                       key={req.id}
                       className="border-t border-gray-200 hover:bg-gray-50 text-gray-700"
@@ -454,14 +462,25 @@ export default function AgentRenterRequestsPage() {
                       </td>
                       <td className="py-3 px-5 flex justify-end gap-2">
                         <button
-                          onClick={() => handleView(req)}
-                          className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"
+                          onClick={() => canViewRequest && handleView(req)}
+                          disabled={!canViewRequest}
+                          title={
+                            canViewRequest
+                              ? "View request"
+                              : "Only the referred agent can view this request"
+                          }
+                          className={`p-2 rounded-full transition ${
+                            canViewRequest
+                              ? "bg-gray-100 hover:bg-gray-200"
+                              : "bg-gray-100 opacity-40 cursor-not-allowed"
+                          }`}
                         >
                           <Eye className="w-4 h-4 text-gray-600" />
                         </button>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
