@@ -8,6 +8,7 @@ export interface UserBase {
   _id: string;
   email: string;
   fullName: string;
+  title?: string | null;
   phone: string;
   role: Role;
   accountStatus: "active" | "pending" | "suspended";
@@ -81,6 +82,7 @@ export interface ReferralInfo {
     id?: string;
     role?: string;
     fullName?: string;
+    title?: string | null;
     email?: string;
     phoneNumber?: string;
     referralCode?: string;
@@ -104,6 +106,7 @@ export interface AuthState {
   mustChangePassword: boolean;
   referralRegistrationType: string | null;
   referrerName: string | null;
+  referrerTitle: string | null;
   status: "idle" | "loading" | "authenticated" | "error";
   error: string | null;
 }
@@ -119,6 +122,7 @@ const initialState: AuthState = {
   mustChangePassword: false,
   referralRegistrationType: null,
   referrerName: null,
+  referrerTitle: null,
   status: "idle",
   error: null,
 };
@@ -163,6 +167,9 @@ const authSlice = createSlice({
       state.refreshToken = null;
       state.expiresIn = expiresIn;
       state.mustChangePassword = !!mustChangePassword;
+      state.referralRegistrationType = null;
+      state.referrerName = null;
+      state.referrerTitle = null;
       state.status = "authenticated";
       state.error = null;
     },
@@ -191,6 +198,7 @@ const authSlice = createSlice({
       state.mustChangePassword = !!user.mustChangePassword;
       state.referralRegistrationType = referralInfo?.registrationType ?? null;
       state.referrerName = referralInfo?.referrer?.fullName ?? null;
+      state.referrerTitle = referralInfo?.referrer?.title ?? null;
       state.status = "authenticated";
       state.error = null;
     },
@@ -277,3 +285,5 @@ export const selectAgentHasGrantAccess = (state: RootState) =>
   state.auth.agentProfile?.hasGrantAccess ?? null;
 export const selectReferrerName = (state: RootState) =>
   state.auth.referrerName;
+export const selectReferrerTitle = (state: RootState) =>
+  state.auth.referrerTitle;

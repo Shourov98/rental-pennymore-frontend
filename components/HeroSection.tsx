@@ -13,6 +13,7 @@ import {
   selectAuth,
   selectIsAuthed,
   selectReferrerName,
+  selectReferrerTitle,
 } from "@/store/slices/authSlice";
 
 import LocationModal from "./LocationModal";
@@ -30,6 +31,7 @@ export default function HeroSection() {
     (state: RootState) => state.preferences.priceRange
   );
   const referrerName = useSelector(selectReferrerName);
+  const referrerTitle = useSelector(selectReferrerTitle);
   const auth = useSelector(selectAuth);
   const isAuthed = useSelector(selectIsAuthed);
   const locations = useSelector(
@@ -38,6 +40,12 @@ export default function HeroSection() {
   const role = auth.role ?? auth.user?.role ?? null;
   const isRenter = role === "Renter";
   const isAgent = role === "Agent";
+  const headingName = isAgent
+    ? auth.user?.fullName ?? "Tuval Mor"
+    : referrerName || "Tuval Mor";
+  const headingTitle = isAgent
+    ? auth.user?.title ?? null
+    : referrerTitle ?? null;
   const neighborhoodLabelByKey = useMemo(() => {
     const map = new globalThis.Map<string, string>();
     (
@@ -106,7 +114,8 @@ export default function HeroSection() {
       {/* Form */}
       <div className="mt-10 bg-white text-gray-900 rounded-2xl shadow-md w-[90%] sm:w-[85%] md:w-[80%] lg:w-[70%] xl:w-[60%] px-4 sm:px-6 md:px-8 py-6 z-10">
         <h3 className="text-sm text-gray-600 sm:text-base md:text-lg font-semibold mb-4 text-center">
-          {referrerName || "Tuval Mor"},
+          {headingName}
+          {headingTitle ? `, ${headingTitle}` : ""},
           <br />
           a licensed real estate agent <br />
           will search for upcoming rental opportunities on your behalf
