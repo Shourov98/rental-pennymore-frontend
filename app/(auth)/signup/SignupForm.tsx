@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { ChevronDown, Eye, EyeOff, UsersRound } from "lucide-react";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -234,6 +235,17 @@ export default function SignupForm({ role }: { role: SignupRole }) {
 
   return (
     <div className="w-full">
+      <div className="w-full flex mb-5 justify-center">
+        <Link href="/">
+          <Image
+            className="w-[120px] md:w-[150px] lg:w-[180px] h-auto"
+            src="/Logo_1.svg"
+            alt="Logo"
+            width={180}
+            height={150}
+          />
+        </Link>
+      </div>
       <h2 className="text-2xl font-semibold text-center text-text-primary mb-1">
         Create an Account
       </h2>
