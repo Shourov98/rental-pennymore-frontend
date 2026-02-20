@@ -2,31 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
-import {
-  selectAccessToken,
-  selectRenter,
-  selectUser,
-} from "@/store/slices/authSlice";
 
-export default function BrucherPage() {
-  const router = useRouter();
-  const accessToken = useSelector(selectAccessToken);
-  const user = useSelector(selectUser);
-  const renter = useSelector(selectRenter);
-
-  const hasSession = Boolean(accessToken || user || renter);
-
-  useEffect(() => {
-    if (hasSession) {
-      router.replace("/");
-    }
-  }, [hasSession, router]);
-
-  if (hasSession) return null;
-
+export default function BrucherLanding() {
   return (
     <div className="relative w-full min-h-screen">
       <section className="relative z-0 w-full min-h-screen flex flex-col justify-center items-center text-center text-white">

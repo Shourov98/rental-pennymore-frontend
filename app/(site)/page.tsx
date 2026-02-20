@@ -1,5 +1,6 @@
 "use client";
 import AboutSection from "@/components/AboutSection";
+import BrucherLanding from "@/components/BrucherLanding";
 import ContactSection from "@/components/ContactSection";
 import FaqSection from "@/components/FaqSection";
 import HeroSection from "@/components/HeroSection";
@@ -10,14 +11,12 @@ import {
   selectRenter,
   selectUser,
 } from "@/store/slices/authSlice";
-import { useEffect, useSyncExternalStore } from "react";
-import { useRouter } from "next/navigation";
+import { useSyncExternalStore } from "react";
 import { useSelector } from "react-redux";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function HomePage() {
-  const router = useRouter();
   const accessToken = useSelector(selectAccessToken);
   const user = useSelector(selectUser);
   const renter = useSelector(selectRenter);
@@ -30,14 +29,8 @@ export default function HomePage() {
 
   const hasSession = Boolean(accessToken || user || renter);
 
-  useEffect(() => {
-    if (!isHydrated) return;
-    if (!hasSession) {
-      router.replace("/brucher");
-    }
-  }, [hasSession, isHydrated, router]);
-
-  if (!isHydrated || !hasSession) return null;
+  if (!isHydrated) return null;
+  if (!hasSession) return <BrucherLanding />;
 
   return (
     <main className="flex flex-col w-full min-h-screen bg-gray-100 text-gray-900">
