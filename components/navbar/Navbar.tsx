@@ -23,7 +23,10 @@ export default function Navbar() {
   const drawerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const hideNavItems = pathname === "/about" || pathname === "/brucher";
+  const hasSession = Boolean(auth.accessToken || auth.user || auth.renter);
+  const isBrucherView =
+    pathname === "/brucher" || (pathname === "/" && !hasSession);
+  const hideNavItems = pathname === "/about" || isBrucherView;
 
   const getFirstName = (fullName?: string | null, email?: string | null) => {
     const safeFullName = fullName?.trim();
