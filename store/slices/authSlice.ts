@@ -60,6 +60,7 @@ export interface AgentProfile {
   _id: string;
   userInfo: AgentProfileUser;
   userId?: AgentProfileUser;
+  title?: string | null;
   licenseNumber?: string;
   brokerageName?: string;
   isActive?: boolean;
@@ -132,6 +133,7 @@ export type AgentLoginPayload = {
   accessToken: string;
   expiresIn: string;
   mustChangePassword: boolean;
+  title?: string | null;
 };
 
 export type RenterLoginPayload = {
@@ -154,10 +156,11 @@ const authSlice = createSlice({
       state.error = null;
     },
     agentLoginSuccess(state, action: PayloadAction<AgentLoginPayload>) {
-      const { user, accessToken, expiresIn, mustChangePassword } =
+      const { user, accessToken, expiresIn, mustChangePassword, title } =
         action.payload;
       state.user = {
         ...user,
+        title: user.title ?? title ?? null,
         profileImage: user.profileImage ?? user.profileImageUrl ?? null,
       };
       state.agentProfile = null;

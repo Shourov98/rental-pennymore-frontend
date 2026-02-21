@@ -107,6 +107,7 @@ function SigninPageContent() {
             accessToken: payload.accessToken,
             expiresIn: payload.expiresIn ?? "",
             mustChangePassword: !!payload.mustChangePassword,
+            title: payload.title ?? null,
           }),
         );
         dispatch(fetchAgentProfile());

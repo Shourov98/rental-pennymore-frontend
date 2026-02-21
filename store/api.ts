@@ -170,6 +170,7 @@ export const api = createApi({
                 accessToken: payload.accessToken,
                 expiresIn: payload.expiresIn ?? "",
                 mustChangePassword: !!payload.mustChangePassword,
+                title: payload.title ?? null,
               })
             );
             dispatch(fetchAgentProfile());

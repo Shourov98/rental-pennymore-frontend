@@ -50,7 +50,7 @@ export default function HomePage() {
         <p className="w-full max-w-2xl mx-auto text-base font-semibold text-center mb-10">
           For any resulting transaction, you will be represented by 
           the agent identified in the applicable agency disclosure.
-          <br /> {referrerName || "Tuval Mor"}, The Corcoran Group.
+          <br /> {referrerName || "Tuval Mor"}, {brokerageName || "The Corcoran Group"}.
         </p>
 
         {/* Steps with arrows */}

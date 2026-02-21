@@ -37,13 +37,14 @@ export default function HeroSection() {
   );
   const authReferrerTitle =
     (auth as { referrerTitle?: string | null }).referrerTitle ?? null;
-  const agentTitle =
-    (auth.user as { title?: string | null } | null)?.title ?? null;
+  const agentName =
+    auth.agentProfile?.userInfo?.fullName ?? auth.user?.fullName ?? null;
+  const agentTitle = auth.agentProfile?.title ?? auth.user?.title ?? null;
   const role = auth.role ?? auth.user?.role ?? null;
   const isRenter = role === "Renter";
   const isAgent = role === "Agent";
   const headingName = isAgent
-    ? auth.user?.fullName ?? "Tuval Mor"
+    ? agentName ?? "Tuval Mor"
     : referrerName || "Tuval Mor";
   const headingTitle = isAgent ? agentTitle : authReferrerTitle;
   const neighborhoodLabelByKey = useMemo(() => {
