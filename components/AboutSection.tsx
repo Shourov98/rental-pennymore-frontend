@@ -55,6 +55,10 @@ export default function AboutSection() {
                 rental outreach beyond publicly advertised listing platforms.
               </p>
               <br />
+              <p>
+                The structured intake process helps agents organize renter criteria and focus outreach efforts more efficiently. All outreach and communications with property owners or managers are conducted independently by the agent.
+              </p>
+              <br />
               <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
                 “Publicly advertised” refers to rental listings marketed through
                 StreetEasy, Zillow, or the REBNY Listing Service (RLS).

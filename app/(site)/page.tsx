@@ -43,13 +43,13 @@ export default function HomePage() {
         </h2>
 
         <p className="w-full max-w-2xl mx-auto text-base font-semibold text-center mb-10">
-          BeforeListed™ supports request-based rental outreach by licensed real
-          estate agents. At your request, an agent may initiate outreach beyond
-          publicly advertised listings.
+          Once your request is accepted and required agency disclosures and agreements are completed,
+          your agent may initiate outreach for rental opportunities that may not be publicly advertised.
         </p>
 
         <p className="w-full max-w-2xl mx-auto text-base font-semibold text-center mb-10">
-          You will be represented by:
+          For any resulting transaction, you will be represented by 
+          the agent identified in the applicable agency disclosure.
           <br /> {referrerName || "Tuval Mor"}, The Corcoran Group.
         </p>
 
