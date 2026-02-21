@@ -114,10 +114,8 @@ export default function HeroSection() {
       {/* Form */}
       <div className="mt-10 bg-white text-gray-900 rounded-2xl shadow-md w-[90%] sm:w-[85%] md:w-[80%] lg:w-[70%] xl:w-[60%] px-4 sm:px-6 md:px-8 py-6 z-10">
         <h3 className="text-sm text-gray-600 sm:text-base md:text-lg font-semibold mb-4 text-center">
-          {headingName}
-          {headingTitle ? `, ${headingTitle}` : ""},
-          <br />
-          a licensed real estate agent <br />
+          {headingName}<br />
+          {headingTitle}<br />
           will search for upcoming rental opportunities on your behalf
         </h3>
 

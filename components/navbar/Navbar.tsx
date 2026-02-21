@@ -263,9 +263,9 @@ export default function Navbar() {
                 priority
               />
             </a>
-            <span className="hidden text-[11px] leading-snug lg:inline">
-              Website operated by – <br />
-              <span>TUVAL MOR AT THE CORCORAN GROUP</span>
+            <span className="text-[11px] leading-snug inline">
+              Operated by – <br />
+              <span>TUVAL MOR, THE CORCORAN GROUP</span>
             </span>
           </div>
           <Link
