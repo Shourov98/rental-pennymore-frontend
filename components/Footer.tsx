@@ -89,6 +89,17 @@ export default function Footer() {
                 height={30}
               />
             </Link>
+            <Link
+              href="#"
+              className="hover:opacity-80 transition"
+            >
+              <Image
+                src="/facebook.png"
+                alt="TikTok"
+                width={30}
+                height={30}
+              />
+            </Link>
           </div>
         </div>
       </div>

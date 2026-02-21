@@ -40,19 +40,19 @@ export default function SuccessfulVerifyClient() {
           <>
             <span className="font-semibold">Your email has been verified.</span>
             <br />
-            Agent registration is subject to review and approval.
+            {/* Agent registration is subject to review and approval.
             <br />
             If approved, you’ll be able to access your account and receive
             renter requests.
             <br />
             We may contact you if additional information is needed during the
-            review.
+            review. */}
           </>
         ) : (
           <>
             <span className="font-semibold">Your email is verified.</span>
             <br />
-            Go ahead and submit your first request when you’re ready.
+            Go ahead and log in using your email and password, and submit your first request when you’re ready.
           </>
         )}
       </p>
