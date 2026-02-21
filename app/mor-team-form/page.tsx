@@ -54,8 +54,7 @@ function RentersEdgeFormInner() {
             The Mor Team &quot;Renters Edge&quot; Specification Form
           </h2>
           <p className="text-gray-600 mt-2 max-w-2xl mx-auto text-sm md:text-base">
-            Providing you with the opportunity to view upcoming rentals that
-            aren’t publicly advertised, along with a 15-second market report.
+            Providing you with the opportunity to have an agent search on your behalf for rental opportunities that may not yet be publicly advertised, along with a 15-second market report.
           </p>
         </div>
 
@@ -75,10 +74,9 @@ function RentersEdgeFormInner() {
           <h4 className="text-base font-semibold text-gray-700">
             Be ahead of the market
           </h4>
-          <p className="text-gray-600 text-sm mt-1">
-            BeforeListed™ supports request-based rental outreach by licensed
-            real estate agents. At your request, an agent may initiate outreach
-            beyond publicly advertised listings.
+          <p className="text-gray-600 text-sm text-center mt-1">
+            BeforeListed™ supports request-based rental outreach by licensed real estate agents. <br />
+            At your request, an agent may initiate outreach beyond publicly advertised listings.
           </p>
         </div>
 
@@ -171,10 +169,9 @@ function RentersEdgeFormInner() {
               renter specialists.
             </p>
             <p className="text-gray-600 text-sm mb-4">
-              Our licensed rental expert has successfully worked with many
-              renters and offers full-service representation across publicly
-              advertised and off-market rentals, guiding you through the
-              process.
+              Our rental expert has successfully worked with prior renters and can provide full-service representation, <br />
+              including agent guidance, landlord and building screening, <br />
+              scheduling, coordination, and support throughout your rental process.
             </p>
             <div className="space-y-2 text-sm text-gray-700">
               <label className="flex items-center gap-2">

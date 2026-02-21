@@ -161,8 +161,8 @@ export default function MonthlyReportSection() {
                       {monthName}, {report.year}
                     </h3>
                     <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-6">
-                      Exclusive updates on rental trends, agent engagement, and
-                      insights from NYC pre-market listings.
+                      Exclusive 15-Second NYC Rental Report 
+                      This Month’s Renter News, Market Signals & Trends
                     </p>
                     <a
                       href={report.link}
