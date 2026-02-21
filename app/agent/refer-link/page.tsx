@@ -63,9 +63,9 @@ export default function AgentReferLink() {
     <div className="bg-white rounded-2xl shadow-sm p-6">
       <div className="flex items-start justify-between gap-3 mb-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Refer Link</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Registration Link</h1>
           <p className="text-sm text-gray-600">
-            Share your unique code and link to refer new renters.
+            Share your unique code and link to register new renters.
           </p>
         </div>
         {isLoading && (
@@ -96,7 +96,7 @@ export default function AgentReferLink() {
         <div className="bg-gray-50 border rounded-xl p-6">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h3 className="font-semibold text-gray-800">Referral Link</h3>
+              <h3 className="font-semibold text-gray-800">Registration Link</h3>
               <p className="text-sm text-gray-600">
                 Send this link to renters to start the process.
               </p>
