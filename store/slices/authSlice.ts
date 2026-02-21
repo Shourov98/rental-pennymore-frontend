@@ -84,6 +84,7 @@ export interface ReferralInfo {
     role?: string;
     fullName?: string;
     title?: string | null;
+    brokerageName?: string | null;
     email?: string;
     phoneNumber?: string;
     referralCode?: string;
@@ -108,6 +109,7 @@ export interface AuthState {
   referralRegistrationType: string | null;
   referrerName: string | null;
   referrerTitle: string | null;
+  referrerBrokerageName: string | null;
   status: "idle" | "loading" | "authenticated" | "error";
   error: string | null;
 }
@@ -124,6 +126,7 @@ const initialState: AuthState = {
   referralRegistrationType: null,
   referrerName: null,
   referrerTitle: null,
+  referrerBrokerageName: null,
   status: "idle",
   error: null,
 };
@@ -134,6 +137,7 @@ export type AgentLoginPayload = {
   expiresIn: string;
   mustChangePassword: boolean;
   title?: string | null;
+  agentProfile?: AgentProfile | null;
 };
 
 export type RenterLoginPayload = {
@@ -156,14 +160,21 @@ const authSlice = createSlice({
       state.error = null;
     },
     agentLoginSuccess(state, action: PayloadAction<AgentLoginPayload>) {
-      const { user, accessToken, expiresIn, mustChangePassword, title } =
+      const {
+        user,
+        accessToken,
+        expiresIn,
+        mustChangePassword,
+        title,
+        agentProfile,
+      } =
         action.payload;
       state.user = {
         ...user,
         title: user.title ?? title ?? null,
         profileImage: user.profileImage ?? user.profileImageUrl ?? null,
       };
-      state.agentProfile = null;
+      state.agentProfile = agentProfile ?? null;
       state.role = user.role;
       state.renter = null;
       state.accessToken = accessToken;
@@ -173,6 +184,7 @@ const authSlice = createSlice({
       state.referralRegistrationType = null;
       state.referrerName = null;
       state.referrerTitle = null;
+      state.referrerBrokerageName = null;
       state.status = "authenticated";
       state.error = null;
     },
@@ -202,6 +214,8 @@ const authSlice = createSlice({
       state.referralRegistrationType = referralInfo?.registrationType ?? null;
       state.referrerName = referralInfo?.referrer?.fullName ?? null;
       state.referrerTitle = referralInfo?.referrer?.title ?? null;
+      state.referrerBrokerageName =
+        referralInfo?.referrer?.brokerageName ?? null;
       state.status = "authenticated";
       state.error = null;
     },
@@ -290,3 +304,5 @@ export const selectReferrerName = (state: RootState) =>
   state.auth.referrerName;
 export const selectReferrerTitle = (state: RootState) =>
   state.auth.referrerTitle;
+export const selectReferrerBrokerageName = (state: RootState) =>
+  state.auth.referrerBrokerageName;

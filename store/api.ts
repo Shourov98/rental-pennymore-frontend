@@ -171,6 +171,7 @@ export const api = createApi({
                 expiresIn: payload.expiresIn ?? "",
                 mustChangePassword: !!payload.mustChangePassword,
                 title: payload.title ?? null,
+                agentProfile: payload.agentProfile ?? null,
               })
             );
             dispatch(fetchAgentProfile());

@@ -6,7 +6,9 @@ import FaqSection from "@/components/FaqSection";
 import HeroSection from "@/components/HeroSection";
 import MonthlyReportSection from "@/components/MonthlyReportSection";
 import {
+  selectAuth,
   selectIsAuthed,
+  selectReferrerBrokerageName,
   selectReferrerName,
 } from "@/store/slices/authSlice";
 import { useSyncExternalStore } from "react";
@@ -16,7 +18,17 @@ import Link from "next/link";
 
 export default function HomePage() {
   const isAuthed = useSelector(selectIsAuthed);
+  const auth = useSelector(selectAuth);
   const referrerName = useSelector(selectReferrerName);
+  const referrerBrokerageName = useSelector(selectReferrerBrokerageName);
+  const role = auth.role ?? auth.user?.role ?? null;
+  const isAgent = role === "Agent";
+  const displayName = isAgent
+    ? auth.agentProfile?.userInfo?.fullName ?? auth.user?.fullName ?? "Tuval Mor"
+    : referrerName || "Tuval Mor";
+  const displayBrokerageName = isAgent
+    ? auth.agentProfile?.brokerageName ?? "The Corcoran Group"
+    : referrerBrokerageName || "The Corcoran Group";
   const isHydrated = useSyncExternalStore(
     () => () => {},
     () => true,
@@ -50,7 +62,7 @@ export default function HomePage() {
         <p className="w-full max-w-2xl mx-auto text-base font-semibold text-center mb-10">
           For any resulting transaction, you will be represented by 
           the agent identified in the applicable agency disclosure.
-          <br /> {referrerName || "Tuval Mor"}, {brokerageName || "The Corcoran Group"}.
+          <br /> {displayName}, {displayBrokerageName}.
         </p>
 
         {/* Steps with arrows */}
