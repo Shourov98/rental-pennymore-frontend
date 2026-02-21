@@ -9,7 +9,7 @@ export default function BrucherLanding() {
       <section className="relative z-0 w-full min-h-screen flex flex-col justify-center items-center text-center text-white">
         <div className="absolute inset-0 z-0">
           <Image
-            src="/hero-bg.jpg"
+            src="/hero-bg.png"
             alt="NYC Skyline"
             fill
             priority
