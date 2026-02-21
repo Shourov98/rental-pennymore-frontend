@@ -49,13 +49,13 @@ export default function AboutSection() {
             {/* Right Side — About Content */}
             <div className="w-full md:w-4/5 text-center md:text-left">
               {/* Description */}
-              <p className="text-gray-700 font-semibold text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
+              <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
                 BeforeListed™ is a real estate marketing and intake website
                 designed to collect renter inquiries and support proactive
                 rental outreach beyond publicly advertised listing platforms.
               </p>
               <br />
-              <p>
+              <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
                 The structured intake process helps agents organize renter criteria and focus outreach efforts more efficiently. All outreach and communications with property owners or managers are conducted independently by the agent.
               </p>
               <br />
@@ -64,22 +64,7 @@ export default function AboutSection() {
                 StreetEasy, Zillow, or the REBNY Listing Service (RLS).
               </p>
               <br />
-              <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
-                At a renter’s request, the representing agent may contact
-                property owners or property managers on the renter’s behalf
-                regarding upcoming rental opportunities.
-              </p>
-              <br />
-              <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
-                Additional licensed agents may assist at the representing
-                agent’s discretion, with any such involvement disclosed.
-                Availability and pricing are subject to owner discretion.
-              </p>
-              <br />
-              <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
-                Broker fees are only payable if you rent an apartment presented
-                by the representing agent.
-              </p>
+              
             </div>
           </div>
         </div>
