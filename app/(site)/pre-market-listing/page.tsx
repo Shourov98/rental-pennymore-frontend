@@ -600,17 +600,17 @@ export default function PreMarketListingPage() {
           </div>
 
           <div className="border-t border-gray-300 pt-5 space-y-3">
-            <p className="text-sm font-semibold text-gray-900">
+            <p className="text-xs font-semibold text-gray-900">
               In order to match your request, which market scope should the
               agent focus on?
             </p>
-            <p className="text-sm text-gray-700">
+            <p className="text-xs text-gray-700">
               Your agent will assist you throughout the process, including
               guidance, scheduling, tour coordination, and protecting your
               interests.
             </p>
 
-            <div className="space-y-3 text-lg text-gray-800">
+            <div className="space-y-3 text-xs text-gray-800">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
@@ -619,9 +619,7 @@ export default function PreMarketListingPage() {
                   onChange={() => setMarketScope("Upcoming")}
                   className="w-5 h-5 accent-blue-600"
                 />
-                <span className="text-sm">
-                  Rentals not publicly advertised only
-                </span>
+                <span>Rentals not publicly advertised only</span>
               </label>
 
               <label className="flex items-center gap-2 cursor-pointer">
@@ -632,13 +630,11 @@ export default function PreMarketListingPage() {
                   onChange={() => setMarketScope("All Market")}
                   className="w-5 h-5 accent-blue-600"
                 />
-                <span className="text-sm">
-                  Rentals not publicly advertised and publicly listed
-                </span>
+                <span>Rentals not publicly advertised and publicly listed</span>
               </label>
             </div>
             {fieldErrors.scope && (
-              <p className="text-sm text-red-600">{fieldErrors.scope}</p>
+              <p className=" text-red-600">{fieldErrors.scope}</p>
             )}
           </div>
 
