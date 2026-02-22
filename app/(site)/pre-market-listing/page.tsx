@@ -653,7 +653,7 @@ export default function PreMarketListingPage() {
           <div className="border-t pt-4 text-xs text-gray-600 space-y-3">
             <div className="space-y-2">
               <p className="font-semibold text-gray-700">
-                Checkbox (optional):
+                Share your search (optional):
               </p>
               <p>
                 To receive assistance beyond one agent, you may choose to allow
@@ -676,6 +676,9 @@ export default function PreMarketListingPage() {
               </label>
             </div>
 
+            <p className="font-semibold text-gray-700">
+              Client registration and agency disclosure:
+            </p>
             <p>
               To allow your agent,{" "}
               <span className="font-bold">{referrerName || "Tuval Mor"}</span>,
@@ -710,7 +713,8 @@ export default function PreMarketListingPage() {
                 className="mt-1 w-4 h-4 text-blue-600"
               />
               <span className="pt-1">
-                By checking this box, you confirm the document has been signed.
+                By checking this box, you confirm you have signed client
+                registration and agency disclosure.
               </span>
             </label>
             {agreementWarning && (

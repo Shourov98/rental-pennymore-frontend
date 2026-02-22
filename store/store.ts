@@ -1,7 +1,18 @@
-import { configureStore } from "@reduxjs/toolkit";
+import {
+  configureStore,
+  createListenerMiddleware,
+  isAnyOf,
+} from "@reduxjs/toolkit";
 import preferenceReducer from "./slices/preferenceSlice";
-import authReducer, { type AuthState } from "./slices/authSlice";
-import agentProfileReducer from "./slices/agentProfileSlice";
+import authReducer, {
+  agentLoginSuccess,
+  logout,
+  renterLoginSuccess,
+  type AuthState,
+} from "./slices/authSlice";
+import agentProfileReducer, {
+  clearAgentProfile,
+} from "./slices/agentProfileSlice";
 import { api } from "./api";
 
 const AUTH_STORAGE_KEY = "auth_state_v1";
@@ -40,6 +51,24 @@ const loadAuthState = (): { auth: AuthState } | undefined => {
   }
 };
 
+const sessionListener = createListenerMiddleware();
+
+sessionListener.startListening({
+  actionCreator: logout,
+  effect: async (_action, listenerApi) => {
+    listenerApi.dispatch(clearAgentProfile());
+    listenerApi.dispatch(api.util.resetApiState());
+  },
+});
+
+sessionListener.startListening({
+  matcher: isAnyOf(agentLoginSuccess, renterLoginSuccess),
+  effect: async (_action, listenerApi) => {
+    // Prevent previous-user query cache from leaking into a new session.
+    listenerApi.dispatch(api.util.resetApiState());
+  },
+});
+
 export const store = configureStore({
   reducer: {
     preferences: preferenceReducer,
@@ -49,7 +78,9 @@ export const store = configureStore({
   },
   preloadedState: loadAuthState(),
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(api.middleware),
+    getDefaultMiddleware()
+      .prepend(sessionListener.middleware)
+      .concat(api.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

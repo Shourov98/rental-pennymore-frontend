@@ -47,6 +47,12 @@ export default function Navbar() {
   const avatarUrl = canShowAuthed
     ? (auth.user?.profileImage ?? auth.user?.profileImageUrl ?? null)
     : null;
+  const avatarVersionKey =
+    auth.user?.updatedAt ?? auth.user?._id ?? auth.user?.email ?? "";
+  const avatarSrc =
+    avatarUrl && avatarVersionKey
+      ? `${avatarUrl}${avatarUrl.includes("?") ? "&" : "?"}v=${encodeURIComponent(avatarVersionKey)}`
+      : avatarUrl;
 
   const role = canShowAuthed ? auth.role || auth.user?.role : "";
   const menuBasePath =
@@ -343,10 +349,10 @@ export default function Navbar() {
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-gray-100 transition"
                 >
-                  {avatarUrl ? (
+                  {avatarSrc ? (
                     <div className="relative w-7 h-7 rounded-full overflow-hidden border border-gray-300">
                       <Image
-                        src={avatarUrl}
+                        src={avatarSrc}
                         alt="User avatar"
                         fill
                         className="object-cover"
@@ -457,10 +463,10 @@ export default function Navbar() {
                   className="w-9 h-9"
                 />
                 <div className="flex items-center gap-2">
-                  {avatarUrl ? (
+                  {avatarSrc ? (
                     <div className="relative w-7 h-7 rounded-full overflow-hidden border border-gray-300">
                       <Image
-                        src={avatarUrl}
+                        src={avatarSrc}
                         alt="User avatar"
                         fill
                         className="object-cover"

@@ -22,12 +22,12 @@ export default function SuccessModal({
     <div className="fixed inset-0 bg-black/40 z-50 flex justify-center items-center">
       <div className="bg-white rounded-2xl shadow-xl w-[90%] sm:w-[420px] max-w-md p-8 text-center animate-fadeIn">
         <h2 className="text-2xl font-bold text-gray-900 mb-3">We’re on it</h2>
-        <p className="text-gray-700 text-sm sm:text-base leading-relaxed mb-6">
-          Thank you for submitting your preferences. Your request has been saved
-          and shared with your registered agent. It will appear in your Requests
-          section. If an opportunity aligns with one of your requests, it will
-          appear in the Matches section of your dashboard and you’ll be notified
-          by email.
+        <p className="text-gray-700 text-sm text-left sm:text-base leading-relaxed mb-6">
+          Thank you for submitting your preferences. <br />
+          Your request has been saved and shared with your registered agent. It
+          will appear in your Requests section. If an opportunity aligns with
+          one of your requests, it will appear in the Matches section of your
+          dashboard and you’ll be notified by email.
         </p>
 
         <button

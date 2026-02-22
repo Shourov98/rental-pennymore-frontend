@@ -382,10 +382,15 @@ export default function AgentRenterRequestsPage() {
                       <td className="py-3 px-5">
                         <button
                           type="button"
-                          onClick={() => handleToggleShare(req)}
-                          disabled={mutatingShareId === req.id}
+                          onClick={() => canViewRequest && handleToggleShare(req)}
+                          disabled={mutatingShareId === req.id || !canViewRequest}
                           className="inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                           aria-label={`Toggle visibility for ${req.requestName}`}
+                          title={
+                            canViewRequest
+                              ? "Toggle request visibility"
+                              : "Only the referred agent can change visibility"
+                          }
                         >
                           <span
                             className={`text-xs font-medium ${
@@ -462,18 +467,9 @@ export default function AgentRenterRequestsPage() {
                       </td>
                       <td className="py-3 px-5 flex justify-end gap-2">
                         <button
-                          onClick={() => canViewRequest && handleView(req)}
-                          disabled={!canViewRequest}
-                          title={
-                            canViewRequest
-                              ? "View request"
-                              : "Only the referred agent can view this request"
-                          }
-                          className={`p-2 rounded-full transition ${
-                            canViewRequest
-                              ? "bg-gray-100 hover:bg-gray-200"
-                              : "bg-gray-100 opacity-40 cursor-not-allowed"
-                          }`}
+                          onClick={() => handleView(req)}
+                          title="View request"
+                          className="p-2 rounded-full transition bg-gray-100 hover:bg-gray-200"
                         >
                           <Eye className="w-4 h-4 text-gray-600" />
                         </button>

@@ -39,6 +39,12 @@ export default function AgentNavbar({
   const avatarUrl = canShowAuthed
     ? auth.user?.profileImage ?? auth.user?.profileImageUrl ?? null
     : null;
+  const avatarVersionKey =
+    auth.user?.updatedAt ?? auth.user?._id ?? auth.user?.email ?? "";
+  const avatarSrc =
+    avatarUrl && avatarVersionKey
+      ? `${avatarUrl}${avatarUrl.includes("?") ? "&" : "?"}v=${encodeURIComponent(avatarVersionKey)}`
+      : avatarUrl;
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -95,10 +101,10 @@ export default function AgentNavbar({
       >
         {canShowAuthed && hasDisplayName ? (
           <button className="flex items-right md:items-center gap-2 rounded-full hover:bg-gray-100 transition px-2 py-1">
-            {avatarUrl ? (
+            {avatarSrc ? (
               <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-300">
                 <Image
-                  src={avatarUrl}
+                  src={avatarSrc}
                   alt="User avatar"
                   fill
                   className="object-cover"
