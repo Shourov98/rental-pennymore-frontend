@@ -30,7 +30,7 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
       title: "Main",
       items: [
         {
-          name: "Refer Link",
+          name: "Registration Link",
           icon: <LinkIcon />,
           href: "/agent/refer-link",
         },
@@ -126,7 +126,7 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
                     <span className="w-5 h-5">{item.icon}</span>
                     <span className="text-sm font-medium">{item.name}</span>
                   </Link>
-                )
+                ),
               )}
             </div>
           </div>

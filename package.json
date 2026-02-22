@@ -4,8 +4,9 @@
   "private": true,
   "packageManager": "pnpm@9.15.0",
   "scripts": {
-    "dev": "WATCHPACK_POLLING=true next dev --webpack --hostname 127.0.0.1 --port 3030",
-    "dev:webpack": "WATCHPACK_POLLING=true next dev --webpack --hostname 127.0.0.1 --port 3030",
+    "dev": "WATCHPACK_POLLING=true next dev --webpack --hostname 127.0.0.1",
+    "dev:webpack": "WATCHPACK_POLLING=true next dev --webpack --hostname 127.0.0.1",
+    "dev:3030": "WATCHPACK_POLLING=true next dev --webpack --hostname 127.0.0.1 --port 3030",
     "build": "next build --webpack",
     "start": "next start --hostname 127.0.0.1 --port 3030",
     "lint": "eslint"

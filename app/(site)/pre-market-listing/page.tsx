@@ -28,7 +28,7 @@ import { neighborhoods } from "@/data/neighborhoods";
 
 const PreferencesDragList = dynamic(
   () => import("@/components/PreferencesDragList"),
-  { ssr: false }
+  { ssr: false },
 );
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -49,7 +49,9 @@ export default function PreMarketListingPage() {
   const [description, setDescription] = useState("");
   const [isAgreementChecked, setIsAgreementChecked] = useState(false);
   const [shareConsent, setShareConsent] = useState(false);
-  const [marketScope, setMarketScope] = useState<"" | "Upcoming" | "All Market">("");
+  const [marketScope, setMarketScope] = useState<
+    "" | "Upcoming" | "All Market"
+  >("");
   const [agreementWarning, setAgreementWarning] = useState<string | null>(null);
   const referrerName = useSelector(selectReferrerName);
 
@@ -255,7 +257,7 @@ export default function PreMarketListingPage() {
       if (!response.ok || data?.success === false) {
         throw new Error(
           data?.message ||
-            "We couldn't submit your request right now. Please try again."
+            "We couldn't submit your request right now. Please try again.",
         );
       }
 
@@ -333,7 +335,7 @@ export default function PreMarketListingPage() {
                       setMovingDate({
                         earliest: e.target.value,
                         latest: movingDate.latest,
-                      })
+                      }),
                     )
                   }
                   className="w-full bg-transparent outline-none text-sm"
@@ -359,7 +361,7 @@ export default function PreMarketListingPage() {
                       setMovingDate({
                         latest: e.target.value,
                         earliest: movingDate.earliest,
-                      })
+                      }),
                     )
                   }
                   className="w-full bg-transparent outline-none text-sm"
@@ -392,7 +394,7 @@ export default function PreMarketListingPage() {
                       setPriceRange({
                         min: e.target.value === "" ? 0 : Number(e.target.value),
                         max: priceRange.max,
-                      })
+                      }),
                     )
                   }
                   placeholder="Min"
@@ -414,7 +416,7 @@ export default function PreMarketListingPage() {
                       setPriceRange({
                         max: e.target.value === "" ? 0 : Number(e.target.value),
                         min: priceRange.min,
-                      })
+                      }),
                     )
                   }
                   placeholder="Max"
@@ -445,7 +447,7 @@ export default function PreMarketListingPage() {
                   : locations
                       .map(
                         (loc) =>
-                          `${loc.borough} (${loc.neighborhoods.length}, ${loc.neighborhoods})`
+                          `${loc.borough} (${loc.neighborhoods.length}, ${loc.neighborhoods})`,
                       )
                       .join(", ")}
               </span>
@@ -598,12 +600,14 @@ export default function PreMarketListingPage() {
           </div>
 
           <div className="border-t border-gray-300 pt-5 space-y-3">
-            <p className="text-xl font-semibold text-gray-900">
-              In order to match your request, which market scope should the agent focus on?
+            <p className="text-sm font-semibold text-gray-900">
+              In order to match your request, which market scope should the
+              agent focus on?
             </p>
-            <p className="text-lg text-gray-700">
-              Your agent will assist you throughout the process, including guidance,
-              scheduling, tour coordination, and protecting your interests.
+            <p className="text-sm text-gray-700">
+              Your agent will assist you throughout the process, including
+              guidance, scheduling, tour coordination, and protecting your
+              interests.
             </p>
 
             <div className="space-y-3 text-lg text-gray-800">
@@ -615,7 +619,9 @@ export default function PreMarketListingPage() {
                   onChange={() => setMarketScope("Upcoming")}
                   className="w-5 h-5 accent-blue-600"
                 />
-                <span>Rentals not publicly advertised only</span>
+                <span className="text-sm">
+                  Rentals not publicly advertised only
+                </span>
               </label>
 
               <label className="flex items-center gap-2 cursor-pointer">
@@ -626,7 +632,9 @@ export default function PreMarketListingPage() {
                   onChange={() => setMarketScope("All Market")}
                   className="w-5 h-5 accent-blue-600"
                 />
-                <span>Rentals not publicly advertised and publicly listed</span>
+                <span className="text-sm">
+                  Rentals not publicly advertised and publicly listed
+                </span>
               </label>
             </div>
             {fieldErrors.scope && (
@@ -644,7 +652,9 @@ export default function PreMarketListingPage() {
           {/* Agreement text + checkbox */}
           <div className="border-t pt-4 text-xs text-gray-600 space-y-3">
             <div className="space-y-2">
-              <p className="font-semibold text-gray-700">Checkbox (optional):</p>
+              <p className="font-semibold text-gray-700">
+                Checkbox (optional):
+              </p>
               <p>
                 To receive assistance beyond one agent, you may choose to allow
                 your request to be shared with other licensed New York real
@@ -690,7 +700,7 @@ export default function PreMarketListingPage() {
                 onChange={(e) => {
                   if (e.target.checked && !renterPhone) {
                     setAgreementWarning(
-                      "Please add your phone number in your profile to continue."
+                      "Please add your phone number in your profile to continue.",
                     );
                     return;
                   }
