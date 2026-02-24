@@ -3,11 +3,15 @@
 import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLazyGetProfileQuery, useRefreshTokenMutation } from "@/store/api";
-import { selectAccessToken, setAuthFromProfile } from "@/store/slices/authSlice";
+import {
+  logout,
+  selectAuth,
+  setAuthFromProfile,
+} from "@/store/slices/authSlice";
 
 export default function AuthBootstrap() {
   const dispatch = useDispatch();
-  const accessToken = useSelector(selectAccessToken);
+  const auth = useSelector(selectAuth);
   const [refreshToken] = useRefreshTokenMutation();
   const [getProfile] = useLazyGetProfileQuery();
   const didRun = useRef(false);
@@ -34,7 +38,20 @@ export default function AuthBootstrap() {
 
     const bootstrap = async () => {
       try {
-        if (isTokenValid(accessToken)) {
+        const hasProfile = Boolean(auth.user || auth.renter);
+
+        if (isTokenValid(auth.accessToken)) {
+          if (hasProfile) {
+            return;
+          }
+
+          const profile = await getProfile().unwrap();
+          if (profile) {
+            dispatch(setAuthFromProfile(profile));
+            return;
+          }
+
+          dispatch(logout());
           return;
         }
 
@@ -42,14 +59,17 @@ export default function AuthBootstrap() {
         const profile = await getProfile().unwrap();
         if (profile) {
           dispatch(setAuthFromProfile(profile));
+          return;
         }
+
+        dispatch(logout());
       } catch {
-        // No active session; keep user logged out.
+        dispatch(logout());
       }
     };
 
     void bootstrap();
-  }, [accessToken, dispatch, getProfile, refreshToken]);
+  }, [auth.accessToken, auth.renter, auth.user, dispatch, getProfile, refreshToken]);
 
   return null;
 }

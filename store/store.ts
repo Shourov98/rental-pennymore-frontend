@@ -39,6 +39,11 @@ const loadAuthState = (): { auth: AuthState } | undefined => {
 
   try {
     const auth = JSON.parse(stored) as AuthState;
+    const hasProfile = Boolean(auth.user || auth.renter);
+    if (!auth.accessToken || !hasProfile) {
+      window.localStorage.removeItem(AUTH_STORAGE_KEY);
+      return undefined;
+    }
     const expiry = auth.accessToken ? getTokenExpiry(auth.accessToken) : null;
     if (expiry && expiry <= Date.now()) {
       window.localStorage.removeItem(AUTH_STORAGE_KEY);
@@ -90,7 +95,9 @@ if (typeof window !== "undefined") {
   store.subscribe(() => {
     const state = store.getState();
     const auth = state.auth;
-    const shouldPersist = Boolean(auth.accessToken || auth.user || auth.renter);
+    const shouldPersist = Boolean(
+      auth.accessToken && (auth.user || auth.renter)
+    );
     if (!shouldPersist) {
       window.localStorage.removeItem(AUTH_STORAGE_KEY);
       return;

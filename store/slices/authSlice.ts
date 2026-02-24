@@ -293,7 +293,9 @@ export const selectUser = (state: RootState) => state.auth.user;
 export const selectRenter = (state: RootState) => state.auth.renter;
 export const selectAccessToken = (state: RootState) => state.auth.accessToken;
 export const selectIsAuthed = (state: RootState) =>
-  state.auth.status === "authenticated" && !!state.auth.accessToken;
+  state.auth.status === "authenticated" &&
+  !!state.auth.accessToken &&
+  !!(state.auth.user || state.auth.renter);
 export const selectReferralRegistrationType = (state: RootState) =>
   state.auth.referralRegistrationType;
 export const selectAuthAgentProfile = (state: RootState) =>
