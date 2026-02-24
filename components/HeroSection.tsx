@@ -27,13 +27,13 @@ export default function HeroSection() {
   const agentNoticeTimeoutRef = useRef<number | null>(null);
 
   const priceRange = useSelector(
-    (state: RootState) => state.preferences.priceRange
+    (state: RootState) => state.preferences.priceRange,
   );
   const referrerName = useSelector(selectReferrerName);
   const auth = useSelector(selectAuth);
   const isAuthed = useSelector(selectIsAuthed);
   const locations = useSelector(
-    (state: RootState) => state.preferences.locations
+    (state: RootState) => state.preferences.locations,
   );
   const authReferrerTitle =
     (auth as { referrerTitle?: string | null }).referrerTitle ?? null;
@@ -44,7 +44,7 @@ export default function HeroSection() {
   const isRenter = role === "Renter";
   const isAgent = role === "Agent";
   const headingName = isAgent
-    ? agentName ?? "Tuval Mor"
+    ? (agentName ?? "Tuval Mor")
     : referrerName || "Tuval Mor";
   const headingTitle = isAgent ? agentTitle : authReferrerTitle;
   const neighborhoodLabelByKey = useMemo(() => {
@@ -65,7 +65,7 @@ export default function HeroSection() {
       setPriceRange({
         min: Number(value),
         max: priceRange.max,
-      })
+      }),
     );
   };
 
@@ -74,7 +74,7 @@ export default function HeroSection() {
       setPriceRange({
         min: priceRange.min,
         max: Number(value),
-      })
+      }),
     );
   };
 
@@ -114,9 +114,12 @@ export default function HeroSection() {
 
       {/* Form */}
       <div className="mt-10 bg-white text-gray-900 rounded-2xl shadow-md w-[90%] sm:w-[85%] md:w-[80%] lg:w-[70%] xl:w-[60%] px-4 sm:px-6 md:px-8 py-6 z-10">
-        <h3 className="text-sm text-gray-600 sm:text-base md:text-lg font-semibold mb-4 text-center">
+        <span className="text-sm text-gray-600 sm:text-base md:text-md  mb-4 text-center block">
           Your request will be submitted to: <br />
-          {headingName}<br />
+        </span>
+        <h3 className="text-sm text-gray-600 sm:text-base md:text-lg font-semibold mb-4 text-center">
+          {headingName}
+          <br />
           {headingTitle}
         </h3>
 
@@ -135,20 +138,23 @@ export default function HeroSection() {
               <span className="text-gray-500 text-xs leading-5">
                 {locations.length === 0
                   ? "Choose Borough and neighborhoods"
-                  : locations.map((loc: RootState["preferences"]["locations"][number]) => {
-                      const labels = (loc.neighborhoods || []).map(
-                        (key: string) =>
-                          neighborhoodLabelByKey.get(`${loc.borough}:${key}`) ??
-                          key
-                      );
+                  : locations.map(
+                      (loc: RootState["preferences"]["locations"][number]) => {
+                        const labels = (loc.neighborhoods || []).map(
+                          (key: string) =>
+                            neighborhoodLabelByKey.get(
+                              `${loc.borough}:${key}`,
+                            ) ?? key,
+                        );
 
-                      return (
-                        <span key={loc.borough} className="block">
-                          <span className="font-semibold">{loc.borough}</span>
-                          <span className="block">{labels.join(", ")}</span>
-                        </span>
-                      );
-                    })}
+                        return (
+                          <span key={loc.borough} className="block">
+                            <span className="font-semibold">{loc.borough}</span>
+                            <span className="block">{labels.join(", ")}</span>
+                          </span>
+                        );
+                      },
+                    )}
               </span>
             </div>
           </div>

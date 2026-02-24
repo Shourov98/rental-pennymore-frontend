@@ -649,7 +649,7 @@ export default function PreMarketListingPage() {
           <div className="border-t pt-4 text-xs text-gray-600 space-y-3">
             <div className="space-y-2">
               <p className="font-semibold text-gray-700">
-                Share your search (optional):
+                Share your search (optional)
               </p>
               <p>
                 To receive assistance beyond one agent, you may choose to allow
@@ -673,7 +673,7 @@ export default function PreMarketListingPage() {
             </div>
 
             <p className="font-semibold text-gray-700">
-              Client registration and agency disclosure:
+              Client registration and agency disclosure (required)
             </p>
             <p>
               To allow your agent,{" "}
