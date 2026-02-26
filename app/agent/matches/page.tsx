@@ -47,6 +47,7 @@ export default function AgentMatchesPage() {
   const [showOwnReferrals, setShowOwnReferrals] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mutatingShareId, setMutatingShareId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState<
     ApiAgentMatchesResponse["pagination"]
@@ -183,6 +184,68 @@ export default function AgentMatchesPage() {
     router.push(`/agent/matches/${req.id}`);
   };
 
+  const handleToggleShare = async (request: NormalizedAgentMatch) => {
+    const localId = request.id;
+    const apiRequestId = request.raw?._id;
+
+    setError(null);
+    setMutatingShareId(localId);
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(
+        `${API_BASE_URL}/pre-market/${apiRequestId}/toggle-share`,
+        {
+          method: "PATCH",
+          headers,
+        }
+      );
+
+      const data = await response
+        .json()
+        .catch(() => ({} as { success?: boolean; message?: string }));
+
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message ||
+            "We couldn't update request visibility right now. Please try again."
+        );
+      }
+
+      setRequests((prev) => {
+        const next = prev.map((req) => {
+          if (req.id !== localId) return req;
+
+          const isPrivateVisibility = !req.isPrivateVisibility;
+          return {
+            ...req,
+            isPrivateVisibility,
+            visibilityLabel: isPrivateVisibility ? "Private" : "Shared",
+            raw: {
+              ...req.raw,
+              visibility: isPrivateVisibility ? "private" : "shared",
+              shareConsent: !isPrivateVisibility,
+            },
+          };
+        });
+        cacheAgentMatches(next);
+        return next;
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "We couldn't update request visibility right now. Please try again.";
+      setError(message);
+    } finally {
+      setMutatingShareId(null);
+    }
+  };
+
   const handlePreviousPage = () => {
     if (pagination?.hasPrev) setPage((prev) => Math.max(1, prev - 1));
   };
@@ -248,12 +311,14 @@ export default function AgentMatchesPage() {
         <>
           <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-[1000px] w-full text-sm">
+              <table className="min-w-[1200px] w-full text-sm">
                 <thead className="bg-blue-100 text-gray-800">
                   <tr>
                     <th className="py-3 px-5 text-left">Date</th>
                     <th className="py-3 px-5 text-left">Request</th>
                     <th className="py-3 px-5 text-left">Referral</th>
+                    <th className="py-3 px-5 text-left">Scope</th>
+                    <th className="py-3 px-5 text-left">Visibility</th>
                     <th className="py-3 px-5 text-left">Borough</th>
                     <th className="py-3 px-5 text-left">Price (Max)</th>
                     <th className="py-3 px-5 text-left">Beds</th>
@@ -264,11 +329,19 @@ export default function AgentMatchesPage() {
                 </thead>
 
                 <tbody>
-                  {filteredRequests.map((req) => (
-                    <tr
-                      key={req.id}
-                      className="border-t border-gray-200 hover:bg-gray-50 text-gray-700"
-                    >
+                  {filteredRequests.map((req) => {
+                    const requestReferralCode =
+                      req.raw?.renterInfo?.referralInfo?.referralCode ?? null;
+                    const canViewRequest =
+                      Boolean(referralCode) &&
+                      Boolean(requestReferralCode) &&
+                      referralCode === requestReferralCode;
+
+                    return (
+                      <tr
+                        key={req.id}
+                        className="border-t border-gray-200 hover:bg-gray-50 text-gray-700"
+                      >
                       <td className="py-3 px-5">
                         <div className="font-semibold text-gray-900">
                           {req.dateLabel}
@@ -293,6 +366,59 @@ export default function AgentMatchesPage() {
                             </span>
                           );
                         })()}
+                      </td>
+                      <td className="py-3 px-5">
+                        <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+                          {req.scopeLabel}
+                        </span>
+                      </td>
+                      <td className="py-3 px-5">
+                        <button
+                          type="button"
+                          onClick={() => canViewRequest && handleToggleShare(req)}
+                          disabled={mutatingShareId === req.id || !canViewRequest}
+                          className="inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                          aria-label={`Toggle visibility for ${req.requestName}`}
+                          title={
+                            canViewRequest
+                              ? "Toggle request visibility"
+                              : "Only the referred agent can change visibility"
+                          }
+                        >
+                          <span
+                            className={`text-xs font-medium ${
+                              req.isPrivateVisibility
+                                ? "text-gray-700"
+                                : "text-gray-400"
+                            }`}
+                          >
+                            Private
+                          </span>
+                          <span
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                              req.isPrivateVisibility
+                                ? "bg-gray-300"
+                                : "bg-blue-400"
+                            }`}
+                          >
+                            <span
+                              className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                                req.isPrivateVisibility
+                                  ? "translate-x-1"
+                                  : "translate-x-5"
+                              }`}
+                            />
+                          </span>
+                          <span
+                            className={`text-xs font-medium ${
+                              req.isPrivateVisibility
+                                ? "text-gray-400"
+                                : "text-emerald-700"
+                            }`}
+                          >
+                            Shared
+                          </span>
+                        </button>
                       </td>
                       <td className="py-3 px-5 text-gray-900">
                         {req.boroughsLabel}
@@ -319,8 +445,9 @@ export default function AgentMatchesPage() {
                           <Eye className="w-4 h-4 text-gray-600" />
                         </button>
                       </td>
-                    </tr>
-                  ))}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

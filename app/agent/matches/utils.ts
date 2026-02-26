@@ -24,6 +24,9 @@ export interface ApiAgentMatch {
   buildingFeatures?: Record<string, boolean>;
   petPolicy?: Record<string, boolean>;
   guarantorRequired?: Record<string, boolean>;
+  shareConsent?: boolean;
+  scope?: string;
+  visibility?: string;
   status?: string;
   preferences?: string[];
   isActive?: boolean;
@@ -81,6 +84,9 @@ export interface NormalizedAgentMatch {
   priceMaxLabel: string;
   bedroomsLabel: string;
   bathroomsLabel: string;
+  scopeLabel: string;
+  visibilityLabel: string;
+  isPrivateVisibility: boolean;
   status: string;
   isActive: boolean;
   preferences: string[];
@@ -130,9 +136,44 @@ const formatBedrooms = (bedrooms?: string[]) =>
 const formatBathrooms = (bathrooms?: string[]) =>
   bathrooms?.length ? bathrooms.join(", ") : "Not specified";
 
+const formatScope = (scope?: string) => {
+  const value = scope?.trim();
+  return value ? value : "Not specified";
+};
+
+const formatVisibility = (
+  visibility?: string,
+  shareConsent?: boolean
+): { visibilityLabel: string; isPrivateVisibility: boolean } => {
+  if (visibility && visibility.trim()) {
+    const normalized = visibility.trim().toLowerCase();
+    const isPrivate = normalized === "private";
+    const label =
+      normalized === "shared"
+        ? "Shared"
+        : normalized === "private"
+          ? "Private"
+          : visibility;
+    return { visibilityLabel: label, isPrivateVisibility: isPrivate };
+  }
+
+  if (typeof shareConsent === "boolean") {
+    return shareConsent
+      ? { visibilityLabel: "Shared", isPrivateVisibility: false }
+      : { visibilityLabel: "Private", isPrivateVisibility: true };
+  }
+
+  return { visibilityLabel: "Not specified", isPrivateVisibility: false };
+};
+
 export const normalizeAgentMatch = (
   req: ApiAgentMatch
 ): NormalizedAgentMatch => {
+  const { visibilityLabel, isPrivateVisibility } = formatVisibility(
+    req.visibility,
+    req.shareConsent
+  );
+
   return {
     id:
       req._id || req.id || req.requestId || Math.random().toString(36).slice(2),
@@ -142,6 +183,9 @@ export const normalizeAgentMatch = (
     priceMaxLabel: formatCurrency(req.priceRange?.max ?? req.priceRange?.min),
     bedroomsLabel: formatBedrooms(req.bedrooms),
     bathroomsLabel: formatBathrooms(req.bathrooms),
+    scopeLabel: formatScope(req.scope),
+    visibilityLabel,
+    isPrivateVisibility,
     status: req.status || (req.isActive ? "active" : "inactive"),
     isActive: req.isActive ?? false,
     preferences: req.preferences ?? [],
