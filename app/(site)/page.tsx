@@ -24,15 +24,17 @@ export default function HomePage() {
   const role = auth.role ?? auth.user?.role ?? null;
   const isAgent = role === "Agent";
   const displayName = isAgent
-    ? auth.agentProfile?.userInfo?.fullName ?? auth.user?.fullName ?? "Tuval Mor"
+    ? (auth.agentProfile?.userInfo?.fullName ??
+      auth.user?.fullName ??
+      "Tuval Mor")
     : referrerName || "Tuval Mor";
   const displayBrokerageName = isAgent
-    ? auth.agentProfile?.brokerageName ?? "The Corcoran Group"
+    ? (auth.agentProfile?.brokerageName ?? "The Corcoran Group")
     : referrerBrokerageName || "The Corcoran Group";
   const isHydrated = useSyncExternalStore(
     () => () => {},
     () => true,
-    () => false
+    () => false,
   );
 
   if (!isHydrated) return null;
@@ -54,15 +56,20 @@ export default function HomePage() {
           </Link>
         </h2>
 
-        <p className="w-full max-w-2xl mx-auto text-base font-semibold text-center mb-10">
-          Once your request is accepted and required agency disclosures and agreements are completed,
-          your agent may initiate outreach for rental opportunities that may not be publicly advertised.
+        <p className="w-full max-w-2xl mx-auto text-base text-center mb-10">
+          Once your request is accepted and required agency disclosures and
+          agreements are completed, your agent may initiate outreach for rental
+          opportunities that may not be publicly advertised.
         </p>
 
-        <p className="w-full max-w-2xl mx-auto text-base font-semibold text-center mb-10">
-          For any resulting transaction, you will be represented by 
-          the agent identified in the applicable agency disclosure.
-          <br /> {displayName}, {displayBrokerageName}.
+        <p className="w-full max-w-2xl mx-auto text-base text-center mb-10">
+          For any resulting transaction, you will be represented by the agent
+          identified in the applicable agency disclosure.
+          <br />{" "}
+          <span className="font-semibold">
+            {displayName}, {displayBrokerageName}
+          </span>
+          .
         </p>
 
         {/* Steps with arrows */}

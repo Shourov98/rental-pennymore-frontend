@@ -29,15 +29,15 @@ export default function MonthlyReportSection() {
 
   const scrollPrev = useCallback(
     () => emblaApi && emblaApi.scrollPrev(),
-    [emblaApi]
+    [emblaApi],
   );
   const scrollNext = useCallback(
     () => emblaApi && emblaApi.scrollNext(),
-    [emblaApi]
+    [emblaApi],
   );
   const scrollTo = useCallback(
     (index: number) => emblaApi && emblaApi.scrollTo(index),
-    [emblaApi]
+    [emblaApi],
   );
 
   useEffect(() => {
@@ -111,7 +111,7 @@ export default function MonthlyReportSection() {
       "November",
       "December",
     ],
-    []
+    [],
   );
 
   return (
@@ -161,7 +161,7 @@ export default function MonthlyReportSection() {
                       {monthName}, {report.year}
                     </h3>
                     <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-6">
-                      Exclusive 15-Second NYC Rental Report 
+                      Exclusive 15-Second NYC Rental Report <br />
                       This Month’s Renter News, Market Signals & Trends
                     </p>
                     <a
