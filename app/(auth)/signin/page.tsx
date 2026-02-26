@@ -26,7 +26,7 @@ function SigninPageContent() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [savedReferralCode, setSavedReferralCode] = useState<string | null>(
-    null
+    null,
   );
   const [statusMessage, setStatusMessage] = useState<{
     type: "success" | "error";
@@ -43,8 +43,8 @@ function SigninPageContent() {
 
   const signupHref = (() => {
     const referralCode = referralFromUrl || savedReferralCode;
-    if (!referralCode) return "/signup/renter";
-    return `/signup/renter?ref=${encodeURIComponent(referralCode)}`;
+    if (!referralCode) return "/signup/agent";
+    return `/signup/agent?ref=${encodeURIComponent(referralCode)}`;
   })();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -273,10 +273,7 @@ function SigninPageContent() {
         {/* Footer */}
         <p className="text-text-tertiary text-center text-sm sm:text-base">
           Don’t have an account?{" "}
-          <a
-            href={signupHref}
-            className="text-action hover:text-action-hover"
-          >
+          <a href={signupHref} className="text-action hover:text-action-hover">
             Create an account
           </a>
         </p>
