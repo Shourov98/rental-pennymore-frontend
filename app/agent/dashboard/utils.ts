@@ -6,6 +6,7 @@ export interface ApiAgentRequest {
   requestId?: string;
   requestName?: string;
   renterId?: string;
+  referralAgentId?: string;
   movingDateRange?: {
     earliest?: string;
     latest?: string;

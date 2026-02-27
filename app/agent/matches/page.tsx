@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import FilterModal from "@/components/modals/FilterModals";
 import { RootState } from "@/store/store";
-import { selectAgentReferral } from "@/store/slices/agentProfileSlice";
 import {
   API_BASE_URL,
   ApiAgentMatchesResponse,
@@ -19,7 +18,7 @@ import {
 export default function AgentMatchesPage() {
   const router = useRouter();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
-  const { referralCode } = useSelector(selectAgentReferral);
+  const currentAgentId = useSelector((state: RootState) => state.auth.user?._id);
   const formatReferralName = (name: string) => {
     const trimmed = name.trim();
     const parts = trimmed.trim().split(/\s+/);
@@ -170,14 +169,15 @@ export default function AgentMatchesPage() {
       }
 
       if (showOwnReferrals) {
-        if (!referralCode) return false;
-        const referrerCode = raw.renterInfo?.referralInfo?.referralCode ?? null;
-        if (!referrerCode || referrerCode !== referralCode) return false;
+        if (!currentAgentId) return false;
+        const requestReferralAgentId = raw.referralAgentId ?? null;
+        if (!requestReferralAgentId || requestReferralAgentId !== currentAgentId)
+          return false;
       }
 
       return true;
     });
-  }, [filters, referralCode, requests, showOwnReferrals]);
+  }, [currentAgentId, filters, requests, showOwnReferrals]);
 
   const handleView = (req: NormalizedAgentMatch) => {
     cacheSingleAgentMatch(req);
@@ -330,12 +330,12 @@ export default function AgentMatchesPage() {
 
                 <tbody>
                   {filteredRequests.map((req) => {
-                    const requestReferralCode =
-                      req.raw?.renterInfo?.referralInfo?.referralCode ?? null;
-                    const canViewRequest =
-                      Boolean(referralCode) &&
-                      Boolean(requestReferralCode) &&
-                      referralCode === requestReferralCode;
+                    const requestReferralAgentId =
+                      req.raw?.referralAgentId ?? null;
+                    const canToggleVisibility =
+                      Boolean(currentAgentId) &&
+                      Boolean(requestReferralAgentId) &&
+                      currentAgentId === requestReferralAgentId;
 
                     return (
                       <tr
@@ -375,12 +375,16 @@ export default function AgentMatchesPage() {
                       <td className="py-3 px-5">
                         <button
                           type="button"
-                          onClick={() => canViewRequest && handleToggleShare(req)}
-                          disabled={mutatingShareId === req.id || !canViewRequest}
+                          onClick={() =>
+                            canToggleVisibility && handleToggleShare(req)
+                          }
+                          disabled={
+                            mutatingShareId === req.id || !canToggleVisibility
+                          }
                           className="inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                           aria-label={`Toggle visibility for ${req.requestName}`}
                           title={
-                            canViewRequest
+                            canToggleVisibility
                               ? "Toggle request visibility"
                               : "Only the referred agent can change visibility"
                           }
