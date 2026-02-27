@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-const HERO_BG_SRC = "/hero-bg.png";
+const HERO_BG_SRC = "/hero-bg.svg";
 
 export default function BrucherLanding() {
   return (

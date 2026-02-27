@@ -17,6 +17,28 @@ import { getSavedReferralCode, saveReferralCode } from "@/lib/referralCode";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+type DefaultReferralAgent = {
+  id: string;
+  role: string;
+  fullName: string;
+  title?: string | null;
+  brokerageName?: string | null;
+  email?: string;
+  phoneNumber?: string;
+  referralCode: string;
+  referralLink?: string;
+  loginLink?: string;
+};
+
+type LoginErrorResponse = {
+  success?: boolean;
+  message?: string;
+  errorCode?: string;
+  details?: {
+    defaultReferralAgent?: DefaultReferralAgent;
+  };
+};
+
 function SigninPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -33,6 +55,9 @@ function SigninPageContent() {
     message: string;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isContinueLoading, setIsContinueLoading] = useState(false);
+  const [defaultReferralAgent, setDefaultReferralAgent] =
+    useState<DefaultReferralAgent | null>(null);
 
   useEffect(() => {
     const nextSaved = referralFromUrl
@@ -47,9 +72,162 @@ function SigninPageContent() {
     return `/signup/agent?ref=${encodeURIComponent(referralCode)}`;
   })();
 
+  const completeLogin = (
+    data: {
+      message?: string;
+      data?: {
+        user?: { role?: string };
+        renter?: unknown;
+        tokens?: {
+          accessToken?: string;
+          refreshToken?: string;
+          expiresIn?: string;
+        };
+        accessToken?: string;
+        refreshToken?: string;
+        expiresIn?: string;
+        registrationType?: string;
+        referralInfo?: unknown;
+        mustChangePassword?: boolean;
+        title?: string | null;
+        agentProfile?: unknown;
+      };
+    },
+    forcedDestination?: string,
+  ) => {
+    const payload = data?.data;
+    const role = payload?.user?.role;
+
+    if (role === "Renter" && payload?.user) {
+      const tokens = (
+        payload?.tokens?.accessToken
+          ? payload.tokens
+          : payload?.accessToken
+            ? {
+                accessToken: payload.accessToken,
+                refreshToken: payload.refreshToken,
+                expiresIn: payload.expiresIn,
+              }
+            : undefined
+      ) as Parameters<typeof renterLoginSuccess>[0]["tokens"];
+      dispatch(
+        renterLoginSuccess({
+          user: payload.user as Parameters<
+            typeof renterLoginSuccess
+          >[0]["user"],
+          renter:
+            (payload.renter as Parameters<
+              typeof renterLoginSuccess
+            >[0]["renter"]) ?? null,
+          tokens,
+          registrationType:
+            payload.registrationType === "social" ? "social" : "normal",
+          referralInfo:
+            (payload.referralInfo as Parameters<
+              typeof renterLoginSuccess
+            >[0]["referralInfo"]) ?? null,
+        }),
+      );
+    } else if (payload?.user && payload?.accessToken) {
+      dispatch(
+        agentLoginSuccess({
+          user: payload.user as Parameters<typeof agentLoginSuccess>[0]["user"],
+          accessToken: payload.accessToken,
+          expiresIn: payload.expiresIn ?? "",
+          mustChangePassword: !!payload.mustChangePassword,
+          title: payload.title ?? null,
+          agentProfile:
+            (payload.agentProfile as Parameters<
+              typeof agentLoginSuccess
+            >[0]["agentProfile"]) ?? null,
+        }),
+      );
+      dispatch(fetchAgentProfile());
+    }
+
+    const redirectTarget = searchParams.get("redirect");
+    const destination =
+      forcedDestination ??
+      (redirectTarget === "pre-market-listing" ? "/pre-market-listing" : "/");
+    setStatusMessage({
+      type: "success",
+      message: data.message || "Login successful.",
+    });
+    router.replace(destination);
+  };
+
+  const login = async (
+    referralCodeOverride?: string,
+    forcedDestination?: string,
+  ): Promise<boolean> => {
+    const referralCode = (
+      referralCodeOverride ||
+      referralFromUrl ||
+      savedReferralCode ||
+      getSavedReferralCode()
+    )?.trim();
+
+    const loginPayload: {
+      email: string;
+      password: string;
+      referralCode?: string;
+    } = {
+      email: email.trim(),
+      password,
+    };
+
+    if (referralCode) {
+      loginPayload.referralCode = referralCode;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(loginPayload),
+    });
+
+    const data = (await response
+      .json()
+      .catch(() => ({}))) as LoginErrorResponse & {
+      data?: Parameters<typeof agentLoginSuccess>[0] & {
+        registrationType?: string;
+        renter?: unknown;
+        tokens?: {
+          accessToken?: string;
+          refreshToken?: string;
+          expiresIn?: string;
+        };
+        referralInfo?: unknown;
+      };
+    };
+
+    if (!response.ok || !data?.success) {
+      const message =
+        data?.message || "Login failed. Please check your credentials.";
+      dispatch(authFailure(message));
+
+      if (
+        data?.errorCode === "ACCESS_UNAUTHORIZED" &&
+        data?.details?.defaultReferralAgent
+      ) {
+        setDefaultReferralAgent(data.details.defaultReferralAgent);
+        setStatusMessage(null);
+        return false;
+      }
+
+      throw new Error(message);
+    }
+
+    setDefaultReferralAgent(null);
+    completeLogin(data, forcedDestination);
+    return true;
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setStatusMessage(null);
+    setDefaultReferralAgent(null);
 
     if (!email.trim() || !password.trim()) {
       setStatusMessage({
@@ -62,82 +240,7 @@ function SigninPageContent() {
     try {
       setIsLoading(true);
       dispatch(authStart());
-      const referralCode = (
-        referralFromUrl ||
-        savedReferralCode ||
-        getSavedReferralCode()
-      )?.trim();
-      const loginPayload: {
-        email: string;
-        password: string;
-        referralCode?: string;
-      } = {
-        email: email.trim(),
-        password,
-      };
-      if (referralCode) {
-        loginPayload.referralCode = referralCode;
-      }
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(loginPayload),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data?.success) {
-        const message =
-          data?.message || "Login failed. Please check your credentials.";
-        dispatch(authFailure(message));
-        throw new Error(message);
-      }
-
-      const payload = data?.data;
-      const role = payload?.user?.role;
-
-      if (role === "Renter") {
-        const tokens =
-          payload?.tokens ??
-          (payload?.accessToken
-            ? {
-                accessToken: payload.accessToken,
-                refreshToken: payload.refreshToken,
-                expiresIn: payload.expiresIn,
-              }
-            : undefined);
-        dispatch(
-          renterLoginSuccess({
-            user: payload.user,
-            renter: payload.renter ?? null,
-            tokens,
-            registrationType: payload.registrationType ?? "normal",
-            referralInfo: payload.referralInfo ?? null,
-          }),
-        );
-      } else if (payload?.user && payload?.accessToken) {
-        dispatch(
-          agentLoginSuccess({
-            user: payload.user,
-            accessToken: payload.accessToken,
-            expiresIn: payload.expiresIn ?? "",
-            mustChangePassword: !!payload.mustChangePassword,
-            title: payload.title ?? null,
-            agentProfile: payload.agentProfile ?? null,
-          }),
-        );
-        dispatch(fetchAgentProfile());
-      }
-
-      const redirectTarget = searchParams.get("redirect");
-      const destination =
-        redirectTarget === "pre-market-listing" ? "/pre-market-listing" : "/";
-      setStatusMessage({
-        type: "success",
-        message: data.message || "Login successful.",
-      });
-      router.replace(destination);
+      await login();
     } catch (err) {
       const message =
         err instanceof Error
@@ -150,8 +253,29 @@ function SigninPageContent() {
     }
   };
 
+  const handleContinueWithDefaultAgent = async () => {
+    if (!defaultReferralAgent?.referralCode) return;
+
+    try {
+      setStatusMessage(null);
+      setIsContinueLoading(true);
+      dispatch(authStart());
+      saveReferralCode(defaultReferralAgent.referralCode);
+      await login(defaultReferralAgent.referralCode, "/");
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "We couldn't continue right now. Please try again.";
+      setStatusMessage({ type: "error", message });
+      dispatch(authFailure(message));
+    } finally {
+      setIsContinueLoading(false);
+    }
+  };
+
   return (
-    <div className="w-full">
+    <div className="w-full relative">
       {/* Logo */}
       <div className="w-full flex mb-5 justify-center">
         <Link href="/">
@@ -278,6 +402,73 @@ function SigninPageContent() {
           </a>
         </p>
       </form>
+
+      {defaultReferralAgent && (
+        <div className="fixed inset-0 z-50 bg-black/60 px-4 py-6 sm:py-10">
+          <div className="mx-auto flex h-full w-full max-w-4xl items-center justify-center">
+            <div className="w-full max-h-[90vh] overflow-y-auto rounded-3xl border border-gray-200 bg-white p-6 sm:p-8 lg:p-10 shadow-2xl">
+              <div className="mb-5">
+                <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-700">
+                  Account Notice
+                </span>
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-5">
+                Agent no longer participating
+              </h3>
+              <div className="space-y-4 text-[15px] leading-7 sm:text-base text-gray-700">
+                <p>
+                  Your originally registered agent is no longer participating in
+                  the BeforeListed intake service. You may contact that agent
+                  directly if you wish.
+                </p>
+                <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900">
+                  Your request will remain private on BeforeListed and will not
+                  be shared with any other agents unless you choose to continue.
+                </p>
+                <p>
+                  If you would like to continue using the service, you may
+                  request representation by{" "}
+                  <span className="font-semibold text-gray-900">
+                    {defaultReferralAgent.fullName}
+                  </span>
+                  , a licensed New York real estate agent. If you proceed, you
+                  will be asked to review and sign the required Corcoran agency
+                  disclosures before any assistance begins.
+                </p>
+                <p className="rounded-xl border border-blue-200 bg-blue-100 px-4 py-3 text-blue-900">
+                  If you are currently working with a different agent who uses
+                  the BeforeListed service, please log in using that agent’s
+                  unique registration link.
+                </p>
+              </div>
+
+              <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                <button
+                  type="button"
+                  onClick={handleContinueWithDefaultAgent}
+                  disabled={isContinueLoading}
+                  className="w-full rounded-xl bg-action px-5 py-3.5 text-sm sm:text-base font-semibold text-text-inverted transition hover:bg-action-hover disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isContinueLoading
+                    ? "Continuing..."
+                    : `Continue with ${defaultReferralAgent.fullName}`}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDefaultReferralAgent(null);
+                    router.replace("/");
+                  }}
+                  disabled={isContinueLoading}
+                  className="w-full rounded-xl border border-gray-300 bg-white px-5 py-3.5 text-sm sm:text-base font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  No, thank you
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

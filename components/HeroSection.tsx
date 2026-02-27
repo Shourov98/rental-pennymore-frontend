@@ -18,7 +18,7 @@ import {
 import LocationModal from "./LocationModal";
 import boroughNeighborhoods from "@/data/neighborhoods.manhattan-brooklyn";
 
-const HERO_BG_SRC = "/hero-bg.png?v=20260227-1";
+const HERO_BG_SRC = "/hero-bg.svg";
 
 export default function HeroSection() {
   const router = useRouter();
