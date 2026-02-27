@@ -2,15 +2,16 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import HeroSection from "./HeroSection";
+
+const HERO_BG_SRC = "/hero-bg.png";
 
 export default function BrucherLanding() {
   return (
-    <div className="relative w-full min-h-screen">
-      <section className="relative z-0 w-full min-h-screen flex flex-col justify-center items-center text-center text-white">
+    <div className="relative w-full min-h-[85vh]">
+      <section className="relative z-0 w-full min-h-[85vh] flex flex-col justify-center items-center text-center text-white">
         <div className="absolute inset-0 z-0">
           <Image
-            src="/hero-bg.png"
+            src={HERO_BG_SRC}
             alt="NYC Skyline"
             fill
             priority
@@ -18,7 +19,7 @@ export default function BrucherLanding() {
             className="object-cover object-center"
           />
         </div>
-        <div className="absolute inset-0 z-0 bg-black/5" />
+        <div className="absolute inset-0 z-0 " />
         <section className="relative z-10 w-full min-h-[70vh] px-6 py-20 md:px-12 lg:px-20">
           <div className="mx-auto w-full max-w-6xl">
             <div className="relative overflow-hidden rounded-[28px] border border-white/60 bg-white/90 shadow-2xl backdrop-blur-sm">
@@ -59,15 +60,17 @@ export default function BrucherLanding() {
                   </div>
 
                   <p className="text-base leading-relaxed text-slate-700 text-left sm:text-lg">
-                    BeforeListed™ is an intake-focused marketing website used by licensed 
-                    New York real estate agents to collect renter requests. Agents may conduct
-                    outreach in an effort to identify potential rental opportunities, including 
-                    opportunities that may not be publicly advertised. 
+                    BeforeListed™ is an intake-focused marketing website used by
+                    licensed New York real estate agents to collect renter
+                    requests. Agents may conduct outreach in an effort to
+                    identify potential rental opportunities, including
+                    opportunities that may not be publicly advertised.
                   </p>
                   <p className="text-base leading-relaxed text-slate-700 text-left sm:text-lg">
-                    The website does not advertise or display rental listings and does not 
-                    guarantee the availability of any rental property or represent that any specific
-                    property is currently available for rent.
+                    The website does not advertise or display rental listings
+                    and does not guarantee the availability of any rental
+                    property or represent that any specific property is
+                    currently available for rent.
                   </p>
                 </div>
               </div>

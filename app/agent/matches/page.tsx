@@ -373,56 +373,54 @@ export default function AgentMatchesPage() {
                         </span>
                       </td>
                       <td className="py-3 px-5">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            canToggleVisibility && handleToggleShare(req)
-                          }
-                          disabled={
-                            mutatingShareId === req.id || !canToggleVisibility
-                          }
-                          className="inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                          aria-label={`Toggle visibility for ${req.requestName}`}
-                          title={
-                            canToggleVisibility
-                              ? "Toggle request visibility"
-                              : "Only the referred agent can change visibility"
-                          }
-                        >
-                          <span
-                            className={`text-xs font-medium ${
-                              req.isPrivateVisibility
-                                ? "text-gray-700"
-                                : "text-gray-400"
-                            }`}
-                          >
-                            Private
-                          </span>
-                          <span
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-                              req.isPrivateVisibility
-                                ? "bg-gray-300"
-                                : "bg-blue-400"
-                            }`}
+                        {canToggleVisibility ? (
+                          <button
+                            type="button"
+                            onClick={() => handleToggleShare(req)}
+                            disabled={mutatingShareId === req.id}
+                            className="inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                            aria-label={`Toggle visibility for ${req.requestName}`}
+                            title="Toggle request visibility"
                           >
                             <span
-                              className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                              className={`text-xs font-medium ${
                                 req.isPrivateVisibility
-                                  ? "translate-x-1"
-                                  : "translate-x-5"
+                                  ? "text-gray-700"
+                                  : "text-gray-400"
                               }`}
-                            />
+                            >
+                              Private
+                            </span>
+                            <span
+                              className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                                req.isPrivateVisibility
+                                  ? "bg-gray-300"
+                                  : "bg-blue-400"
+                              }`}
+                            >
+                              <span
+                                className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                                  req.isPrivateVisibility
+                                    ? "translate-x-1"
+                                    : "translate-x-5"
+                                }`}
+                              />
+                            </span>
+                            <span
+                              className={`text-xs font-medium ${
+                                req.isPrivateVisibility
+                                  ? "text-gray-400"
+                                  : "text-emerald-700"
+                              }`}
+                            >
+                              Shared
+                            </span>
+                          </button>
+                        ) : (
+                          <span className="text-sm font-medium text-gray-700">
+                            {req.isPrivateVisibility ? "Private" : "Shared"}
                           </span>
-                          <span
-                            className={`text-xs font-medium ${
-                              req.isPrivateVisibility
-                                ? "text-gray-400"
-                                : "text-emerald-700"
-                            }`}
-                          >
-                            Shared
-                          </span>
-                        </button>
+                        )}
                       </td>
                       <td className="py-3 px-5 text-gray-900">
                         {req.boroughsLabel}

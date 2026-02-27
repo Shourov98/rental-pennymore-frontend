@@ -18,6 +18,8 @@ import {
 import LocationModal from "./LocationModal";
 import boroughNeighborhoods from "@/data/neighborhoods.manhattan-brooklyn";
 
+const HERO_BG_SRC = "/hero-bg.png?v=20260227-1";
+
 export default function HeroSection() {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -91,7 +93,7 @@ export default function HeroSection() {
       {/* Background */}
       <div className="absolute inset-0 z-10">
         <Image
-          src="/hero-bg.png"
+          src={HERO_BG_SRC}
           alt="NYC Skyline"
           fill
           priority
