@@ -438,7 +438,7 @@ export default function Navbar() {
                   Sign In
                 </button>
                 <button
-                  onClick={() => router.push("/signup/renter")}
+                  onClick={() => router.push("/signup/agent")}
                   className="px-3 py-1.5 rounded-md border border-blue-600 text-blue-600 text-xs hover:bg-blue-50"
                 >
                   Sign Up
@@ -556,7 +556,7 @@ export default function Navbar() {
                     Sign In
                   </button>
                   <button
-                    onClick={() => router.push("/signup/renter")}
+                    onClick={() => router.push("/signup/agent")}
                     className="w-full px-4 py-2 rounded-md border border-blue-600 text-blue-600 text-sm hover:bg-blue-50"
                   >
                     Sign Up
