@@ -2,9 +2,9 @@ export default function PrivacyPage() {
   return (
     <main className="max-w-4xl mx-auto px-4 py-16">
       <header className="mb-12">
-        <h1 className="text-4xl font-bold text-gray-900">Privacy Policy</h1>
+        <h1 className="text-4xl font-bold text-gray-900">BEFORELISTED™ Privacy Policy</h1>
         <p className="mt-3 text-sm text-gray-500">
-          Last Updated: January 9, 2026
+          Last Updated: February 28, 2026
         </p>
       </header>
 
@@ -61,14 +61,14 @@ export default function PrivacyPage() {
           <ul className="list-disc pl-5 space-y-2 mt-2">
             <li>IP address (city-level only)</li>
             <li>Browser type</li>
-            <li>Device type</li>
+            <li>Device type</li> 
             <li>Pages viewed</li>
             <li>Date and time of access</li>
           </ul>
           <p className="mt-3">We do not collect precise GPS location data.</p>
 
           <h3 className="font-medium mt-6">2.3 Cookies and Analytics</h3>
-          <p className="mt-2">
+          <p className="mt-2">  
             BeforeListed™ may use cookies and standard analytics tools (such as
             Google Analytics) to understand website usage and improve
             performance.
@@ -98,11 +98,8 @@ export default function PrivacyPage() {
             </li>
             <li>Improve website functionality</li>
             <li>Comply with legal and regulatory obligations</li>
+            <li>We may use your contact information to send transactional or service-related emails related to your use of the website.</li>
           </ul>
-          <p className="mt-3">
-            We may use your contact information to send transactional or
-            service-related emails related to your use of the website.
-          </p>
         </Section>
 
         <Section title="4. How Information Is Shared">
@@ -110,13 +107,13 @@ export default function PrivacyPage() {
             4.1 Licensed Real Estate Professionals
           </h3>
           <p className="mt-2">
-            Information related to your rental search (such as budget range,
-            location preferences, and timing) may be shared with licensed real
+            Information related to your rental search <span className="font-semibold">(such as budget range,
+            location preferences, and timing)</span> may be shared with licensed real
             estate professionals on a non-identifying basis for the purpose of
             evaluating whether another agent may be able to assist with your
             search.
           </p>
-          <p className="mt-3">
+          <p className="mt-3 font-semibold">
             If another agent is introduced to actively assist with your search
             or to contact you, any such involvement will be disclosed to you and
             required agency disclosures will be provided.
@@ -126,6 +123,7 @@ export default function PrivacyPage() {
             phone number) is not shared unless required for representation and
             disclosed accordingly.
           </p>
+          <p className="mt-3">Sharing of renter request information with participating licensed real estate agents occurs only if the renter affirmatively consents through the website submission process. If consent is not provided, the request remains visible solely to the registered agent. Renters may modify visibility preferences where functionality permits.</p>
           <p className="mt-3">We do not publicly post renter information.</p>
 
           <h3 className="font-medium mt-6">4.2 Service Providers</h3>
@@ -153,12 +151,12 @@ export default function PrivacyPage() {
             4.4 No Sale of Personal Information
           </h3>
           <p className="mt-2 font-medium">
-            BeforeListed™ does not sell personal information.
+            BeforeListed™ does <span className="font-semibold">not</span> sell personal information.
           </p>
         </Section>
 
         <Section title="5. Data Retention">
-          <p>
+          <p className="mt-3">
             We retain personal information only as long as reasonably necessary
             to:
           </p>
