@@ -666,25 +666,26 @@ export default function PreMarketListingPage() {
             <p className="text-sm text-red-600 text-right">{formError}</p>
           )}
           {/* Agreement text + checkbox */}
-          <div className="border-t pt-4 text-xs text-gray-600 space-y-3">
-            <div className="space-y-2">
-              <p className="font-semibold text-gray-700">
-                Share your search (optional)
+          <div className="border-t pt-5 text-gray-600 space-y-5">
+            <div className="space-y-4">
+              <p className="text-[15px] font-semibold leading-snug text-gray-700">
+                Share your search to Improve matching chances (optional -
+                highly recommended)
               </p>
-              <p>
+              <p className="text-[13px] leading-relaxed text-gray-600">
                 To receive assistance beyond one agent, you may choose to allow
                 your request to be shared with other licensed New York real
                 estate agents who could assist in identifying potential rental
                 opportunities that may not yet be publicly advertised.
               </p>
-              <label className="flex items-start gap-2 cursor-pointer">
+              <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={shareConsent}
                   onChange={(e) => setShareConsent(e.target.checked)}
-                  className="mt-1 w-4 h-4 text-blue-600"
+                  className="mt-1 h-7 w-7 accent-gray-600"
                 />
-                <span className="pt-1">
+                <span className="pt-1 text-[13px] leading-relaxed text-gray-600">
                   By checking this box, I consent to my request being shared
                   with other licensed New York real estate agents and to being
                   contacted by such agents.
@@ -692,17 +693,17 @@ export default function PreMarketListingPage() {
               </label>
             </div>
 
-            <p className="font-semibold text-gray-700">
+            <p className="text-[15px] font-semibold leading-snug text-gray-700">
               Client registration and agency disclosure (required)
             </p>
-            <p>
+            <p className="text-[13px] leading-relaxed text-gray-600">
               To allow your agent,{" "}
               <span className="font-bold">{referrerName || "Tuval Mor"}</span>,
               to reach out on your behalf, please sign the{" "}
               <a
                 href={registrationLink}
                 target="_blank"
-                className="text-blue-600 underline hover:text-blue-700"
+                className="text-blue-700 underline hover:text-blue-800"
               >
                 Corcoran client registration{" "}
               </a>
@@ -712,7 +713,7 @@ export default function PreMarketListingPage() {
               choose to move forward with a rental presented by the agent.
             </p>
 
-            <label className="flex items-start gap-2 cursor-pointer">
+            <label className="flex items-start gap-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={isAgreementChecked}
@@ -726,9 +727,9 @@ export default function PreMarketListingPage() {
                   setAgreementWarning(null);
                   setIsAgreementChecked(e.target.checked);
                 }}
-                className="mt-1 w-4 h-4 text-blue-600"
+                className="mt-1 h-7 w-7 accent-gray-600"
               />
-              <span className="pt-1">
+              <span className="pt-1 text-[13px] leading-relaxed text-gray-600">
                 By checking this box, you confirm you have signed client
                 registration and agency disclosure.
               </span>
