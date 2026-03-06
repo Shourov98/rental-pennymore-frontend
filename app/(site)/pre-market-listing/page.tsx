@@ -600,7 +600,7 @@ export default function PreMarketListingPage() {
           </div>
 
           <div className="border-t border-gray-300 pt-5 space-y-4">
-            <p className="text-lg font-semibold leading-snug text-gray-900">
+            <p className="text-base font-semibold leading-snug text-gray-900">
               In order to match your request, which market scope should the
               agent focus on?
             </p>
@@ -685,7 +685,7 @@ export default function PreMarketListingPage() {
                   onChange={(e) => setShareConsent(e.target.checked)}
                   className="mt-1 h-3 w-3 accent-gray-600"
                 />
-                <span className="pt-1 text-[13px] leading-relaxed text-gray-600">
+                <span className="text-[13px] leading-relaxed text-gray-600">
                   By checking this box, I consent to my request being shared
                   with other licensed New York real estate agents and to being
                   contacted by such agents.
@@ -729,7 +729,7 @@ export default function PreMarketListingPage() {
                 }}
                 className="mt-1 h-3 w-3 accent-gray-600"
               />
-              <span className="pt-1 text-[13px] leading-relaxed text-gray-600">
+              <span className="text-[13px] leading-relaxed text-gray-600">
                 By checking this box, you confirm you have signed client
                 registration and agency disclosure.
               </span>
