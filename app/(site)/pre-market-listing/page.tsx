@@ -617,7 +617,7 @@ export default function PreMarketListingPage() {
                   name="marketScope"
                   checked={marketScope === "Upcoming"}
                   onChange={() => setMarketScope("Upcoming")}
-                  className="mt-1 h-3 w-3 accent-gray-600"
+                  className="mt-1 h-4 w-4 accent-gray-600"
                 />
                 <span className="space-y-1">
                   <span className="block text-[15px] font-semibold leading-snug text-gray-800">
@@ -636,7 +636,7 @@ export default function PreMarketListingPage() {
                   name="marketScope"
                   checked={marketScope === "All Market"}
                   onChange={() => setMarketScope("All Market")}
-                  className="mt-1 h-3 w-3 accent-gray-600"
+                  className="mt-1 h-4 w-4 accent-gray-600"
                 />
                 <span className="space-y-1">
                   <span className="block text-[15px] font-semibold leading-snug text-gray-800">
@@ -683,7 +683,7 @@ export default function PreMarketListingPage() {
                   type="checkbox"
                   checked={shareConsent}
                   onChange={(e) => setShareConsent(e.target.checked)}
-                  className="mt-1 h-3 w-3 accent-gray-600"
+                  className="mt-1 h-4 w-4 accent-gray-600"
                 />
                 <span className="text-[13px] leading-relaxed text-gray-600">
                   By checking this box, I consent to my request being shared
@@ -727,7 +727,7 @@ export default function PreMarketListingPage() {
                   setAgreementWarning(null);
                   setIsAgreementChecked(e.target.checked);
                 }}
-                className="mt-1 h-3 w-3 accent-gray-600"
+                className="mt-1 h-4 w-4 accent-gray-600"
               />
               <span className="text-[13px] leading-relaxed text-gray-600">
                 By checking this box, you confirm you have signed client
