@@ -599,42 +599,62 @@ export default function PreMarketListingPage() {
             />
           </div>
 
-          <div className="border-t border-gray-300 pt-5 space-y-3">
-            <p className="text-xs font-semibold text-gray-900">
+          <div className="border-t border-gray-300 pt-5 space-y-4">
+            <p className="text-lg font-semibold leading-snug text-gray-900">
               In order to match your request, which market scope should the
               agent focus on?
             </p>
-            <p className="text-xs text-gray-700">
-              Your agent will assist you throughout the process, including
-              guidance, scheduling, tour coordination, and protecting your
-              interests.
+            <p className="text-base leading-relaxed text-gray-600">
+              Your agent can guide you, schedule tours, communicate with owners
+              or listing agents, represent your interests throughout the rental
+              process, and improve your chances in a competitive market.
             </p>
 
-            <div className="space-y-3 text-xs text-gray-800">
-              <label className="flex items-center gap-2 cursor-pointer">
+            <div className="space-y-5 text-gray-800">
+              <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="radio"
                   name="marketScope"
                   checked={marketScope === "Upcoming"}
                   onChange={() => setMarketScope("Upcoming")}
-                  className="w-5 h-5 accent-blue-600"
+                  className="mt-1 h-8 w-8 accent-gray-600"
                 />
-                <span>Rentals not publicly advertised only</span>
+                <span className="space-y-1">
+                  <span className="block text-[15px] font-semibold leading-snug text-gray-800">
+                    Rentals not publicly advertised
+                  </span>
+                  <span className="block text-sm leading-snug text-gray-600">
+                    We will only notify you if an upcoming rental that matches
+                    your request is found.
+                  </span>
+                </span>
               </label>
 
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="radio"
                   name="marketScope"
                   checked={marketScope === "All Market"}
                   onChange={() => setMarketScope("All Market")}
-                  className="w-5 h-5 accent-blue-600"
+                  className="mt-1 h-8 w-8 accent-gray-600"
                 />
-                <span>Rentals not publicly advertised and publicly listed</span>
+                <span className="space-y-1">
+                  <span className="block text-[15px] font-semibold leading-snug text-gray-800">
+                    Rentals publicly listed and not publicly advertised
+                  </span>
+                  <span className="block text-sm leading-snug text-gray-600">
+                    Ask for a rental specialist to assist you with the full
+                    rental market.
+                  </span>
+                </span>
               </label>
             </div>
+            <p className="text-sm leading-snug text-gray-600">
+              Either option works best when "Share your search" is enabled
+              below.
+            </p>
             {fieldErrors.scope && (
-              <p className=" text-red-600">{fieldErrors.scope}</p>
+              <p className="text-sm text-red-600">{fieldErrors.scope}</p>
             )}
           </div>
 
