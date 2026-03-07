@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { MapPin, DollarSign, Calendar, Bell } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
-import { selectReferrerName } from "@/store/slices/authSlice";
+import { selectReferrer, selectReferrerName } from "@/store/slices/authSlice";
 import { RootState } from "@/store/store";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
@@ -54,6 +54,7 @@ export default function PreMarketListingPage() {
   >("");
   const [agreementWarning, setAgreementWarning] = useState<string | null>(null);
   const referrerName = useSelector(selectReferrerName);
+  const referrer = useSelector(selectReferrer);
 
   // Redux Global States
   const {
@@ -77,21 +78,7 @@ export default function PreMarketListingPage() {
   const renterEmail = renter?.email || user?.email || "";
   const renterPhone = renter?.phoneNumber || user?.phone || "";
 
-  const registrationLink = useMemo(() => {
-    const baseQuery = "env=na1";
-    const baseUrl =
-      "https://powerforms.docusign.net/3d78f62d-edfc-4831-890c-5b4e9f71978d";
-
-    const encode = (value: string) => value.replace(/ /g, "%20");
-
-    let url = `${baseUrl}?${baseQuery}`;
-    if (renterName) url += `&renter_name=${encode(renterName)}`;
-    if (renterEmail) url += `&renter_email=${renterEmail}`;
-    if (renterPhone) url += `&renter_phone=${renterPhone}`;
-    if (referrerName) url += `&agent_name=${encode(referrerName)}`;
-
-    return url;
-  }, [renterEmail, renterName, renterPhone, referrerName]);
+  const registrationLink = referrer?.activationLink?.trim() || "";
 
   const toInputDate = (date: Date) => {
     const year = date.getFullYear();
@@ -702,6 +689,7 @@ export default function PreMarketListingPage() {
               <a
                 href={registrationLink}
                 target="_blank"
+                rel="noopener noreferrer"
                 className="text-blue-700 underline hover:text-blue-800"
               >
                 Corcoran client registration{" "}
