@@ -601,8 +601,7 @@ export default function PreMarketListingPage() {
 
           <div className="border-t border-gray-300 pt-4 space-y-3">
             <p className="text-base font-semibold leading-snug text-gray-900">
-              In order to match your request, which market scope should the
-              agent focus on?
+              How would you like your agent to assist you?
             </p>
             <p className="text-base leading-relaxed text-gray-600">
               Your agent can guide you, schedule tours, communicate with owners
@@ -610,7 +609,7 @@ export default function PreMarketListingPage() {
               process, and improve your chances in a competitive market.
             </p>
 
-            <div className="space-y-5 text-gray-800">
+            <div className="space-y-3 text-gray-800">
               <label className="flex items-start gap-2 cursor-pointer">
                 <input
                   type="radio"
@@ -620,12 +619,13 @@ export default function PreMarketListingPage() {
                   className="mt-1 h-4 w-4 accent-gray-600"
                 />
                 <span className="space-y-1">
-                  <span className="block text-[15px] font-semibold leading-snug text-gray-800">
-                    Rentals not publicly advertised
+                  <span className="block text-sm leading-snug text-gray-600">
+                    Focus Only on Rentals Not Currently Publicly Advertised
                   </span>
                   <span className="block text-sm leading-snug text-gray-600">
-                    We will only notify you if an upcoming rental that matches
-                    your request is found.
+                    Your agent can initiate outreach only for rental
+                    opportunities that may not be publicly advertised at the
+                    time of outreach.
                   </span>
                 </span>
               </label>
@@ -639,20 +639,20 @@ export default function PreMarketListingPage() {
                   className="mt-1 h-4 w-4 accent-gray-600"
                 />
                 <span className="space-y-1">
-                  <span className="block text-[15px] font-semibold leading-snug text-gray-800">
-                    Rentals publicly listed and not publicly advertised
+                  <span className="block text-sm leading-snug text-gray-800">
+                    Full Agent Experience
                   </span>
                   <span className="block text-sm leading-snug text-gray-600">
-                    Ask for a rental specialist to assist you with the full
-                    rental market.
+                    You would like the full-service agent experience across the
+                    entire rental market. The agent’s search will include both
+                    publicly advertised listings and those not currently
+                    publicly advertised that match your request, reducing the
+                    chance of missing an opportunity.
                   </span>
                 </span>
               </label>
             </div>
-            <p className="text-sm leading-snug text-gray-600">
-              Either option works best when "Share your search" is enabled
-              below.
-            </p>
+
             {fieldErrors.scope && (
               <p className="text-sm text-red-600">{fieldErrors.scope}</p>
             )}
@@ -666,11 +666,10 @@ export default function PreMarketListingPage() {
             <p className="text-sm text-red-600 text-right">{formError}</p>
           )}
           {/* Agreement text + checkbox */}
-          <div className="border-t pt-4 text-gray-600 space-y-5">
+          <div className="border-t pt-4 text-gray-600 space-y-3">
             <div className="space-y-3">
               <p className="text-[15px] font-semibold leading-snug text-gray-700">
-                Share your search to Improve matching chances (optional - highly
-                recommended)
+                Share your search (optional)
               </p>
               <p className="text-[13px] leading-relaxed text-gray-600">
                 To receive assistance beyond one agent, you may choose to allow
@@ -678,12 +677,12 @@ export default function PreMarketListingPage() {
                 estate agents who could assist in identifying potential rental
                 opportunities that may not yet be publicly advertised.
               </p>
-              <label className="flex items-start gap-1 cursor-pointer">
+              <label className="flex items-start gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={shareConsent}
                   onChange={(e) => setShareConsent(e.target.checked)}
-                  className="mt-1 h-4 w-4 accent-gray-600"
+                  className="h-5 w-5 accent-gray-600"
                 />
                 <span className="text-[13px] leading-relaxed text-gray-600">
                   By checking this box, I consent to my request being shared
@@ -713,7 +712,7 @@ export default function PreMarketListingPage() {
               choose to move forward with a rental presented by the agent.
             </p>
 
-            <label className="flex items-start gap-1 cursor-pointer">
+            <label className="flex items-start gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={isAgreementChecked}
@@ -727,7 +726,7 @@ export default function PreMarketListingPage() {
                   setAgreementWarning(null);
                   setIsAgreementChecked(e.target.checked);
                 }}
-                className="mt-1 h-4 w-4 accent-gray-600"
+                className="h-5 w-5 accent-gray-600"
               />
               <span className="text-[13px] leading-relaxed text-gray-600">
                 By checking this box, you confirm you have signed client
