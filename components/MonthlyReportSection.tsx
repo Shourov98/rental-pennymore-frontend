@@ -155,12 +155,12 @@ export default function MonthlyReportSection() {
                 return (
                   <div
                     key={report._id}
-                    className="min-w-[90%] sm:min-w-[45%] md:min-w-[30%] bg-white rounded-xl shadow-md p-6 flex flex-col items-center text-center"
+                    className="min-w-[90%] sm:min-w-[55%] md:min-w-[40%] bg-white rounded-xl shadow-md p-6 flex flex-col items-center text-center"
                   >
                     <h3 className="text-xl font-bold text-gray-900 mb-2">
                       {monthName}, {report.year}
                     </h3>
-                    <p className="text-gray-600 text-xs md:text-base leading-relaxed mb-6">
+                    <p className="text-gray-600 text-xs lg:text-sm leading-relaxed mb-6">
                       Exclusive 15-Second NYC Rental Report <br />
                       This Month’s Renter News, Market Signals & Trends
                     </p>

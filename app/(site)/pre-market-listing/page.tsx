@@ -600,23 +600,23 @@ export default function PreMarketListingPage() {
           </div>
 
           <div className="border-t border-gray-300 pt-4 space-y-3">
-            <p className="text-base font-semibold leading-snug text-gray-900">
+            <p className="text-sm font-semibold leading-snug text-gray-900">
               How would you like your agent to assist you?
             </p>
-            <p className="text-base leading-relaxed text-gray-600">
+            <p className="text-sm leading-relaxed text-gray-600">
               Your agent can guide you, schedule tours, communicate with owners
               or listing agents, represent your interests throughout the rental
               process, and improve your chances in a competitive market.
             </p>
 
-            <div className="space-y-3 text-gray-800">
+            <div className="space-y-4 text-gray-800">
               <label className="flex items-start gap-2 cursor-pointer">
                 <input
                   type="radio"
                   name="marketScope"
                   checked={marketScope === "Upcoming"}
                   onChange={() => setMarketScope("Upcoming")}
-                  className="mt-1 h-4 w-4 accent-gray-600"
+                  className="mt-1 h-6 w-6 shrink-0 accent-gray-600"
                 />
                 <span className="space-y-1">
                   <span className="block text-sm leading-snug text-gray-600">
@@ -636,7 +636,7 @@ export default function PreMarketListingPage() {
                   name="marketScope"
                   checked={marketScope === "All Market"}
                   onChange={() => setMarketScope("All Market")}
-                  className="mt-1 h-4 w-4 accent-gray-600"
+                  className="mt-1 h-6 w-6 shrink-0 accent-gray-600"
                 />
                 <span className="space-y-1">
                   <span className="block text-sm leading-snug text-gray-800">
@@ -668,10 +668,10 @@ export default function PreMarketListingPage() {
           {/* Agreement text + checkbox */}
           <div className="border-t pt-4 text-gray-600 space-y-3">
             <div className="space-y-3">
-              <p className="text-[15px] font-semibold leading-snug text-gray-700">
+              <p className="text-sm font-semibold leading-snug text-gray-700">
                 Share your search (optional)
               </p>
-              <p className="text-[13px] leading-relaxed text-gray-600">
+              <p className="text-sm leading-relaxed text-gray-600">
                 To receive assistance beyond one agent, you may choose to allow
                 your request to be shared with other licensed New York real
                 estate agents who could assist in identifying potential rental
@@ -684,7 +684,7 @@ export default function PreMarketListingPage() {
                   onChange={(e) => setShareConsent(e.target.checked)}
                   className="h-5 w-5 accent-gray-600"
                 />
-                <span className="text-[13px] leading-relaxed text-gray-600">
+                <span className="text-sm leading-relaxed text-gray-600">
                   By checking this box, I consent to my request being shared
                   with other licensed New York real estate agents and to being
                   contacted by such agents.
@@ -692,10 +692,10 @@ export default function PreMarketListingPage() {
               </label>
             </div>
 
-            <p className="text-[15px] font-semibold leading-snug text-gray-700">
+            <p className="text-sm font-semibold leading-snug text-gray-700">
               Client registration and agency disclosure (required)
             </p>
-            <p className="text-[13px] leading-relaxed text-gray-600">
+            <p className="text-sm leading-relaxed text-gray-600">
               To allow your agent,{" "}
               <span className="font-bold">{referrerName || "Tuval Mor"}</span>,
               to reach out on your behalf, please sign the{" "}
