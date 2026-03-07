@@ -599,7 +599,7 @@ export default function PreMarketListingPage() {
             />
           </div>
 
-          <div className="border-t border-gray-300 pt-5 space-y-4">
+          <div className="border-t border-gray-300 pt-4 space-y-3">
             <p className="text-base font-semibold leading-snug text-gray-900">
               In order to match your request, which market scope should the
               agent focus on?
@@ -611,7 +611,7 @@ export default function PreMarketListingPage() {
             </p>
 
             <div className="space-y-5 text-gray-800">
-              <label className="flex items-start gap-3 cursor-pointer">
+              <label className="flex items-start gap-2 cursor-pointer">
                 <input
                   type="radio"
                   name="marketScope"
@@ -630,7 +630,7 @@ export default function PreMarketListingPage() {
                 </span>
               </label>
 
-              <label className="flex items-start gap-3 cursor-pointer">
+              <label className="flex items-start gap-2 cursor-pointer">
                 <input
                   type="radio"
                   name="marketScope"
@@ -666,8 +666,8 @@ export default function PreMarketListingPage() {
             <p className="text-sm text-red-600 text-right">{formError}</p>
           )}
           {/* Agreement text + checkbox */}
-          <div className="border-t pt-5 text-gray-600 space-y-5">
-            <div className="space-y-4">
+          <div className="border-t pt-4 text-gray-600 space-y-5">
+            <div className="space-y-3">
               <p className="text-[15px] font-semibold leading-snug text-gray-700">
                 Share your search to Improve matching chances (optional - highly
                 recommended)
@@ -678,7 +678,7 @@ export default function PreMarketListingPage() {
                 estate agents who could assist in identifying potential rental
                 opportunities that may not yet be publicly advertised.
               </p>
-              <label className="flex items-start gap-3 cursor-pointer">
+              <label className="flex items-start gap-1 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={shareConsent}
@@ -713,7 +713,7 @@ export default function PreMarketListingPage() {
               choose to move forward with a rental presented by the agent.
             </p>
 
-            <label className="flex items-start gap-3 cursor-pointer">
+            <label className="flex items-start gap-1 cursor-pointer">
               <input
                 type="checkbox"
                 checked={isAgreementChecked}
