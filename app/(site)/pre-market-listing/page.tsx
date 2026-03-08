@@ -78,7 +78,23 @@ export default function PreMarketListingPage() {
   const renterEmail = renter?.email || user?.email || "";
   const renterPhone = renter?.phoneNumber || user?.phone || "";
 
-  const registrationLink = referrer?.activationLink?.trim() || "";
+  const registrationLink = useMemo(() => {
+    const activationLink = referrer?.activationLink?.trim() || "";
+    if (!activationLink) return "";
+
+    const baseUrl = activationLink.split("?")[0].trim();
+    if (!baseUrl) return "";
+
+    const encode = (value: string) => value.replace(/ /g, "%20");
+
+    let url = `${baseUrl}?env=na1`;
+    if (renterName) url += `&renter_name=${encode(renterName)}`;
+    if (renterEmail) url += `&renter_email=${renterEmail}`;
+    if (renterPhone) url += `&renter_phone=${renterPhone}`;
+    if (referrerName) url += `&agent_name=${encode(referrerName)}`;
+
+    return url;
+  }, [referrer?.activationLink, renterEmail, renterName, renterPhone, referrerName]);
 
   const toInputDate = (date: Date) => {
     const year = date.getFullYear();
