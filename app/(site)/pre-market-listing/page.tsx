@@ -588,12 +588,10 @@ export default function PreMarketListingPage() {
 
           <div className="border-t border-gray-300 pt-4 space-y-3">
             <p className="text-sm font-semibold leading-snug text-gray-900">
-              How would you like your agent to assist you?
+              In order to match your request, which market scope should the agent focus on?
             </p>
             <p className="text-sm leading-relaxed text-gray-600">
-              Your agent can guide you, schedule tours, communicate with owners
-              or listing agents, represent your interests throughout the rental
-              process, and improve your chances in a competitive market.
+              Your agent can guide you, schedule tours, communicate with owners or listing agents, represent your interests throughout the rental process, and improve your chances in a competitive market.
             </p>
 
             <div className="space-y-4 text-gray-800">
@@ -607,12 +605,10 @@ export default function PreMarketListingPage() {
                 />
                 <span className="space-y-1">
                   <span className="block text-sm leading-snug text-gray-600">
-                    Focus Only on Rentals Not Currently Publicly Advertised
+                    Rentals not publicly advertised <br />
                   </span>
                   <span className="block text-sm leading-snug text-gray-600">
-                    Your agent can initiate outreach only for rental
-                    opportunities that may not be publicly advertised at the
-                    time of outreach.
+                    We will only notify you if an upcoming rental that matches your request is found.
                   </span>
                 </span>
               </label>
@@ -627,17 +623,15 @@ export default function PreMarketListingPage() {
                 />
                 <span className="space-y-1">
                   <span className="block text-sm leading-snug text-gray-800">
-                    Full Agent Experience
+                    Rentals publicly listed and not publicly advertised <br />
                   </span>
                   <span className="block text-sm leading-snug text-gray-600">
-                    You would like the full-service agent experience across the
-                    entire rental market. The agent’s search will include both
-                    publicly advertised listings and those not currently
-                    publicly advertised that match your request, reducing the
-                    chance of missing an opportunity.
+                    Ask for a rental specialist to assist you with the full rental market.
                   </span>
                 </span>
               </label>
+
+              <p className="text-sm leading-relaxed text-gray-600">Either option works best when “Share your search” is enabled below.</p>
             </div>
 
             {fieldErrors.scope && (
@@ -656,7 +650,7 @@ export default function PreMarketListingPage() {
           <div className="border-t pt-4 text-gray-600 space-y-3">
             <div className="space-y-3">
               <p className="text-sm font-semibold leading-snug text-gray-700">
-                Share your search (optional)
+                Share your search to improve matching chances (optional – highly recommended)
               </p>
               <p className="text-sm leading-relaxed text-gray-600">
                 To receive assistance beyond one agent, you may choose to allow
