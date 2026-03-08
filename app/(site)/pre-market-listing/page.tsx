@@ -587,7 +587,7 @@ export default function PreMarketListingPage() {
           </div>
 
           <div className="border-t border-gray-300 pt-4 space-y-3">
-            <p className="text-[13px] font-semibold leading-snug text-gray-900 sm:text-sm md:text-[15px]">
+            <p className="text-[13px] font-semibold leading-snug text-gray-800 sm:text-sm md:text-[15px]">
               In order to match your request, which market scope should the
               agent focus on?
             </p>
