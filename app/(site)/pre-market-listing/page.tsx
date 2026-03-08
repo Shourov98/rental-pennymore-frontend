@@ -595,7 +595,7 @@ export default function PreMarketListingPage() {
             </p>
 
             <div className="space-y-4 text-gray-800">
-              <label className="flex items-start gap-2 cursor-pointer">
+              <label className="flex items-start gap-1 cursor-pointer">
                 <input
                   type="radio"
                   name="marketScope"
@@ -613,7 +613,7 @@ export default function PreMarketListingPage() {
                 </span>
               </label>
 
-              <label className="flex items-start gap-2 cursor-pointer">
+              <label className="flex items-start gap-1 cursor-pointer">
                 <input
                   type="radio"
                   name="marketScope"
