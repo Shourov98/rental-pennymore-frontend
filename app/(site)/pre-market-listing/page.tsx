@@ -281,18 +281,18 @@ export default function PreMarketListingPage() {
   const guarantorOptions = ["Personal guarantor", "Third party guarantor"];
 
   return (
-    <section className="w-full min-h-screen bg-gray-50 py-8 px-4 sm:px-8 md:px-12">
-      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-sm p-6 sm:p-10">
+    <section className="w-full min-h-screen bg-gray-50 px-3 py-6 sm:px-6 sm:py-8 md:px-10 md:py-10">
+      <div className="mx-auto w-full max-w-5xl rounded-2xl bg-white p-4 shadow-sm sm:p-6 md:p-8 lg:p-10">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+          <h1 className="text-[clamp(1.25rem,1.05rem+1vw,1.75rem)] font-bold leading-tight text-gray-900">
             Pre-Market Listing Request
           </h1>
         </div>
 
         {/* Form Section */}
         <form className="space-y-6" onSubmit={handleSubmit}>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <h2 className="mb-4 text-[clamp(1rem,0.9rem+0.5vw,1.25rem)] font-semibold leading-tight text-gray-900">
             Choose your preferences
           </h2>
 
@@ -428,7 +428,7 @@ export default function PreMarketListingPage() {
             >
               <MapPin size={16} className="text-blue-600 mr-2 shrink-0" />
 
-              <span className="text-gray-600 text-sm overflow-x-">
+              <span className="break-words text-[13px] leading-relaxed text-gray-600 sm:text-sm">
                 {locations.length === 0
                   ? "Choose Borough and Neighborhoods"
                   : locations
@@ -587,10 +587,10 @@ export default function PreMarketListingPage() {
           </div>
 
           <div className="border-t border-gray-300 pt-4 space-y-3">
-            <p className="text-sm font-semibold leading-snug text-gray-900">
+            <p className="text-[13px] font-semibold leading-snug text-gray-900 sm:text-sm md:text-[15px]">
               In order to match your request, which market scope should the agent focus on?
             </p>
-            <p className="text-sm leading-relaxed text-gray-600">
+            <p className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
               Your agent can guide you, schedule tours, communicate with owners or listing agents, represent your interests throughout the rental process, and improve your chances in a competitive market.
             </p>
 
@@ -604,10 +604,10 @@ export default function PreMarketListingPage() {
                   className="mt-1 h-6 w-6 shrink-0 accent-gray-600"
                 />
                 <span className="space-y-1">
-                  <span className="block text-sm leading-snug text-gray-600">
-                    Rentals not publicly advertised <br />
+                  <span className="block text-[13px] leading-snug text-gray-600 sm:text-sm md:text-[15px]">
+                    Rentals not publicly advertised
                   </span>
-                  <span className="block text-sm leading-snug text-gray-600">
+                  <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
                     We will only notify you if an upcoming rental that matches your request is found.
                   </span>
                 </span>
@@ -622,16 +622,19 @@ export default function PreMarketListingPage() {
                   className="mt-1 h-6 w-6 shrink-0 accent-gray-600"
                 />
                 <span className="space-y-1">
-                  <span className="block text-sm leading-snug text-gray-800">
-                    Rentals publicly listed and not publicly advertised <br />
+                  <span className="block text-[13px] leading-snug text-gray-800 sm:text-sm md:text-[15px]">
+                    Rentals publicly listed and not publicly advertised
                   </span>
-                  <span className="block text-sm leading-snug text-gray-600">
+                  <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
                     Ask for a rental specialist to assist you with the full rental market.
                   </span>
                 </span>
               </label>
 
-              <p className="text-sm leading-relaxed text-gray-600">Either option works best when “Share your search” is enabled below.</p>
+              <p className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
+                Either option works best when &quot;Share your search&quot; is
+                enabled below.
+              </p>
             </div>
 
             {fieldErrors.scope && (
@@ -649,10 +652,10 @@ export default function PreMarketListingPage() {
           {/* Agreement text + checkbox */}
           <div className="border-t pt-4 text-gray-600 space-y-3">
             <div className="space-y-3">
-              <p className="text-sm font-semibold leading-snug text-gray-700">
-                Share your search to improve matching chances (optional – highly recommended)
+              <p className="text-[13px] font-semibold leading-snug text-gray-700 sm:text-sm md:text-[15px]">
+                Share your search to improve matching chances (optional - highly recommended)
               </p>
-              <p className="text-sm leading-relaxed text-gray-600">
+              <p className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
                 To receive assistance beyond one agent, you may choose to allow
                 your request to be shared with other licensed New York real
                 estate agents who could assist in identifying potential rental
@@ -665,7 +668,7 @@ export default function PreMarketListingPage() {
                   onChange={(e) => setShareConsent(e.target.checked)}
                   className="h-5 w-5 accent-gray-600"
                 />
-                <span className="text-sm leading-relaxed text-gray-600">
+                <span className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
                   By checking this box, I consent to my request being shared
                   with other licensed New York real estate agents and to being
                   contacted by such agents.
@@ -673,10 +676,10 @@ export default function PreMarketListingPage() {
               </label>
             </div>
 
-            <p className="text-sm font-semibold leading-snug text-gray-700">
+            <p className="text-[13px] font-semibold leading-snug text-gray-700 sm:text-sm md:text-[15px]">
               Client registration and agency disclosure (required)
             </p>
-            <p className="text-sm leading-relaxed text-gray-600">
+            <p className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
               To allow your agent,{" "}
               <span className="font-bold">{referrerName || "Tuval Mor"}</span>,
               to reach out on your behalf, please sign the{" "}
@@ -710,7 +713,7 @@ export default function PreMarketListingPage() {
                 }}
                 className="h-5 w-5 accent-gray-600"
               />
-              <span className="text-[13px] leading-relaxed text-gray-600">
+              <span className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
                 By checking this box, you confirm you have signed client
                 registration and agency disclosure.
               </span>
