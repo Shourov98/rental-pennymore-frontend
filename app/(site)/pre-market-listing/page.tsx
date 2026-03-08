@@ -604,7 +604,7 @@ export default function PreMarketListingPage() {
                   className="mt-1 h-6 w-6 shrink-0 accent-gray-600"
                 />
                 <span className="space-y-1">
-                  <span className="block text-[13px] leading-snug text-gray-600 sm:text-sm md:text-[15px]">
+                  <span className="block text-[13px] font-semibold leading-snug text-gray-600 sm:text-sm md:text-[15px]">
                     Rentals not publicly advertised
                   </span>
                   <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
@@ -622,7 +622,7 @@ export default function PreMarketListingPage() {
                   className="mt-1 h-6 w-6 shrink-0 accent-gray-600"
                 />
                 <span className="space-y-1">
-                  <span className="block text-[13px] leading-snug text-gray-800 sm:text-sm md:text-[15px]">
+                  <span className="block text-[13px] font-semibold leading-snug text-gray-800 sm:text-sm md:text-[15px]">
                     Rentals publicly listed and not publicly advertised
                   </span>
                   <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
