@@ -601,7 +601,7 @@ export default function PreMarketListingPage() {
                   name="marketScope"
                   checked={marketScope === "Upcoming"}
                   onChange={() => setMarketScope("Upcoming")}
-                  className="mt-1 h-6 w-6 shrink-0 accent-gray-600"
+                  className="h-6 w-6 shrink-0 accent-gray-600"
                 />
                 <span className="space-y-1">
                   <span className="block text-[13px] font-semibold leading-snug text-gray-600 sm:text-sm md:text-[15px]">
@@ -619,7 +619,7 @@ export default function PreMarketListingPage() {
                   name="marketScope"
                   checked={marketScope === "All Market"}
                   onChange={() => setMarketScope("All Market")}
-                  className="mt-1 h-6 w-6 shrink-0 accent-gray-600"
+                  className="h-6 w-6 shrink-0 accent-gray-600"
                 />
                 <span className="space-y-1">
                   <span className="block text-[13px] font-semibold leading-snug text-gray-800 sm:text-sm md:text-[15px]">
@@ -661,12 +661,12 @@ export default function PreMarketListingPage() {
                 estate agents who could assist in identifying potential rental
                 opportunities that may not yet be publicly advertised.
               </p>
-              <label className="flex items-start gap-2 cursor-pointer">
+              <label className="flex items-start gap-1 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={shareConsent}
                   onChange={(e) => setShareConsent(e.target.checked)}
-                  className="h-5 w-5 accent-gray-600"
+                  className="mt-1 h-5 w-5 accent-gray-600"
                 />
                 <span className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
                   By checking this box, I consent to my request being shared
@@ -711,7 +711,7 @@ export default function PreMarketListingPage() {
                   setAgreementWarning(null);
                   setIsAgreementChecked(e.target.checked);
                 }}
-                className="h-5 w-5 accent-gray-600"
+                className="mt-1 h-5 w-5 accent-gray-600"
               />
               <span className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
                 By checking this box, you confirm you have signed client
