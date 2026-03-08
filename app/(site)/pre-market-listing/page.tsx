@@ -588,10 +588,13 @@ export default function PreMarketListingPage() {
 
           <div className="border-t border-gray-300 pt-4 space-y-3">
             <p className="text-[13px] font-semibold leading-snug text-gray-900 sm:text-sm md:text-[15px]">
-              In order to match your request, which market scope should the agent focus on?
+              In order to match your request, which market scope should the
+              agent focus on?
             </p>
             <p className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
-              Your agent can guide you, schedule tours, communicate with owners or listing agents, represent your interests throughout the rental process, and improve your chances in a competitive market.
+              Your agent can guide you, schedule tours, communicate with owners
+              or listing agents, represent your interests throughout the rental
+              process, and improve your chances in a competitive market.
             </p>
 
             <div className="space-y-4 text-gray-800">
@@ -608,7 +611,8 @@ export default function PreMarketListingPage() {
                     Rentals not publicly advertised
                   </span>
                   <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
-                    We will only notify you if an upcoming rental that matches your request is found.
+                    We will only notify you if an upcoming rental that matches
+                    your request is found.
                   </span>
                 </span>
               </label>
@@ -622,11 +626,12 @@ export default function PreMarketListingPage() {
                   className="h-6 w-6 shrink-0 accent-gray-600"
                 />
                 <span className="space-y-1">
-                  <span className="block text-[13px] font-semibold leading-snug text-gray-800 sm:text-sm md:text-[15px]">
+                  <span className="block text-[13px] font-semibold leading-snug text-gray-600 sm:text-sm md:text-[15px]">
                     Rentals publicly listed and not publicly advertised
                   </span>
                   <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
-                    Ask for a rental specialist to assist you with the full rental market.
+                    Ask for a rental specialist to assist you with the full
+                    rental market.
                   </span>
                 </span>
               </label>
@@ -653,7 +658,8 @@ export default function PreMarketListingPage() {
           <div className="border-t pt-4 text-gray-600 space-y-3">
             <div className="space-y-3">
               <p className="text-[13px] font-semibold leading-snug text-gray-700 sm:text-sm md:text-[15px]">
-                Share your search to improve matching chances (optional - highly recommended)
+                Share your search to improve matching chances (optional - highly
+                recommended)
               </p>
               <p className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
                 To receive assistance beyond one agent, you may choose to allow
