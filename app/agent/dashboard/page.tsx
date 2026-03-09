@@ -21,6 +21,9 @@ export default function AgentRenterRequestsPage() {
   const dispatch = useDispatch<AppDispatch>();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
   const currentAgentId = useSelector((state: RootState) => state.auth.user?._id);
+  const currentAgentReferralCode = useSelector(
+    (state: RootState) => state.auth.user?.referralCode ?? null,
+  );
   const formatReferralName = (name: string) => {
     const trimmed = name.trim();
     const parts = trimmed.trim().split(/\s+/);
@@ -360,6 +363,15 @@ export default function AgentRenterRequestsPage() {
                       <td className="py-3 px-5">
                         {(() => {
                           const fallbackReferrerName = "Tuval Mor";
+                          const normalizedAgentReferralCode =
+                            currentAgentReferralCode?.trim().toUpperCase() || "";
+                          const normalizedRowReferralCode =
+                            req.raw?.referralInfo?.referrer?.referralCode
+                              ?.trim()
+                              .toUpperCase() || "";
+                          const isBeforeListedTag =
+                            normalizedRowReferralCode !==
+                            normalizedAgentReferralCode;
                           const referralName =
                             req.raw?.referralInfo?.referrer?.referrerName ||
                             req.raw?.referralInfo?.referrer?.fullName ||
@@ -369,7 +381,9 @@ export default function AgentRenterRequestsPage() {
                             : fallbackReferrerName;
                           return (
                             <span className="inline-flex items-center rounded-full border border-blue-500 text-blue-600 px-2.5 py-0.5 text-xs font-semibold">
-                              {formatReferralName(displayName)}
+                              {isBeforeListedTag
+                                ? "BeforeListed"
+                                : formatReferralName(displayName)}
                             </span>
                           );
                         })()}
