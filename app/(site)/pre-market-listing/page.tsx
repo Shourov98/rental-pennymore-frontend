@@ -94,7 +94,13 @@ export default function PreMarketListingPage() {
     if (referrerName) url += `&agent_name=${encode(referrerName)}`;
 
     return url;
-  }, [referrer?.activationLink, renterEmail, renterName, renterPhone, referrerName]);
+  }, [
+    referrer?.activationLink,
+    renterEmail,
+    renterName,
+    renterPhone,
+    referrerName,
+  ]);
 
   const toInputDate = (date: Date) => {
     const year = date.getFullYear();
@@ -603,7 +609,7 @@ export default function PreMarketListingPage() {
           </div>
 
           <div className="border-t border-gray-300 pt-4 space-y-3">
-            <p className="text-[13px] font-semibold leading-snug text-gray-800 sm:text-sm md:text-[15px]">
+            <p className="text-[13px] font-semibold leading-snug text-black sm:text-sm md:text-[15px]">
               In order to match your request, which market scope should the
               agent focus on?
             </p>
@@ -673,7 +679,7 @@ export default function PreMarketListingPage() {
           {/* Agreement text + checkbox */}
           <div className="border-t pt-4 text-gray-600 space-y-3">
             <div className="space-y-3">
-              <p className="text-[13px] font-semibold leading-snug text-gray-700 sm:text-sm md:text-[15px]">
+              <p className="text-[13px] font-semibold leading-snug text-black sm:text-sm md:text-[15px]">
                 Share your search to improve matching chances (optional - highly
                 recommended)
               </p>
@@ -698,7 +704,7 @@ export default function PreMarketListingPage() {
               </label>
             </div>
 
-            <p className="text-[13px] font-semibold leading-snug text-gray-700 sm:text-sm md:text-[15px]">
+            <p className="text-[13px] font-semibold leading-snug text-black sm:text-sm md:text-[15px]">
               Client registration and agency disclosure (required)
             </p>
             <p className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
