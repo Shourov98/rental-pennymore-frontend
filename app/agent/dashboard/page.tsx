@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Eye, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { Eye, Filter, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -346,6 +346,8 @@ export default function AgentRenterRequestsPage() {
                       Boolean(currentAgentId) &&
                       Boolean(requestReferralAgentId) &&
                       currentAgentId === requestReferralAgentId;
+                    const isVisibilityLocked =
+                      canToggleVisibility && req.raw?.shareConsent === false;
 
                     return (
                     <tr
@@ -395,48 +397,62 @@ export default function AgentRenterRequestsPage() {
                       </td>
                       <td className="py-3 px-5">
                         {canToggleVisibility ? (
-                          <button
-                            type="button"
-                            onClick={() => handleToggleShare(req)}
-                            disabled={mutatingShareId === req.id}
-                            className="inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                            aria-label={`Toggle visibility for ${req.requestName}`}
-                            title="Toggle request visibility"
-                          >
-                            <span
-                              className={`text-xs font-medium ${
-                                req.isPrivateVisibility
-                                  ? "text-gray-700"
-                                  : "text-gray-400"
-                              }`}
-                            >
-                              Private
-                            </span>
-                            <span
-                              className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-                                req.isPrivateVisibility
-                                  ? "bg-gray-300"
-                                  : "bg-blue-400"
-                              }`}
+                          <div className="inline-flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleShare(req)}
+                              disabled={
+                                mutatingShareId === req.id || isVisibilityLocked
+                              }
+                              className="inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                              aria-label={`Toggle visibility for ${req.requestName}`}
+                              title={
+                                isVisibilityLocked
+                                  ? "Visibility is locked for this request"
+                                  : "Toggle request visibility"
+                              }
                             >
                               <span
-                                className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                                className={`text-xs font-medium ${
                                   req.isPrivateVisibility
-                                    ? "translate-x-1"
-                                    : "translate-x-5"
+                                    ? "text-gray-700"
+                                    : "text-gray-400"
                                 }`}
+                              >
+                                Private
+                              </span>
+                              <span
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                                  req.isPrivateVisibility
+                                    ? "bg-gray-300"
+                                    : "bg-blue-400"
+                                }`}
+                              >
+                                <span
+                                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                                    req.isPrivateVisibility
+                                      ? "translate-x-1"
+                                      : "translate-x-5"
+                                  }`}
+                                />
+                              </span>
+                              <span
+                                className={`text-xs font-medium ${
+                                  req.isPrivateVisibility
+                                    ? "text-gray-400"
+                                    : "text-emerald-700"
+                                }`}
+                              >
+                                Shared
+                              </span>
+                            </button>
+                            {isVisibilityLocked ? (
+                              <Lock
+                                className="h-4 w-4 text-gray-500"
+                                aria-hidden="true"
                               />
-                            </span>
-                            <span
-                              className={`text-xs font-medium ${
-                                req.isPrivateVisibility
-                                  ? "text-gray-400"
-                                  : "text-emerald-700"
-                              }`}
-                            >
-                              Shared
-                            </span>
-                          </button>
+                            ) : null}
+                          </div>
                         ) : (
                           <span className="text-sm font-medium text-gray-700">
                             {req.isPrivateVisibility ? "Private" : "Shared"}
