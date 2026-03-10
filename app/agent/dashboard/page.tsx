@@ -175,7 +175,7 @@ export default function AgentRenterRequestsPage() {
 
       if (filters.maxPrice != null) {
         const max = raw.priceRange?.max ?? raw.priceRange?.min;
-        if (max != null && max > filters.maxPrice) return false;
+        if (max != null && max < filters.maxPrice) return false;
       }
 
       if (showOwnReferrals) {

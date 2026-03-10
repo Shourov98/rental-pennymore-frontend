@@ -17,13 +17,13 @@ const uniqueLabels = (labels: string[]) => Array.from(new Set(labels));
 const boroughNeighborhoods: Record<string, string[]> = {
   Manhattan: uniqueLabels(
     boroughNeighborhoodsData.Manhattan.sections.flatMap((section) =>
-      section.items.map((item) => item.label)
-    )
+      section.items.map((item) => item.label),
+    ),
   ),
   Brooklyn: uniqueLabels(
     boroughNeighborhoodsData.Brooklyn.sections.flatMap((section) =>
-      section.items.map((item) => item.label)
-    )
+      section.items.map((item) => item.label),
+    ),
   ),
 };
 
@@ -40,7 +40,7 @@ export default function FilterModal({
 }) {
   const [borough, setBorough] = useState<string | null>(null);
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<string[]>(
-    []
+    [],
   );
   const [bedrooms, setBedrooms] = useState<number[]>([]);
   const [bathrooms, setBathrooms] = useState<number[]>([]);
@@ -55,13 +55,13 @@ export default function FilterModal({
 
   const neighborhoods = useMemo(
     () => (borough ? boroughNeighborhoods[borough] : []),
-    [borough]
+    [borough],
   );
 
   const toggleSelection = (
     value: number,
     setter: React.Dispatch<React.SetStateAction<number[]>>,
-    state: number[]
+    state: number[],
   ) => {
     if (state.includes(value)) {
       setter(state.filter((item) => item !== value));
@@ -73,7 +73,7 @@ export default function FilterModal({
   const toggleStringSelection = (
     value: string,
     setter: React.Dispatch<React.SetStateAction<string[]>>,
-    state: string[]
+    state: string[],
   ) => {
     if (state.includes(value)) {
       setter(state.filter((item) => item !== value));
@@ -163,7 +163,7 @@ export default function FilterModal({
                     <button
                       onClick={() =>
                         setSelectedNeighborhoods(
-                          selectedNeighborhoods.filter((x) => x !== n)
+                          selectedNeighborhoods.filter((x) => x !== n),
                         )
                       }
                     >
@@ -182,7 +182,7 @@ export default function FilterModal({
                       toggleStringSelection(
                         n,
                         setSelectedNeighborhoods,
-                        selectedNeighborhoods
+                        selectedNeighborhoods,
                       )
                     }
                     className={`block w-full text-left p-2 rounded-md text-sm border ${
@@ -248,9 +248,9 @@ export default function FilterModal({
             </div>
           </div>
 
-          {/* Max Price (Manual Input) */}
+          {/* Max Price Threshold (Manual Input) */}
           <div>
-            <p className="text-sm font-medium mb-2">Max Price</p>
+            <p className="text-sm font-medium mb-2">Rent</p>
 
             <div className="flex items-center gap-2 border border-gray-300 bg-gray-50 rounded-lg px-3 py-2">
               <span className="text-blue-600 font-medium">$</span>
