@@ -411,11 +411,8 @@ export default function AgentRenterRequestDetailsPage() {
     (request?.raw?.status === "Available" || "available");
   const listingStatus = request?.raw?.listingStatus || "";
   const isListingMatched = listingStatus.toLowerCase() === "matched";
-  const isRequested = !request?.raw?.canRequestAccess;
-  const hasSentAccessRequest =
-    isRequested || isRequestSent || isRequestSentByStatus;
   const grantAccessEnabled = hasGrantAccess === true;
-  const isAccessRequestLocked = !grantAccessEnabled && hasSentAccessRequest;
+  const isAccessRequestLocked = request?.raw?.shareConsent === false;
   // const shouldDisableMatchRequest = grantAccessEnabled
   //   ? isListingMatched
   //   : !canRequestAccess || isRequestSentByStatus || isRequestSent;

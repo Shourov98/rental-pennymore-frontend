@@ -18,7 +18,9 @@ import {
 export default function AgentMatchesPage() {
   const router = useRouter();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
-  const currentAgentId = useSelector((state: RootState) => state.auth.user?._id);
+  const currentAgentId = useSelector(
+    (state: RootState) => state.auth.user?._id,
+  );
   const formatReferralName = (name: string) => {
     const trimmed = name.trim();
     const parts = trimmed.trim().split(/\s+/);
@@ -83,17 +85,17 @@ export default function AgentMatchesPage() {
             method: "GET",
             headers,
             signal: controller.signal,
-          }
+          },
         );
 
         const data: ApiAgentMatchesResponse = await response
           .json()
-          .catch(() => ({} as ApiAgentMatchesResponse));
+          .catch(() => ({}) as ApiAgentMatchesResponse);
 
         if (!response.ok || data?.success === false) {
           throw new Error(
             data?.message ||
-              "We couldn't load matched requests right now. Please try again."
+              "We couldn't load matched requests right now. Please try again.",
           );
         }
 
@@ -130,7 +132,7 @@ export default function AgentMatchesPage() {
       const { raw } = req;
       if (filters.borough) {
         const hasBorough = raw.locations?.some(
-          (loc) => loc?.borough === filters.borough
+          (loc) => loc?.borough === filters.borough,
         );
         if (!hasBorough) return false;
       }
@@ -140,7 +142,7 @@ export default function AgentMatchesPage() {
           ?.flatMap((loc) => loc?.neighborhoods || [])
           .filter(Boolean) as string[];
         const hasNeighborhood = filters.neighborhoods.some((n) =>
-          neighborhoods.includes(n)
+          neighborhoods.includes(n),
         );
         if (!hasNeighborhood) return false;
       }
@@ -150,7 +152,7 @@ export default function AgentMatchesPage() {
           raw.bedrooms?.map((b) => (b === "Studio" ? 0 : parseInt(b, 10))) ||
           [];
         const hasBedroom = filters.bedrooms.some((b) =>
-          bedroomValues.includes(b)
+          bedroomValues.includes(b),
         );
         if (!hasBedroom) return false;
       }
@@ -158,7 +160,7 @@ export default function AgentMatchesPage() {
       if (filters.bathrooms.length) {
         const bathroomValues = raw.bathrooms?.map((b) => parseInt(b, 10)) || [];
         const hasBathroom = filters.bathrooms.some((b) =>
-          bathroomValues.includes(b)
+          bathroomValues.includes(b),
         );
         if (!hasBathroom) return false;
       }
@@ -171,7 +173,10 @@ export default function AgentMatchesPage() {
       if (showOwnReferrals) {
         if (!currentAgentId) return false;
         const requestReferralAgentId = raw.referralAgentId ?? null;
-        if (!requestReferralAgentId || requestReferralAgentId !== currentAgentId)
+        if (
+          !requestReferralAgentId ||
+          requestReferralAgentId !== currentAgentId
+        )
           return false;
       }
 
@@ -202,17 +207,17 @@ export default function AgentMatchesPage() {
         {
           method: "PATCH",
           headers,
-        }
+        },
       );
 
       const data = await response
         .json()
-        .catch(() => ({} as { success?: boolean; message?: string }));
+        .catch(() => ({}) as { success?: boolean; message?: string });
 
       if (!response.ok || data?.success === false) {
         throw new Error(
           data?.message ||
-            "We couldn't update request visibility right now. Please try again."
+            "We couldn't update request visibility right now. Please try again.",
         );
       }
 
@@ -228,7 +233,6 @@ export default function AgentMatchesPage() {
             raw: {
               ...req.raw,
               visibility: isPrivateVisibility ? "private" : "shared",
-              shareConsent: !isPrivateVisibility,
             },
           };
         });
@@ -332,137 +336,138 @@ export default function AgentMatchesPage() {
                   {filteredRequests.map((req) => {
                     const requestReferralAgentId =
                       req.raw?.referralAgentId ?? null;
-                    const canToggleVisibility =
+                    const isCurrentAgentsRequest =
                       Boolean(currentAgentId) &&
                       Boolean(requestReferralAgentId) &&
                       currentAgentId === requestReferralAgentId;
-                    const isVisibilityLocked =
-                      canToggleVisibility && req.raw?.shareConsent === false;
+                    const shareConsent = req.raw?.shareConsent;
+                    const visibility = req.raw?.visibility;
+                    const isVisibilityLocked = shareConsent === false;
 
                     return (
                       <tr
                         key={req.id}
                         className="border-t border-gray-200 hover:bg-gray-50 text-gray-700"
                       >
-                      <td className="py-3 px-5">
-                        <div className="font-semibold text-gray-900">
-                          {req.dateLabel}
-                        </div>
-                      </td>
-                      <td className="py-3 px-5 text-gray-900">
-                        {req.requestName}
-                      </td>
-                      <td className="py-3 px-5">
-                        {(() => {
-                          const fallbackReferrerName = "Tuval Mor";
-                          const referralName =
-                            req.raw?.renterInfo?.referralInfo?.referrerName ||
-                            req.raw?.renterInfo?.referralInfo?.fullName ||
-                            "";
-                          const displayName = referralName.trim()
-                            ? referralName
-                            : fallbackReferrerName;
-                          return (
-                            <span className="inline-flex items-center rounded-full border border-blue-500 text-blue-600 px-2.5 py-0.5 text-xs font-semibold">
-                              {formatReferralName(displayName)}
-                            </span>
-                          );
-                        })()}
-                      </td>
-                      <td className="py-3 px-5">
-                        <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
-                          {req.scopeLabel}
-                        </span>
-                      </td>
-                      <td className="py-3 px-5">
-                        {canToggleVisibility ? (
-                          <div className="inline-flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => handleToggleShare(req)}
-                              disabled={
-                                mutatingShareId === req.id || isVisibilityLocked
-                              }
-                              className="inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                              aria-label={`Toggle visibility for ${req.requestName}`}
-                              title={
-                                isVisibilityLocked
-                                  ? "Visibility is locked for this request"
-                                  : "Toggle request visibility"
-                              }
-                            >
-                              <span
-                                className={`text-xs font-medium ${
-                                  req.isPrivateVisibility
-                                    ? "text-gray-700"
-                                    : "text-gray-400"
-                                }`}
-                              >
-                                Private
+                        <td className="py-3 px-5">
+                          <div className="font-semibold text-gray-900">
+                            {req.dateLabel}
+                          </div>
+                        </td>
+                        <td className="py-3 px-5 text-gray-900">
+                          {req.requestName}
+                        </td>
+                        <td className="py-3 px-5">
+                          {(() => {
+                            const referralName =
+                              req.raw?.renterInfo?.referralInfo?.referrerName ||
+                              req.raw?.renterInfo?.referralInfo?.fullName ||
+                              "";
+
+                            return (
+                              <span className="inline-flex items-center rounded-full border border-blue-500 text-blue-600 px-2.5 py-0.5 text-xs font-semibold">
+                                {isCurrentAgentsRequest
+                                  ? formatReferralName(referralName)
+                                  : "BeforeListed"}
                               </span>
-                              <span
-                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-                                  req.isPrivateVisibility
-                                    ? "bg-gray-300"
-                                    : "bg-blue-400"
-                                }`}
+                            );
+                          })()}
+                        </td>
+                        <td className="py-3 px-5">
+                          <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+                            {req.scopeLabel}
+                          </span>
+                        </td>
+                        <td className="py-3 px-5">
+                          {isCurrentAgentsRequest ? (
+                            <div className="inline-flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleToggleShare(req)}
+                                disabled={
+                                  mutatingShareId === req.id ||
+                                  isVisibilityLocked
+                                }
+                                className="inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                                aria-label={`Toggle visibility for ${req.requestName}`}
+                                title={
+                                  isVisibilityLocked
+                                    ? "Visibility is locked for this request"
+                                    : "Toggle request visibility"
+                                }
                               >
                                 <span
-                                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                                  className={`text-xs font-medium ${
                                     req.isPrivateVisibility
-                                      ? "translate-x-1"
-                                      : "translate-x-5"
+                                      ? "text-gray-700"
+                                      : "text-gray-400"
                                   }`}
+                                >
+                                  Private
+                                </span>
+                                <span
+                                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                                    req.isPrivateVisibility
+                                      ? "bg-gray-300"
+                                      : "bg-blue-400"
+                                  }`}
+                                >
+                                  <span
+                                    className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                                      req.isPrivateVisibility
+                                        ? "translate-x-1"
+                                        : "translate-x-5"
+                                    }`}
+                                  />
+                                </span>
+                                <span
+                                  className={`text-xs font-medium ${
+                                    req.isPrivateVisibility
+                                      ? "text-gray-400"
+                                      : "text-emerald-700"
+                                  }`}
+                                >
+                                  Shared
+                                </span>
+                              </button>
+                              {isVisibilityLocked ? (
+                                <Lock
+                                  className="h-4 w-4 text-gray-500"
+                                  aria-hidden="true"
                                 />
-                              </span>
-                              <span
-                                className={`text-xs font-medium ${
-                                  req.isPrivateVisibility
-                                    ? "text-gray-400"
-                                    : "text-emerald-700"
-                                }`}
-                              >
-                                Shared
-                              </span>
-                            </button>
-                            {isVisibilityLocked ? (
-                              <Lock
-                                className="h-4 w-4 text-gray-500"
-                                aria-hidden="true"
-                              />
-                            ) : null}
-                          </div>
-                        ) : (
-                          <span className="text-sm font-medium text-gray-700">
-                            {req.isPrivateVisibility ? "Private" : "Shared"}
+                              ) : null}
+                            </div>
+                          ) : (
+                            <span className="text-sm font-medium text-gray-700">
+                              {visibility || "Not specified"}
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-5 text-gray-900">
+                          {req.boroughsLabel}
+                        </td>
+                        <td className="py-3 px-5">{req.priceMaxLabel}</td>
+                        <td className="py-3 px-5">{req.bedroomsLabel}</td>
+                        <td className="py-3 px-5">{req.bathroomsLabel}</td>
+                        <td className="py-3 px-5">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                              req.isActive
+                                ? "bg-green-100 text-green-700"
+                                : "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            {req.isActive ? "Matched" : "Inactive"}
                           </span>
-                        )}
-                      </td>
-                      <td className="py-3 px-5 text-gray-900">
-                        {req.boroughsLabel}
-                      </td>
-                      <td className="py-3 px-5">{req.priceMaxLabel}</td>
-                      <td className="py-3 px-5">{req.bedroomsLabel}</td>
-                      <td className="py-3 px-5">{req.bathroomsLabel}</td>
-                      <td className="py-3 px-5">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            req.isActive
-                              ? "bg-green-100 text-green-700"
-                              : "bg-gray-100 text-gray-600"
-                          }`}
-                        >
-                          {req.isActive ? "Matched" : "Inactive"}
-                        </span>
-                      </td>
-                      <td className="py-3 px-5 flex justify-end gap-2">
-                        <button
-                          onClick={() => handleView(req)}
-                          className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"
-                        >
-                          <Eye className="w-4 h-4 text-gray-600" />
-                        </button>
-                      </td>
+                        </td>
+                        <td className="py-3 px-5 flex justify-end gap-2">
+                          <button
+                            onClick={() => handleView(req)}
+                            className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"
+                          >
+                            <Eye className="w-4 h-4 text-gray-600" />
+                          </button>
+                        </td>
                       </tr>
                     );
                   })}
@@ -479,9 +484,7 @@ export default function AgentMatchesPage() {
                   {filteredRequests.length === 1 ? "" : "s"}
                 </span>
                 <span className="text-gray-300">•</span>
-                <span>
-                  Total items {totalItems}
-                </span>
+                <span>Total items {totalItems}</span>
                 <span className="text-gray-300">•</span>
                 <span>
                   Page {currentPage} of {totalPages}
@@ -519,7 +522,6 @@ export default function AgentMatchesPage() {
               </div>
             </div>
           )}
-
         </>
       )}
       <FilterModal
