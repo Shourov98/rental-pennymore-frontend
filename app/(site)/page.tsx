@@ -58,8 +58,8 @@ export default function HomePage() {
 
         <p className="w-full max-w-2xl mx-auto text-base text-center mb-10">
           Once your request is accepted and required agency disclosures and
-          agreements are completed, your agent can then initiate outreach for rental
-          opportunities that can not be publicly advertised.
+          agreements are completed, your agent can initiate outreach for rental
+          opportunities that may not be publicly advertised.
         </p>
 
         <p className="w-full max-w-2xl mx-auto text-base text-center mb-10">

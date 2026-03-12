@@ -203,41 +203,6 @@ export default function SettingsPage() {
       </div>
 
       <div className="max-w-5xl mx-auto flex flex-col gap-6">
-        {/* Email Notifications */}
-        {/* <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-6 border border-gray-100">
-          <h3 className="text-base font-semibold text-gray-800 mb-1">
-            {subscribed
-              ? "Unsubscribe from email notification"
-              : "Subscribe to email notification"}
-          </h3>
-          <p className="text-sm text-gray-600 mb-4">
-            {subscribed
-              ? "By unsubscribing, you’ll no longer get emails from our marketing team. This includes search updates."
-              : "Subscribe again to receive search updates and marketing emails."}
-          </p>
-
-          {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
-
-          {subscribed ? (
-            <button
-              onClick={toggleSubscription}
-              className="px-5 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition disabled:opacity-70"
-              disabled={isSaving}
-            >
-              {isSaving ? "Updating..." : "Unsubscribe to Email"}
-            </button>
-          ) : (
-            <button
-              onClick={toggleSubscription}
-              className="px-5 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition disabled:opacity-70"
-              disabled={isSaving}
-            >
-              {isSaving ? "Updating..." : "Subscribe to Email"}
-            </button>
-          )}
-        </div> */}
-
-        {/* Delete Account */}
         <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-6 border border-gray-100">
           <h3 className="text-base font-semibold text-gray-800 mb-1">
             Accept renter requests
@@ -299,6 +264,44 @@ export default function SettingsPage() {
           >
             {isDeleting ? "Deleting..." : "Delete Account"}
           </button>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-6 border border-gray-100">
+          <h3 className="text-base font-semibold text-gray-800 mb-1">
+            Email notifications
+          </h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Toggle whether you want to receive notification emails.
+          </p>
+
+          {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
+
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={subscribed}
+              aria-label="Email notifications"
+              onClick={toggleSubscription}
+              disabled={isSaving}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-70 ${
+                subscribed ? "bg-blue-600" : "bg-gray-300 hover:bg-gray-400"
+              }`}
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${
+                  subscribed ? "translate-x-5" : "translate-x-1"
+                }`}
+              />
+            </button>
+            <span className="text-sm font-medium text-gray-700">
+              {isSaving
+                ? "Updating..."
+                : subscribed
+                  ? "Receiving notification emails"
+                  : "Not receiving notification emails"}
+            </span>
+          </div>
         </div>
       </div>
 

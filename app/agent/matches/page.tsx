@@ -366,9 +366,7 @@ export default function AgentMatchesPage() {
 
                             return (
                               <span className="inline-flex items-center rounded-full border border-blue-500 text-blue-600 px-2.5 py-0.5 text-xs font-semibold">
-                                {isCurrentAgentsRequest
-                                  ? formatReferralName(referralName)
-                                  : "BeforeListed"}
+                                {formatReferralName(referralName)}
                               </span>
                             );
                           })()}
