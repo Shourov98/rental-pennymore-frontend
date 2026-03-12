@@ -318,7 +318,7 @@ function SigninPageContent() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="flex-1 bg-transparent focus:outline-none text-text-secondary text-sm sm:text-base"
+              className="flex-1 bg-transparent focus:outline-none text-text-secondary text-base"
             />
           </div>
         </div>
@@ -342,7 +342,7 @@ function SigninPageContent() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="flex-1 bg-transparent focus:outline-none text-text-secondary text-sm sm:text-base"
+              className="flex-1 bg-transparent focus:outline-none text-text-secondary text-base"
             />
             <button
               type="button"

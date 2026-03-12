@@ -466,7 +466,7 @@ function InputField({
             placeholder={placeholder}
             value={value}
             onChange={(e) => onChange?.(e.target.value)}
-            className="flex-1 bg-transparent focus:outline-none text-text-secondary text-sm sm:text-base"
+            className="flex-1 bg-transparent focus:outline-none text-text-secondary text-base"
           />
         </div>
         {rightIcon && (
@@ -507,7 +507,7 @@ function SelectField({
         <select
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
-          className={`w-full bg-transparent focus:outline-none text-sm sm:text-base appearance-none pr-7 ${
+          className={`w-full bg-transparent focus:outline-none text-base appearance-none pr-7 ${
             value ? "text-text-secondary" : "text-gray-400"
           }`}
         >

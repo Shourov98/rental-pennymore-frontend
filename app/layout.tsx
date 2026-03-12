@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import TitleManager from "@/components/TitleManager";
+import ViewportManager from "@/components/ViewportManager";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -54,6 +55,7 @@ export default function RootLayout({
       <body className={`${poppins.variable} antialiased`}>
         <Providers>
           <TitleManager />
+          <ViewportManager />
           {children}
         </Providers>
       </body>
