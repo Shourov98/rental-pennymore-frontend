@@ -72,6 +72,7 @@ export interface ApiAgentRequest {
   referralInfo?: {
     registrationType?: string;
     referrer?: {
+      id?: string;
       referrerId?: string;
       referrerName?: string;
       fullName?: string;
