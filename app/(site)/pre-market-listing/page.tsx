@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MapPin, DollarSign, Calendar, Bell } from "lucide-react";
+import {
+  MapPin,
+  DollarSign,
+  Calendar,
+  Bell,
+  AlertTriangle,
+} from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
 import { selectReferrer, selectReferrerName } from "@/store/slices/authSlice";
@@ -704,48 +710,86 @@ export default function PreMarketListingPage() {
               </label>
             </div>
 
-            <p className="text-[13px] font-semibold leading-snug text-black sm:text-sm md:text-[15px]">
-              Client registration and agency disclosure (required)
-            </p>
-            <p className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
-              To allow your agent,{" "}
-              <span className="font-bold">{referrerName || "Tuval Mor"}</span>,
-              to reach out on your behalf, please sign the{" "}
-              <a
-                href={registrationLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-700 underline hover:text-blue-800"
-              >
-                Corcoran client registration{" "}
-              </a>
-              unless you have already done so. It opens in a new tab. Please
-              return here after signing. This registration is non-exclusive, the
-              broker fee may be negotiated, and no broker fee is due unless you
-              choose to move forward with a rental presented by the agent.
-            </p>
+            <div className="rounded-2xl border border-[#e8d2a6] bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] sm:p-5">
+              <div className="rounded-xl bg-gradient-to-r from-[#fff1b8] via-[#ffe7a3] to-[#ffe08a] px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="h-6 w-6 shrink-0 text-[#9a6700]" />
+                  <div>
+                    <p className="text-lg font-semibold leading-tight text-black sm:text-[20px]">
+                      Required Before Submission
+                    </p>
+                    <p className="text-[13px] font-semibold leading-snug text-[#3f3f46] sm:text-sm md:text-[15px]">
+                      Client Registration (Required) and Agency Disclosure
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-            <label className="flex items-start gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isAgreementChecked}
-                onChange={(e) => {
-                  if (e.target.checked && !renterPhone) {
-                    setAgreementWarning(
-                      "Please add your phone number in your profile to continue.",
-                    );
-                    return;
-                  }
-                  setAgreementWarning(null);
-                  setIsAgreementChecked(e.target.checked);
-                }}
-                className="mt-1 h-5 w-5 accent-gray-600"
-              />
-              <span className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
-                By checking this box, you confirm you have signed client
-                registration and agency disclosure.
-              </span>
-            </label>
+              <div className="mt-4 space-y-5 px-1 text-[13px] leading-relaxed text-[#3f3f46] sm:text-sm md:text-[15px] md:leading-7">
+                <p>
+                  To allow your agent,{" "}
+                  <span className="font-semibold">
+                    {referrerName || "Tuval Mor"}
+                  </span>
+                  , to reach out on your behalf, the Corcoran Client
+                  Registration needs to be signed unless you have already done
+                  so. This registration is non-exclusive, the broker fee may be
+                  negotiated, and no broker fee is due unless you choose to move
+                  forward with a rental presented by the agent.
+                </p>
+
+                <p>
+                  This does not prevent you from independently searching,
+                  contacting owners, or working with another agent in your
+                  search for apartments not presented to you by{" "}
+                  {referrerName || "Tuval Mor"} or any disclosed assisting
+                  agents.
+                </p>
+
+                <div className="space-y-2 text-center">
+                  <p className="font-semibold text-black">
+                    Requests submitted without completing this step will not be
+                    processed.
+                  </p>
+                  <a
+                    href={registrationLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center text-[15px] font-medium text-blue-700 underline decoration-blue-700/70 underline-offset-2 hover:text-blue-800"
+                  >
+                    👉 Click here to complete registration now
+                  </a>
+                  <p className="text-[12px] text-[#52525b] sm:text-[13px]">
+                    The link opens in a new tab, please return here after
+                    signing.
+                  </p>
+                </div>
+
+                <label className="flex cursor-pointer items-start gap-3 pt-1">
+                  <input
+                    type="checkbox"
+                    checked={isAgreementChecked}
+                    onChange={(e) => {
+                      if (e.target.checked && !renterPhone) {
+                        setAgreementWarning(
+                          "Please add your phone number in your profile to continue.",
+                        );
+                        return;
+                      }
+                      setAgreementWarning(null);
+                      setIsAgreementChecked(e.target.checked);
+                    }}
+                    className="mt-1 h-5 w-5 shrink-0 rounded border-gray-300 accent-gray-600"
+                  />
+                  <span className="text-[13px] leading-relaxed text-[#3f3f46] sm:text-sm md:text-[15px] md:leading-7">
+                    By checking this box, I confirm I have completed and signed
+                    the Corcoran Client Registration (required) and agency
+                    disclosure. I understand my request will not be processed
+                    otherwise.
+                  </span>
+                </label>
+              </div>
+            </div>
             {agreementWarning && (
               <p className="text-sm text-red-600">{agreementWarning}</p>
             )}
