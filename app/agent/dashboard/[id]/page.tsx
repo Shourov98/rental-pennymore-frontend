@@ -164,6 +164,7 @@ export default function AgentRenterRequestDetailsPage() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+  const currentUserId = useSelector((state: RootState) => state.auth.user?._id);
   const hasGrantAccess = useSelector(selectAgentHasGrantAccess);
 
   const requestId = params?.id as string | undefined;
@@ -392,13 +393,30 @@ export default function AgentRenterRequestDetailsPage() {
 
   const renterContact = useMemo(() => {
     if (!renterInfo) return null;
+
+    const candidateReferrerIds = [
+      request?.raw?.referrerId,
+      request?.raw?.referralAgentId,
+      request?.raw?.referralInfo?.referrer?.referrerId,
+      request?.raw?.referralInfo?.referrer?.id,
+      renterInfo?.referralInfo?.referrerId,
+    ]
+      .filter((value): value is string => Boolean(value))
+      .map((value) => value.trim());
+
+    const canViewContact =
+      !!currentUserId &&
+      candidateReferrerIds.some((value) => value === currentUserId);
+
+    if (!canViewContact) return null;
+
     return {
-      name: renterInfo.renterName || "Unknown renter",
-      email: renterInfo.renterEmail || "Not provided",
-      phone: renterInfo.renterPhone || "Not provided",
+      name: renterInfo.renterName || renterInfo.fullName || "Unknown renter",
+      email: renterInfo.renterEmail || renterInfo.email || "Not provided",
+      phone: renterInfo.renterPhone || renterInfo.phoneNumber || "Not provided",
       registrationType: renterInfo.registrationType || "Not specified",
     };
-  }, [renterInfo]);
+  }, [currentUserId, renterInfo, request]);
   const requestStatus = (
     request?.raw?.status ||
     request?.status ||

@@ -7,6 +7,7 @@ export interface ApiAgentRequest {
   requestName?: string;
   renterId?: string;
   referralAgentId?: string;
+  referrerId?: string;
   movingDateRange?: {
     earliest?: string;
     latest?: string;
@@ -46,8 +47,27 @@ export interface ApiAgentRequest {
     renterName?: string;
     renterEmail?: string;
     renterPhone?: string;
+    fullName?: string;
+    email?: string;
+    phoneNumber?: string;
+    profileImage?: string | null;
     registrationType?: string;
     referrer?: string | null;
+    referralInfo?: {
+      registrationType?: string;
+      referrerId?: string;
+      referrerName?: string;
+      fullName?: string;
+      referredByAdmin?: {
+        referredBy?: string;
+        referrerName?: string;
+        referrerEmail?: string;
+      } | null;
+      referrerEmail?: string;
+      referrerPhoneNumber?: string;
+      referralCode?: string;
+      referrerType?: string;
+    } | null;
   };
   referralInfo?: {
     registrationType?: string;
