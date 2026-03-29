@@ -41,9 +41,7 @@ export default function Navbar() {
   const canShowAuthed = isClient && isAuthed;
   const authName = auth.user?.fullName ?? auth.renter?.fullName ?? null;
   const authEmail = auth.user?.email ?? auth.renter?.email ?? null;
-  const displayName = canShowAuthed
-    ? getFirstName(authName, authEmail)
-    : "";
+  const displayName = canShowAuthed ? getFirstName(authName, authEmail) : "";
   const avatarUrl = canShowAuthed
     ? (auth.user?.profileImage ?? auth.user?.profileImageUrl ?? null)
     : null;
@@ -271,7 +269,9 @@ export default function Navbar() {
             </a>
             <span className="text-[11px] leading-snug inline">
               Operated by – <br />
-              <span>TUVAL MOR, THE CORCORAN GROUP</span>
+              <span className="sm:text-[9px]">
+                TUVAL MOR, THE CORCORAN GROUP
+              </span>
             </span>
           </div>
           <Link
