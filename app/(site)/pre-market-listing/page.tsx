@@ -675,13 +675,6 @@ export default function PreMarketListingPage() {
             )}
           </div>
 
-          {/* Submit */}
-          {errorMessage && (
-            <p className="text-sm text-red-600 text-right">{errorMessage}</p>
-          )}
-          {formError && (
-            <p className="text-sm text-red-600 text-right">{formError}</p>
-          )}
           {/* Agreement text + checkbox */}
           <div className="border-t pt-4 text-gray-600 space-y-3">
             <div className="space-y-3">
@@ -799,7 +792,13 @@ export default function PreMarketListingPage() {
           </div>
 
           {/* Submit button */}
-          <div className="flex justify-end mt-4">
+          <div className="mt-4 flex flex-col items-end gap-2">
+            {errorMessage && (
+              <p className="text-sm text-red-600 text-right">{errorMessage}</p>
+            )}
+            {formError && (
+              <p className="text-sm text-red-600 text-right">{formError}</p>
+            )}
             <button
               type="submit"
               disabled={isSubmitting || !isAgreementChecked || !marketScope}
