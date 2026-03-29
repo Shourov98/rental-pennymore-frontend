@@ -120,7 +120,7 @@ export default function HeroSection() {
           Your request will be submitted to: <br />
         </span>
         <h3 className="text-sm text-gray-600 sm:text-base md:text-lg font-semibold mb-4 text-center">
-          <span className="text-xl">{headingName}</span>
+          <span className="text-xl lg:text-3xl">{headingName}</span>
           <br />
           {headingTitle}
         </h3>
