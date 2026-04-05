@@ -11,7 +11,7 @@ export const defaultPreferencesList = [
   "New Renovation",
   "W/D in Unit",
   "High Ceilings",
-  "Ground Floor Preferred",
+  "Avoid Ground Floor",
   "Lots of Storage",
   "Gym in Building",
   "If Walk-Up: Prefer Lower Floors",
@@ -77,7 +77,7 @@ export const preferenceSlice = createSlice({
 
     setMovingDate(
       state,
-      action: PayloadAction<{ earliest: string; latest: string }>
+      action: PayloadAction<{ earliest: string; latest: string }>,
     ) {
       state.movingDate = action.payload;
     },
@@ -95,7 +95,7 @@ export const preferenceSlice = createSlice({
 
     addNeighborhood(
       state,
-      action: PayloadAction<{ borough: string; neighborhood: string }>
+      action: PayloadAction<{ borough: string; neighborhood: string }>,
     ) {
       const { borough, neighborhood } = action.payload;
 
@@ -113,7 +113,7 @@ export const preferenceSlice = createSlice({
 
     removeNeighborhood(
       state,
-      action: PayloadAction<{ borough: string; neighborhood: string }>
+      action: PayloadAction<{ borough: string; neighborhood: string }>,
     ) {
       const { borough, neighborhood } = action.payload;
 
@@ -121,12 +121,12 @@ export const preferenceSlice = createSlice({
       if (!entry) return;
 
       entry.neighborhoods = entry.neighborhoods.filter(
-        (n) => n !== neighborhood
+        (n) => n !== neighborhood,
       );
 
       if (entry.neighborhoods.length === 0) {
         state.locations = state.locations.filter(
-          (loc) => loc.borough !== borough
+          (loc) => loc.borough !== borough,
         );
       }
     },
@@ -166,7 +166,7 @@ export const preferenceSlice = createSlice({
       const value = action.payload;
       if (state.buildingFeatures.includes(value)) {
         state.buildingFeatures = state.buildingFeatures.filter(
-          (v) => v !== value
+          (v) => v !== value,
         );
       } else {
         state.buildingFeatures.push(value);
@@ -197,7 +197,9 @@ export const preferenceSlice = createSlice({
 
     setPreferencesList(state, action: PayloadAction<string[]>) {
       state.preferences =
-        action.payload.length > 0 ? action.payload : createInitialState().preferences;
+        action.payload.length > 0
+          ? action.payload
+          : createInitialState().preferences;
     },
 
     resetPreferences() {

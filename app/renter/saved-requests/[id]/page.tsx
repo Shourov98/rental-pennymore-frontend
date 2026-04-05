@@ -15,7 +15,7 @@ import {
 
 const PreferencesDragList = dynamic(
   () => import("@/components/PreferencesDragList"),
-  { ssr: false }
+  { ssr: false },
 );
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -31,7 +31,7 @@ const featureLabels: Record<FeatureGroup, Record<string, string>> = {
   building: {
     doorman: "Doorman",
     elevator: "Elevator",
-    laundryInBuilding: "Laundry in building",
+    laundryInBuilding: "Open kitchen",
   },
   pet: {
     catsAllowed: "Cats allowed",
@@ -65,7 +65,7 @@ export default function EditPreMarketListingPage() {
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
   const dispatch = useDispatch();
   const preferenceLocations = useSelector(
-    (state: RootState) => state.preferences.locations
+    (state: RootState) => state.preferences.locations,
   );
 
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
@@ -85,7 +85,7 @@ export default function EditPreMarketListingPage() {
   const [activeBedrooms, setActiveBedrooms] = useState<string[]>([]);
   const [activeBathrooms, setActiveBathrooms] = useState<string[]>([]);
   const [selectedUnitFeatures, setSelectedUnitFeatures] = useState<string[]>(
-    []
+    [],
   );
   const [selectedBuildingFeatures, setSelectedBuildingFeatures] = useState<
     string[]
@@ -93,7 +93,7 @@ export default function EditPreMarketListingPage() {
   const [selectedPets, setSelectedPets] = useState<string[]>([]);
   const [selectedGuarantor, setSelectedGuarantor] = useState<string[]>([]);
   const [preferences, setPreferences] = useState<string[]>(
-    defaultPreferencesList
+    defaultPreferencesList,
   );
   const [locations, setLocations] = useState<
     { borough?: string; neighborhoods?: string[] }[]
@@ -121,7 +121,7 @@ export default function EditPreMarketListingPage() {
             method: "GET",
             headers,
             signal: controller.signal,
-          }
+          },
         );
         const data = (await response.json().catch(() => ({}))) as {
           success?: boolean;
@@ -132,7 +132,7 @@ export default function EditPreMarketListingPage() {
         if (!response.ok || data?.success === false || !data.data) {
           throw new Error(
             data?.message ||
-              "We couldn't load this request right now. Please try again."
+              "We couldn't load this request right now. Please try again.",
           );
         }
 
@@ -143,12 +143,12 @@ export default function EditPreMarketListingPage() {
         setStartDate(
           req.movingDateRange?.earliest
             ? new Date(req.movingDateRange.earliest).toISOString().slice(0, 10)
-            : ""
+            : "",
         );
         setEndDate(
           req.movingDateRange?.latest
             ? new Date(req.movingDateRange.latest).toISOString().slice(0, 10)
-            : ""
+            : "",
         );
         setActiveBedrooms(req.bedrooms ?? []);
         setActiveBathrooms(req.bathrooms ?? []);
@@ -164,13 +164,13 @@ export default function EditPreMarketListingPage() {
             nextLocations as {
               borough: "Manhattan" | "Brooklyn";
               neighborhoods: string[];
-            }[]
-          )
+            }[],
+          ),
         );
 
         const mapFeatures = (
           group: FeatureGroup,
-          values?: Record<string, boolean>
+          values?: Record<string, boolean>,
         ) => {
           if (!values) return [];
           return Object.entries(values)
@@ -180,7 +180,7 @@ export default function EditPreMarketListingPage() {
 
         setSelectedUnitFeatures(mapFeatures("unit", req.unitFeatures));
         setSelectedBuildingFeatures(
-          mapFeatures("building", req.buildingFeatures)
+          mapFeatures("building", req.buildingFeatures),
         );
         setSelectedPets(mapFeatures("pet", req.petPolicy));
         setSelectedGuarantor(mapFeatures("guarantor", req.guarantorRequired));
@@ -213,10 +213,10 @@ export default function EditPreMarketListingPage() {
   const toggleItem = (
     item: string,
     setter: React.Dispatch<React.SetStateAction<string[]>>,
-    list: string[]
+    list: string[],
   ) => {
     setter(
-      list.includes(item) ? list.filter((x) => x !== item) : [...list, item]
+      list.includes(item) ? list.filter((x) => x !== item) : [...list, item],
     );
   };
 
@@ -228,7 +228,7 @@ export default function EditPreMarketListingPage() {
     "Private outdoor space",
     "Dishwasher",
   ];
-  const buildingFeatures = ["Doorman", "Elevator", "Laundry in building"];
+  const buildingFeatures = ["Doorman", "Elevator", "Open kitchen"];
   const petPolicy = ["Cats allowed", "Dogs allowed"];
   const guarantorOptions = ["Personal guarantor", "Third party guarantor"];
 
@@ -265,16 +265,14 @@ export default function EditPreMarketListingPage() {
         unitFeatures: {
           laundryInUnit: selectedUnitFeatures.includes("Laundry in unit"),
           privateOutdoorSpace: selectedUnitFeatures.includes(
-            "Private outdoor space"
+            "Private outdoor space",
           ),
           dishwasher: selectedUnitFeatures.includes("Dishwasher"),
         },
         buildingFeatures: {
           doorman: selectedBuildingFeatures.includes("Doorman"),
           elevator: selectedBuildingFeatures.includes("Elevator"),
-          laundryInBuilding: selectedBuildingFeatures.includes(
-            "Laundry in building"
-          ),
+          laundryInBuilding: selectedBuildingFeatures.includes("Open kitchen"),
         },
         petPolicy: {
           catsAllowed: selectedPets.includes("Cats allowed"),
@@ -283,7 +281,7 @@ export default function EditPreMarketListingPage() {
         guarantorRequired: {
           personalGuarantor: selectedGuarantor.includes("Personal guarantor"),
           thirdPartyGuarantor: selectedGuarantor.includes(
-            "Third party guarantor"
+            "Third party guarantor",
           ),
         },
         preferences,
@@ -299,7 +297,7 @@ export default function EditPreMarketListingPage() {
       if (!response.ok || data?.success === false) {
         throw new Error(
           data?.message ||
-            "We couldn't save your changes right now. Please try again."
+            "We couldn't save your changes right now. Please try again.",
         );
       }
 
@@ -518,7 +516,7 @@ export default function EditPreMarketListingPage() {
                         toggleItem(
                           f,
                           setSelectedUnitFeatures,
-                          selectedUnitFeatures
+                          selectedUnitFeatures,
                         )
                       }
                       className="w-4 h-4 text-blue-600"
@@ -545,7 +543,7 @@ export default function EditPreMarketListingPage() {
                         toggleItem(
                           f,
                           setSelectedBuildingFeatures,
-                          selectedBuildingFeatures
+                          selectedBuildingFeatures,
                         )
                       }
                       className="w-4 h-4 text-blue-600"

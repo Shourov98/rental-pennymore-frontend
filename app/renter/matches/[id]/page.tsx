@@ -31,7 +31,7 @@ const unitFeatureLabels: Record<string, string> = {
 const buildingFeatureLabels: Record<string, string> = {
   doorman: "Doorman",
   elevator: "Elevator",
-  laundryInBuilding: "Laundry in building",
+  laundryInBuilding: "Open kitchen",
 };
 
 const petPolicyLabels: Record<string, string> = {
@@ -55,14 +55,14 @@ const formatDate = (date?: string) =>
 
 const formatFeatureGroup = (
   values: Record<string, boolean> | undefined,
-  labels: Record<string, string>
+  labels: Record<string, string>,
 ) =>
   Object.entries(values || {})
     .filter(([, value]) => value)
     .map(([key]) => labels[key] || key);
 
 const formatLocationEntries = (
-  locations?: { borough?: string; neighborhoods?: string[] }[]
+  locations?: { borough?: string; neighborhoods?: string[] }[],
 ) => {
   if (!locations?.length) return [];
 
@@ -119,7 +119,7 @@ export default function RenterMatchDetailsPage() {
 
       try {
         const cached = readCachedMatches().find(
-          (item) => item.id === requestId
+          (item) => item.id === requestId,
         );
         if (cached) {
           setRequest(cached);
@@ -143,17 +143,17 @@ export default function RenterMatchDetailsPage() {
             method: "GET",
             headers,
             signal: controller.signal,
-          }
+          },
         );
 
         const data: ApiMatchesResponse = await response
           .json()
-          .catch(() => ({} as ApiMatchesResponse));
+          .catch(() => ({}) as ApiMatchesResponse);
 
         if (!response.ok || data?.success === false) {
           throw new Error(
             data?.message ||
-              "We couldn't load this request right now. Please try again."
+              "We couldn't load this request right now. Please try again.",
           );
         }
 
@@ -199,19 +199,19 @@ export default function RenterMatchDetailsPage() {
 
   const unitFeaturesList = useMemo(
     () => formatFeatureGroup(unitFeatures, unitFeatureLabels),
-    [unitFeatures]
+    [unitFeatures],
   );
   const buildingFeaturesList = useMemo(
     () => formatFeatureGroup(buildingFeatures, buildingFeatureLabels),
-    [buildingFeatures]
+    [buildingFeatures],
   );
   const petPolicyList = useMemo(
     () => formatFeatureGroup(petPolicy, petPolicyLabels),
-    [petPolicy]
+    [petPolicy],
   );
   const guarantorList = useMemo(
     () => formatFeatureGroup(guarantorRequired, guarantorLabels),
-    [guarantorRequired]
+    [guarantorRequired],
   );
 
   const renterPreferenceData = useMemo(() => {

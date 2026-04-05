@@ -32,7 +32,7 @@ const unitFeatureLabels: Record<string, string> = {
 const buildingFeatureLabels: Record<string, string> = {
   doorman: "Doorman",
   elevator: "Elevator",
-  laundryInBuilding: "Laundry in building",
+  laundryInBuilding: "Open kitchen",
 };
 
 const petPolicyLabels: Record<string, string> = {
@@ -56,7 +56,7 @@ const formatDate = (date?: string) =>
 
 const formatFeatureGroup = (
   values: Record<string, boolean> | undefined,
-  labels: Record<string, string>
+  labels: Record<string, string>,
 ) =>
   Object.entries(values || {})
     .filter(([, value]) => value)
@@ -107,7 +107,7 @@ function StripePaymentForm({
         clientSecret,
         {
           payment_method: { card: cardElement },
-        }
+        },
       );
 
       if (error) {
@@ -192,7 +192,7 @@ export default function AgentRenterRequestDetailsPage() {
   } | null>(null);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [localPaymentStatus, setLocalPaymentStatus] = useState<string | null>(
-    null
+    null,
   );
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isConfirmChecked, setIsConfirmChecked] = useState(false);
@@ -212,7 +212,7 @@ export default function AgentRenterRequestDetailsPage() {
 
       try {
         const cached = readCachedAgentRequests().find(
-          (item) => item.id === requestId
+          (item) => item.id === requestId,
         );
         if (cached) {
           setRequest(cached);
@@ -229,17 +229,17 @@ export default function AgentRenterRequestDetailsPage() {
             method: "GET",
             headers,
             signal: controller.signal,
-          }
+          },
         );
 
         const data = await response
           .json()
-          .catch(() => ({} as { success?: boolean; message?: string }));
+          .catch(() => ({}) as { success?: boolean; message?: string });
 
         if (!response.ok || data?.success === false) {
           throw new Error(
             data?.message ||
-              "We couldn't load this request right now. Please try again."
+              "We couldn't load this request right now. Please try again.",
           );
         }
 
@@ -271,7 +271,7 @@ export default function AgentRenterRequestDetailsPage() {
     if (!requestId) return;
     const cachedMatches = readCachedAgentMatches();
     const alreadyMatched = cachedMatches.some(
-      (m) => m.id === requestId || m.raw?.requestId === requestId
+      (m) => m.id === requestId || m.raw?.requestId === requestId,
     );
     setIsRequestSent(alreadyMatched);
   }, [requestId]);
@@ -292,19 +292,19 @@ export default function AgentRenterRequestDetailsPage() {
 
   const unitFeaturesList = useMemo(
     () => formatFeatureGroup(unitFeatures, unitFeatureLabels),
-    [unitFeatures]
+    [unitFeatures],
   );
   const buildingFeaturesList = useMemo(
     () => formatFeatureGroup(buildingFeatures, buildingFeatureLabels),
-    [buildingFeatures]
+    [buildingFeatures],
   );
   const petPolicyList = useMemo(
     () => formatFeatureGroup(petPolicy, petPolicyLabels),
-    [petPolicy]
+    [petPolicy],
   );
   const guarantorList = useMemo(
     () => formatFeatureGroup(guarantorRequired, guarantorLabels),
-    [guarantorRequired]
+    [guarantorRequired],
   );
 
   const renterPreferenceData = useMemo(() => {
@@ -447,8 +447,8 @@ export default function AgentRenterRequestDetailsPage() {
   const isDisabled = grantAccessEnabled
     ? isListingMatched
     : canRequestAccess === false || isSubmitting
-    ? true
-    : false;
+      ? true
+      : false;
 
   // {grantAccessEnabled
   //                 ? isListingMatched
@@ -488,12 +488,12 @@ export default function AgentRenterRequestDetailsPage() {
           {
             method: "POST",
             headers,
-          }
+          },
         );
 
         const data = await response
           .json()
-          .catch(() => ({} as { success?: boolean; message?: string }));
+          .catch(() => ({}) as { success?: boolean; message?: string });
 
         if (!response.ok || data?.success === false) {
           const errorMessage =
@@ -510,7 +510,7 @@ export default function AgentRenterRequestDetailsPage() {
                   listingStatus: "matched",
                 },
               }
-            : prev
+            : prev,
         );
         setStatusMessage({
           type: "success",
@@ -523,12 +523,12 @@ export default function AgentRenterRequestDetailsPage() {
             method: "POST",
             headers,
             body: JSON.stringify({ preMarketRequestId: requestId }),
-          }
+          },
         );
 
         const data = await response
           .json()
-          .catch(() => ({} as { success?: boolean; message?: string }));
+          .catch(() => ({}) as { success?: boolean; message?: string });
 
         if (!response.ok || data?.success === false) {
           const errorMessage =
@@ -560,7 +560,7 @@ export default function AgentRenterRequestDetailsPage() {
     try {
       if (!stripePublishableKey) {
         throw new Error(
-          "Stripe is not configured. Add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY."
+          "Stripe is not configured. Add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.",
         );
       }
 
@@ -576,14 +576,14 @@ export default function AgentRenterRequestDetailsPage() {
           method: "POST",
           headers,
           body: JSON.stringify({ grantAccessId: request.raw.grantAccessId }),
-        }
+        },
       );
 
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok || data?.success === false) {
         throw new Error(
-          data?.message || "We couldn't create the payment intent."
+          data?.message || "We couldn't create the payment intent.",
         );
       }
 
@@ -649,8 +649,8 @@ export default function AgentRenterRequestDetailsPage() {
             normalizedStatus === "approved"
               ? "bg-green-100 text-green-700"
               : normalizedStatus === "pending"
-              ? "bg-orange-100 text-orange-700"
-              : "bg-gray-100 text-gray-600";
+                ? "bg-orange-100 text-orange-700"
+                : "bg-gray-100 text-gray-600";
 
           return (
             <span
@@ -781,7 +781,7 @@ export default function AgentRenterRequestDetailsPage() {
                     <StripePaymentForm
                       amountLabel={formatPaymentAmount(
                         paymentIntentData.amount ?? paymentAmount,
-                        paymentIntentData.currency ?? paymentCurrency
+                        paymentIntentData.currency ?? paymentCurrency,
                       )}
                       clientSecret={paymentIntentData.clientSecret}
                       onClose={() => setIsPaymentOpen(false)}
@@ -877,13 +877,13 @@ export default function AgentRenterRequestDetailsPage() {
                   ? isListingMatched
                     ? "Already Matched"
                     : isSubmitting
-                    ? "Matching..."
-                    : "Match Request"
+                      ? "Matching..."
+                      : "Match Request"
                   : !canRequestAccess
-                  ? "Request Sent"
-                  : isSubmitting
-                  ? "Sending..."
-                  : "Match Request"}
+                    ? "Request Sent"
+                    : isSubmitting
+                      ? "Sending..."
+                      : "Match Request"}
               </button>
             </div>
           </div>
