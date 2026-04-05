@@ -284,7 +284,7 @@ export default function MatchedAgentsPage() {
             })}
           </div>
 
-          {/* {pagination && (
+          {pagination && (
             <div className="flex items-center justify-between bg-white rounded-xl shadow-sm p-4 text-sm text-gray-600 mt-4">
               <div>
                 Page {pagination.currentPage ?? page} of{" "}
@@ -315,7 +315,7 @@ export default function MatchedAgentsPage() {
                 </button>
               </div>
             </div>
-          )} */}
+          )}
         </>
       )}
     </section>

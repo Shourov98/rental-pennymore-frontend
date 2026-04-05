@@ -328,6 +328,8 @@ export default function AgentMatchesPage() {
   const currentPage = pagination?.currentPage ?? page;
   const totalItems = pagination?.totalItems ?? filteredRequests.length;
   const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
+  const hasServerResults = requests.length > 0;
+  const hasFilteredResults = filteredRequests.length > 0;
   const handlePageSelect = (value: number) => {
     if (value === currentPage) return;
     setPage(value);
@@ -373,172 +375,178 @@ export default function AgentMatchesPage() {
         <div className="bg-red-50 text-red-700 border border-red-100 rounded-xl p-4 text-sm">
           {error}
         </div>
-      ) : filteredRequests.length === 0 ? (
+      ) : !hasServerResults ? (
         <div className="bg-white rounded-xl shadow-sm p-6 text-gray-600">
           No matched requests available right now.
         </div>
       ) : (
         <>
-          <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-[1200px] w-full text-sm">
-                <thead className="bg-blue-100 text-gray-800">
-                  <tr>
-                    <th className="py-3 px-5 text-left">Date</th>
-                    <th className="py-3 px-5 text-left">Request</th>
-                    <th className="py-3 px-5 text-left">Referral</th>
-                    <th className="py-3 px-5 text-left">Scope</th>
-                    <th className="py-3 px-5 text-left">Visibility</th>
-                    <th className="py-3 px-5 text-left">Borough</th>
-                    <th className="py-3 px-5 text-left">Price (Max)</th>
-                    <th className="py-3 px-5 text-left">Beds</th>
-                    <th className="py-3 px-5 text-left">Baths</th>
-                    <th className="py-3 px-5 text-left">Status</th>
-                    <th className="py-3 px-5 text-right">Actions</th>
-                  </tr>
-                </thead>
+          {hasFilteredResults ? (
+            <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-[1200px] w-full text-sm">
+                  <thead className="bg-blue-100 text-gray-800">
+                    <tr>
+                      <th className="py-3 px-5 text-left">Date</th>
+                      <th className="py-3 px-5 text-left">Request</th>
+                      <th className="py-3 px-5 text-left">Referral</th>
+                      <th className="py-3 px-5 text-left">Scope</th>
+                      <th className="py-3 px-5 text-left">Visibility</th>
+                      <th className="py-3 px-5 text-left">Borough</th>
+                      <th className="py-3 px-5 text-left">Price (Max)</th>
+                      <th className="py-3 px-5 text-left">Beds</th>
+                      <th className="py-3 px-5 text-left">Baths</th>
+                      <th className="py-3 px-5 text-left">Status</th>
+                      <th className="py-3 px-5 text-right">Actions</th>
+                    </tr>
+                  </thead>
 
-                <tbody>
-                  {filteredRequests.map((req) => {
-                    const requestReferralAgentId =
-                      req.raw?.referralAgentId ?? null;
-                    const isCurrentAgentsRequest =
-                      Boolean(currentAgentId) &&
-                      Boolean(requestReferralAgentId) &&
-                      currentAgentId === requestReferralAgentId;
-                    const shareConsent = req.raw?.shareConsent;
-                    const visibility = req.raw?.visibility;
-                    const isVisibilityLocked = shareConsent === false;
+                  <tbody>
+                    {filteredRequests.map((req) => {
+                      const requestReferralAgentId =
+                        req.raw?.referralAgentId ?? null;
+                      const isCurrentAgentsRequest =
+                        Boolean(currentAgentId) &&
+                        Boolean(requestReferralAgentId) &&
+                        currentAgentId === requestReferralAgentId;
+                      const shareConsent = req.raw?.shareConsent;
+                      const visibility = req.raw?.visibility;
+                      const isVisibilityLocked = shareConsent === false;
 
-                    return (
-                      <tr
-                        key={req.id}
-                        className="border-t border-gray-200 hover:bg-gray-50 text-gray-700"
-                      >
-                        <td className="py-3 px-5">
-                          <div className="font-semibold text-gray-900">
-                            {req.dateLabel}
-                          </div>
-                        </td>
-                        <td className="py-3 px-5 text-gray-900">
-                          {req.requestName}
-                        </td>
-                        <td className="py-3 px-5">
-                          {(() => {
-                            const referralName =
-                              req.raw?.renterInfo?.referralInfo?.referrerName ||
-                              req.raw?.renterInfo?.referralInfo?.fullName ||
-                              "";
+                      return (
+                        <tr
+                          key={req.id}
+                          className="border-t border-gray-200 hover:bg-gray-50 text-gray-700"
+                        >
+                          <td className="py-3 px-5">
+                            <div className="font-semibold text-gray-900">
+                              {req.dateLabel}
+                            </div>
+                          </td>
+                          <td className="py-3 px-5 text-gray-900">
+                            {req.requestName}
+                          </td>
+                          <td className="py-3 px-5">
+                            {(() => {
+                              const referralName =
+                                req.raw?.renterInfo?.referralInfo?.referrerName ||
+                                req.raw?.renterInfo?.referralInfo?.fullName ||
+                                "";
 
-                            return (
-                              <span className="inline-flex items-center rounded-full border border-blue-500 text-blue-600 px-2.5 py-0.5 text-xs font-semibold">
-                                {formatReferralName(referralName)}
-                              </span>
-                            );
-                          })()}
-                        </td>
-                        <td className="py-3 px-5">
-                          <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
-                            {req.scopeLabel}
-                          </span>
-                        </td>
-                        <td className="py-3 px-5">
-                          {isCurrentAgentsRequest ? (
-                            <div className="inline-flex items-center gap-2">
-                              <button
-                                type="button"
-                                onClick={() => handleToggleShare(req)}
-                                disabled={
-                                  mutatingShareId === req.id ||
-                                  isVisibilityLocked
-                                }
-                                className="inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                                aria-label={`Toggle visibility for ${req.requestName}`}
-                                title={
-                                  isVisibilityLocked
-                                    ? "Visibility is locked for this request"
-                                    : "Toggle request visibility"
-                                }
-                              >
-                                <span
-                                  className={`text-xs font-medium ${
-                                    req.isPrivateVisibility
-                                      ? "text-gray-700"
-                                      : "text-gray-400"
-                                  }`}
-                                >
-                                  Private
+                              return (
+                                <span className="inline-flex items-center rounded-full border border-blue-500 text-blue-600 px-2.5 py-0.5 text-xs font-semibold">
+                                  {formatReferralName(referralName)}
                                 </span>
-                                <span
-                                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-                                    req.isPrivateVisibility
-                                      ? "bg-gray-300"
-                                      : "bg-blue-400"
-                                  }`}
+                              );
+                            })()}
+                          </td>
+                          <td className="py-3 px-5">
+                            <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+                              {req.scopeLabel}
+                            </span>
+                          </td>
+                          <td className="py-3 px-5">
+                            {isCurrentAgentsRequest ? (
+                              <div className="inline-flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleShare(req)}
+                                  disabled={
+                                    mutatingShareId === req.id ||
+                                    isVisibilityLocked
+                                  }
+                                  className="inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                                  aria-label={`Toggle visibility for ${req.requestName}`}
+                                  title={
+                                    isVisibilityLocked
+                                      ? "Visibility is locked for this request"
+                                      : "Toggle request visibility"
+                                  }
                                 >
                                   <span
-                                    className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                                    className={`text-xs font-medium ${
                                       req.isPrivateVisibility
-                                        ? "translate-x-1"
-                                        : "translate-x-5"
+                                        ? "text-gray-700"
+                                        : "text-gray-400"
                                     }`}
+                                  >
+                                    Private
+                                  </span>
+                                  <span
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                                      req.isPrivateVisibility
+                                        ? "bg-gray-300"
+                                        : "bg-blue-400"
+                                    }`}
+                                  >
+                                    <span
+                                      className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                                        req.isPrivateVisibility
+                                          ? "translate-x-1"
+                                          : "translate-x-5"
+                                      }`}
+                                    />
+                                  </span>
+                                  <span
+                                    className={`text-xs font-medium ${
+                                      req.isPrivateVisibility
+                                        ? "text-gray-400"
+                                        : "text-emerald-700"
+                                    }`}
+                                  >
+                                    Shared
+                                  </span>
+                                </button>
+                                {isVisibilityLocked ? (
+                                  <Lock
+                                    className="h-4 w-4 text-gray-500"
+                                    aria-hidden="true"
                                   />
-                                </span>
-                                <span
-                                  className={`text-xs font-medium ${
-                                    req.isPrivateVisibility
-                                      ? "text-gray-400"
-                                      : "text-emerald-700"
-                                  }`}
-                                >
-                                  Shared
-                                </span>
-                              </button>
-                              {isVisibilityLocked ? (
-                                <Lock
-                                  className="h-4 w-4 text-gray-500"
-                                  aria-hidden="true"
-                                />
-                              ) : null}
-                            </div>
-                          ) : (
-                            <span className="text-sm font-medium text-gray-700">
-                              {visibility || "Not specified"}
+                                ) : null}
+                              </div>
+                            ) : (
+                              <span className="text-sm font-medium text-gray-700">
+                                {visibility || "Not specified"}
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-5 text-gray-900">
+                            {req.boroughsLabel}
+                          </td>
+                          <td className="py-3 px-5">{req.priceMaxLabel}</td>
+                          <td className="py-3 px-5">{req.bedroomsLabel}</td>
+                          <td className="py-3 px-5">{req.bathroomsLabel}</td>
+                          <td className="py-3 px-5">
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                req.isActive
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-gray-100 text-gray-600"
+                              }`}
+                            >
+                              {req.isActive ? "Matched" : "Inactive"}
                             </span>
-                          )}
-                        </td>
-                        <td className="py-3 px-5 text-gray-900">
-                          {req.boroughsLabel}
-                        </td>
-                        <td className="py-3 px-5">{req.priceMaxLabel}</td>
-                        <td className="py-3 px-5">{req.bedroomsLabel}</td>
-                        <td className="py-3 px-5">{req.bathroomsLabel}</td>
-                        <td className="py-3 px-5">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                              req.isActive
-                                ? "bg-green-100 text-green-700"
-                                : "bg-gray-100 text-gray-600"
-                            }`}
-                          >
-                            {req.isActive ? "Matched" : "Inactive"}
-                          </span>
-                        </td>
-                        <td className="py-3 px-5 flex justify-end gap-2">
-                          <button
-                            onClick={() => handleView(req)}
-                            className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"
-                          >
-                            <Eye className="w-4 h-4 text-gray-600" />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                          </td>
+                          <td className="py-3 px-5 flex justify-end gap-2">
+                            <button
+                              onClick={() => handleView(req)}
+                              className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"
+                            >
+                              <Eye className="w-4 h-4 text-gray-600" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-white rounded-xl shadow-sm p-6 text-gray-600">
+              No matched requests match the current filters on this page.
+            </div>
+          )}
 
           {pagination && (
             <div className="flex flex-col sm:flex-row justify-between items-center mt-6 text-sm text-gray-600 gap-3">

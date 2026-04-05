@@ -417,7 +417,7 @@ export default function RenterDetails() {
             ))}
           </div>
 
-          {/* {pagination && (
+          {pagination && (
             <div className="flex items-center justify-between bg-white rounded-2xl shadow-sm p-4 text-sm text-gray-600">
               <div>
                 Page {pagination.currentPage ?? page} of{" "}
@@ -448,7 +448,7 @@ export default function RenterDetails() {
                 </button>
               </div>
             </div>
-          )} */}
+          )}
         </>
       )}
     </div>
