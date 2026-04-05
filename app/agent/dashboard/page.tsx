@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
 import { fetchAgentProfile } from "@/store/slices/agentProfileSlice";
-import FilterModal from "@/components/modals/FilterModals";
+import FilterModal, {
+  type FilterType,
+} from "@/components/modals/FilterModals";
 import {
   API_BASE_URL,
   ApiAgentRequestsResponse,
@@ -15,6 +17,58 @@ import {
   cacheSingleAgentRequest,
   normalizeAgentRequest,
 } from "./utils";
+
+const FILTERS_STORAGE_KEY = "agent-dashboard-filters";
+const LIST_STATE_STORAGE_KEY = "agent-dashboard-list-state";
+const defaultFilters: FilterType = {
+  borough: null,
+  neighborhoods: [],
+  bedrooms: [],
+  bathrooms: [],
+  maxPrice: null,
+};
+
+const readStoredFilters = (): FilterType => {
+  if (typeof window === "undefined") return defaultFilters;
+
+  try {
+    const stored = sessionStorage.getItem(FILTERS_STORAGE_KEY);
+    if (!stored) return defaultFilters;
+    const parsed = JSON.parse(stored) as Partial<FilterType>;
+    return {
+      borough: parsed.borough ?? null,
+      neighborhoods: Array.isArray(parsed.neighborhoods)
+        ? parsed.neighborhoods
+        : [],
+      bedrooms: Array.isArray(parsed.bedrooms) ? parsed.bedrooms : [],
+      bathrooms: Array.isArray(parsed.bathrooms) ? parsed.bathrooms : [],
+      maxPrice: typeof parsed.maxPrice === "number" ? parsed.maxPrice : null,
+    };
+  } catch {
+    return defaultFilters;
+  }
+};
+
+const readStoredListState = () => {
+  if (typeof window === "undefined") {
+    return { page: 1, showOwnReferrals: false };
+  }
+
+  try {
+    const stored = sessionStorage.getItem(LIST_STATE_STORAGE_KEY);
+    if (!stored) return { page: 1, showOwnReferrals: false };
+    const parsed = JSON.parse(stored) as Partial<{
+      page: number;
+      showOwnReferrals: boolean;
+    }>;
+    return {
+      page: typeof parsed.page === "number" && parsed.page > 0 ? parsed.page : 1,
+      showOwnReferrals: Boolean(parsed.showOwnReferrals),
+    };
+  } catch {
+    return { page: 1, showOwnReferrals: false };
+  }
+};
 
 export default function AgentRenterRequestsPage() {
   const router = useRouter();
@@ -36,21 +90,10 @@ export default function AgentRenterRequestsPage() {
   };
 
   const [requests, setRequests] = useState<NormalizedAgentRequest[]>([]);
-  const [filters, setFilters] = useState<{
-    borough: string | null;
-    neighborhoods: string[];
-    bedrooms: number[];
-    bathrooms: number[];
-    maxPrice: number | null;
-  }>({
-    borough: null,
-    neighborhoods: [],
-    bedrooms: [],
-    bathrooms: [],
-    maxPrice: null,
-  });
+  const [filters, setFilters] = useState<FilterType>(defaultFilters);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [showOwnReferrals, setShowOwnReferrals] = useState(false);
+  const [isStateRestored, setIsStateRestored] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mutatingShareId, setMutatingShareId] = useState<string | null>(null);
@@ -67,11 +110,34 @@ export default function AgentRenterRequestsPage() {
   const limit = 10;
 
   useEffect(() => {
+    setFilters(readStoredFilters());
+    const { page: storedPage, showOwnReferrals: storedShowOwnReferrals } =
+      readStoredListState();
+    setPage(storedPage);
+    setShowOwnReferrals(storedShowOwnReferrals);
+    setIsStateRestored(true);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !isStateRestored) return;
+    sessionStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(filters));
+  }, [filters, isStateRestored]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !isStateRestored) return;
+    sessionStorage.setItem(
+      LIST_STATE_STORAGE_KEY,
+      JSON.stringify({ page, showOwnReferrals }),
+    );
+  }, [isStateRestored, page, showOwnReferrals]);
+
+  useEffect(() => {
     if (!accessToken) return;
     dispatch(fetchAgentProfile());
   }, [accessToken, dispatch]);
 
   useEffect(() => {
+    if (!isStateRestored) return;
     const controller = new AbortController();
 
     const fetchRequests = async () => {
@@ -135,7 +201,7 @@ export default function AgentRenterRequestsPage() {
     fetchRequests();
 
     return () => controller.abort();
-  }, [accessToken, page]);
+  }, [accessToken, isStateRestored, page]);
 
   const filteredRequests = useMemo(() => {
     return requests.filter((req) => {
@@ -561,6 +627,7 @@ export default function AgentRenterRequestsPage() {
         isOpen={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}
         onApply={(f) => setFilters(f)}
+        initialFilters={filters}
         resultCount={filteredRequests.length}
       />
     </section>

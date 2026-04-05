@@ -1,10 +1,10 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import boroughNeighborhoodsData from "../../data/neighborhoods.manhattan-brooklyn";
 
-interface FilterType {
+export interface FilterType {
   borough: string | null;
   neighborhoods: string[];
   bedrooms: number[];
@@ -31,20 +31,15 @@ export default function FilterModal({
   isOpen,
   onClose,
   onApply,
+  initialFilters,
   resultCount,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onApply: (filters: FilterType) => void;
+  initialFilters?: FilterType;
   resultCount?: number;
 }) {
-  const [borough, setBorough] = useState<string | null>(null);
-  const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<string[]>(
-    [],
-  );
-  const [bedrooms, setBedrooms] = useState<number[]>([]);
-  const [bathrooms, setBathrooms] = useState<number[]>([]);
-  const [maxPrice, setMaxPrice] = useState<number | null>(null);
   const defaultFilters: FilterType = {
     borough: null,
     neighborhoods: [],
@@ -52,6 +47,31 @@ export default function FilterModal({
     bathrooms: [],
     maxPrice: null,
   };
+  const resolvedInitialFilters = initialFilters ?? defaultFilters;
+  const [borough, setBorough] = useState<string | null>(
+    resolvedInitialFilters.borough,
+  );
+  const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<string[]>(
+    resolvedInitialFilters.neighborhoods,
+  );
+  const [bedrooms, setBedrooms] = useState<number[]>(
+    resolvedInitialFilters.bedrooms,
+  );
+  const [bathrooms, setBathrooms] = useState<number[]>(
+    resolvedInitialFilters.bathrooms,
+  );
+  const [maxPrice, setMaxPrice] = useState<number | null>(
+    resolvedInitialFilters.maxPrice,
+  );
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setBorough(resolvedInitialFilters.borough);
+    setSelectedNeighborhoods(resolvedInitialFilters.neighborhoods);
+    setBedrooms(resolvedInitialFilters.bedrooms);
+    setBathrooms(resolvedInitialFilters.bathrooms);
+    setMaxPrice(resolvedInitialFilters.maxPrice);
+  }, [isOpen, resolvedInitialFilters]);
 
   const neighborhoods = useMemo(
     () => (borough ? boroughNeighborhoods[borough] : []),
