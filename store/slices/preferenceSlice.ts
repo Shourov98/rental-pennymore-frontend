@@ -6,7 +6,7 @@ export const defaultPreferencesList = [
   "Outdoor Space",
   "Lots of Light",
   "Large Apartment",
-  "Open Kitchen",
+  "Laundry in Building",
   "Dishwasher",
   "New Renovation",
   "W/D in Unit",

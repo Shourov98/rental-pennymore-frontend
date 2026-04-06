@@ -234,7 +234,7 @@ export default function PreMarketListingPage() {
       buildingFeatures: {
         doorman: buildingFeatures.includes("Doorman"),
         elevator: buildingFeatures.includes("Elevator"),
-        laundryInBuilding: buildingFeatures.includes("Open kitchen"),
+        laundryInBuilding: buildingFeatures.includes("Laundry in Building"),
       },
       petPolicy: {
         catsAllowed: petPolicy.includes("Cats allowed"),
@@ -304,7 +304,7 @@ export default function PreMarketListingPage() {
     "Private outdoor space",
     "Dishwasher",
   ];
-  const buildingOptions = ["Doorman", "Elevator", "Open kitchen"];
+  const buildingOptions = ["Doorman", "Elevator", "Laundry in Building"];
   const petOptions = ["Cats allowed", "Dogs allowed"];
   const guarantorOptions = ["Personal guarantor", "Third party guarantor"];
 

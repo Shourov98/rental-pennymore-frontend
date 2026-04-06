@@ -31,7 +31,7 @@ const featureLabels: Record<FeatureGroup, Record<string, string>> = {
   building: {
     doorman: "Doorman",
     elevator: "Elevator",
-    laundryInBuilding: "Open kitchen",
+    laundryInBuilding: "Laundry in Building",
   },
   pet: {
     catsAllowed: "Cats allowed",
@@ -228,7 +228,7 @@ export default function EditPreMarketListingPage() {
     "Private outdoor space",
     "Dishwasher",
   ];
-  const buildingFeatures = ["Doorman", "Elevator", "Open kitchen"];
+  const buildingFeatures = ["Doorman", "Elevator", "Laundry in Building"];
   const petPolicy = ["Cats allowed", "Dogs allowed"];
   const guarantorOptions = ["Personal guarantor", "Third party guarantor"];
 
@@ -272,7 +272,7 @@ export default function EditPreMarketListingPage() {
         buildingFeatures: {
           doorman: selectedBuildingFeatures.includes("Doorman"),
           elevator: selectedBuildingFeatures.includes("Elevator"),
-          laundryInBuilding: selectedBuildingFeatures.includes("Open kitchen"),
+          laundryInBuilding: selectedBuildingFeatures.includes("Laundry in Building"),
         },
         petPolicy: {
           catsAllowed: selectedPets.includes("Cats allowed"),

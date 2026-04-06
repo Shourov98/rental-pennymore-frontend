@@ -31,7 +31,7 @@ const unitFeatureLabels: Record<string, string> = {
 const buildingFeatureLabels: Record<string, string> = {
   doorman: "Doorman",
   elevator: "Elevator",
-  laundryInBuilding: "Open kitchen",
+  laundryInBuilding: "Laundry in Building",
 };
 
 const petPolicyLabels: Record<string, string> = {
