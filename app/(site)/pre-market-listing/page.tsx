@@ -709,7 +709,7 @@ export default function PreMarketListingPage() {
                   <AlertTriangle className="h-6 w-6 shrink-0 text-[#9a6700]" />
                   <div>
                     <p className="text-lg font-semibold leading-tight text-black sm:text-[20px]">
-                      Required Before Submission
+                      Required to Complete Submission
                     </p>
                     <p className="text-[13px] font-semibold leading-snug text-[#3f3f46] sm:text-sm md:text-[15px]">
                       Client Registration (Required) and Agency Disclosure
@@ -726,9 +726,7 @@ export default function PreMarketListingPage() {
                   </span>
                   , to reach out on your behalf, the Corcoran Client
                   Registration needs to be signed unless you have already done
-                  so. This registration is non-exclusive, the broker fee may be
-                  negotiated, and no broker fee is due unless you choose to move
-                  forward with a rental presented by the agent.
+                  so. This registration is non-exclusive, You may still search independently, contact owners, or work with another agent for apartments not presented to you by Tuval Mor or any disclosed assisting agents.
                 </p>
 
                 <p>
@@ -739,23 +737,23 @@ export default function PreMarketListingPage() {
                   agents.
                 </p>
 
-                <div className="space-y-2 text-center">
+                <p className="text-[15px] font-semibold">
+                  The Corcoran Client Registration will open in a new window after you click “Save Request & Send to Agent. <br />
+                  Requests submitted without completing this step will not be processed.
+                </p>
+
+                <div className="space-y-2 text-left">
                   <p className="font-semibold text-black">
-                    Requests submitted without completing this step will not be
-                    processed.
+                    After signing, return here. If the new window doesn’t open, .
                   </p>
                   <a
                     href={registrationLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center text-[15px] font-medium text-blue-700 underline decoration-blue-700/70 underline-offset-2 hover:text-blue-800"
+                    className="inline-flex items-center justify-center text-[15px] font-medium text-blue-700 underline decoration-blue-700/70 hover:text-blue-800"
                   >
-                    👉 Click here to complete registration now
+                    👉 Click here to complete it
                   </a>
-                  <p className="text-[12px] text-[#52525b] sm:text-[13px]">
-                    The link opens in a new tab, please return here after
-                    signing.
-                  </p>
                 </div>
 
                 <label className="flex cursor-pointer items-start gap-3 pt-1">
@@ -775,10 +773,7 @@ export default function PreMarketListingPage() {
                     className="mt-1 h-5 w-5 shrink-0 rounded border-gray-300 accent-gray-600"
                   />
                   <span className="text-[13px] leading-relaxed text-[#3f3f46] sm:text-sm md:text-[15px] md:leading-7">
-                    By checking this box, I confirm I have completed and signed
-                    the Corcoran Client Registration (required) and agency
-                    disclosure. I understand my request will not be processed
-                    otherwise.
+                    By checking this box, I understand that my request will not be processed until I complete and sign the Corcoran Client Registration (required) and agency disclosure.
                   </span>
                 </label>
               </div>
