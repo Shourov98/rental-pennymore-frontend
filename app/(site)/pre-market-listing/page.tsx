@@ -529,59 +529,64 @@ export default function PreMarketListingPage() {
           </div>
 
           {/* Features */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div className="mb-6">
+            <p className="text-sm font-semibold text-gray-700 mb-2">
+              Check only must-have features:
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Unit */}
-            <div>
-              <p className="text-sm font-semibold text-gray-700 mb-2">
-                Unit Features
-              </p>
-              {unitOptions.map((f) => (
-                <label key={f} className="flex items-center gap-2 mb-1 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={unitFeatures.includes(f)}
-                    onChange={() => dispatch(toggleUnitFeature(f))}
-                    className="w-4 h-4 text-blue-600"
-                  />
-                  {f}
-                </label>
-              ))}
-            </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-700 mb-2">
+                  Unit Features
+                </p>
+                {unitOptions.map((f) => (
+                  <label key={f} className="flex items-center gap-2 mb-1 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={unitFeatures.includes(f)}
+                      onChange={() => dispatch(toggleUnitFeature(f))}
+                      className="w-4 h-4 text-blue-600"
+                    />
+                    {f}
+                  </label>
+                ))}
+              </div>
 
-            {/* Building */}
-            <div>
-              <p className="text-sm font-semibold text-gray-700 mb-2">
-                Building Features
-              </p>
-              {buildingOptions.map((f) => (
-                <label key={f} className="flex items-center gap-2 mb-1 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={buildingFeatures.includes(f)}
-                    onChange={() => dispatch(toggleBuildingFeature(f))}
-                    className="w-4 h-4 text-blue-600"
-                  />
-                  {f}
-                </label>
-              ))}
-            </div>
+              {/* Building */}
+              <div>
+                <p className="text-sm font-semibold text-gray-700 mb-2">
+                  Building Features
+                </p>
+                {buildingOptions.map((f) => (
+                  <label key={f} className="flex items-center gap-2 mb-1 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={buildingFeatures.includes(f)}
+                      onChange={() => dispatch(toggleBuildingFeature(f))}
+                      className="w-4 h-4 text-blue-600"
+                    />
+                    {f}
+                  </label>
+                ))}
+              </div>
 
-            {/* Pet Policy */}
-            <div>
-              <p className="text-sm font-semibold text-gray-700 mb-2">
-                Pet Policy
-              </p>
-              {petOptions.map((f) => (
-                <label key={f} className="flex items-center gap-2 mb-1 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={petPolicy.includes(f)}
-                    onChange={() => dispatch(togglePetPolicy(f))}
-                    className="w-4 h-4 text-blue-600"
-                  />
-                  {f}
-                </label>
-              ))}
+              {/* Pet Policy */}
+              <div>
+                <p className="text-sm font-semibold text-gray-700 mb-2">
+                  Pet Policy
+                </p>
+                {petOptions.map((f) => (
+                  <label key={f} className="flex items-center gap-2 mb-1 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={petPolicy.includes(f)}
+                      onChange={() => dispatch(togglePetPolicy(f))}
+                      className="w-4 h-4 text-blue-600"
+                    />
+                    {f}
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
 
