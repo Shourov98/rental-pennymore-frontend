@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { ArrowLeft, Phone, Mail, User } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Mail, Phone, User } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   CardElement,
@@ -15,13 +15,21 @@ import RenterPreferenceView from "@/components/RenterPreferenceView";
 import type { AppDispatch, RootState } from "@/store/store";
 import {
   API_BASE_URL,
+  ApiAgentRequestsResponse,
   NormalizedAgentRequest,
+  cacheAgentRequests,
   normalizeAgentRequest,
   readCachedAgentRequests,
 } from "../utils";
-import { readCachedAgentMatches } from "../../matches/utils";
 import { selectAgentHasGrantAccess } from "@/store/slices/authSlice";
 import { fetchAgentProfile } from "@/store/slices/agentProfileSlice";
+import {
+  matchesAgentFilters,
+  readStoredAgentListState,
+} from "../../requestNavigation";
+
+const NAVIGATION_STORAGE_KEY = "agent-dashboard-navigation";
+const NAVIGATION_LIMIT_FALLBACK = 10;
 
 const unitFeatureLabels: Record<string, string> = {
   laundryInUnit: "Laundry in unit",
@@ -172,7 +180,6 @@ export default function AgentRenterRequestDetailsPage() {
   const [request, setRequest] = useState<NormalizedAgentRequest | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isRequestSent, setIsRequestSent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{
     type: "success" | "error";
@@ -196,6 +203,14 @@ export default function AgentRenterRequestDetailsPage() {
   );
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isConfirmChecked, setIsConfirmChecked] = useState(false);
+  const [navigationTargets, setNavigationTargets] = useState<{
+    previousId: string | null;
+    nextId: string | null;
+  }>({
+    previousId: null,
+    nextId: null,
+  });
+  const [isResolvingNavigation, setIsResolvingNavigation] = useState(false);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -269,12 +284,131 @@ export default function AgentRenterRequestDetailsPage() {
 
   useEffect(() => {
     if (!requestId) return;
-    const cachedMatches = readCachedAgentMatches();
-    const alreadyMatched = cachedMatches.some(
-      (m) => m.id === requestId || m.raw?.requestId === requestId,
-    );
-    setIsRequestSent(alreadyMatched);
-  }, [requestId]);
+
+    const controller = new AbortController();
+
+    const resolveNavigation = async () => {
+      const storedState = readStoredAgentListState(NAVIGATION_STORAGE_KEY);
+      if (!storedState) {
+        setNavigationTargets({ previousId: null, nextId: null });
+        return;
+      }
+
+      const getCurrentTargets = (itemIds: string[]) => {
+        const currentIndex = itemIds.indexOf(requestId);
+        if (currentIndex === -1) {
+          return { previousId: null, nextId: null, currentIndex };
+        }
+
+        return {
+          previousId: itemIds[currentIndex - 1] ?? null,
+          nextId: itemIds[currentIndex + 1] ?? null,
+          currentIndex,
+        };
+      };
+
+      const localTargets = getCurrentTargets(storedState.itemIds);
+      if (localTargets.previousId && localTargets.nextId) {
+        setNavigationTargets({
+          previousId: localTargets.previousId,
+          nextId: localTargets.nextId,
+        });
+        return;
+      }
+
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const findAdjacentItemId = async (direction: "previous" | "next") => {
+        let targetPage =
+          direction === "previous" ? storedState.page - 1 : storedState.page + 1;
+
+        while (
+          targetPage >= 1 &&
+          targetPage <= Math.max(1, storedState.totalPages)
+        ) {
+          const params = new URLSearchParams({
+            page: String(targetPage),
+            limit: String(storedState.limit || NAVIGATION_LIMIT_FALLBACK),
+          });
+
+          const response = await fetch(
+            `${API_BASE_URL}/pre-market/all?${params.toString()}`,
+            {
+              method: "GET",
+              headers,
+              signal: controller.signal,
+            },
+          );
+
+          const data: ApiAgentRequestsResponse = await response
+            .json()
+            .catch(() => ({}) as ApiAgentRequestsResponse);
+
+          if (!response.ok || data?.success === false) {
+            throw new Error(
+              data?.message ||
+                "We couldn't load nearby requests right now. Please try again.",
+            );
+          }
+
+          const normalized = (data.data ?? []).map(normalizeAgentRequest);
+          cacheAgentRequests(normalized);
+          const filtered = normalized.filter((item) =>
+            matchesAgentFilters(
+              item.raw,
+              storedState.filters,
+              storedState.showOwnReferrals,
+              currentUserId,
+            ),
+          );
+
+          if (filtered.length > 0) {
+            return direction === "previous"
+              ? filtered[filtered.length - 1]?.id ?? null
+              : filtered[0]?.id ?? null;
+          }
+
+          targetPage += direction === "previous" ? -1 : 1;
+        }
+
+        return null;
+      };
+
+      try {
+        setIsResolvingNavigation(true);
+        const [previousId, nextId] = await Promise.all([
+          localTargets.previousId
+            ? Promise.resolve(localTargets.previousId)
+            : findAdjacentItemId("previous"),
+          localTargets.nextId
+            ? Promise.resolve(localTargets.nextId)
+            : findAdjacentItemId("next"),
+        ]);
+
+        if (!controller.signal.aborted) {
+          setNavigationTargets({ previousId, nextId });
+        }
+      } catch {
+        if (!controller.signal.aborted) {
+          setNavigationTargets({
+            previousId: localTargets.previousId,
+            nextId: localTargets.nextId,
+          });
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsResolvingNavigation(false);
+        }
+      }
+    };
+
+    resolveNavigation();
+
+    return () => controller.abort();
+  }, [accessToken, currentUserId, requestId]);
 
   const {
     movingDateRange,
@@ -417,13 +551,6 @@ export default function AgentRenterRequestDetailsPage() {
       registrationType: renterInfo.registrationType || "Not specified",
     };
   }, [currentUserId, renterInfo, request]);
-  const requestStatus = (
-    request?.raw?.status ||
-    request?.status ||
-    ""
-  ).toLowerCase();
-  const isRequestSentByStatus =
-    requestStatus === "sent" || requestStatus === "requested";
   const canRequestAccess =
     request?.raw?.canRequestAccess &&
     (request?.raw?.status === "Available" || "available");
@@ -536,7 +663,18 @@ export default function AgentRenterRequestDetailsPage() {
           throw new Error(errorMessage);
         }
 
-        setIsRequestSent(true);
+        setRequest((prev) =>
+          prev
+            ? {
+                ...prev,
+                raw: {
+                  ...prev.raw,
+                  canRequestAccess: false,
+                  status: "requested",
+                },
+              }
+            : prev,
+        );
         setStatusMessage({
           type: "success",
           message: data?.message || "Access request created.",
@@ -617,6 +755,11 @@ export default function AgentRenterRequestDetailsPage() {
           ? "Payment completed successfully."
           : "Payment submitted.",
     });
+  };
+
+  const navigateToAdjacentRequest = (targetId: string | null) => {
+    if (!targetId || targetId === requestId) return;
+    router.push(`/agent/dashboard/${targetId}`);
   };
 
   return (
@@ -845,7 +988,7 @@ export default function AgentRenterRequestDetailsPage() {
 
             <RenterPreferenceView data={renterPreferenceData} />
 
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-6 flex flex-col gap-4">
               {statusMessage && (
                 <p
                   className={`text-sm ${
@@ -857,34 +1000,67 @@ export default function AgentRenterRequestDetailsPage() {
                   {statusMessage.message}
                 </p>
               )}
-              <button
-                type="button"
-                onClick={() => {
-                  if (!requestId || isDisabled || isSubmitting) {
-                    return;
-                  }
-                  setIsConfirmChecked(false);
-                  setIsConfirmOpen(true);
-                }}
-                disabled={isDisabled || isAccessRequestLocked}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-60 disabled:cursor-not-allowed ${
-                  isDisabled || isAccessRequestLocked
-                    ? "bg-gray-200 text-gray-600"
-                    : "bg-blue-600 text-white hover:bg-blue-700"
-                }`}
-              >
-                {grantAccessEnabled
-                  ? isListingMatched
-                    ? "Already Matched"
-                    : isSubmitting
-                      ? "Matching..."
-                      : "Match Request"
-                  : !canRequestAccess
-                    ? "Request Sent"
-                    : isSubmitting
-                      ? "Sending..."
-                      : "Match Request"}
-              </button>
+              <div className="grid grid-cols-[auto,1fr] items-center gap-4 md:grid-cols-[auto,1fr,auto]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!requestId || isDisabled || isSubmitting) {
+                      return;
+                    }
+                    setIsConfirmChecked(false);
+                    setIsConfirmOpen(true);
+                  }}
+                  disabled={isDisabled || isAccessRequestLocked}
+                  className={`justify-self-start px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-60 disabled:cursor-not-allowed ${
+                    isDisabled || isAccessRequestLocked
+                      ? "bg-gray-200 text-gray-600"
+                      : "bg-blue-600 text-white hover:bg-blue-700"
+                  }`}
+                >
+                  {grantAccessEnabled
+                    ? isListingMatched
+                      ? "Already Matched"
+                      : isSubmitting
+                        ? "Matching..."
+                        : "Match Request"
+                    : !canRequestAccess
+                      ? "Request Sent"
+                      : isSubmitting
+                        ? "Sending..."
+                        : "Match Request"}
+                </button>
+
+                <div className="col-span-full flex items-center justify-center gap-3 md:col-span-1">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigateToAdjacentRequest(navigationTargets.previousId)
+                    }
+                    disabled={
+                      !navigationTargets.previousId || isResolvingNavigation
+                    }
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 md:min-w-36"
+                    aria-label="Previous request"
+                  >
+                    <ChevronLeft className="h-5 w-5 text-sky-500" />
+                    <span className="hidden sm:inline">Previous</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigateToAdjacentRequest(navigationTargets.nextId)
+                    }
+                    disabled={!navigationTargets.nextId || isResolvingNavigation}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 md:min-w-36"
+                    aria-label="Next request"
+                  >
+                    <span className="hidden sm:inline">Next</span>
+                    <ChevronRight className="h-5 w-5 text-sky-500" />
+                  </button>
+                </div>
+
+                <div className="hidden md:block" />
+              </div>
             </div>
           </div>
         </>

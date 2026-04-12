@@ -4,7 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import Image from "next/image";
-import { ArrowLeft, Phone, Mail, User } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Mail,
+  Phone,
+} from "lucide-react";
 import RenterPreferenceView from "@/components/RenterPreferenceView";
 import { RootState } from "@/store/store";
 import {
@@ -15,6 +21,13 @@ import {
   normalizeAgentMatch,
   readCachedAgentMatches,
 } from "../utils";
+import {
+  matchesAgentFilters,
+  readStoredAgentListState,
+} from "../../requestNavigation";
+
+const NAVIGATION_STORAGE_KEY = "agent-matches-navigation";
+const NAVIGATION_LIMIT_FALLBACK = 10;
 
 const unitFeatureLabels: Record<string, string> = {
   laundryInUnit: "Laundry in unit",
@@ -59,12 +72,23 @@ export default function AgentMatchDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+  const currentAgentId = useSelector(
+    (state: RootState) => state.auth.user?._id ?? null,
+  );
 
   const requestId = params?.id as string | undefined;
 
   const [request, setRequest] = useState<NormalizedAgentMatch | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [navigationTargets, setNavigationTargets] = useState<{
+    previousId: string | null;
+    nextId: string | null;
+  }>({
+    previousId: null,
+    nextId: null,
+  });
+  const [isResolvingNavigation, setIsResolvingNavigation] = useState(false);
 
   useEffect(() => {
     if (!requestId) return;
@@ -140,6 +164,126 @@ export default function AgentMatchDetailsPage() {
 
     return () => controller.abort();
   }, [accessToken, requestId]);
+
+  useEffect(() => {
+    if (!requestId) return;
+
+    const controller = new AbortController();
+
+    const resolveNavigation = async () => {
+      const storedState = readStoredAgentListState(NAVIGATION_STORAGE_KEY);
+      if (!storedState) {
+        setNavigationTargets({ previousId: null, nextId: null });
+        return;
+      }
+
+      const currentIndex = storedState.itemIds.indexOf(requestId);
+      const localPreviousId =
+        currentIndex >= 0 ? storedState.itemIds[currentIndex - 1] ?? null : null;
+      const localNextId =
+        currentIndex >= 0 ? storedState.itemIds[currentIndex + 1] ?? null : null;
+
+      if (localPreviousId && localNextId) {
+        setNavigationTargets({
+          previousId: localPreviousId,
+          nextId: localNextId,
+        });
+        return;
+      }
+
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const findAdjacentItemId = async (direction: "previous" | "next") => {
+        let targetPage =
+          direction === "previous" ? storedState.page - 1 : storedState.page + 1;
+
+        while (
+          targetPage >= 1 &&
+          targetPage <= Math.max(1, storedState.totalPages)
+        ) {
+          const params = new URLSearchParams({
+            page: String(targetPage),
+            limit: String(storedState.limit || NAVIGATION_LIMIT_FALLBACK),
+          });
+
+          const response = await fetch(
+            `${API_BASE_URL}/pre-market/agent/all-requests?${params.toString()}`,
+            {
+              method: "GET",
+              headers,
+              signal: controller.signal,
+            },
+          );
+
+          const data: ApiAgentMatchesResponse = await response
+            .json()
+            .catch(() => ({}) as ApiAgentMatchesResponse);
+
+          if (!response.ok || data?.success === false) {
+            throw new Error(
+              data?.message ||
+                "We couldn't load nearby matches right now. Please try again.",
+            );
+          }
+
+          const normalized = (data.data ?? []).map(normalizeAgentMatch);
+          cacheAgentMatches(normalized);
+          const filtered = normalized.filter((item) =>
+            matchesAgentFilters(
+              item.raw,
+              storedState.filters,
+              storedState.showOwnReferrals,
+              currentAgentId,
+            ),
+          );
+
+          if (filtered.length > 0) {
+            return direction === "previous"
+              ? filtered[filtered.length - 1]?.id ?? null
+              : filtered[0]?.id ?? null;
+          }
+
+          targetPage += direction === "previous" ? -1 : 1;
+        }
+
+        return null;
+      };
+
+      try {
+        setIsResolvingNavigation(true);
+        const [previousId, nextId] = await Promise.all([
+          localPreviousId
+            ? Promise.resolve(localPreviousId)
+            : findAdjacentItemId("previous"),
+          localNextId
+            ? Promise.resolve(localNextId)
+            : findAdjacentItemId("next"),
+        ]);
+
+        if (!controller.signal.aborted) {
+          setNavigationTargets({ previousId, nextId });
+        }
+      } catch {
+        if (!controller.signal.aborted) {
+          setNavigationTargets({
+            previousId: localPreviousId,
+            nextId: localNextId,
+          });
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsResolvingNavigation(false);
+        }
+      }
+    };
+
+    resolveNavigation();
+
+    return () => controller.abort();
+  }, [accessToken, currentAgentId, requestId]);
 
   const {
     movingDateRange,
@@ -303,6 +447,11 @@ export default function AgentMatchDetailsPage() {
     };
   }, [renterInfo]);
 
+  const navigateToAdjacentRequest = (targetId: string | null) => {
+    if (!targetId || targetId === requestId) return;
+    router.push(`/agent/matches/${targetId}`);
+  };
+
   return (
     <section className="flex-1 bg-gray-50 min-h-screen px-4 md:px-8 py-6 overflow-y-auto">
       <div className="bg-white rounded-xl shadow-sm p-5 flex flex-wrap justify-between items-center mb-6">
@@ -418,6 +567,31 @@ export default function AgentMatchDetailsPage() {
             </div>
 
             <RenterPreferenceView data={renterPreferenceData} />
+
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  navigateToAdjacentRequest(navigationTargets.previousId)
+                }
+                disabled={!navigationTargets.previousId || isResolvingNavigation}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 md:min-w-36"
+                aria-label="Previous request"
+              >
+                <ChevronLeft className="h-5 w-5 text-sky-500" />
+                <span className="hidden sm:inline">Previous</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => navigateToAdjacentRequest(navigationTargets.nextId)}
+                disabled={!navigationTargets.nextId || isResolvingNavigation}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 md:min-w-36"
+                aria-label="Next request"
+              >
+                <span className="hidden sm:inline">Next</span>
+                <ChevronRight className="h-5 w-5 text-sky-500" />
+              </button>
+            </div>
           </div>
         </>
       )}

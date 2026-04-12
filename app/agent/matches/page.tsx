@@ -16,16 +16,17 @@ import {
   cacheSingleAgentMatch,
   normalizeAgentMatch,
 } from "./utils";
+import {
+  getEmptyFilters,
+  matchesAgentFilters,
+  sanitizeFilters,
+  writeStoredAgentListState,
+} from "../requestNavigation";
 
 const FILTERS_STORAGE_KEY = "agent-matches-filters";
 const LIST_STATE_STORAGE_KEY = "agent-matches-list-state";
-const defaultFilters: FilterType = {
-  borough: null,
-  neighborhoods: [],
-  bedrooms: [],
-  bathrooms: [],
-  maxPrice: null,
-};
+const defaultFilters: FilterType = getEmptyFilters();
+const NAVIGATION_STORAGE_KEY = "agent-matches-navigation";
 
 const readStoredFilters = (): FilterType => {
   if (typeof window === "undefined") return defaultFilters;
@@ -34,15 +35,7 @@ const readStoredFilters = (): FilterType => {
     const stored = sessionStorage.getItem(FILTERS_STORAGE_KEY);
     if (!stored) return defaultFilters;
     const parsed = JSON.parse(stored) as Partial<FilterType>;
-    return {
-      borough: parsed.borough ?? null,
-      neighborhoods: Array.isArray(parsed.neighborhoods)
-        ? parsed.neighborhoods
-        : [],
-      bedrooms: Array.isArray(parsed.bedrooms) ? parsed.bedrooms : [],
-      bathrooms: Array.isArray(parsed.bathrooms) ? parsed.bathrooms : [],
-      maxPrice: typeof parsed.maxPrice === "number" ? parsed.maxPrice : null,
-    };
+    return sanitizeFilters(parsed);
   } catch {
     return defaultFilters;
   }
@@ -194,61 +187,31 @@ export default function AgentMatchesPage() {
   }, [accessToken, isStateRestored, page]);
 
   const filteredRequests = useMemo(() => {
-    return requests.filter((req) => {
-      const { raw } = req;
-      if (filters.borough) {
-        const hasBorough = raw.locations?.some(
-          (loc) => loc?.borough === filters.borough,
-        );
-        if (!hasBorough) return false;
-      }
-
-      if (filters.neighborhoods.length) {
-        const neighborhoods = raw.locations
-          ?.flatMap((loc) => loc?.neighborhoods || [])
-          .filter(Boolean) as string[];
-        const hasNeighborhood = filters.neighborhoods.some((n) =>
-          neighborhoods.includes(n),
-        );
-        if (!hasNeighborhood) return false;
-      }
-
-      if (filters.bedrooms.length) {
-        const bedroomValues =
-          raw.bedrooms?.map((b) => (b === "Studio" ? 0 : parseInt(b, 10))) ||
-          [];
-        const hasBedroom = filters.bedrooms.some((b) =>
-          bedroomValues.includes(b),
-        );
-        if (!hasBedroom) return false;
-      }
-
-      if (filters.bathrooms.length) {
-        const bathroomValues = raw.bathrooms?.map((b) => parseInt(b, 10)) || [];
-        const hasBathroom = filters.bathrooms.some((b) =>
-          bathroomValues.includes(b),
-        );
-        if (!hasBathroom) return false;
-      }
-
-      if (filters.maxPrice != null) {
-        const max = raw.priceRange?.max ?? raw.priceRange?.min;
-        if (max != null && max < filters.maxPrice) return false;
-      }
-
-      if (showOwnReferrals) {
-        if (!currentAgentId) return false;
-        const requestReferralAgentId = raw.referralAgentId ?? null;
-        if (
-          !requestReferralAgentId ||
-          requestReferralAgentId !== currentAgentId
-        )
-          return false;
-      }
-
-      return true;
-    });
+    return requests.filter((req) =>
+      matchesAgentFilters(req.raw, filters, showOwnReferrals, currentAgentId),
+    );
   }, [currentAgentId, filters, requests, showOwnReferrals]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !isStateRestored) return;
+
+    writeStoredAgentListState(NAVIGATION_STORAGE_KEY, {
+      page,
+      limit,
+      totalPages: Math.max(1, pagination?.totalPages ?? 1),
+      itemIds: filteredRequests.map((request) => request.id),
+      filters,
+      showOwnReferrals,
+    });
+  }, [
+    filteredRequests,
+    filters,
+    isStateRestored,
+    limit,
+    page,
+    pagination?.totalPages,
+    showOwnReferrals,
+  ]);
 
   const handleView = (req: NormalizedAgentMatch) => {
     cacheSingleAgentMatch(req);
