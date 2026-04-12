@@ -725,20 +725,16 @@ export default function PreMarketListingPage() {
                     {referrerName || "Tuval Mor"}
                   </span>
                   , to reach out on your behalf, the Corcoran Client
-                  Registration needs to be signed unless you have already done
-                  so. This registration is non-exclusive, You may still search independently, contact owners, or work with another agent for apartments not presented to you by Tuval Mor or any disclosed assisting agents.
+                  Registration needs to be signed(if not already completed). <br /> This registration is non-exclusive, the broker fee may be negotiated, and no broker fee is due unless you choose to move forward with a rental presented by the agent.
                 </p>
 
                 <p>
-                  This does not prevent you from independently searching,
-                  contacting owners, or working with another agent in your
-                  search for apartments not presented to you by{" "}
-                  {referrerName || "Tuval Mor"} or any disclosed assisting
-                  agents.
+                  You may still search independently, contact owners, or work with another agent for apartments not presented to you by{" "}
+                  {referrerName || "Tuval Mor"} or any disclosed assisting agents.
                 </p>
 
                 <p className="text-[15px] font-semibold">
-                  The Corcoran Client Registration will open in a new window after you click “Save Request & Send to Agent. <br />
+                  The Corcoran Client Registration will open in a new window after you click “Save Request & Send to Agent.” <br />
                   Requests submitted without completing this step will not be processed.
                 </p>
 
