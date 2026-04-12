@@ -1,9 +1,9 @@
 "use client";
 
-import { Suspense, useState } from "react";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
 function RentersEdgeFormInner() {
   const [agree, setAgree] = useState(false);
@@ -243,7 +243,7 @@ function RentersEdgeFormInner() {
                   : "bg-blue-300 cursor-not-allowed"
               }`}
             >
-              Done
+              Next
             </button>
           </div>
         </form>

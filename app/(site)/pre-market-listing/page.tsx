@@ -1,36 +1,35 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  MapPin,
-  DollarSign,
-  Calendar,
-  Bell,
   AlertTriangle,
+  Bell,
+  Calendar,
+  DollarSign,
+  MapPin,
 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-import { useDispatch, useSelector } from "react-redux";
 import { selectReferrer, selectReferrerName } from "@/store/slices/authSlice";
 import { RootState } from "@/store/store";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
 
 import {
-  setMovingDate,
-  setPriceRange,
-  toggleBedroom,
-  toggleBathroom,
-  toggleUnitFeature,
-  toggleBuildingFeature,
-  togglePetPolicy,
-  toggleGuarantor,
-  setPreferencesList,
   resetPreferences,
+  setMovingDate,
+  setPreferencesList,
+  setPriceRange,
+  toggleBathroom,
+  toggleBedroom,
+  toggleBuildingFeature,
+  toggleGuarantor,
+  togglePetPolicy,
+  toggleUnitFeature,
 } from "@/store/slices/preferenceSlice";
 
 import LocationModal from "@/components/LocationModal";
 import SuccessModal from "@/components/SuccessModal";
-import { neighborhoods } from "@/data/neighborhoods";
 
 const PreferencesDragList = dynamic(
   () => import("@/components/PreferencesDragList"),
@@ -310,7 +309,7 @@ export default function PreMarketListingPage() {
 
   return (
     <section className="w-full min-h-screen bg-gray-50 px-3 py-6 sm:px-6 sm:py-8 md:px-10 md:py-10">
-      <div className="mx-auto w-full max-w-5xl rounded-2xl bg-white p-4 shadow-sm sm:p-6 md:p-8 lg:p-10">
+      <div className="mx-auto w-full max-w-6xl rounded-2xl bg-white p-4 shadow-sm sm:p-6 md:p-8 lg:p-10">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-[clamp(1.25rem,1.05rem+1vw,1.75rem)] font-bold leading-tight text-gray-900">
@@ -534,13 +533,16 @@ export default function PreMarketListingPage() {
               Check only must-have features:
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {/* Unit */}
+              {/* Unit */}
               <div>
                 <p className="text-sm font-semibold text-gray-700 mb-2">
                   Unit Features
                 </p>
                 {unitOptions.map((f) => (
-                  <label key={f} className="flex items-center gap-2 mb-1 text-sm">
+                  <label
+                    key={f}
+                    className="flex items-center gap-2 mb-1 text-sm"
+                  >
                     <input
                       type="checkbox"
                       checked={unitFeatures.includes(f)}
@@ -558,7 +560,10 @@ export default function PreMarketListingPage() {
                   Building Features
                 </p>
                 {buildingOptions.map((f) => (
-                  <label key={f} className="flex items-center gap-2 mb-1 text-sm">
+                  <label
+                    key={f}
+                    className="flex items-center gap-2 mb-1 text-sm"
+                  >
                     <input
                       type="checkbox"
                       checked={buildingFeatures.includes(f)}
@@ -576,7 +581,10 @@ export default function PreMarketListingPage() {
                   Pet Policy
                 </p>
                 {petOptions.map((f) => (
-                  <label key={f} className="flex items-center gap-2 mb-1 text-sm">
+                  <label
+                    key={f}
+                    className="flex items-center gap-2 mb-1 text-sm"
+                  >
                     <input
                       type="checkbox"
                       checked={petPolicy.includes(f)}
@@ -730,31 +738,38 @@ export default function PreMarketListingPage() {
                     {referrerName || "Tuval Mor"}
                   </span>
                   , to reach out on your behalf, the Corcoran Client
-                  Registration needs to be signed(if not already completed). <br /> This registration is non-exclusive, the broker fee may be negotiated, and no broker fee is due unless you choose to move forward with a rental presented by the agent.
+                  Registration needs to be signed (if not already completed) .{" "}
+                  <br /> This registration is non-exclusive, the broker fee may
+                  be negotiated, and no broker fee is due unless you choose to
+                  move forward with a rental presented by the agent.
                 </p>
 
                 <p>
-                  You may still search independently, contact owners, or work with another agent for apartments not presented to you by{" "}
-                  {referrerName || "Tuval Mor"} or any disclosed assisting agents.
+                  You may still search independently, contact owners, or work
+                  with another agent for apartments not presented to you by{" "}
+                  {referrerName || "Tuval Mor"} or any disclosed assisting
+                  agents.
                 </p>
 
                 <p className="text-[15px] font-semibold">
-                  The Corcoran Client Registration will open in a new window after you click “Save Request & Send to Agent.” <br />
-                  Requests submitted without completing this step will not be processed.
+                  The Corcoran Client Registration will open in a new window
+                  after you click “Save Request & Send to Agent.” <br />
+                  Requests submitted without completing this step will not be
+                  processed.
                 </p>
 
                 <div className="space-y-2 text-left">
                   <p className="font-semibold text-black">
-                    After signing, return here. If the new window doesn’t open, .
+                    After signing, return here. If the new window doesn’t open,
+                    <a
+                      href={registrationLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center text-[15px] font-medium text-blue-700 underline decoration-blue-700/70 hover:text-blue-800"
+                    >
+                      👉 Click here to complete it
+                    </a>
                   </p>
-                  <a
-                    href={registrationLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center text-[15px] font-medium text-blue-700 underline decoration-blue-700/70 hover:text-blue-800"
-                  >
-                    👉 Click here to complete it
-                  </a>
                 </div>
 
                 <label className="flex cursor-pointer items-start gap-3 pt-1">
@@ -774,7 +789,9 @@ export default function PreMarketListingPage() {
                     className="mt-1 h-5 w-5 shrink-0 rounded border-gray-300 accent-gray-600"
                   />
                   <span className="text-[13px] leading-relaxed text-[#3f3f46] sm:text-sm md:text-[15px] md:leading-7">
-                    By checking this box, I understand that my request will not be processed until I complete and sign the Corcoran Client Registration (required) and agency disclosure.
+                    By checking this box, I understand that my request will not
+                    be processed until I complete and sign the Corcoran Client
+                    Registration (required) and agency disclosure.
                   </span>
                 </label>
               </div>
