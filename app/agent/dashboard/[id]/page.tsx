@@ -289,49 +289,34 @@ export default function AgentRenterRequestDetailsPage() {
 
     const resolveNavigation = async () => {
       const storedState = readStoredAgentListState(NAVIGATION_STORAGE_KEY);
-      if (!storedState) {
-        setNavigationTargets({ previousId: null, nextId: null });
-        return;
-      }
-
-      const getCurrentTargets = (itemIds: string[]) => {
-        const currentIndex = itemIds.indexOf(requestId);
-        if (currentIndex === -1) {
-          return { previousId: null, nextId: null, currentIndex };
-        }
-
-        return {
-          previousId: itemIds[currentIndex - 1] ?? null,
-          nextId: itemIds[currentIndex + 1] ?? null,
-          currentIndex,
-        };
-      };
-
-      const localTargets = getCurrentTargets(storedState.itemIds);
-      if (localTargets.previousId && localTargets.nextId) {
-        setNavigationTargets({
-          previousId: localTargets.previousId,
-          nextId: localTargets.nextId,
-        });
-        return;
-      }
-
+      const useStoredContext =
+        storedState?.itemIds?.some((itemId) => itemId === requestId) ?? false;
+      const pageLimit =
+        useStoredContext && storedState?.limit
+          ? storedState.limit
+          : NAVIGATION_LIMIT_FALLBACK;
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
       };
       if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
-      const findAdjacentItemId = async (direction: "previous" | "next") => {
-        let targetPage =
-          direction === "previous" ? storedState.page - 1 : storedState.page + 1;
+      const matchesCurrentRequest = (item: NormalizedAgentRequest) =>
+        [item.id, item.raw?._id, item.raw?.id, item.raw?.requestId].some(
+          (id) => id === requestId,
+        );
 
-        while (
-          targetPage >= 1 &&
-          targetPage <= Math.max(1, storedState.totalPages)
-        ) {
+      try {
+        setIsResolvingNavigation(true);
+        let previousId: string | null = null;
+        let nextId: string | null = null;
+        let foundCurrent = false;
+        let pageToFetch = 1;
+        let totalPages = 1;
+
+        while (pageToFetch <= totalPages && !nextId) {
           const params = new URLSearchParams({
-            page: String(targetPage),
-            limit: String(storedState.limit || NAVIGATION_LIMIT_FALLBACK),
+            page: String(pageToFetch),
+            limit: String(pageLimit),
           });
 
           const response = await fetch(
@@ -356,47 +341,46 @@ export default function AgentRenterRequestDetailsPage() {
 
           const normalized = (data.data ?? []).map(normalizeAgentRequest);
           cacheAgentRequests(normalized);
-          const filtered = normalized.filter((item) =>
-            matchesAgentFilters(
-              item.raw,
-              storedState.filters,
-              storedState.showOwnReferrals,
-              currentUserId,
-            ),
-          );
+          totalPages = Math.max(1, data.pagination?.totalPages ?? totalPages);
 
-          if (filtered.length > 0) {
-            return direction === "previous"
-              ? filtered[filtered.length - 1]?.id ?? null
-              : filtered[0]?.id ?? null;
+          const visibleRequests =
+            useStoredContext && storedState
+              ? normalized.filter((item) =>
+                  matchesAgentFilters(
+                    item.raw,
+                    storedState.filters,
+                    storedState.showOwnReferrals,
+                    currentUserId,
+                  ),
+                )
+              : normalized;
+
+          for (const item of visibleRequests) {
+            if (foundCurrent) {
+              nextId = item.id;
+              break;
+            }
+
+            if (matchesCurrentRequest(item)) {
+              foundCurrent = true;
+            } else {
+              previousId = item.id;
+            }
           }
 
-          targetPage += direction === "previous" ? -1 : 1;
+          pageToFetch += 1;
         }
 
-        return null;
-      };
-
-      try {
-        setIsResolvingNavigation(true);
-        const [previousId, nextId] = await Promise.all([
-          localTargets.previousId
-            ? Promise.resolve(localTargets.previousId)
-            : findAdjacentItemId("previous"),
-          localTargets.nextId
-            ? Promise.resolve(localTargets.nextId)
-            : findAdjacentItemId("next"),
-        ]);
-
         if (!controller.signal.aborted) {
-          setNavigationTargets({ previousId, nextId });
+          setNavigationTargets(
+            foundCurrent
+              ? { previousId, nextId }
+              : { previousId: null, nextId: null },
+          );
         }
       } catch {
         if (!controller.signal.aborted) {
-          setNavigationTargets({
-            previousId: localTargets.previousId,
-            nextId: localTargets.nextId,
-          });
+          setNavigationTargets({ previousId: null, nextId: null });
         }
       } finally {
         if (!controller.signal.aborted) {
@@ -1000,7 +984,7 @@ export default function AgentRenterRequestDetailsPage() {
                   {statusMessage.message}
                 </p>
               )}
-              <div className="grid grid-cols-[auto,1fr] items-center gap-4 md:grid-cols-[auto,1fr,auto]">
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
                 <button
                   type="button"
                   onClick={() => {
@@ -1030,7 +1014,7 @@ export default function AgentRenterRequestDetailsPage() {
                         : "Match Request"}
                 </button>
 
-                <div className="col-span-full flex items-center justify-center gap-3 md:col-span-1">
+                <div className="flex items-center justify-center gap-3 justify-self-center">
                   <button
                     type="button"
                     onClick={() =>
@@ -1059,7 +1043,7 @@ export default function AgentRenterRequestDetailsPage() {
                   </button>
                 </div>
 
-                <div className="hidden md:block" />
+                <div aria-hidden="true" />
               </div>
             </div>
           </div>
