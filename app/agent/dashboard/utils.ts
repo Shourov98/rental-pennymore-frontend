@@ -29,6 +29,8 @@ export interface ApiAgentRequest {
   shareConsent?: boolean;
   scope?: string;
   visibility?: string;
+  registrationDisclosureConfirmed?: boolean;
+  registrationDisclosureConfirmedAt?: string | null;
   status?: string;
   preferences?: string[];
   isActive?: boolean;
@@ -113,6 +115,8 @@ export interface NormalizedAgentRequest {
   scopeLabel: string;
   visibilityLabel: string;
   isPrivateVisibility: boolean;
+  registrationDisclosureConfirmed: boolean;
+  registrationDisclosureConfirmedAt?: string | null;
   status: string;
   preferences: string[];
   renterName?: string;
@@ -240,6 +244,11 @@ export const normalizeAgentRequest = (
     scopeLabel: formatScope(req.scope),
     visibilityLabel,
     isPrivateVisibility,
+    registrationDisclosureConfirmed: Boolean(
+      req.registrationDisclosureConfirmed,
+    ),
+    registrationDisclosureConfirmedAt:
+      req.registrationDisclosureConfirmedAt ?? null,
     status: req.status || (req.isActive ? "active" : "inactive"),
     preferences: req.preferences ?? [],
     renterName: req.renterInfo?.renterName,

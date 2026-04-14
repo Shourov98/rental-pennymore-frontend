@@ -87,6 +87,8 @@ export default function AgentRenterRequestsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mutatingShareId, setMutatingShareId] = useState<string | null>(null);
+  const [mutatingRegistrationDisclosureId, setMutatingRegistrationDisclosureId] =
+    useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState<
     ApiAgentRequestsResponse["pagination"]
@@ -286,6 +288,87 @@ export default function AgentRenterRequestsPage() {
     }
   };
 
+  const handleConfirmRegistrationDisclosure = async (
+    request: NormalizedAgentRequest,
+  ) => {
+    if (request.registrationDisclosureConfirmed) return;
+
+    const localId = request.id;
+    const apiRequestId = request.raw?._id;
+
+    if (!apiRequestId) {
+      setError("We couldn't save the document confirmation for this request.");
+      return;
+    }
+
+    setError(null);
+    setMutatingRegistrationDisclosureId(localId);
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(
+        `${API_BASE_URL}/pre-market/${apiRequestId}/registration-disclosure/confirm`,
+        {
+          method: "PATCH",
+          headers,
+        },
+      );
+
+      const data = await response.json().catch(
+        () =>
+          ({}) as {
+            success?: boolean;
+            message?: string;
+            data?: {
+              registrationDisclosureConfirmedAt?: string | null;
+            };
+          },
+      );
+
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message ||
+            "We couldn't save the document confirmation right now.",
+        );
+      }
+
+      const confirmedAt =
+        data?.data?.registrationDisclosureConfirmedAt ??
+        new Date().toISOString();
+
+      setRequests((prev) => {
+        const next = prev.map((req) => {
+          if (req.id !== localId) return req;
+
+          return {
+            ...req,
+            registrationDisclosureConfirmed: true,
+            registrationDisclosureConfirmedAt: confirmedAt,
+            raw: {
+              ...req.raw,
+              registrationDisclosureConfirmed: true,
+              registrationDisclosureConfirmedAt: confirmedAt,
+            },
+          };
+        });
+        cacheAgentRequests(next);
+        return next;
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "We couldn't save the document confirmation right now.";
+      setError(message);
+    } finally {
+      setMutatingRegistrationDisclosureId(null);
+    }
+  };
+
   const handlePreviousPage = () => {
     if (pagination?.hasPrev) setPage((prev) => Math.max(1, prev - 1));
   };
@@ -354,7 +437,7 @@ export default function AgentRenterRequestsPage() {
           {hasFilteredResults ? (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-hidden">
               <div className="overflow-x-auto">
-                <table className="min-w-[1200px] w-full text-sm">
+                <table className="min-w-[1320px] w-full text-sm">
                   <thead className="bg-blue-100 text-gray-800">
                     <tr>
                       <th className="py-3 px-5 text-left">Date</th>
@@ -367,6 +450,9 @@ export default function AgentRenterRequestsPage() {
                       <th className="py-3 px-5 text-left">Beds</th>
                       <th className="py-3 px-5 text-left">Baths</th>
                       <th className="py-3 px-5 text-left">Status</th>
+                      <th className="py-3 px-5 text-center">
+                        Registration / Disclosure
+                      </th>
                       <th className="py-3 px-5 text-right">Actions</th>
                     </tr>
                   </thead>
@@ -382,6 +468,11 @@ export default function AgentRenterRequestsPage() {
                       const shareConsent = req.raw?.shareConsent;
                       const visibility = req.raw?.visibility;
                       const isVisibilityLocked = shareConsent === false;
+                      const isRegistrationDisclosureLocked =
+                        !req.registrationDisclosureConfirmed;
+                      const isShareDisabledByDocuments =
+                        req.isPrivateVisibility &&
+                        isRegistrationDisclosureLocked;
 
                       return (
                         <tr
@@ -424,13 +515,16 @@ export default function AgentRenterRequestsPage() {
                                   onClick={() => handleToggleShare(req)}
                                   disabled={
                                     mutatingShareId === req.id ||
-                                    isVisibilityLocked
+                                    isVisibilityLocked ||
+                                    isShareDisabledByDocuments
                                   }
                                   className="inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                                   aria-label={`Toggle visibility for ${req.requestName}`}
                                   title={
                                     isVisibilityLocked
                                       ? "Visibility is locked for this request"
+                                      : isShareDisabledByDocuments
+                                        ? "Registration / Disclosure confirmation is required before sharing this request"
                                       : "Toggle request visibility"
                                   }
                                 >
@@ -520,6 +614,31 @@ export default function AgentRenterRequestsPage() {
                                 </span>
                               );
                             })()}
+                          </td>
+                          <td className="py-3 px-5">
+                            <div className="flex items-center justify-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={req.registrationDisclosureConfirmed}
+                                disabled={
+                                  req.registrationDisclosureConfirmed ||
+                                  mutatingRegistrationDisclosureId === req.id
+                                }
+                                onChange={(event) => {
+                                  if (event.target.checked) {
+                                    handleConfirmRegistrationDisclosure(req);
+                                  }
+                                }}
+                                aria-label={`Confirm Registration / Disclosure for ${req.requestName}`}
+                                className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
+                              />
+                              {isRegistrationDisclosureLocked ? (
+                                <Lock
+                                  className="h-4 w-4 text-gray-500"
+                                  aria-hidden="true"
+                                />
+                              ) : null}
+                            </div>
                           </td>
                           <td className="py-3 px-5 flex justify-end gap-2">
                             <button

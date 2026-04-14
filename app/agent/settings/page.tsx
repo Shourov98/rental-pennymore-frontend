@@ -1,27 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import { useDispatch, useSelector } from "react-redux";
-import { logout, updateUser } from "@/store/slices/authSlice";
+import { updateUser } from "@/store/slices/authSlice";
 import type { AppDispatch, RootState } from "@/store/store";
-import { useRouter } from "next/navigation";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function SettingsPage() {
   const dispatch = useDispatch<AppDispatch>();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
-  const router = useRouter();
   const agentSubscription = useSelector(
     (state: RootState) => state.auth.user?.emailSubscriptionEnabled,
   );
   const [subscribed, setSubscribed] = useState(true);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [acceptingRequests, setAcceptingRequests] = useState(true);
   const [isTogglingRequests, setIsTogglingRequests] = useState(false);
   const [requestsError, setRequestsError] = useState<string | null>(null);
@@ -156,43 +150,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleDelete = async () => {
-    setDeleteError(null);
-    setIsDeleting(true);
-
-    try {
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
-
-      const response = await fetch(`${API_BASE_URL}/agent/profile`, {
-        method: "DELETE",
-        headers,
-      });
-
-      const data = await response.json().catch(() => ({}));
-
-      if (!response.ok || data?.success === false) {
-        throw new Error(
-          data?.message || "We couldn't delete your account right now.",
-        );
-      }
-
-      dispatch(logout());
-      setShowDeleteModal(false);
-      router.replace("/signin");
-    } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : "We couldn't delete your account right now.";
-      setDeleteError(message);
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
   return (
     <section className="w-full bg-gray-50 min-h-screen py-10 px-4 sm:px-8 md:px-12">
       {/* Header */}
@@ -247,27 +204,6 @@ export default function SettingsPage() {
 
         <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-6 border border-gray-100">
           <h3 className="text-base font-semibold text-gray-800 mb-1">
-            Delete your Account
-          </h3>
-          <p className="text-sm text-gray-600 mb-4">
-            This will permanently delete your account from the system.
-          </p>
-
-          {deleteError && (
-            <p className="text-sm text-red-600 mb-3">{deleteError}</p>
-          )}
-
-          <button
-            onClick={() => setShowDeleteModal(true)}
-            className="px-5 py-2 rounded-lg bg-red-100 text-red-600 font-medium hover:bg-red-200 transition disabled:opacity-70"
-            disabled={isDeleting}
-          >
-            {isDeleting ? "Deleting..." : "Delete Account"}
-          </button>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-6 border border-gray-100">
-          <h3 className="text-base font-semibold text-gray-800 mb-1">
             Email notifications
           </h3>
           <p className="text-sm text-gray-600 mb-4">
@@ -304,13 +240,6 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
-
-      {showDeleteModal && (
-        <DeleteConfirmModal
-          onCancel={() => setShowDeleteModal(false)}
-          onConfirm={handleDelete}
-        />
-      )}
     </section>
   );
 }
