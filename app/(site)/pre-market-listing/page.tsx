@@ -448,6 +448,9 @@ export default function PreMarketListingPage() {
             <label className="text-sm font-semibold text-gray-700 mb-1">
               Location
             </label>
+            <p className="mb-1.5 text-xs text-gray-500">
+              For best results, select no more than 5 favorite sub-neighborhoods.
+            </p>
 
             <div
               onClick={() => setIsLocationModalOpen(true)}

@@ -325,14 +325,14 @@ export default function AgentRenterRequestsPage() {
                 : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100"
             }`}
           >
-            My Referrals
+            Direct Renters
           </button>
           <button
             onClick={() => setIsFilterOpen(true)}
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full font-medium hover:bg-blue-700 transition"
           >
             <Filter className="w-4 h-4" />
-            Filter
+            Find Matches
           </button>
         </div>
       </div>

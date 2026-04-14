@@ -33,6 +33,23 @@ const defaultFilters: FilterType = {
   maxPrice: null,
 };
 
+const getBedroomValue = (bedroom: string) =>
+  bedroom === "Studio" ? 0 : parseInt(bedroom, 10);
+
+const hasValueAtOrBelowThreshold = (
+  requestedValues: number[],
+  selectedFilters: number[],
+) => {
+  const validRequestedValues = requestedValues.filter(Number.isFinite);
+  const validSelectedFilters = selectedFilters.filter(Number.isFinite);
+  if (!validRequestedValues.length || !validSelectedFilters.length) {
+    return false;
+  }
+
+  const threshold = Math.max(...validSelectedFilters);
+  return validRequestedValues.some((value) => value <= threshold);
+};
+
 export const sanitizeFilters = (
   filters?: Partial<FilterType> | null,
 ): FilterType => ({
@@ -72,11 +89,10 @@ export const matchesAgentFilters = (
 
   if (filters.bedrooms.length) {
     const bedroomValues =
-      raw.bedrooms?.map((bedroom) =>
-        bedroom === "Studio" ? 0 : parseInt(bedroom, 10),
-      ) || [];
-    const hasBedroom = filters.bedrooms.some((bedroom) =>
-      bedroomValues.includes(bedroom),
+      raw.bedrooms?.map((bedroom) => getBedroomValue(bedroom)) || [];
+    const hasBedroom = hasValueAtOrBelowThreshold(
+      bedroomValues,
+      filters.bedrooms,
     );
     if (!hasBedroom) return false;
   }
@@ -84,8 +100,9 @@ export const matchesAgentFilters = (
   if (filters.bathrooms.length) {
     const bathroomValues =
       raw.bathrooms?.map((bathroom) => parseInt(bathroom, 10)) || [];
-    const hasBathroom = filters.bathrooms.some((bathroom) =>
-      bathroomValues.includes(bathroom),
+    const hasBathroom = hasValueAtOrBelowThreshold(
+      bathroomValues,
+      filters.bathrooms,
     );
     if (!hasBathroom) return false;
   }
