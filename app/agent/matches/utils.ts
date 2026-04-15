@@ -34,6 +34,8 @@ export interface ApiAgentMatch {
   archiveSource?: string | null;
   archivedAt?: string | null;
   status?: string;
+  representation_type?: "owner_representation" | "renter_representation";
+  representationSelectedAt?: string | null;
   preferences?: string[];
   isActive?: boolean;
   renterInfo?: {
@@ -99,6 +101,8 @@ export interface NormalizedAgentMatch {
   archiveSource?: string | null;
   archivedAt?: string | null;
   status: string;
+  representation_type?: "owner_representation" | "renter_representation";
+  representationSelectedAt?: string | null;
   isActive: boolean;
   preferences: string[];
   renterName?: string;
@@ -203,6 +207,8 @@ export const normalizeAgentMatch = (
     archiveSource: req.archiveSource ?? null,
     archivedAt: req.archivedAt ?? null,
     status: req.status || (req.isActive ? "active" : "inactive"),
+    representation_type: req.representation_type,
+    representationSelectedAt: req.representationSelectedAt ?? null,
     isActive: req.isActive ?? false,
     preferences: req.preferences ?? [],
     renterName: req.renterInfo?.renterName || req.renterInfo?.fullName,

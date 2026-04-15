@@ -30,6 +30,7 @@ import {
 
 const NAVIGATION_STORAGE_KEY = "agent-dashboard-navigation";
 const NAVIGATION_LIMIT_FALLBACK = 10;
+type RepresentationType = "owner_representation" | "renter_representation";
 
 const unitFeatureLabels: Record<string, string> = {
   laundryInUnit: "Laundry in unit",
@@ -203,6 +204,9 @@ export default function AgentRenterRequestDetailsPage() {
   );
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isConfirmChecked, setIsConfirmChecked] = useState(false);
+  const [isRepresentationOpen, setIsRepresentationOpen] = useState(false);
+  const [selectedRepresentationType, setSelectedRepresentationType] =
+    useState<RepresentationType | "">("");
   const [navigationTargets, setNavigationTargets] = useState<{
     previousId: string | null;
     nextId: string | null;
@@ -582,7 +586,9 @@ export default function AgentRenterRequestDetailsPage() {
     }).format(amount);
   };
 
-  const handleMatchRequest = async () => {
+  const handleMatchRequest = async (
+    representationType: RepresentationType = "renter_representation",
+  ) => {
     if (!requestId || isDisabled || isSubmitting) return;
     setStatusMessage(null);
 
@@ -593,12 +599,15 @@ export default function AgentRenterRequestDetailsPage() {
       };
       if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
-      if (grantAccessEnabled) {
+      if (grantAccessEnabled || representationType === "owner_representation") {
         const response = await fetch(
           `${API_BASE_URL}/pre-market/agent/${requestId}/match`,
           {
             method: "POST",
             headers,
+            body: JSON.stringify({
+              representation_type: representationType,
+            }),
           },
         );
 
@@ -619,7 +628,13 @@ export default function AgentRenterRequestDetailsPage() {
                 raw: {
                   ...prev.raw,
                   listingStatus: "matched",
+                  status: "matched",
+                  grantAccessStatus: "free",
+                  representation_type: representationType,
+                  representationSelectedAt: new Date().toISOString(),
                 },
+                representation_type: representationType,
+                representationSelectedAt: new Date().toISOString(),
               }
             : prev,
         );
@@ -633,7 +648,10 @@ export default function AgentRenterRequestDetailsPage() {
           {
             method: "POST",
             headers,
-            body: JSON.stringify({ preMarketRequestId: requestId }),
+            body: JSON.stringify({
+              preMarketRequestId: requestId,
+              representation_type: representationType,
+            }),
           },
         );
 
@@ -655,7 +673,11 @@ export default function AgentRenterRequestDetailsPage() {
                   ...prev.raw,
                   canRequestAccess: false,
                   status: "requested",
+                  representation_type: representationType,
+                  representationSelectedAt: new Date().toISOString(),
                 },
+                representation_type: representationType,
+                representationSelectedAt: new Date().toISOString(),
               }
             : prev,
         );
@@ -991,8 +1013,8 @@ export default function AgentRenterRequestDetailsPage() {
                     if (!requestId || isDisabled || isSubmitting) {
                       return;
                     }
-                    setIsConfirmChecked(false);
-                    setIsConfirmOpen(true);
+                    setSelectedRepresentationType("");
+                    setIsRepresentationOpen(true);
                   }}
                   disabled={isDisabled || isAccessRequestLocked}
                   className={`justify-self-start px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-60 disabled:cursor-not-allowed ${
@@ -1048,6 +1070,75 @@ export default function AgentRenterRequestDetailsPage() {
             </div>
           </div>
         </>
+      )}
+
+      {isRepresentationOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl">
+            <h2 className="text-xl font-semibold text-gray-900 mb-5">
+              Which side would you like to represent?
+            </h2>
+            <div className="space-y-4">
+              <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 p-4 text-sm text-gray-800">
+                <input
+                  type="radio"
+                  name="representation-type"
+                  value="owner_representation"
+                  checked={selectedRepresentationType === "owner_representation"}
+                  onChange={() =>
+                    setSelectedRepresentationType("owner_representation")
+                  }
+                  className="h-4 w-4 text-blue-600"
+                />
+                <span>I intend to represent the owner</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 p-4 text-sm text-gray-800">
+                <input
+                  type="radio"
+                  name="representation-type"
+                  value="renter_representation"
+                  checked={selectedRepresentationType === "renter_representation"}
+                  onChange={() =>
+                    setSelectedRepresentationType("renter_representation")
+                  }
+                  className="h-4 w-4 text-blue-600"
+                />
+                <span>I intend to represent the renter</span>
+              </label>
+            </div>
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsRepresentationOpen(false);
+                  setSelectedRepresentationType("");
+                }}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!selectedRepresentationType) return;
+
+                  setIsRepresentationOpen(false);
+                  if (selectedRepresentationType === "owner_representation") {
+                    handleMatchRequest("owner_representation");
+                    return;
+                  }
+
+                  setIsConfirmChecked(false);
+                  setIsConfirmOpen(true);
+                }}
+                disabled={!selectedRepresentationType || isSubmitting}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {isConfirmOpen && (
@@ -1113,7 +1204,7 @@ export default function AgentRenterRequestDetailsPage() {
                 onClick={() => {
                   if (!isConfirmChecked) return;
                   setIsConfirmOpen(false);
-                  handleMatchRequest();
+                  handleMatchRequest("renter_representation");
                 }}
                 disabled={!isConfirmChecked || isSubmitting}
                 className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"

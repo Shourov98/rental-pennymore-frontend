@@ -42,6 +42,8 @@ export interface ApiAgentRequest {
   listingStatus?: string;
   grantAccessStatus?: string;
   grantAccessId?: string;
+  representation_type?: "owner_representation" | "renter_representation";
+  representationSelectedAt?: string | null;
   accessType?: string;
   chargeAmount?: number;
   payment?: {
@@ -134,6 +136,8 @@ export interface NormalizedAgentRequest {
   renterPhone?: string;
   raw: ApiAgentRequest;
   canRequestAccess?: boolean;
+  representation_type?: "owner_representation" | "renter_representation";
+  representationSelectedAt?: string | null;
 }
 
 const formatCurrency = (value?: number) => {
@@ -270,6 +274,9 @@ export const normalizeAgentRequest = (
     renterEmail: req.renterInfo?.renterEmail,
     renterPhone: req.renterInfo?.renterPhone,
     raw: req,
+    canRequestAccess: req.canRequestAccess,
+    representation_type: req.representation_type,
+    representationSelectedAt: req.representationSelectedAt ?? null,
   };
 };
 
