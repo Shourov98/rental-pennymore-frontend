@@ -1,11 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Eye, Filter, ChevronLeft, ChevronRight, Lock } from "lucide-react";
+import {
+  Eye,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  Lock,
+  Archive,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
 import { fetchAgentProfile } from "@/store/slices/agentProfileSlice";
+import ArchiveRequestDialog, {
+  type ArchiveReason,
+} from "@/components/agent/ArchiveRequestDialog";
 import FilterModal, {
   type FilterType,
 } from "@/components/modals/FilterModals";
@@ -28,6 +38,27 @@ const FILTERS_STORAGE_KEY = "agent-dashboard-filters";
 const LIST_STATE_STORAGE_KEY = "agent-dashboard-list-state";
 const defaultFilters: FilterType = getEmptyFilters();
 const NAVIGATION_STORAGE_KEY = "agent-dashboard-navigation";
+
+const isCurrentAgentRegisteredForRequest = (
+  request: NormalizedAgentRequest,
+  currentAgentId?: string | null,
+) => {
+  if (!currentAgentId) return false;
+
+  const raw = request.raw;
+  const registeredAgentIds = [
+    raw?.referralAgentId,
+    raw?.referrerId,
+    raw?.referralInfo?.referrer?.id,
+    raw?.referralInfo?.referrer?.referrerId,
+    raw?.renterInfo?.referralInfo?.referrerId,
+    raw?.renterInfo?.referralInfo?.referredByAdmin?.referredBy,
+  ]
+    .map((value) => (value ? String(value) : ""))
+    .filter(Boolean);
+
+  return registeredAgentIds.includes(String(currentAgentId));
+};
 
 const readStoredFilters = (): FilterType => {
   if (typeof window === "undefined") return defaultFilters;
@@ -89,6 +120,10 @@ export default function AgentRenterRequestsPage() {
   const [mutatingShareId, setMutatingShareId] = useState<string | null>(null);
   const [mutatingRegistrationDisclosureId, setMutatingRegistrationDisclosureId] =
     useState<string | null>(null);
+  const [archiveTarget, setArchiveTarget] =
+    useState<NormalizedAgentRequest | null>(null);
+  const [archiveReason, setArchiveReason] = useState<ArchiveReason | "">("");
+  const [isArchiving, setIsArchiving] = useState(false);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState<
     ApiAgentRequestsResponse["pagination"]
@@ -369,6 +404,68 @@ export default function AgentRenterRequestsPage() {
     }
   };
 
+  const openArchiveDialog = (request: NormalizedAgentRequest) => {
+    setArchiveTarget(request);
+    setArchiveReason("");
+    setError(null);
+  };
+
+  const closeArchiveDialog = () => {
+    if (isArchiving) return;
+    setArchiveTarget(null);
+    setArchiveReason("");
+  };
+
+  const handleArchiveRequest = async () => {
+    if (!archiveTarget || !archiveReason) return;
+
+    const apiRequestId = archiveTarget.raw?._id;
+    if (!apiRequestId) {
+      setError("We couldn't archive this request.");
+      return;
+    }
+
+    setIsArchiving(true);
+    setError(null);
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(
+        `${API_BASE_URL}/pre-market/${apiRequestId}/archive`,
+        {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify({ reason: archiveReason }),
+        },
+      );
+      const data = await response
+        .json()
+        .catch(() => ({}) as { success?: boolean; message?: string });
+
+      if (!response.ok || data?.success === false) {
+        throw new Error(data?.message || "We couldn't archive this request.");
+      }
+
+      setRequests((prev) => {
+        const next = prev.filter((req) => req.id !== archiveTarget.id);
+        cacheAgentRequests(next);
+        return next;
+      });
+      setArchiveTarget(null);
+      setArchiveReason("");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "We couldn't archive this request.";
+      setError(message);
+    } finally {
+      setIsArchiving(false);
+    }
+  };
+
   const handlePreviousPage = () => {
     if (pagination?.hasPrev) setPage((prev) => Math.max(1, prev - 1));
   };
@@ -459,12 +556,11 @@ export default function AgentRenterRequestsPage() {
 
                   <tbody>
                     {filteredRequests.map((req) => {
-                      const requestReferralAgentId =
-                        req.raw?.referralAgentId ?? null;
                       const isCurrentAgentsRequest =
-                        Boolean(currentAgentId) &&
-                        Boolean(requestReferralAgentId) &&
-                        currentAgentId === requestReferralAgentId;
+                        isCurrentAgentRegisteredForRequest(
+                          req,
+                          currentAgentId,
+                        );
                       const shareConsent = req.raw?.shareConsent;
                       const visibility = req.raw?.visibility;
                       const isVisibilityLocked = shareConsent === false;
@@ -641,6 +737,15 @@ export default function AgentRenterRequestsPage() {
                             </div>
                           </td>
                           <td className="py-3 px-5 flex justify-end gap-2">
+                            {isCurrentAgentsRequest ? (
+                              <button
+                                onClick={() => openArchiveDialog(req)}
+                                title="Archive request"
+                                className="p-2 rounded-full transition bg-gray-100 hover:bg-gray-200"
+                              >
+                                <Archive className="w-4 h-4 text-gray-600" />
+                              </button>
+                            ) : null}
                             <button
                               onClick={() => handleView(req)}
                               title="View request"
@@ -717,6 +822,16 @@ export default function AgentRenterRequestsPage() {
         initialFilters={filters}
         resultCount={filteredRequests.length}
       />
+      {archiveTarget ? (
+        <ArchiveRequestDialog
+          mode="registered"
+          selectedReason={archiveReason}
+          isSubmitting={isArchiving}
+          onReasonChange={setArchiveReason}
+          onCancel={closeArchiveDialog}
+          onConfirm={handleArchiveRequest}
+        />
+      ) : null}
     </section>
   );
 }

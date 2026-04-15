@@ -28,6 +28,11 @@ export interface ApiAgentMatch {
   shareConsent?: boolean;
   scope?: string;
   visibility?: string;
+  isArchivedForAgent?: boolean;
+  archiveReason?: string | null;
+  archiveReasonLabel?: string | null;
+  archiveSource?: string | null;
+  archivedAt?: string | null;
   status?: string;
   preferences?: string[];
   isActive?: boolean;
@@ -88,6 +93,11 @@ export interface NormalizedAgentMatch {
   scopeLabel: string;
   visibilityLabel: string;
   isPrivateVisibility: boolean;
+  isArchivedForAgent?: boolean;
+  archiveReason?: string | null;
+  archiveReasonLabel?: string | null;
+  archiveSource?: string | null;
+  archivedAt?: string | null;
   status: string;
   isActive: boolean;
   preferences: string[];
@@ -187,6 +197,11 @@ export const normalizeAgentMatch = (
     scopeLabel: formatScope(req.scope),
     visibilityLabel,
     isPrivateVisibility,
+    isArchivedForAgent: Boolean(req.isArchivedForAgent),
+    archiveReason: req.archiveReason ?? null,
+    archiveReasonLabel: req.archiveReasonLabel ?? null,
+    archiveSource: req.archiveSource ?? null,
+    archivedAt: req.archivedAt ?? null,
     status: req.status || (req.isActive ? "active" : "inactive"),
     isActive: req.isActive ?? false,
     preferences: req.preferences ?? [],

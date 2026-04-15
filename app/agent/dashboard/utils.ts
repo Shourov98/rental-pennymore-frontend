@@ -31,6 +31,11 @@ export interface ApiAgentRequest {
   visibility?: string;
   registrationDisclosureConfirmed?: boolean;
   registrationDisclosureConfirmedAt?: string | null;
+  isArchivedForAgent?: boolean;
+  archiveReason?: string | null;
+  archiveReasonLabel?: string | null;
+  archiveSource?: string | null;
+  archivedAt?: string | null;
   status?: string;
   preferences?: string[];
   isActive?: boolean;
@@ -117,6 +122,11 @@ export interface NormalizedAgentRequest {
   isPrivateVisibility: boolean;
   registrationDisclosureConfirmed: boolean;
   registrationDisclosureConfirmedAt?: string | null;
+  isArchivedForAgent?: boolean;
+  archiveReason?: string | null;
+  archiveReasonLabel?: string | null;
+  archiveSource?: string | null;
+  archivedAt?: string | null;
   status: string;
   preferences: string[];
   renterName?: string;
@@ -249,6 +259,11 @@ export const normalizeAgentRequest = (
     ),
     registrationDisclosureConfirmedAt:
       req.registrationDisclosureConfirmedAt ?? null,
+    isArchivedForAgent: Boolean(req.isArchivedForAgent),
+    archiveReason: req.archiveReason ?? null,
+    archiveReasonLabel: req.archiveReasonLabel ?? null,
+    archiveSource: req.archiveSource ?? null,
+    archivedAt: req.archivedAt ?? null,
     status: req.status || (req.isActive ? "active" : "inactive"),
     preferences: req.preferences ?? [],
     renterName: req.renterInfo?.renterName,

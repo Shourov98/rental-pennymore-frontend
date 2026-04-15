@@ -9,6 +9,7 @@ import {
   LogOut,
   Link as LinkIcon,
   Settings,
+  Archive,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -54,6 +55,11 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
           name: "Renter Matches",
           icon: <Handshake />,
           href: "/agent/matches",
+        },
+        {
+          name: "Archived Requests",
+          icon: <Archive />,
+          href: "/agent/archived-requests",
         },
       ],
     },

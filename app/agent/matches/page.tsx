@@ -1,12 +1,22 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Eye, Filter, ChevronLeft, ChevronRight, Lock } from "lucide-react";
+import {
+  Eye,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  Lock,
+  Archive,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import FilterModal, {
   type FilterType,
 } from "@/components/modals/FilterModals";
+import ArchiveRequestDialog, {
+  type ArchiveReason,
+} from "@/components/agent/ArchiveRequestDialog";
 import { RootState } from "@/store/store";
 import {
   API_BASE_URL,
@@ -85,6 +95,10 @@ export default function AgentMatchesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mutatingShareId, setMutatingShareId] = useState<string | null>(null);
+  const [archiveTarget, setArchiveTarget] =
+    useState<NormalizedAgentMatch | null>(null);
+  const [archiveReason, setArchiveReason] = useState<ArchiveReason | "">("");
+  const [isArchiving, setIsArchiving] = useState(false);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState<
     ApiAgentMatchesResponse["pagination"]
@@ -276,6 +290,68 @@ export default function AgentMatchesPage() {
       setError(message);
     } finally {
       setMutatingShareId(null);
+    }
+  };
+
+  const openArchiveDialog = (request: NormalizedAgentMatch) => {
+    setArchiveTarget(request);
+    setArchiveReason("");
+    setError(null);
+  };
+
+  const closeArchiveDialog = () => {
+    if (isArchiving) return;
+    setArchiveTarget(null);
+    setArchiveReason("");
+  };
+
+  const handleArchiveRequest = async () => {
+    if (!archiveTarget || !archiveReason) return;
+
+    const apiRequestId = archiveTarget.raw?._id;
+    if (!apiRequestId) {
+      setError("We couldn't archive this request.");
+      return;
+    }
+
+    setIsArchiving(true);
+    setError(null);
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(
+        `${API_BASE_URL}/pre-market/${apiRequestId}/archive`,
+        {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify({ reason: archiveReason }),
+        },
+      );
+      const data = await response
+        .json()
+        .catch(() => ({}) as { success?: boolean; message?: string });
+
+      if (!response.ok || data?.success === false) {
+        throw new Error(data?.message || "We couldn't archive this request.");
+      }
+
+      setRequests((prev) => {
+        const next = prev.filter((req) => req.id !== archiveTarget.id);
+        cacheAgentMatches(next);
+        return next;
+      });
+      setArchiveTarget(null);
+      setArchiveReason("");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "We couldn't archive this request.";
+      setError(message);
+    } finally {
+      setIsArchiving(false);
     }
   };
 
@@ -492,6 +568,13 @@ export default function AgentMatchesPage() {
                           </td>
                           <td className="py-3 px-5 flex justify-end gap-2">
                             <button
+                              onClick={() => openArchiveDialog(req)}
+                              title="Archive request"
+                              className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"
+                            >
+                              <Archive className="w-4 h-4 text-gray-600" />
+                            </button>
+                            <button
                               onClick={() => handleView(req)}
                               className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"
                             >
@@ -566,6 +649,16 @@ export default function AgentMatchesPage() {
         initialFilters={filters}
         resultCount={filteredRequests.length}
       />
+      {archiveTarget ? (
+        <ArchiveRequestDialog
+          mode="matched"
+          selectedReason={archiveReason}
+          isSubmitting={isArchiving}
+          onReasonChange={setArchiveReason}
+          onCancel={closeArchiveDialog}
+          onConfirm={handleArchiveRequest}
+        />
+      ) : null}
     </section>
   );
 }
