@@ -6,6 +6,7 @@ export interface ApiAgentRequest {
   requestId?: string;
   requestName?: string;
   renterId?: string;
+  renterName?: string;
   referralAgentId?: string;
   referrerId?: string;
   movingDateRange?: {
@@ -44,6 +45,35 @@ export interface ApiAgentRequest {
   grantAccessId?: string;
   representation_type?: "owner_representation" | "renter_representation";
   representationSelectedAt?: string | null;
+  ownerRepresentationSelected?: boolean;
+  ownerRepresentationMatchCount?: number;
+  hasOwnerRepresentationMatches?: boolean;
+  hasNewOwnerRepresentationMatches?: boolean;
+  ownerRepresentationStatus?: {
+    ownerRepresentationMatchCount?: number;
+    hasOwnerRepresentationMatches?: boolean;
+    hasNewOwnerRepresentationMatches?: boolean;
+  };
+  ownerRepresentationRegisteredAgent?: {
+    id?: string;
+    fullName?: string;
+    title?: string;
+    brokerage?: string;
+    email?: string;
+    phoneNumber?: string;
+  } | null;
+  ownerRepresentationMatches?: Array<{
+    agentId?: string;
+    fullName?: string;
+    title?: string;
+    brokerage?: string;
+    email?: string;
+    phoneNumber?: string;
+    representation_type?: "owner_representation";
+    selectedAt?: string | null;
+    viewedAt?: string | null;
+    isViewed?: boolean;
+  }>;
   accessType?: string;
   chargeAmount?: number;
   payment?: {
@@ -79,6 +109,7 @@ export interface ApiAgentRequest {
     } | null;
   };
   referralInfo?: {
+    renterName?: string;
     registrationType?: string;
     referrer?: {
       id?: string;
@@ -138,6 +169,10 @@ export interface NormalizedAgentRequest {
   canRequestAccess?: boolean;
   representation_type?: "owner_representation" | "renter_representation";
   representationSelectedAt?: string | null;
+  ownerRepresentationSelected?: boolean;
+  ownerRepresentationMatchCount?: number;
+  hasOwnerRepresentationMatches?: boolean;
+  hasNewOwnerRepresentationMatches?: boolean;
 }
 
 const formatCurrency = (value?: number) => {
@@ -270,13 +305,30 @@ export const normalizeAgentRequest = (
     archivedAt: req.archivedAt ?? null,
     status: req.status || (req.isActive ? "active" : "inactive"),
     preferences: req.preferences ?? [],
-    renterName: req.renterInfo?.renterName,
+    renterName:
+      req.renterName ||
+      req.renterInfo?.renterName ||
+      req.renterInfo?.fullName ||
+      req.referralInfo?.renterName,
     renterEmail: req.renterInfo?.renterEmail,
     renterPhone: req.renterInfo?.renterPhone,
     raw: req,
     canRequestAccess: req.canRequestAccess,
     representation_type: req.representation_type,
     representationSelectedAt: req.representationSelectedAt ?? null,
+    ownerRepresentationSelected: Boolean(req.ownerRepresentationSelected),
+    ownerRepresentationMatchCount:
+      req.ownerRepresentationMatchCount ??
+      req.ownerRepresentationStatus?.ownerRepresentationMatchCount ??
+      0,
+    hasOwnerRepresentationMatches: Boolean(
+      req.hasOwnerRepresentationMatches ??
+        req.ownerRepresentationStatus?.hasOwnerRepresentationMatches,
+    ),
+    hasNewOwnerRepresentationMatches: Boolean(
+      req.hasNewOwnerRepresentationMatches ??
+        req.ownerRepresentationStatus?.hasNewOwnerRepresentationMatches,
+    ),
   };
 };
 

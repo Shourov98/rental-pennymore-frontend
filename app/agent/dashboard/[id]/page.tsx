@@ -253,7 +253,16 @@ export default function AgentRenterRequestDetailsPage() {
 
         const data = await response
           .json()
-          .catch(() => ({}) as { success?: boolean; message?: string });
+          .catch(
+            () =>
+              ({}) as {
+                success?: boolean;
+                message?: string;
+                data?: {
+                  registeredAgentInfo?: NormalizedAgentRequest["raw"]["ownerRepresentationRegisteredAgent"];
+                };
+              },
+          );
 
         if (!response.ok || data?.success === false) {
           throw new Error(
@@ -539,6 +548,10 @@ export default function AgentRenterRequestDetailsPage() {
       registrationType: renterInfo.registrationType || "Not specified",
     };
   }, [currentUserId, renterInfo, request]);
+  const ownerRepresentationRegisteredAgent =
+    request?.raw?.ownerRepresentationRegisteredAgent;
+  const ownerRepresentationMatches =
+    request?.raw?.ownerRepresentationMatches ?? [];
   const canRequestAccess =
     request?.raw?.canRequestAccess &&
     (request?.raw?.status === "Available" || "available");
@@ -625,22 +638,47 @@ export default function AgentRenterRequestDetailsPage() {
           prev
             ? {
                 ...prev,
+                ownerRepresentationSelected:
+                  representationType === "owner_representation"
+                    ? true
+                    : prev.ownerRepresentationSelected,
+                representation_type:
+                  representationType === "owner_representation"
+                    ? "owner_representation"
+                    : representationType,
+                representationSelectedAt:
+                  representationType === "owner_representation"
+                    ? new Date().toISOString()
+                    : prev.representationSelectedAt,
                 raw: {
                   ...prev.raw,
-                  listingStatus: "matched",
-                  status: "matched",
-                  grantAccessStatus: "free",
-                  representation_type: representationType,
-                  representationSelectedAt: new Date().toISOString(),
+                  ...(representationType === "owner_representation"
+                    ? {
+                        ownerRepresentationSelected: true,
+                        ownerRepresentationRegisteredAgent:
+                          data?.data?.registeredAgentInfo ??
+                          prev.raw.ownerRepresentationRegisteredAgent,
+                        representation_type: representationType,
+                        representationSelectedAt: new Date().toISOString(),
+                      }
+                    : {
+                        listingStatus: "matched",
+                        status: "matched",
+                        grantAccessStatus: "free",
+                        representation_type: representationType,
+                        representationSelectedAt: new Date().toISOString(),
+                      }),
                 },
-                representation_type: representationType,
-                representationSelectedAt: new Date().toISOString(),
               }
             : prev,
         );
         setStatusMessage({
           type: "success",
-          message: data?.message || "Match request created.",
+          message:
+            data?.message ||
+            (representationType === "owner_representation"
+              ? "Owner representation selection saved."
+              : "Match request created."),
         });
       } else {
         const response = await fetch(
@@ -979,6 +1017,46 @@ export default function AgentRenterRequestDetailsPage() {
             </div>
           )}
 
+          {ownerRepresentationRegisteredAgent && (
+            <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+              <h2 className="text-lg font-semibold text-[#0A093D] mb-4">
+                Registered Renter Agent
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="flex items-center gap-3 border-b border-gray-100 pb-2">
+                  <User className="w-4 h-4 text-blue-600" />
+                  <div>
+                    <p className="text-xs text-gray-500">Name</p>
+                    <p className="text-gray-900 font-medium">
+                      {ownerRepresentationRegisteredAgent.fullName ||
+                        "Not provided"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 border-b border-gray-100 pb-2">
+                  <Mail className="w-4 h-4 text-blue-600" />
+                  <div>
+                    <p className="text-xs text-gray-500">Email</p>
+                    <p className="text-gray-900 font-medium">
+                      {ownerRepresentationRegisteredAgent.email ||
+                        "Not provided"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 border-b border-gray-100 pb-2">
+                  <Phone className="w-4 h-4 text-blue-600" />
+                  <div>
+                    <p className="text-xs text-gray-500">Phone</p>
+                    <p className="text-gray-900 font-medium">
+                      {ownerRepresentationRegisteredAgent.phoneNumber ||
+                        "Not provided"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Preferences */}
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -1068,6 +1146,31 @@ export default function AgentRenterRequestDetailsPage() {
                 <div aria-hidden="true" />
               </div>
             </div>
+
+            {ownerRepresentationMatches.length > 0 && (
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold text-blue-700 mb-3">
+                  Matched Owner Agents:
+                </h3>
+                <div className="space-y-1 text-sm">
+                  {ownerRepresentationMatches.map((agent, index) => (
+                    <p
+                      key={`${agent.agentId || agent.email || index}`}
+                      className={
+                        agent.isViewed ? "text-gray-500" : "text-gray-900"
+                      }
+                    >
+                      <span className="font-semibold">{index + 1}. </span>
+                      <span className="font-semibold">
+                        {agent.fullName || "Matched Agent"}
+                      </span>
+                      <span> | email: {agent.email || "N/A"}</span>
+                      <span> | number: {agent.phoneNumber || "N/A"}</span>
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </>
       )}

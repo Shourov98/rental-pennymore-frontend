@@ -101,15 +101,6 @@ export default function AgentRenterRequestsPage() {
   const currentAgentId = useSelector(
     (state: RootState) => state.auth.user?._id,
   );
-  const formatReferralName = (name: string) => {
-    const trimmed = name.trim();
-    const parts = trimmed.trim().split(/\s+/);
-    if (parts.length === 0) return name;
-    const firstInitial = parts[0][0]?.toUpperCase() ?? "";
-    const lastName = parts.length > 1 ? parts[parts.length - 1] : parts[0];
-    return `${firstInitial}.${lastName}`;
-  };
-
   const [requests, setRequests] = useState<NormalizedAgentRequest[]>([]);
   const [filters, setFilters] = useState<FilterType>(defaultFilters);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -539,7 +530,7 @@ export default function AgentRenterRequestsPage() {
                     <tr>
                       <th className="py-3 px-5 text-left">Date</th>
                       <th className="py-3 px-5 text-left">Request</th>
-                      <th className="py-3 px-5 text-left">Referral</th>
+                      <th className="py-3 px-5 text-left">Renter Name</th>
                       <th className="py-3 px-5 text-left">Scope</th>
                       <th className="py-3 px-5 text-left">Visibility</th>
                       <th className="py-3 px-5 text-left">Borough</th>
@@ -584,19 +575,9 @@ export default function AgentRenterRequestsPage() {
                             <div className="text-gray-900">{req.requestName}</div>
                           </td>
                           <td className="py-3 px-5">
-                            {(() => {
-                              const referralName =
-                                req.raw?.referralInfo?.referrer?.referrerName ||
-                                req.raw?.referralInfo?.referrer?.fullName ||
-                                "";
-                              return (
-                                <span className="inline-flex items-center rounded-full border border-blue-500 text-blue-600 px-2.5 py-0.5 text-xs font-semibold">
-                                  {isCurrentAgentsRequest
-                                    ? formatReferralName(referralName)
-                                    : "BeforeListed"}
-                                </span>
-                              );
-                            })()}
+                            <div className="font-medium text-gray-900">
+                              {req.renterName || "Not specified"}
+                            </div>
                           </td>
                           <td className="py-3 px-5">
                             <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
@@ -737,6 +718,23 @@ export default function AgentRenterRequestsPage() {
                             </div>
                           </td>
                           <td className="py-3 px-5 flex justify-end gap-2">
+                            {isCurrentAgentsRequest &&
+                            req.hasOwnerRepresentationMatches ? (
+                              <span
+                                className={`inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-emerald-900 px-2 text-xs font-bold text-white ${
+                                  req.hasNewOwnerRepresentationMatches
+                                    ? "opacity-100"
+                                    : "opacity-20"
+                                }`}
+                                title={
+                                  req.hasNewOwnerRepresentationMatches
+                                    ? "New landlord-agent match"
+                                    : "Viewed landlord-agent match"
+                                }
+                              >
+                                L!
+                              </span>
+                            ) : null}
                             {isCurrentAgentsRequest ? (
                               <button
                                 onClick={() => openArchiveDialog(req)}
