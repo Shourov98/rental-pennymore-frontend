@@ -60,6 +60,14 @@ const isCurrentAgentRegisteredForRequest = (
   return registeredAgentIds.includes(String(currentAgentId));
 };
 
+const formatRenterDisplayName = (fullName?: string | null) => {
+  const parts = fullName?.trim().split(/\s+/).filter(Boolean) ?? [];
+  if (parts.length === 0) return "Not specified";
+  if (parts.length === 1) return parts[0];
+
+  return `${parts[0]} ${parts[parts.length - 1][0]}`;
+};
+
 const readStoredFilters = (): FilterType => {
   if (typeof window === "undefined") return defaultFilters;
 
@@ -530,7 +538,7 @@ export default function AgentRenterRequestsPage() {
                     <tr>
                       <th className="py-3 px-5 text-left">Date</th>
                       <th className="py-3 px-5 text-left">Request</th>
-                      <th className="py-3 px-5 text-left">Renter Name</th>
+                      <th className="py-3 px-5 text-left">Renter</th>
                       <th className="py-3 px-5 text-left">Scope</th>
                       <th className="py-3 px-5 text-left">Visibility</th>
                       <th className="py-3 px-5 text-left">Borough</th>
@@ -576,7 +584,7 @@ export default function AgentRenterRequestsPage() {
                           </td>
                           <td className="py-3 px-5">
                             <div className="font-medium text-gray-900">
-                              {req.renterName || "Not specified"}
+                              {formatRenterDisplayName(req.renterName)}
                             </div>
                           </td>
                           <td className="py-3 px-5">
