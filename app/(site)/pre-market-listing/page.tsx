@@ -9,7 +9,11 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { selectReferrer, selectReferrerName } from "@/store/slices/authSlice";
+import {
+  logout,
+  selectReferrer,
+  selectReferrerName,
+} from "@/store/slices/authSlice";
 import { RootState } from "@/store/store";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
@@ -267,6 +271,12 @@ export default function PreMarketListingPage() {
       console.log(response);
 
       const data = await response.json().catch(() => null);
+
+      if (data?.errorCode === "EMAIL_BLOCKED") {
+        dispatch(logout());
+        router.replace("/signin");
+        return;
+      }
 
       if (!response.ok || data?.success === false) {
         throw new Error(

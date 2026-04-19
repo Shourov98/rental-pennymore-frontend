@@ -15,7 +15,7 @@ import {
 } from "./slices/authSlice";
 import { fetchAgentProfile } from "./slices/agentProfileSlice";
 import type { RootState } from "./store";
-import type { Tokens, UserBase, RenterProfile } from "./slices/authSlice";
+import type { UserBase, RenterProfile } from "./slices/authSlice";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -52,6 +52,11 @@ const isTokenValid = (token: string | null) => {
   return Boolean(expiry && expiry > Date.now());
 };
 
+const isEmailBlockedError = (error: FetchBaseQueryError | undefined) => {
+  const data = error?.data as { errorCode?: string } | undefined;
+  return data?.errorCode === "EMAIL_BLOCKED";
+};
+
 const baseQueryWithAuth: BaseQueryFn<
   string | FetchArgs,
   unknown,
@@ -59,6 +64,11 @@ const baseQueryWithAuth: BaseQueryFn<
 > = async (args, api, extraOptions) => {
   let result = await rawBaseQuery(args, api, extraOptions);
   const url = typeof args === "string" ? args : args.url;
+
+  if (isEmailBlockedError(result.error)) {
+    api.dispatch(logout());
+    return result;
+  }
 
   if (result.error?.status === 401 && !url.includes("/auth/refresh-token")) {
     const refreshResult = await rawBaseQuery(
@@ -73,12 +83,15 @@ const baseQueryWithAuth: BaseQueryFn<
     if (accessToken) {
       api.dispatch(refreshSuccess({ accessToken }));
       result = await rawBaseQuery(args, api, extraOptions);
+      if (isEmailBlockedError(result.error)) {
+        api.dispatch(logout());
+      }
     } else {
       api.dispatch(logout());
     }
-  } else if (result.error?.status === 401) {
+  } else if (result.error?.status === 401 || result.error?.status === 403) {
     const token = selectAccessToken(api.getState() as RootState);
-    if (!isTokenValid(token)) {
+    if (!isTokenValid(token) || isEmailBlockedError(result.error)) {
       api.dispatch(logout());
     }
   }
