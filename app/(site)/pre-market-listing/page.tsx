@@ -91,18 +91,20 @@ export default function PreMarketListingPage() {
     const activationLink = referrer?.activationLink?.trim() || "";
     if (!activationLink) return "";
 
-    const baseUrl = activationLink.split("?")[0].trim();
-    if (!baseUrl) return "";
+    try {
+      const url = new URL(activationLink);
+      if (!url.searchParams.has("env")) {
+        url.searchParams.set("env", "na1");
+      }
+      if (renterName) url.searchParams.set("renter_name", renterName);
+      if (renterEmail) url.searchParams.set("renter_email", renterEmail);
+      if (renterPhone) url.searchParams.set("renter_phone", renterPhone);
+      if (referrerName) url.searchParams.set("agent_name", referrerName);
 
-    const encode = (value: string) => value.replace(/ /g, "%20");
-
-    let url = `${baseUrl}?env=na1`;
-    if (renterName) url += `&renter_name=${encode(renterName)}`;
-    if (renterEmail) url += `&renter_email=${renterEmail}`;
-    if (renterPhone) url += `&renter_phone=${renterPhone}`;
-    if (referrerName) url += `&agent_name=${encode(referrerName)}`;
-
-    return url;
+      return url.toString();
+    } catch {
+      return "";
+    }
   }, [
     referrer?.activationLink,
     renterEmail,
@@ -252,8 +254,17 @@ export default function PreMarketListingPage() {
       scope: marketScope,
     };
 
+    let registrationWindow: Window | null = null;
+
     try {
       setIsSubmitting(true);
+      registrationWindow =
+        registrationLink && typeof window !== "undefined"
+          ? window.open("about:blank", "_blank")
+          : null;
+      if (registrationWindow) {
+        registrationWindow.opener = null;
+      }
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
       };
@@ -273,6 +284,9 @@ export default function PreMarketListingPage() {
       const data = await response.json().catch(() => null);
 
       if (data?.errorCode === "EMAIL_BLOCKED") {
+        if (registrationWindow && !registrationWindow.closed) {
+          registrationWindow.close();
+        }
         dispatch(logout());
         router.replace("/signin");
         return;
@@ -292,10 +306,17 @@ export default function PreMarketListingPage() {
       setShareConsent(false);
       setMarketScope("");
       setAgreementWarning(null);
-      if (registrationLink && typeof window !== "undefined") {
-        window.open(registrationLink, "_blank", "noopener,noreferrer");
+      if (registrationLink) {
+        if (registrationWindow) {
+          registrationWindow.location.href = registrationLink;
+        } else if (typeof window !== "undefined") {
+          window.open(registrationLink, "_blank", "noopener,noreferrer");
+        }
       }
     } catch (error) {
+      if (registrationWindow && !registrationWindow.closed) {
+        registrationWindow.close();
+      }
       const message =
         error instanceof Error
           ? error.message
@@ -774,14 +795,20 @@ export default function PreMarketListingPage() {
                 <div className="space-y-2 text-left">
                   <p className="font-semibold text-black">
                     After signing, return here. If the new window doesn’t open,
-                    <a
-                      href={registrationLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center text-[15px] font-medium text-blue-700 underline decoration-blue-700/70 hover:text-blue-800"
-                    >
-                      👉 Click here to complete it
-                    </a>
+                    {registrationLink ? (
+                      <a
+                        href={registrationLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center text-[15px] font-medium text-blue-700 underline decoration-blue-700/70 hover:text-blue-800"
+                      >
+                        👉 Click here to complete it
+                      </a>
+                    ) : (
+                      <span className="inline-flex items-center justify-center text-[15px] font-medium text-slate-500">
+                        registration link is unavailable
+                      </span>
+                    )}
                   </p>
                 </div>
 
