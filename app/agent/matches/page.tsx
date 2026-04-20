@@ -38,6 +38,35 @@ const LIST_STATE_STORAGE_KEY = "agent-matches-list-state";
 const defaultFilters: FilterType = getEmptyFilters();
 const NAVIGATION_STORAGE_KEY = "agent-matches-navigation";
 
+const isCurrentAgentRegisteredForRequest = (
+  request: NormalizedAgentMatch,
+  currentAgentId?: string | null,
+) => {
+  if (!currentAgentId) return false;
+
+  const raw = request.raw;
+  const registeredAgentIds = [
+    raw?.referralAgentId,
+    raw?.referrerId,
+    raw?.referralInfo?.referrer?.id,
+    raw?.referralInfo?.referrer?.referrerId,
+    raw?.renterInfo?.referralInfo?.referrerId,
+    raw?.renterInfo?.referralInfo?.referredByAdmin?.referredBy,
+  ]
+    .map((value) => (value ? String(value) : ""))
+    .filter(Boolean);
+
+  return registeredAgentIds.includes(String(currentAgentId));
+};
+
+const formatRenterDisplayName = (fullName?: string | null) => {
+  const parts = fullName?.trim().split(/\s+/).filter(Boolean) ?? [];
+  if (parts.length === 0) return "Not specified";
+  if (parts.length === 1) return parts[0];
+
+  return `${parts[0]} ${parts[parts.length - 1][0]}`;
+};
+
 const readStoredFilters = (): FilterType => {
   if (typeof window === "undefined") return defaultFilters;
 
@@ -78,14 +107,6 @@ export default function AgentMatchesPage() {
   const currentAgentId = useSelector(
     (state: RootState) => state.auth.user?._id,
   );
-  const formatReferralName = (name: string) => {
-    const trimmed = name.trim();
-    const parts = trimmed.trim().split(/\s+/);
-    if (parts.length === 0) return name;
-    const firstInitial = parts[0][0]?.toUpperCase() ?? "";
-    const lastName = parts.length > 1 ? parts[parts.length - 1] : parts[0];
-    return `${firstInitial}.${lastName}`;
-  };
 
   const [requests, setRequests] = useState<NormalizedAgentMatch[]>([]);
   const [filters, setFilters] = useState<FilterType>(defaultFilters);
@@ -95,6 +116,8 @@ export default function AgentMatchesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mutatingShareId, setMutatingShareId] = useState<string | null>(null);
+  const [mutatingRegistrationDisclosureId, setMutatingRegistrationDisclosureId] =
+    useState<string | null>(null);
   const [archiveTarget, setArchiveTarget] =
     useState<NormalizedAgentMatch | null>(null);
   const [archiveReason, setArchiveReason] = useState<ArchiveReason | "">("");
@@ -293,6 +316,86 @@ export default function AgentMatchesPage() {
     }
   };
 
+  const handleConfirmRegistrationDisclosure = async (
+    request: NormalizedAgentMatch,
+  ) => {
+    if (request.registrationDisclosureConfirmed) return;
+
+    const localId = request.id;
+    const apiRequestId = request.raw?._id;
+
+    if (!apiRequestId) {
+      setError("We couldn't save the document confirmation for this request.");
+      return;
+    }
+
+    setError(null);
+    setMutatingRegistrationDisclosureId(localId);
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(
+        `${API_BASE_URL}/pre-market/${apiRequestId}/registration-disclosure/confirm`,
+        {
+          method: "PATCH",
+          headers,
+        },
+      );
+
+      const data = await response.json().catch(
+        () =>
+          ({}) as {
+            success?: boolean;
+            message?: string;
+            data?: {
+              registrationDisclosureConfirmedAt?: string | null;
+            };
+          },
+      );
+
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message ||
+            "We couldn't save the document confirmation right now.",
+        );
+      }
+
+      const confirmedAt =
+        data?.data?.registrationDisclosureConfirmedAt ?? new Date().toISOString();
+
+      setRequests((prev) => {
+        const next = prev.map((req) => {
+          if (req.id !== localId) return req;
+
+          return {
+            ...req,
+            registrationDisclosureConfirmed: true,
+            registrationDisclosureConfirmedAt: confirmedAt,
+            raw: {
+              ...req.raw,
+              registrationDisclosureConfirmed: true,
+              registrationDisclosureConfirmedAt: confirmedAt,
+            },
+          };
+        });
+        cacheAgentMatches(next);
+        return next;
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "We couldn't save the document confirmation right now.";
+      setError(message);
+    } finally {
+      setMutatingRegistrationDisclosureId(null);
+    }
+  };
+
   const openArchiveDialog = (request: NormalizedAgentMatch) => {
     setArchiveTarget(request);
     setArchiveReason("");
@@ -423,12 +526,12 @@ export default function AgentMatchesPage() {
           {hasFilteredResults ? (
             <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="min-w-[1200px] w-full text-sm">
+                <table className="min-w-[1320px] w-full text-sm">
                   <thead className="bg-blue-100 text-gray-800">
                     <tr>
                       <th className="py-3 px-5 text-left">Date</th>
                       <th className="py-3 px-5 text-left">Request</th>
-                      <th className="py-3 px-5 text-left">Referral</th>
+                      <th className="py-3 px-5 text-left">Renter</th>
                       <th className="py-3 px-5 text-left">Scope</th>
                       <th className="py-3 px-5 text-left">Visibility</th>
                       <th className="py-3 px-5 text-left">Borough</th>
@@ -436,21 +539,25 @@ export default function AgentMatchesPage() {
                       <th className="py-3 px-5 text-left">Beds</th>
                       <th className="py-3 px-5 text-left">Baths</th>
                       <th className="py-3 px-5 text-left">Status</th>
+                      <th className="py-3 px-5 text-center">
+                        Registration / Disclosure
+                      </th>
                       <th className="py-3 px-5 text-right">Actions</th>
                     </tr>
                   </thead>
 
                   <tbody>
                     {filteredRequests.map((req) => {
-                      const requestReferralAgentId =
-                        req.raw?.referralAgentId ?? null;
                       const isCurrentAgentsRequest =
-                        Boolean(currentAgentId) &&
-                        Boolean(requestReferralAgentId) &&
-                        currentAgentId === requestReferralAgentId;
+                        isCurrentAgentRegisteredForRequest(req, currentAgentId);
                       const shareConsent = req.raw?.shareConsent;
                       const visibility = req.raw?.visibility;
                       const isVisibilityLocked = shareConsent === false;
+                      const isRegistrationDisclosureLocked =
+                        !req.registrationDisclosureConfirmed;
+                      const isShareDisabledByDocuments =
+                        req.isPrivateVisibility &&
+                        isRegistrationDisclosureLocked;
 
                       return (
                         <tr
@@ -466,18 +573,9 @@ export default function AgentMatchesPage() {
                             {req.requestName}
                           </td>
                           <td className="py-3 px-5">
-                            {(() => {
-                              const referralName =
-                                req.raw?.renterInfo?.referralInfo?.referrerName ||
-                                req.raw?.renterInfo?.referralInfo?.fullName ||
-                                "";
-
-                              return (
-                                <span className="inline-flex items-center rounded-full border border-blue-500 text-blue-600 px-2.5 py-0.5 text-xs font-semibold">
-                                  {formatReferralName(referralName)}
-                                </span>
-                              );
-                            })()}
+                            <div className="font-medium text-gray-900">
+                              {formatRenterDisplayName(req.renterName)}
+                            </div>
                           </td>
                           <td className="py-3 px-5">
                             <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
@@ -492,13 +590,16 @@ export default function AgentMatchesPage() {
                                   onClick={() => handleToggleShare(req)}
                                   disabled={
                                     mutatingShareId === req.id ||
-                                    isVisibilityLocked
+                                    isVisibilityLocked ||
+                                    isShareDisabledByDocuments
                                   }
                                   className="inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                                   aria-label={`Toggle visibility for ${req.requestName}`}
                                   title={
                                     isVisibilityLocked
                                       ? "Visibility is locked for this request"
+                                      : isShareDisabledByDocuments
+                                        ? "Registration / Disclosure confirmation is required before sharing this request"
                                       : "Toggle request visibility"
                                   }
                                 >
@@ -565,6 +666,31 @@ export default function AgentMatchesPage() {
                             >
                               {req.isActive ? "Matched" : "Inactive"}
                             </span>
+                          </td>
+                          <td className="py-3 px-5">
+                            <div className="flex items-center justify-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={req.registrationDisclosureConfirmed}
+                                disabled={
+                                  req.registrationDisclosureConfirmed ||
+                                  mutatingRegistrationDisclosureId === req.id
+                                }
+                                onChange={(event) => {
+                                  if (event.target.checked) {
+                                    handleConfirmRegistrationDisclosure(req);
+                                  }
+                                }}
+                                aria-label={`Confirm Registration / Disclosure for ${req.requestName}`}
+                                className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
+                              />
+                              {isRegistrationDisclosureLocked ? (
+                                <Lock
+                                  className="h-4 w-4 text-gray-500"
+                                  aria-hidden="true"
+                                />
+                              ) : null}
+                            </div>
                           </td>
                           <td className="py-3 px-5 flex justify-end gap-2">
                             <button

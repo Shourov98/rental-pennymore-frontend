@@ -388,7 +388,7 @@ export default function SignupForm({ role }: { role: SignupRole }) {
           <div
             className={`text-sm sm:text-base ${
               statusMessage.type === "error" ? "text-red-600" : "text-green-600"
-            }`}
+            } whitespace-pre-line`}
           >
             {statusMessage.message}
           </div>

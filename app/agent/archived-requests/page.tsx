@@ -42,6 +42,14 @@ const isCurrentAgentRegisteredForRequest = (
   return registeredAgentIds.includes(String(currentAgentId));
 };
 
+const formatRenterDisplayName = (fullName?: string | null) => {
+  const parts = fullName?.trim().split(/\s+/).filter(Boolean) ?? [];
+  if (parts.length === 0) return "Not specified";
+  if (parts.length === 1) return parts[0];
+
+  return `${parts[0]} ${parts[parts.length - 1][0]}`;
+};
+
 export default function AgentArchivedRequestsPage() {
   const router = useRouter();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
@@ -216,7 +224,7 @@ export default function AgentArchivedRequestsPage() {
                   <tr>
                     <th className="py-3 px-5 text-left">Date</th>
                     <th className="py-3 px-5 text-left">Request</th>
-                    <th className="py-3 px-5 text-left">Referral</th>
+                    <th className="py-3 px-5 text-left">Renter</th>
                     <th className="py-3 px-5 text-left">Scope</th>
                     <th className="py-3 px-5 text-left">Visibility</th>
                     <th className="py-3 px-5 text-left">Borough</th>
@@ -224,6 +232,9 @@ export default function AgentArchivedRequestsPage() {
                     <th className="py-3 px-5 text-left">Beds</th>
                     <th className="py-3 px-5 text-left">Baths</th>
                     <th className="py-3 px-5 text-left">Status</th>
+                    <th className="py-3 px-5 text-center">
+                      Registration / Disclosure
+                    </th>
                     <th className="py-3 px-5 text-left">Archive Reason</th>
                     <th className="py-3 px-5 text-right">Actions</th>
                   </tr>
@@ -234,10 +245,8 @@ export default function AgentArchivedRequestsPage() {
                       request,
                       currentAgentId,
                     );
-                    const referralName =
-                      request.raw?.referralInfo?.referrer?.referrerName ||
-                      request.raw?.referralInfo?.referrer?.fullName ||
-                      "BeforeListed";
+                    const isRegistrationDisclosureLocked =
+                      !request.registrationDisclosureConfirmed;
 
                     return (
                       <tr
@@ -250,10 +259,10 @@ export default function AgentArchivedRequestsPage() {
                         <td className="py-3 px-5 text-gray-900">
                           {request.requestName}
                         </td>
-                        <td className="py-3 px-5">
-                          <span className="inline-flex items-center rounded-full border border-blue-500 text-blue-600 px-2.5 py-0.5 text-xs font-semibold">
-                            {isRegistered ? referralName : "BeforeListed"}
-                          </span>
+                        <td className="py-3 px-5 text-gray-900">
+                          <div className="font-medium text-gray-900">
+                            {formatRenterDisplayName(request.renterName)}
+                          </div>
                         </td>
                         <td className="py-3 px-5">
                           <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
@@ -293,6 +302,23 @@ export default function AgentArchivedRequestsPage() {
                           <span className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
                             Archived
                           </span>
+                        </td>
+                        <td className="py-3 px-5">
+                          <div className="flex items-center justify-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={request.registrationDisclosureConfirmed}
+                              disabled
+                              aria-label={`Registration / Disclosure status for ${request.requestName}`}
+                              className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
+                            />
+                            {isRegistrationDisclosureLocked ? (
+                              <Lock
+                                className="h-4 w-4 text-gray-500"
+                                aria-hidden="true"
+                              />
+                            ) : null}
+                          </div>
                         </td>
                         <td className="py-3 px-5">
                           {request.archiveReasonLabel || "Archived"}

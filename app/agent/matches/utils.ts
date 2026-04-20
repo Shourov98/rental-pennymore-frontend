@@ -6,7 +6,9 @@ export interface ApiAgentMatch {
   requestId?: string;
   requestName?: string;
   renterId?: string;
+  renterName?: string;
   referralAgentId?: string;
+  referrerId?: string;
   movingDateRange?: {
     earliest?: string;
     latest?: string;
@@ -28,6 +30,8 @@ export interface ApiAgentMatch {
   shareConsent?: boolean;
   scope?: string;
   visibility?: string;
+  registrationDisclosureConfirmed?: boolean;
+  registrationDisclosureConfirmedAt?: string | null;
   isArchivedForAgent?: boolean;
   archiveReason?: string | null;
   archiveReasonLabel?: string | null;
@@ -38,6 +42,20 @@ export interface ApiAgentMatch {
   representationSelectedAt?: string | null;
   preferences?: string[];
   isActive?: boolean;
+  referralInfo?: {
+    renterName?: string;
+    registrationType?: string;
+    referrer?: {
+      id?: string;
+      referrerId?: string;
+      referrerName?: string;
+      fullName?: string;
+      referrerEmail?: string;
+      referrerPhoneNumber?: string;
+      referralCode?: string;
+      referrerType?: string;
+    } | null;
+  } | null;
   renterInfo?: {
     renterId?: string;
     renterName?: string;
@@ -95,6 +113,8 @@ export interface NormalizedAgentMatch {
   scopeLabel: string;
   visibilityLabel: string;
   isPrivateVisibility: boolean;
+  registrationDisclosureConfirmed: boolean;
+  registrationDisclosureConfirmedAt?: string | null;
   isArchivedForAgent?: boolean;
   archiveReason?: string | null;
   archiveReasonLabel?: string | null;
@@ -201,6 +221,11 @@ export const normalizeAgentMatch = (
     scopeLabel: formatScope(req.scope),
     visibilityLabel,
     isPrivateVisibility,
+    registrationDisclosureConfirmed: Boolean(
+      req.registrationDisclosureConfirmed,
+    ),
+    registrationDisclosureConfirmedAt:
+      req.registrationDisclosureConfirmedAt ?? null,
     isArchivedForAgent: Boolean(req.isArchivedForAgent),
     archiveReason: req.archiveReason ?? null,
     archiveReasonLabel: req.archiveReasonLabel ?? null,
@@ -211,7 +236,11 @@ export const normalizeAgentMatch = (
     representationSelectedAt: req.representationSelectedAt ?? null,
     isActive: req.isActive ?? false,
     preferences: req.preferences ?? [],
-    renterName: req.renterInfo?.renterName || req.renterInfo?.fullName,
+    renterName:
+      req.renterName ||
+      req.renterInfo?.renterName ||
+      req.renterInfo?.fullName ||
+      req.referralInfo?.renterName,
     renterEmail: req.renterInfo?.renterEmail || req.renterInfo?.email,
     renterPhone: req.renterInfo?.renterPhone || req.renterInfo?.phoneNumber,
     raw: req,
