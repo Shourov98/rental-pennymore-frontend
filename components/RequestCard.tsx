@@ -1,4 +1,24 @@
-import { CalendarDays, BedDouble, Bath, Pencil, Trash2 } from "lucide-react";
+import {
+  CalendarDays,
+  BedDouble,
+  Bath,
+  Pencil,
+  Trash2,
+  ExternalLink,
+} from "lucide-react";
+
+interface RequestPauseNotice {
+  statusLabel?: string;
+  tone?: "paused" | "closed";
+  eyebrow: string;
+  title: string;
+  description: string;
+  actionLabel?: string;
+  actionHref?: string;
+  actionDisabled?: boolean;
+  actionLoading?: boolean;
+  onAction?: () => void;
+}
 
 interface RequestCardProps {
   requestName: string;
@@ -9,6 +29,7 @@ interface RequestCardProps {
   bathsLabel: string;
   status: "active" | "deactive";
   disableActivate?: boolean;
+  pauseNotice?: RequestPauseNotice | null;
   isMutating?: boolean;
   onEdit: () => void;
   onDelete: () => void;
@@ -23,109 +44,157 @@ export default function RequestCard({
   bedsLabel,
   bathsLabel,
   status,
-  disableActivate = false,
-  isMutating = false,
+  pauseNotice = null,
   onEdit,
   onDelete,
-  onToggleStatus,
 }: RequestCardProps) {
   const isActive = status === "active";
+  const statusLabel = isActive ? "Active" : "Deactive";
+  const statusClasses = pauseNotice
+    ? pauseNotice.tone === "closed"
+      ? "bg-slate-200 text-slate-800"
+      : "bg-amber-100 text-amber-800"
+    : isActive
+      ? "bg-green-100 text-green-700"
+      : "bg-red-100 text-red-700";
+  const noticeClasses =
+    pauseNotice?.tone === "closed"
+      ? "border-[#7A7A7A] bg-[#EEF1F5]"
+      : "border-[#7E7048] bg-[#FFF4C7]";
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-6 flex flex-col justify-between transition hover:shadow-md hover:-translate-y-1 duration-200">
-      {/* Request Name + Status */}
-      <div className="flex justify-between items-center mb-3">
-        <h3 className="text-lg font-semibold text-[#0B0B2C]">{requestName}</h3>
+    <div className="w-full max-w-[660px] rounded-xl border border-[#E6EBF2] bg-white px-4 py-5 shadow-[0_1px_2px_rgba(16,24,40,0.06)]">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="min-w-0 flex-1 md:max-w-[215px]">
+          {/* Request Name + Status */}
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h3 className="text-[14px] font-semibold text-[#121A2C]">
+              {requestName}
+            </h3>
 
-        <span
-          className={`px-3 py-1 text-xs rounded-full font-medium ${
-            isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-          }`}
-        >
-          {isActive ? "Active" : "Deactive"}
-        </span>
-      </div>
+            {!pauseNotice ? (
+              <span
+                className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-medium ${statusClasses}`}
+              >
+                {statusLabel}
+              </span>
+            ) : null}
+          </div>
 
-      {/* Borough + Neighborhood */}
-      {locationEntries.length > 0 && (
-        <div className="mt-1 flex flex-col gap-2">
-          {locationEntries.map((loc, index) => (
-            <div
-              key={`${loc.borough}-${index}`}
-              className="flex flex-col leading-snug"
-            >
-              <span className="font-semibold text-gray-900">{loc.borough}</span>
-              <span className="text-gray-600">{loc.neighborhoods}</span>
+          {/* Borough + Neighborhood */}
+          {locationEntries.length > 0 && (
+            <div className="mt-1 flex flex-col gap-1.5">
+              {locationEntries.map((loc, index) => (
+                <div
+                  key={`${loc.borough}-${index}`}
+                  className="flex flex-col leading-snug"
+                >
+                  <span className="text-[13px] font-semibold text-[#1A2234]">
+                    {loc.borough}
+                  </span>
+                  <span className="text-[11px] text-[#667085]">
+                    {loc.neighborhoods}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+
+          {/* Date */}
+          <div className="mt-4 flex items-center gap-2 text-[11px] text-[#7B8598]">
+            <CalendarDays className="h-3.5 w-3.5" />
+            <span>{dateRange}</span>
+          </div>
+
+          {/* Price */}
+          <div className="mt-4">
+            <p className="text-[11px] text-[#7B8598]">Price Range</p>
+            <p className="text-[24px] font-bold leading-none text-[#111B30]">
+              {priceRange}
+            </p>
+          </div>
+
+          {/* Beds & Baths */}
+          <div className="mt-3 flex items-center gap-3 text-[11px] text-[#667085]">
+            <div className="flex items-center gap-1">
+              <BedDouble className="h-3.5 w-3.5 text-[#7B8598]" />
+              <span>{bedsLabel}</span>
+            </div>
+
+            <span className="text-[#D0D5DD]">|</span>
+
+            <div className="flex items-center gap-1">
+              <Bath className="h-3.5 w-3.5 text-[#7B8598]" />
+              <span>{bathsLabel}</span>
+            </div>
+          </div>
         </div>
-      )}
 
-      {/* Date */}
-      <div className="flex items-center gap-2 text-gray-500 text-sm mt-4">
-        <CalendarDays className="w-4 h-4" />
-        <span>{dateRange}</span>
-      </div>
-
-      {/* Price */}
-      <div className="mt-4">
-        <p className="text-gray-500 text-sm">Price Range</p>
-        <p className="text-xl font-bold text-[#0B0B2C]">{priceRange}</p>
-      </div>
-
-      {/* Beds & Baths */}
-      <div className="flex items-center gap-3 mt-3 text-gray-600 text-sm">
-        <div className="flex items-center gap-1">
-          <BedDouble className="w-4 h-4 text-gray-500" />
-          <span>{bedsLabel}</span>
-        </div>
-
-        <span className="text-gray-300">|</span>
-
-        <div className="flex items-center gap-1">
-          <Bath className="w-4 h-4 text-gray-500" />
-          <span>{bathsLabel}</span>
-        </div>
+        {pauseNotice ? (
+          <div
+            className={`w-full shrink-0 rounded-[4px] border px-4 py-3 md:w-[372px] ${noticeClasses}`}
+          >
+            <p className="text-center text-[10px] font-bold uppercase leading-none tracking-[0.12em] text-[#353535]">
+              {pauseNotice.eyebrow}
+            </p>
+            <p className="mt-1 text-center text-[12px] font-bold leading-none text-[#232323]">
+              {pauseNotice.title}
+            </p>
+            <p className="mt-3 text-[10px] leading-[1.25] text-[#4B5565]">
+              {pauseNotice.description}
+            </p>
+            {pauseNotice.actionLabel && pauseNotice.actionHref ? (
+              <a
+                href={pauseNotice.actionHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex cursor-pointer items-center gap-1 rounded-full border border-[#D7C685] bg-white px-3 py-1.5 text-[10px] font-semibold text-[#1F2937] transition hover:bg-[#FFFCF0]"
+              >
+                <span aria-hidden="true">👉</span>
+                <span>{pauseNotice.actionLabel}</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            ) : pauseNotice.actionLabel && pauseNotice.onAction ? (
+              <button
+                type="button"
+                onClick={pauseNotice.onAction}
+                disabled={pauseNotice.actionDisabled || pauseNotice.actionLoading}
+                className="mt-3 inline-flex cursor-pointer items-center gap-1 rounded-full border border-[#D7C685] bg-white px-3 py-1.5 text-[10px] font-semibold text-[#1F2937] transition hover:bg-[#FFFCF0] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {pauseNotice.actionLoading ? (
+                  "Please wait..."
+                ) : (
+                  <>
+                    <span aria-hidden="true">👉</span>
+                    <span>{pauseNotice.actionLabel}</span>
+                  </>
+                )}
+              </button>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       {/* Buttons */}
-      <div className="mt-6 flex flex-col gap-3">
+      <div className="mt-4 flex flex-col gap-3">
         {/* First Row: Edit + Delete */}
         <div className="flex gap-3">
           {/* Edit */}
           <button
             onClick={onEdit}
-            className="w-full py-2.5 bg-blue-50 text-blue-600 hover:bg-blue-500 hover:text-white font-medium text-sm rounded-2xl transition-all flex items-center justify-center gap-2"
+            className="flex h-8 w-full cursor-pointer items-center justify-center gap-1.5 rounded-full bg-[#EEF5FF] text-[11px] font-medium text-[#5A84FF] transition hover:bg-[#DCE9FF]"
           >
-            <Pencil size={16} /> Edit
+            <Pencil size={12} /> Edit
           </button>
 
           {/* Delete */}
           <button
             onClick={onDelete}
-            className="w-full py-2.5 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white font-medium text-sm rounded-2xl transition-all flex items-center justify-center gap-2"
+            className="flex h-8 w-full cursor-pointer items-center justify-center gap-1.5 rounded-full bg-[#FFF1F0] text-[11px] font-medium text-[#F46F6F] transition hover:bg-[#FFE2E0]"
           >
-            <Trash2 size={16} /> Delete
+            <Trash2 size={12} /> Delete
           </button>
         </div>
-
-        {/* Second Row: Activate / Deactivate */}
-        {/* <button
-          disabled={isMutating || (!isActive && disableActivate)}
-          onClick={onToggleStatus}
-          className={`w-full py-2.5 font-medium text-sm rounded-2xl transition-all
-          ${
-            isActive
-              ? "bg-red-50 text-red-600 hover:bg-red-500 hover:text-white"
-              : disableActivate
-              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-              : "bg-green-50 text-green-600 hover:bg-green-500 hover:text-white"
-          }
-          ${isMutating ? "opacity-70 cursor-not-allowed" : ""}
-        `}
-        >
-          {isMutating ? "Please wait..." : isActive ? "Deactivate" : "Activate"}
-        </button> */}
       </div>
     </div>
   );

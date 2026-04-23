@@ -10,6 +10,23 @@ import Link from "next/link";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 type RequestStatus = "active" | "deactive";
+type ArchiveDisplayReason =
+  | "registration_missing"
+  | "search_inactive"
+  | "client_placed";
+
+interface ApiArchiveDisplay {
+  reason?: ArchiveDisplayReason | null;
+  source?: string | null;
+  archivedAt?: string | null;
+  statusLabel?: string;
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  actionLabel?: string;
+  actionType?: "external_link" | "reactivate_search" | null;
+  actionHref?: string | null;
+}
 
 interface ApiRequest {
   _id?: string;
@@ -32,6 +49,9 @@ interface ApiRequest {
   bathrooms?: string[];
   status?: string;
   isActive?: boolean;
+  archiveReason?: string | null;
+  archiveReasonLabel?: string | null;
+  archiveDisplay?: ApiArchiveDisplay | null;
 }
 
 interface ApiResponse {
@@ -60,6 +80,7 @@ interface Request {
   bathsLabel: string;
   status: RequestStatus;
   disableActivate: boolean;
+  archiveDisplay: ApiArchiveDisplay | null;
   isMutating?: boolean;
 }
 
@@ -167,6 +188,7 @@ export default function RenterDetails() {
     hasPrev: false,
   });
   const [mutatingId, setMutatingId] = useState<string | null>(null);
+  const [isReactivatedModalOpen, setIsReactivatedModalOpen] = useState(false);
   const limit = 10;
 
   useEffect(() => {
@@ -237,6 +259,7 @@ export default function RenterDetails() {
               bathsLabel: formatBathrooms(req.bathrooms),
               status: expired || !resolvedActive ? "deactive" : "active",
               disableActivate: expired,
+              archiveDisplay: req.archiveDisplay ?? null,
             };
           },
         );
@@ -359,6 +382,69 @@ export default function RenterDetails() {
     }
   };
 
+  const handleArchiveAction = async (request: Request) => {
+    const actionType = request.archiveDisplay?.actionType;
+    const actionHref = request.archiveDisplay?.actionHref;
+
+    if (actionType === "external_link" && actionHref) {
+      window.open(actionHref, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    if (actionType !== "reactivate_search") {
+      return;
+    }
+
+    setError(null);
+    setMutatingId(request.id);
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) {
+        headers.Authorization = `Bearer ${accessToken}`;
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/pre-market/${request.id}/reactivate-search`,
+        {
+          method: "PATCH",
+          headers,
+        },
+      );
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message ||
+            "We couldn't reactivate your search right now. Please try again.",
+        );
+      }
+
+      setRequests((prev) =>
+        prev.map((item) =>
+          item.id === request.id
+            ? {
+                ...item,
+                status: "active",
+                archiveDisplay: null,
+              }
+            : item,
+        ),
+      );
+      setIsReactivatedModalOpen(true);
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "We couldn't reactivate your search right now. Please try again.";
+      setError(message);
+    } finally {
+      setMutatingId(null);
+    }
+  };
+
   const handlePreviousPage = () => {
     if (pagination?.hasPrev) {
       setPage((prev) => Math.max(1, prev - 1));
@@ -397,7 +483,7 @@ export default function RenterDetails() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="flex flex-col gap-5">
             {requests.map((req) => (
               <RequestCard
                 key={req.id}
@@ -409,6 +495,32 @@ export default function RenterDetails() {
                 bathsLabel={req.bathsLabel}
                 status={req.status}
                 disableActivate={req.disableActivate}
+                pauseNotice={
+                  req.archiveDisplay
+                    ? {
+                        statusLabel:
+                          req.archiveDisplay.statusLabel || "Search Paused",
+                        tone:
+                          req.archiveDisplay.reason === "client_placed"
+                            ? "closed"
+                            : "paused",
+                        eyebrow:
+                          req.archiveDisplay.eyebrow || "SEARCH PAUSED",
+                        title: req.archiveDisplay.title || "Archived",
+                        description: req.archiveDisplay.description || "",
+                        actionLabel: req.archiveDisplay.actionLabel || undefined,
+                        actionHref: req.archiveDisplay.actionHref || undefined,
+                        actionDisabled: mutatingId === req.id,
+                        actionLoading:
+                          mutatingId === req.id &&
+                          req.archiveDisplay.actionType === "reactivate_search",
+                        onAction:
+                          req.archiveDisplay.actionType === "reactivate_search"
+                            ? () => handleArchiveAction(req)
+                            : undefined,
+                      }
+                    : null
+                }
                 isMutating={mutatingId === req.id}
                 onToggleStatus={() => toggleRequestStatus(req.id)}
                 onEdit={() => handleEdit(req.id)}
@@ -451,6 +563,26 @@ export default function RenterDetails() {
           )}
         </>
       )}
+
+      {isReactivatedModalOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-xl">
+            <h2 className="text-2xl font-bold text-gray-900">
+              Search Reactivated
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-gray-700 sm:text-base">
+              Your agent has been notified that your search is now active.
+            </p>
+            <button
+              type="button"
+              onClick={() => setIsReactivatedModalOpen(false)}
+              className="mt-6 w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

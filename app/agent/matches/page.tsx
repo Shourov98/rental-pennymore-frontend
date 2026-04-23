@@ -552,7 +552,9 @@ export default function AgentMatchesPage() {
                         isCurrentAgentRegisteredForRequest(req, currentAgentId);
                       const shareConsent = req.raw?.shareConsent;
                       const visibility = req.raw?.visibility;
-                      const isVisibilityLocked = shareConsent === false;
+                      const isArchivedForAgent = Boolean(req.isArchivedForAgent);
+                      const isVisibilityLocked =
+                        shareConsent === false || isArchivedForAgent;
                       const isRegistrationDisclosureLocked =
                         !req.registrationDisclosureConfirmed;
                       const isShareDisabledByDocuments =
@@ -596,7 +598,9 @@ export default function AgentMatchesPage() {
                                   className="inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                                   aria-label={`Toggle visibility for ${req.requestName}`}
                                   title={
-                                    isVisibilityLocked
+                                    isArchivedForAgent
+                                      ? "Visibility is locked while this request is archived"
+                                      : isVisibilityLocked
                                       ? "Visibility is locked for this request"
                                       : isShareDisabledByDocuments
                                         ? "Registration / Disclosure confirmation is required before sharing this request"
@@ -696,7 +700,8 @@ export default function AgentMatchesPage() {
                             <button
                               onClick={() => openArchiveDialog(req)}
                               title="Archive request"
-                              className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"
+                              disabled={isArchivedForAgent}
+                              className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                               <Archive className="w-4 h-4 text-gray-600" />
                             </button>
