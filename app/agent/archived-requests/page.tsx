@@ -397,6 +397,12 @@ export default function AgentArchivedRequestsPage() {
 
       {unarchiveTarget ? (
         <UnarchiveRequestDialog
+          mode={
+            isCurrentAgentRegisteredForRequest(unarchiveTarget, currentAgentId)
+              ? "registered"
+              : "matched"
+          }
+          renterName={unarchiveTarget.renterName}
           reasonLabel={unarchiveTarget.archiveReasonLabel || "Archived"}
           isSubmitting={isUnarchiving}
           onCancel={() => {

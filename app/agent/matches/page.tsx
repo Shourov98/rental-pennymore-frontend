@@ -783,6 +783,7 @@ export default function AgentMatchesPage() {
       {archiveTarget ? (
         <ArchiveRequestDialog
           mode="matched"
+          renterName={archiveTarget.renterName}
           selectedReason={archiveReason}
           isSubmitting={isArchiving}
           onReasonChange={setArchiveReason}

@@ -466,7 +466,7 @@ export default function RenterDetails() {
 
       {/* REQUEST CARDS */}
       {isLoading ? (
-        <div className="text-center text-gray-500 py-8">Loading requests…</div>
+        <div className="py-8 text-center text-gray-500">Loading requests...</div>
       ) : error ? (
         <div className="bg-red-50 text-red-700 border border-red-100 rounded-xl p-4 text-sm">
           {error}

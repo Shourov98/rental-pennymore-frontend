@@ -4,6 +4,7 @@ import {
   Bath,
   Pencil,
   Trash2,
+  ArrowRight,
   ExternalLink,
 } from "lucide-react";
 
@@ -66,7 +67,6 @@ export default function RequestCard({
     <div className="w-full max-w-[660px] rounded-xl border border-[#E6EBF2] bg-white px-4 py-5 shadow-[0_1px_2px_rgba(16,24,40,0.06)]">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0 flex-1 md:max-w-[215px]">
-          {/* Request Name + Status */}
           <div className="mb-3 flex items-center justify-between gap-3">
             <h3 className="text-[14px] font-semibold text-[#121A2C]">
               {requestName}
@@ -81,7 +81,6 @@ export default function RequestCard({
             ) : null}
           </div>
 
-          {/* Borough + Neighborhood */}
           {locationEntries.length > 0 && (
             <div className="mt-1 flex flex-col gap-1.5">
               {locationEntries.map((loc, index) => (
@@ -100,13 +99,11 @@ export default function RequestCard({
             </div>
           )}
 
-          {/* Date */}
           <div className="mt-4 flex items-center gap-2 text-[11px] text-[#7B8598]">
             <CalendarDays className="h-3.5 w-3.5" />
             <span>{dateRange}</span>
           </div>
 
-          {/* Price */}
           <div className="mt-4">
             <p className="text-[11px] text-[#7B8598]">Price Range</p>
             <p className="text-[24px] font-bold leading-none text-[#111B30]">
@@ -114,7 +111,6 @@ export default function RequestCard({
             </p>
           </div>
 
-          {/* Beds & Baths */}
           <div className="mt-3 flex items-center gap-3 text-[11px] text-[#667085]">
             <div className="flex items-center gap-1">
               <BedDouble className="h-3.5 w-3.5 text-[#7B8598]" />
@@ -150,7 +146,7 @@ export default function RequestCard({
                 rel="noopener noreferrer"
                 className="mt-3 inline-flex cursor-pointer items-center gap-1 rounded-full border border-[#D7C685] bg-white px-3 py-1.5 text-[10px] font-semibold text-[#1F2937] transition hover:bg-[#FFFCF0]"
               >
-                <span aria-hidden="true">👉</span>
+                <ArrowRight className="h-3 w-3 shrink-0" aria-hidden="true" />
                 <span>{pauseNotice.actionLabel}</span>
                 <ExternalLink className="h-3 w-3" />
               </a>
@@ -165,7 +161,10 @@ export default function RequestCard({
                   "Please wait..."
                 ) : (
                   <>
-                    <span aria-hidden="true">👉</span>
+                    <ArrowRight
+                      className="h-3 w-3 shrink-0"
+                      aria-hidden="true"
+                    />
                     <span>{pauseNotice.actionLabel}</span>
                   </>
                 )}
@@ -175,11 +174,8 @@ export default function RequestCard({
         ) : null}
       </div>
 
-      {/* Buttons */}
       <div className="mt-4 flex flex-col gap-3">
-        {/* First Row: Edit + Delete */}
         <div className="flex gap-3">
-          {/* Edit */}
           <button
             onClick={onEdit}
             className="flex h-8 w-full cursor-pointer items-center justify-center gap-1.5 rounded-full bg-[#EEF5FF] text-[11px] font-medium text-[#5A84FF] transition hover:bg-[#DCE9FF]"
@@ -187,7 +183,6 @@ export default function RequestCard({
             <Pencil size={12} /> Edit
           </button>
 
-          {/* Delete */}
           <button
             onClick={onDelete}
             className="flex h-8 w-full cursor-pointer items-center justify-center gap-1.5 rounded-full bg-[#FFF1F0] text-[11px] font-medium text-[#F46F6F] transition hover:bg-[#FFE2E0]"

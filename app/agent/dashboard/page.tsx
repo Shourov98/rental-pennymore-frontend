@@ -836,6 +836,7 @@ export default function AgentRenterRequestsPage() {
       {archiveTarget ? (
         <ArchiveRequestDialog
           mode="registered"
+          renterName={archiveTarget.renterName}
           selectedReason={archiveReason}
           isSubmitting={isArchiving}
           onReasonChange={setArchiveReason}
