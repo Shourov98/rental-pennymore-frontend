@@ -560,6 +560,9 @@ export default function AgentRenterRequestDetailsPage() {
   const isListingMatched = listingStatus.toLowerCase() === "matched";
   const grantAccessEnabled = hasGrantAccess === true;
   const isAccessRequestLocked = request?.raw?.shareConsent === false;
+  const confirmRequestScope =
+    request?.raw?.scope?.trim() || request?.scopeLabel?.trim() || "Request";
+  const isAllMarketRequest = confirmRequestScope === "All Market";
   // const shouldDisableMatchRequest = grantAccessEnabled
   //   ? isListingMatched
   //   : !canRequestAccess || isRequestSentByStatus || isRequestSent;
@@ -1259,15 +1262,33 @@ export default function AgentRenterRequestDetailsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Confirm Match Request
+              Confirm Match Request &ndash; {confirmRequestScope}
             </h2>
+            {isAllMarketRequest ? (
+              <div className="space-y-3 text-sm text-gray-700 mb-4">
+                <p>
+                  By proceeding, you confirm that you intend to represent this
+                  renter with full-service, full-market representation,
+                  including agent guidance, landlord and building screening,
+                  scheduling, coordination, and ongoing support throughout the
+                  rental process.
+                </p>
+                <p>
+                  You will verify the renter&rsquo;s Corcoran agency disclosures
+                  and client registration prior to taking any action on the
+                  renter&rsquo;s behalf.
+                </p>
+              </div>
+            ) : (
+              <>
             <p className="text-sm text-gray-700 mb-3">
               By proceeding, you confirm that:
             </p>
             <ul className="text-sm text-gray-700 space-y-2 mb-4 list-disc pl-5">
               <li>
-                The renter has completed the required Corcoran agency
-                disclosures and client registration.
+                You will verify the renter&rsquo;s Corcoran agency disclosures
+                and client registration prior to taking any action on the
+                renter&rsquo;s behalf.
               </li>
               <li>
                 Any information about the apartment being presented to this
@@ -1294,6 +1315,8 @@ export default function AgentRenterRequestDetailsPage() {
                 renter.
               </li>
             </ul>
+              </>
+            )}
             <label className="flex items-start gap-2 text-sm text-gray-700 mb-6">
               <input
                 type="checkbox"
@@ -1302,7 +1325,9 @@ export default function AgentRenterRequestDetailsPage() {
                 className="mt-1 h-4 w-4 text-blue-600"
               />
               <span className="font-semibold">
-                I confirm the above and approve proceeding with this match.
+                {isAllMarketRequest
+                  ? "Confirm Full-Service Full-Market Representation"
+                  : "I confirm the above and approve proceeding with this match."}
               </span>
             </label>
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">

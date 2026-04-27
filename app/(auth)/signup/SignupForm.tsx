@@ -8,6 +8,7 @@ import { ChevronDown, Eye, EyeOff, UsersRound } from "lucide-react";
 import { getSavedReferralCode, saveReferralCode } from "@/lib/referralCode";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const INACTIVE_REGISTRATION_LINK_CODE = "REGISTRATION_LINK_INACTIVE";
 
 type SignupRole = "renter" | "agent";
 
@@ -74,6 +75,42 @@ export default function SignupForm({ role }: { role: SignupRole }) {
       referralCode: prev.referralCode || referralCode,
     }));
   }, [isRenter, referralFromUrl, savedReferralCode]);
+
+  useEffect(() => {
+    if (!isRenter) return;
+    const referralCode = referralFromUrl || savedReferralCode;
+    if (!referralCode) return;
+
+    const controller = new AbortController();
+
+    const verifyRegistrationLink = async () => {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/renter/registration-link/status?referralCode=${encodeURIComponent(
+            referralCode,
+          )}`,
+          { signal: controller.signal },
+        );
+        const data = (await response.json().catch(() => ({}))) as {
+          success?: boolean;
+          errorCode?: string;
+        };
+
+        if (
+          !response.ok &&
+          data?.errorCode === INACTIVE_REGISTRATION_LINK_CODE
+        ) {
+          router.replace("/registration-link-not-active");
+        }
+      } catch {
+        if (controller.signal.aborted) return;
+      }
+    };
+
+    void verifyRegistrationLink();
+
+    return () => controller.abort();
+  }, [isRenter, referralFromUrl, router, savedReferralCode]);
 
   const signinHref = (() => {
     const referralCode = referralFromUrl || savedReferralCode;
@@ -188,6 +225,11 @@ export default function SignupForm({ role }: { role: SignupRole }) {
       const data = await response.json();
 
       if (!response.ok || !data?.success) {
+        if (data?.errorCode === INACTIVE_REGISTRATION_LINK_CODE) {
+          router.replace("/registration-link-not-active");
+          return;
+        }
+
         throw new Error(
           data?.message || "Unable to sign up at the moment. Please try again.",
         );
