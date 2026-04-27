@@ -1,6 +1,7 @@
 "use client";
 
-import { ArchiveRestore, X } from "lucide-react";
+import { LuArchiveRestore } from "react-icons/lu";
+import { X } from "lucide-react";
 import type { ArchiveMode } from "./ArchiveRequestDialog";
 
 const formatDialogRenterName = (fullName?: string | null) => {
@@ -42,7 +43,7 @@ export default function UnarchiveRequestDialog({
         >
           <div className="flex items-start justify-between gap-3 border-b border-gray-200 px-5 py-4 sm:px-8 sm:py-5">
             <div className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-5">
-              <ArchiveRestore className="h-8 w-8 shrink-0 text-blue-600 sm:h-10 sm:w-10" />
+              <LuArchiveRestore className="h-8 w-8 shrink-0 text-blue-600 sm:h-10 sm:w-10" />
               <h2
                 id="unarchive-request-title"
                 className="text-base font-semibold leading-tight tracking-wide text-gray-900 sm:text-xl"

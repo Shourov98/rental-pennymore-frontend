@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { X } from "lucide-react";
 
 export type ArchiveReason =
@@ -12,43 +13,14 @@ export type ArchiveMode = "registered" | "matched";
 
 function ArchiveFolderIcon() {
   return (
-    <svg
-      viewBox="0 0 36 36"
+    <Image
+      src="/archive.png"
+      alt=""
       aria-hidden="true"
       className="h-8 w-8 shrink-0 sm:h-10 sm:w-10"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M7 11.5C7 9.84315 8.34315 8.5 10 8.5H15.2C16.1492 8.5 17.0418 8.94842 17.6 9.71L18.65 11.15C18.9328 11.5378 19.3865 11.7667 19.8664 11.7667H26C27.6569 11.7667 29 13.1098 29 14.7667V16H7V11.5Z"
-        fill="#111827"
-      />
-      <path
-        d="M7 15.5C7 13.8431 8.34315 12.5 10 12.5H26C27.6569 12.5 29 13.8431 29 15.5V25.5C29 27.1569 27.6569 28.5 26 28.5H10C8.34315 28.5 7 27.1569 7 25.5V15.5Z"
-        stroke="#2563EB"
-        strokeWidth="2.4"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M7 16H29"
-        stroke="#2563EB"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-      />
-      <path
-        d="M18 19V28"
-        stroke="#2563EB"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-      />
-      <path
-        d="M13.5 23.5L18 19L22.5 23.5"
-        stroke="#2563EB"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+      width={40}
+      height={40}
+    />
   );
 }
 

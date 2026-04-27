@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
@@ -1178,7 +1179,17 @@ export default function AgentRenterRequestDetailsPage() {
       {isRepresentationOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl">
-            <h2 className="text-xl font-semibold text-gray-900 mb-5">
+            <div className="mb-5 flex items-center gap-3">
+              <Image
+                src="/Logo_1.svg"
+                alt="BeforeListed"
+                width={180}
+                height={52}
+                className="h-auto w-[160px] sm:w-[180px]"
+                priority
+              />
+            </div>
+            <h2 className="mb-5 text-xl font-semibold text-gray-900">
               Which side would you like to represent?
             </h2>
             <div className="space-y-4">

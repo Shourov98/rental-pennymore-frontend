@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import {
   Eye,
@@ -7,7 +8,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Lock,
-  Archive,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
@@ -751,10 +751,17 @@ export default function AgentRenterRequestsPage() {
                               <button
                                 onClick={() => openArchiveDialog(req)}
                                 title="Archive request"
-                                disabled={isArchivedForAgent}
-                                className="p-2 rounded-full transition bg-gray-100 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
-                              >
-                                <Archive className="w-4 h-4 text-gray-600" />
+                              disabled={isArchivedForAgent}
+                              className="p-2 rounded-full transition bg-gray-100 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <Image
+                                  src="/archive.png"
+                                  alt=""
+                                  aria-hidden="true"
+                                  width={16}
+                                  height={16}
+                                  className="h-4 w-4"
+                                />
                               </button>
                             ) : null}
                             <button

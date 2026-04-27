@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import {
   Eye,
@@ -7,7 +8,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Lock,
-  Archive,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
@@ -703,7 +703,14 @@ export default function AgentMatchesPage() {
                               disabled={isArchivedForAgent}
                               className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                              <Archive className="w-4 h-4 text-gray-600" />
+                              <Image
+                                src="/archive.png"
+                                alt=""
+                                aria-hidden="true"
+                                width={16}
+                                height={16}
+                                className="h-4 w-4"
+                              />
                             </button>
                             <button
                               onClick={() => handleView(req)}
