@@ -644,7 +644,6 @@ export default function AgentMatchesPage() {
                                 {isVisibilityLocked ? (
                                   <Lock
                                     className="h-4 w-4 text-gray-500"
-                                    title={visibilityToggleTitle}
                                     aria-hidden="true"
                                   />
                                 ) : null}

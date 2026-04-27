@@ -28,7 +28,14 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
-, "build-nta-data.js"  ],
-  "exclude": ["node_modules"]
+    "**/*.mts",
+    "build-nta-data.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/node_modules/**",
+    ".next/cache",
+    "dist",
+    "coverage"
+  ]
 }
