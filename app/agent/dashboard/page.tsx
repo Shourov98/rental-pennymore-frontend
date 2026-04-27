@@ -563,13 +563,21 @@ export default function AgentRenterRequestsPage() {
                       const shareConsent = req.raw?.shareConsent;
                       const visibility = req.raw?.visibility;
                       const isArchivedForAgent = Boolean(req.isArchivedForAgent);
+                      const isLockedByRenterConsent = shareConsent === false;
                       const isVisibilityLocked =
-                        shareConsent === false || isArchivedForAgent;
+                        isLockedByRenterConsent || isArchivedForAgent;
                       const isRegistrationDisclosureLocked =
                         !req.registrationDisclosureConfirmed;
                       const isShareDisabledByDocuments =
                         req.isPrivateVisibility &&
                         isRegistrationDisclosureLocked;
+                      const visibilityToggleTitle = isArchivedForAgent
+                        ? "Visibility is locked while this request is archived"
+                        : isLockedByRenterConsent
+                          ? "Renter did not consent to share this request"
+                          : isShareDisabledByDocuments
+                            ? "Registration / Disclosure confirmation is required before sharing this request"
+                            : "Toggle request visibility";
 
                       return (
                         <tr
@@ -607,15 +615,7 @@ export default function AgentRenterRequestsPage() {
                                   }
                                   className="inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                                   aria-label={`Toggle visibility for ${req.requestName}`}
-                                  title={
-                                    isArchivedForAgent
-                                      ? "Visibility is locked while this request is archived"
-                                      : isVisibilityLocked
-                                      ? "Visibility is locked for this request"
-                                      : isShareDisabledByDocuments
-                                        ? "Registration / Disclosure confirmation is required before sharing this request"
-                                      : "Toggle request visibility"
-                                  }
+                                  title={visibilityToggleTitle}
                                 >
                                   <span
                                     className={`text-xs font-medium ${
@@ -654,6 +654,7 @@ export default function AgentRenterRequestsPage() {
                                 {isVisibilityLocked ? (
                                   <Lock
                                     className="h-4 w-4 text-gray-500"
+                                    title={visibilityToggleTitle}
                                     aria-hidden="true"
                                   />
                                 ) : null}
