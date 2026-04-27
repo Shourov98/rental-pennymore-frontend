@@ -15,7 +15,7 @@ import {
 } from "./slices/authSlice";
 import { fetchAgentProfile } from "./slices/agentProfileSlice";
 import type { RootState } from "./store";
-import type { UserBase, RenterProfile } from "./slices/authSlice";
+import type { UserBase } from "./slices/authSlice";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -136,6 +136,13 @@ export interface RefreshResponse {
   timestamp: string;
 }
 
+interface ApiEnvelope<T> {
+  success: boolean;
+  message: string;
+  data: T;
+  timestamp: string;
+}
+
 export const api = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithAuth,
@@ -230,8 +237,9 @@ export const api = createApi({
         }
       },
     }),
-    getProfile: builder.query<UserBase | RenterProfile, void>({
-      query: () => "/auth/me",
+    getProfile: builder.query<UserBase, void>({
+      query: () => "/user/profile",
+      transformResponse: (response: ApiEnvelope<UserBase>) => response.data,
     }),
   }),
 });

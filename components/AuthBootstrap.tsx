@@ -82,10 +82,10 @@ export default function AuthBootstrap() {
     didRun.current = true;
 
     const bootstrap = async () => {
-      try {
-        const hasProfile = Boolean(auth.user || auth.renter);
+      const hasProfile = Boolean(auth.user || auth.renter);
 
-        if (isTokenValid(auth.accessToken)) {
+      if (isTokenValid(auth.accessToken)) {
+        try {
           const profile = await getProfile().unwrap();
           if (profile) {
             dispatch(setAuthFromProfile(profile));
@@ -98,8 +98,15 @@ export default function AuthBootstrap() {
 
           dispatch(logout());
           return;
+        } catch (error) {
+          if (shouldForceLogout(error) || !hasProfile) {
+            dispatch(logout());
+          }
+          return;
         }
+      }
 
+      try {
         await refreshToken().unwrap();
         const profile = await getProfile().unwrap();
         if (profile) {
