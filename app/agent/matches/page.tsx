@@ -701,7 +701,7 @@ export default function AgentMatchesPage() {
                               onClick={() => openArchiveDialog(req)}
                               title="Archive request"
                               disabled={isArchivedForAgent}
-                              className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                               <Image
                                 src="/archive.png"
@@ -709,7 +709,7 @@ export default function AgentMatchesPage() {
                                 aria-hidden="true"
                                 width={16}
                                 height={16}
-                                className="h-4 w-4"
+                                className="h-4 w-4 shrink-0"
                               />
                             </button>
                             <button

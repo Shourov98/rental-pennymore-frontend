@@ -751,16 +751,16 @@ export default function AgentRenterRequestsPage() {
                               <button
                                 onClick={() => openArchiveDialog(req)}
                                 title="Archive request"
-                              disabled={isArchivedForAgent}
-                              className="p-2 rounded-full transition bg-gray-100 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
+                                disabled={isArchivedForAgent}
+                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
                                 <Image
                                   src="/archive.png"
                                   alt=""
                                   aria-hidden="true"
                                   width={16}
                                   height={16}
-                                  className="h-4 w-4"
+                                  className="h-4 w-4 shrink-0"
                                 />
                               </button>
                             ) : null}
