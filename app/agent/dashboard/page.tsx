@@ -2,13 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import {
-  Eye,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  Lock,
-} from "lucide-react";
+import { Eye, Filter, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -16,9 +10,7 @@ import { fetchAgentProfile } from "@/store/slices/agentProfileSlice";
 import ArchiveRequestDialog, {
   type ArchiveReason,
 } from "@/components/agent/ArchiveRequestDialog";
-import FilterModal, {
-  type FilterType,
-} from "@/components/modals/FilterModals";
+import FilterModal, { type FilterType } from "@/components/modals/FilterModals";
 import {
   API_BASE_URL,
   ApiAgentRequestsResponse,
@@ -94,7 +86,8 @@ const readStoredListState = () => {
       showOwnReferrals: boolean;
     }>;
     return {
-      page: typeof parsed.page === "number" && parsed.page > 0 ? parsed.page : 1,
+      page:
+        typeof parsed.page === "number" && parsed.page > 0 ? parsed.page : 1,
       showOwnReferrals: Boolean(parsed.showOwnReferrals),
     };
   } catch {
@@ -117,8 +110,10 @@ export default function AgentRenterRequestsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mutatingShareId, setMutatingShareId] = useState<string | null>(null);
-  const [mutatingRegistrationDisclosureId, setMutatingRegistrationDisclosureId] =
-    useState<string | null>(null);
+  const [
+    mutatingRegistrationDisclosureId,
+    setMutatingRegistrationDisclosureId,
+  ] = useState<string | null>(null);
   const [archiveTarget, setArchiveTarget] =
     useState<NormalizedAgentRequest | null>(null);
   const [archiveReason, setArchiveReason] = useState<ArchiveReason | "">("");
@@ -458,7 +453,9 @@ export default function AgentRenterRequestsPage() {
       setArchiveReason("");
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "We couldn't archive this request.";
+        err instanceof Error
+          ? err.message
+          : "We couldn't archive this request.";
       setError(message);
     } finally {
       setIsArchiving(false);
@@ -556,13 +553,12 @@ export default function AgentRenterRequestsPage() {
                   <tbody>
                     {filteredRequests.map((req) => {
                       const isCurrentAgentsRequest =
-                        isCurrentAgentRegisteredForRequest(
-                          req,
-                          currentAgentId,
-                        );
+                        isCurrentAgentRegisteredForRequest(req, currentAgentId);
                       const shareConsent = req.raw?.shareConsent;
                       const visibility = req.raw?.visibility;
-                      const isArchivedForAgent = Boolean(req.isArchivedForAgent);
+                      const isArchivedForAgent = Boolean(
+                        req.isArchivedForAgent,
+                      );
                       const isLockedByRenterConsent = shareConsent === false;
                       const isVisibilityLocked =
                         isLockedByRenterConsent || isArchivedForAgent;
@@ -590,7 +586,9 @@ export default function AgentRenterRequestsPage() {
                             </div>
                           </td>
                           <td className="py-3 px-5">
-                            <div className="text-gray-900">{req.requestName}</div>
+                            <div className="text-gray-900">
+                              {req.requestName}
+                            </div>
                           </td>
                           <td className="py-3 px-5">
                             <div className="font-medium text-gray-900">
@@ -755,7 +753,7 @@ export default function AgentRenterRequestsPage() {
                                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 <Image
-                                  src="/archive.png"
+                                  src="/archive.svg"
                                   alt=""
                                   aria-hidden="true"
                                   width={16}

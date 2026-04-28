@@ -2,18 +2,10 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import {
-  Eye,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  Lock,
-} from "lucide-react";
+import { Eye, Filter, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
-import FilterModal, {
-  type FilterType,
-} from "@/components/modals/FilterModals";
+import FilterModal, { type FilterType } from "@/components/modals/FilterModals";
 import ArchiveRequestDialog, {
   type ArchiveReason,
 } from "@/components/agent/ArchiveRequestDialog";
@@ -93,7 +85,8 @@ const readStoredListState = () => {
       showOwnReferrals: boolean;
     }>;
     return {
-      page: typeof parsed.page === "number" && parsed.page > 0 ? parsed.page : 1,
+      page:
+        typeof parsed.page === "number" && parsed.page > 0 ? parsed.page : 1,
       showOwnReferrals: Boolean(parsed.showOwnReferrals),
     };
   } catch {
@@ -116,8 +109,10 @@ export default function AgentMatchesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mutatingShareId, setMutatingShareId] = useState<string | null>(null);
-  const [mutatingRegistrationDisclosureId, setMutatingRegistrationDisclosureId] =
-    useState<string | null>(null);
+  const [
+    mutatingRegistrationDisclosureId,
+    setMutatingRegistrationDisclosureId,
+  ] = useState<string | null>(null);
   const [archiveTarget, setArchiveTarget] =
     useState<NormalizedAgentMatch | null>(null);
   const [archiveReason, setArchiveReason] = useState<ArchiveReason | "">("");
@@ -365,7 +360,8 @@ export default function AgentMatchesPage() {
       }
 
       const confirmedAt =
-        data?.data?.registrationDisclosureConfirmedAt ?? new Date().toISOString();
+        data?.data?.registrationDisclosureConfirmedAt ??
+        new Date().toISOString();
 
       setRequests((prev) => {
         const next = prev.map((req) => {
@@ -451,7 +447,9 @@ export default function AgentMatchesPage() {
       setArchiveReason("");
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "We couldn't archive this request.";
+        err instanceof Error
+          ? err.message
+          : "We couldn't archive this request.";
       setError(message);
     } finally {
       setIsArchiving(false);
@@ -552,7 +550,9 @@ export default function AgentMatchesPage() {
                         isCurrentAgentRegisteredForRequest(req, currentAgentId);
                       const shareConsent = req.raw?.shareConsent;
                       const visibility = req.raw?.visibility;
-                      const isArchivedForAgent = Boolean(req.isArchivedForAgent);
+                      const isArchivedForAgent = Boolean(
+                        req.isArchivedForAgent,
+                      );
                       const isLockedByRenterConsent = shareConsent === false;
                       const isVisibilityLocked =
                         isLockedByRenterConsent || isArchivedForAgent;
@@ -704,7 +704,7 @@ export default function AgentMatchesPage() {
                               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                               <Image
-                                src="/archive.png"
+                                src="/archive.svg"
                                 alt=""
                                 aria-hidden="true"
                                 width={16}
