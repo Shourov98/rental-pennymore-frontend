@@ -2,9 +2,9 @@ export default function PrivacyPage() {
   return (
     <main className="max-w-4xl mx-auto px-4 py-16">
       <header className="mb-12">
-        <h1 className="text-4xl font-bold text-gray-900">BEFORELISTED™ Privacy Policy</h1>
+        <h1 className="text-4xl font-bold text-gray-900">BEFORELISTED™ PRIVACY POLICY</h1>
         <p className="mt-3 text-sm text-gray-500">
-          Last Updated: February 28, 2026
+          Last Updated: April 30, 2026
         </p>
       </header>
 
@@ -12,10 +12,11 @@ export default function PrivacyPage() {
         <Section title="1. Introduction">
           <p>
             BeforeListed™ (“BeforeListed,” “we,” “us,” or “our”) is a real
-            estate marketing and intake website operated by Tuval Mor, a
-            licensed real estate agent affiliated with Corcoran, to collect
-            renter inquiries and support proactive rental outreach beyond
-            publicly advertised listing platforms.
+            estate marketing and intake website operated by Happy Click Shop LLC
+            d/b/a BeforeListed™, through Tuval Mor, a licensed real estate agent
+            affiliated with Corcoran, to collect renter inquiries in connection
+            with rental searches that may extend beyond publicly advertised
+            listing platforms.
           </p>
           <p className="mt-3">
             This Privacy Policy explains how we collect, use, disclose, and
@@ -39,7 +40,7 @@ export default function PrivacyPage() {
             <li>Phone number</li>
             <li>
               Rental preferences (budget, neighborhoods, move-in timing,
-              features, etc.)
+              features, selected search scope, and related criteria)
             </li>
           </ul>
 
@@ -61,14 +62,14 @@ export default function PrivacyPage() {
           <ul className="list-disc pl-5 space-y-2 mt-2">
             <li>IP address (city-level only)</li>
             <li>Browser type</li>
-            <li>Device type</li> 
+            <li>Device type</li>
             <li>Pages viewed</li>
             <li>Date and time of access</li>
           </ul>
           <p className="mt-3">We do not collect precise GPS location data.</p>
 
           <h3 className="font-medium mt-6">2.3 Cookies and Analytics</h3>
-          <p className="mt-2">  
+          <p className="mt-2">
             BeforeListed™ may use cookies and standard analytics tools (such as
             Google Analytics) to understand website usage and improve
             performance.
@@ -93,12 +94,36 @@ export default function PrivacyPage() {
             </li>
             <li>
               Allow the representing agent to contact other licensed real estate
-              agents to assist with your search, with any such involvement
-              subject to required disclosures
+              professionals to assist with your search, with any such
+              involvement subject to required disclosures
+            </li>
+            <li>
+              Allow the representing agent to act on behalf of an owner or
+              landlord in connection with a rental opportunity identified
+              through the platform, where applicable and with required
+              disclosures provided to the renter
+            </li>
+            <li>
+              Send automated email notifications to verify that your rental
+              search remains active, approximately 14 days after your last
+              interaction with the platform, and to notify you of request status
+              changes such as archiving
             </li>
             <li>Improve website functionality</li>
             <li>Comply with legal and regulatory obligations</li>
-            <li>We may use your contact information to send transactional or service-related emails related to your use of the website.</li>
+            <li>
+              We may use your contact information to send transactional or
+              service-related emails related to your use of the website, as well
+              as occasional promotional communications such as discount codes
+              and rental-related offers. All emails can be stopped at any time
+              by deleting your renter profile.
+            </li>
+            <li>
+              Monitor and enforce platform integrity, including identifying and
+              acting on email addresses associated with abusive, fraudulent, or
+              disruptive activity, which may result in access restrictions or
+              blocking at the administrator’s discretion.
+            </li>
           </ul>
         </Section>
 
@@ -107,23 +132,40 @@ export default function PrivacyPage() {
             4.1 Licensed Real Estate Professionals
           </h3>
           <p className="mt-2">
-            Information related to your rental search <span className="font-semibold">(such as budget range,
-            location preferences, and timing)</span> may be shared with licensed real
-            estate professionals on a non-identifying basis for the purpose of
-            evaluating whether another agent may be able to assist with your
-            search.
+            When a renter affirmatively consents through the website submission
+            process, their rental search information may be shared with other
+            participating licensed real estate professionals for the purpose of
+            evaluating whether another professional may be able to assist with
+            their search. The information shared upon consent includes rental
+            search details such as budget range, location preferences, and
+            timing, as well as the renter’s first name and last name initial. No
+            additional personally identifiable information — including full last
+            name, email address, or phone number — is shared at this stage
+            without further disclosure and consent.
           </p>
-          <p className="mt-3 font-semibold">
+          <p className="mt-3">
             If another agent is introduced to actively assist with your search
             or to contact you, any such involvement will be disclosed to you and
             required agency disclosures will be provided.
           </p>
           <p className="mt-3">
-            Personally identifiable information (such as name, email address, or
-            phone number) is not shared unless required for representation and
-            disclosed accordingly.
+            Full contact information (such as full last name, email address, or
+            phone number) is not shared with other agents unless required for
+            active representation and disclosed accordingly. Each agent
+            participating on the platform is subject to a separate agent
+            participation agreement that governs their permitted use of renter
+            data. Agents are not authorized to use renter information for any
+            purpose outside of the rental search facilitated through the
+            platform.
           </p>
-          <p className="mt-3">Sharing of renter request information with participating licensed real estate agents occurs only if the renter affirmatively consents through the website submission process. If consent is not provided, the request remains visible solely to the registered agent. Renters may modify visibility preferences where functionality permits.</p>
+          <p className="mt-3">
+            Sharing of renter request information with participating licensed
+            real estate professionals occurs only if the renter affirmatively
+            consents through the website submission process. If consent is not
+            provided, the request remains visible solely to the registered
+            professional. Renters may modify visibility preferences where
+            functionality permits.
+          </p>
           <p className="mt-3">We do not publicly post renter information.</p>
 
           <h3 className="font-medium mt-6">4.2 Service Providers</h3>
@@ -135,6 +177,10 @@ export default function PrivacyPage() {
             <li>website hosting</li>
             <li>email delivery</li>
             <li>analytics and security</li>
+            <li>
+              Electronic signature providers used for required agency
+              disclosures.
+            </li>
           </ul>
           <p className="mt-3">
             These providers may use information only to perform services on our
@@ -167,9 +213,14 @@ export default function PrivacyPage() {
             <li>comply with legal obligations</li>
           </ul>
           <p className="mt-3">
-            Information is deleted or anonymized when no longer needed; deletion
-            timelines may vary depending on legal and record-keeping
-            requirements.
+            Information is deleted or anonymized when no longer needed, deletion
+            timelines may vary depending on legal, regulatory, and
+            record-keeping requirements. Archived renter requests are retained
+            in our system for administrative and compliance purposes and are not
+            deleted solely because they have been archived. Email addresses that
+            have been blocked for platform integrity reasons may be retained on
+            a restricted-access list for the purpose of preventing
+            re-registration or further abuse.
           </p>
         </Section>
 
@@ -179,14 +230,30 @@ export default function PrivacyPage() {
             <li>access your personal information</li>
             <li>request correction</li>
             <li>request deletion</li>
-            <li>opt out of non-essential communications</li>
+            <li>
+              opt out of all communications, including promotional emails, at
+              any time by deleting your profile through the website
+            </li>
           </ul>
+          <p className="mt-3">
+            You may stop all platform-generated emails at any time by deleting
+            your profile through the website. Deleting your profile deactivates
+            your request, removes you from the active renter queue, and stops
+            all automated and promotional emails, including inactivity
+            reminders, archiving notifications, discount codes, and any other
+            service-related communications. Profile deletion does not affect any
+            separately established agency or fee agreement between you and a
+            licensed real estate professional. To request deletion of your
+            personal data following profile removal, contact
+            privacy@beforelisted.com. We will process your request within a
+            reasonable time, subject to any legal retention obligations.
+          </p>
           <p className="mt-3">Requests may be submitted to:</p>
           <a
             href="mailto:privacy@beforelisted.com"
             className="inline-block mt-2 text-blue-600 underline hover:text-blue-800"
           >
-            privacy@beforelisted.com
+            📧 privacy@beforelisted.com
           </a>
           <p className="mt-3">
             BeforeListed™ operates in compliance with applicable fair housing
@@ -225,7 +292,12 @@ export default function PrivacyPage() {
         <Section title="10. Changes to This Privacy Policy">
           <p>We may update this Privacy Policy from time to time.</p>
           <p className="mt-3">
-            Updates will be reflected by a revised “Last Updated” date.
+            Updates will be reflected by a revised “Last Updated” date. In the
+            event of material changes to this Privacy Policy, we will endeavor
+            to notify you by email to the address on file or by posting a
+            prominent notice on the website prior to the changes taking effect.
+            Your continued use of the website following notice of material
+            changes constitutes your acceptance of the revised Privacy Policy.
           </p>
         </Section>
 
@@ -243,7 +315,7 @@ export default function PrivacyPage() {
             href="mailto:privacy@beforelisted.com"
             className="inline-block mt-2 text-blue-600 underline hover:text-blue-800"
           >
-            privacy@beforelisted.com
+            📧 privacy@beforelisted.com
           </a>
 
           <br />
@@ -252,7 +324,7 @@ export default function PrivacyPage() {
             href="mailto:support@beforelisted.com"
             className="inline-block mt-2 text-blue-600 underline hover:text-blue-800"
           >
-            support@beforelisted.com
+            📧 support@beforelisted.com
           </a>
         </Section>
       </section>
