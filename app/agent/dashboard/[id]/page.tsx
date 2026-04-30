@@ -525,6 +525,13 @@ export default function AgentRenterRequestDetailsPage() {
 
   const renterContact = useMemo(() => {
     if (!renterInfo) return null;
+    const isOwnerRepresentationView =
+      request?.ownerRepresentationSelected ||
+      request?.representation_type === "owner_representation" ||
+      request?.raw?.ownerRepresentationSelected ||
+      request?.raw?.representation_type === "owner_representation";
+
+    if (isOwnerRepresentationView) return null;
 
     const candidateReferrerIds = [
       request?.raw?.referrerId,

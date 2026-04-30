@@ -35,6 +35,9 @@ export default function ConfirmActiveRequestPage() {
         const data = (await response.json().catch(() => ({}))) as {
           success?: boolean;
           message?: string;
+          data?: {
+            renterFullName?: string;
+          };
         };
 
         if (!response.ok || data?.success === false) {
@@ -45,7 +48,10 @@ export default function ConfirmActiveRequestPage() {
         }
 
         setState("success");
-        setMessage("Your request is still active. Thank you for confirming.");
+        const renterFullName = data?.data?.renterFullName || "there";
+        setMessage(
+          `Thank you, ${renterFullName}. Your request has been confirmed and your search remains active.`,
+        );
       } catch (error) {
         if (controller.signal.aborted) return;
 
