@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
 function RentersEdgeFormInner() {
-  const [agree, setAgree] = useState(false);
   const [registerOption, setRegisterOption] = useState("");
   const [buyerOption, setBuyerOption] = useState("");
   const [purchaseTimeline, setPurchaseTimeline] = useState("");
@@ -216,32 +215,11 @@ function RentersEdgeFormInner() {
             </div>
           </div>
 
-          {/* Terms & Submit */}
+          {/* Submit */}
           <div className="flex flex-col items-center text-center">
-            <label className="flex text-gray-800 items-center gap-2 text-sm mb-2">
-              <input
-                type="checkbox"
-                checked={agree}
-                onChange={() => setAgree(!agree)}
-                className="accent-blue-600"
-              />
-              I agree to the terms and conditions
-            </label>
-            <a
-              href="/terms-conditions"
-              target="_blank"
-              className="text-blue-600 text-sm hover:underline mb-4"
-            >
-              Terms & Conditions
-            </a>
             <button
               type="submit"
-              disabled={!agree}
-              className={`px-6 py-2 rounded-lg text-white font-medium ${
-                agree
-                  ? "bg-blue-600 hover:bg-blue-700"
-                  : "bg-blue-300 cursor-not-allowed"
-              }`}
+              className="px-6 py-2 rounded-lg text-white font-medium bg-blue-600 hover:bg-blue-700"
             >
               Next
             </button>
