@@ -14,10 +14,10 @@ export type ArchiveMode = "registered" | "matched";
 function ArchiveFolderIcon() {
   return (
     <Image
-      src="/archive.svg"
+      src="/archive-icon.png"
       alt=""
       aria-hidden="true"
-      className="h-8 w-8 shrink-0 sm:h-10 sm:w-10"
+      className="h-8 w-8 shrink-0 object-contain sm:h-10 sm:w-10"
       width={40}
       height={40}
     />

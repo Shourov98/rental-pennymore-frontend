@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSelector } from "react-redux";
 import Image from "next/image";
 import {
@@ -22,11 +22,13 @@ import {
   readCachedAgentMatches,
 } from "../utils";
 import {
+  getAgentRequestHref,
   matchesAgentFilters,
   readStoredAgentListState,
 } from "../../requestNavigation";
 
 const NAVIGATION_STORAGE_KEY = "agent-matches-navigation";
+const ARCHIVE_NAVIGATION_STORAGE_KEY = "agent-archived-navigation";
 const NAVIGATION_LIMIT_FALLBACK = 10;
 
 const unitFeatureLabels: Record<string, string> = {
@@ -71,22 +73,24 @@ const formatFeatureGroup = (
 export default function AgentMatchDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
   const currentAgentId = useSelector(
     (state: RootState) => state.auth.user?._id ?? null,
   );
 
   const requestId = params?.id as string | undefined;
+  const isArchiveContext = searchParams.get("from") === "archive";
 
   const [request, setRequest] = useState<NormalizedAgentMatch | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [navigationTargets, setNavigationTargets] = useState<{
-    previousId: string | null;
-    nextId: string | null;
+    previousHref: string | null;
+    nextHref: string | null;
   }>({
-    previousId: null,
-    nextId: null,
+    previousHref: null,
+    nextHref: null,
   });
   const [isResolvingNavigation, setIsResolvingNavigation] = useState(false);
 
@@ -171,9 +175,13 @@ export default function AgentMatchDetailsPage() {
     const controller = new AbortController();
 
     const resolveNavigation = async () => {
-      const storedState = readStoredAgentListState(NAVIGATION_STORAGE_KEY);
+      const storedState = readStoredAgentListState(
+        isArchiveContext
+          ? ARCHIVE_NAVIGATION_STORAGE_KEY
+          : NAVIGATION_STORAGE_KEY,
+      );
       if (!storedState) {
-        setNavigationTargets({ previousId: null, nextId: null });
+        setNavigationTargets({ previousHref: null, nextHref: null });
         return;
       }
 
@@ -185,8 +193,12 @@ export default function AgentMatchDetailsPage() {
 
       if (localPreviousId && localNextId) {
         setNavigationTargets({
-          previousId: localPreviousId,
-          nextId: localNextId,
+          previousHref: isArchiveContext
+            ? storedState.itemHrefs?.[localPreviousId] ?? null
+            : `/agent/matches/${localPreviousId}`,
+          nextHref: isArchiveContext
+            ? storedState.itemHrefs?.[localNextId] ?? null
+            : `/agent/matches/${localNextId}`,
         });
         return;
       }
@@ -196,7 +208,7 @@ export default function AgentMatchDetailsPage() {
       };
       if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
-      const findAdjacentItemId = async (direction: "previous" | "next") => {
+      const findAdjacentHref = async (direction: "previous" | "next") => {
         let targetPage =
           direction === "previous" ? storedState.page - 1 : storedState.page + 1;
 
@@ -210,7 +222,11 @@ export default function AgentMatchDetailsPage() {
           });
 
           const response = await fetch(
-            `${API_BASE_URL}/pre-market/agent/all-requests?${params.toString()}`,
+            `${API_BASE_URL}${
+              isArchiveContext
+                ? "/pre-market/agent/archived-requests"
+                : "/pre-market/agent/all-requests"
+            }?${params.toString()}`,
             {
               method: "GET",
               headers,
@@ -231,19 +247,26 @@ export default function AgentMatchDetailsPage() {
 
           const normalized = (data.data ?? []).map(normalizeAgentMatch);
           cacheAgentMatches(normalized);
-          const filtered = normalized.filter((item) =>
-            matchesAgentFilters(
-              item.raw,
-              storedState.filters,
-              storedState.showOwnReferrals,
-              currentAgentId,
-            ),
-          );
+          const filtered = isArchiveContext
+            ? normalized
+            : normalized.filter((item) =>
+                matchesAgentFilters(
+                  item.raw,
+                  storedState.filters,
+                  storedState.showOwnReferrals,
+                  currentAgentId,
+                ),
+              );
 
           if (filtered.length > 0) {
-            return direction === "previous"
-              ? filtered[filtered.length - 1]?.id ?? null
-              : filtered[0]?.id ?? null;
+            const target =
+              direction === "previous"
+                ? filtered[filtered.length - 1]
+                : filtered[0];
+            if (!target) return null;
+            return isArchiveContext
+              ? getAgentRequestHref(target.raw, target.id, currentAgentId)
+              : `/agent/matches/${target.id}`;
           }
 
           targetPage += direction === "previous" ? -1 : 1;
@@ -254,23 +277,39 @@ export default function AgentMatchDetailsPage() {
 
       try {
         setIsResolvingNavigation(true);
-        const [previousId, nextId] = await Promise.all([
+        const [previousHref, nextHref] = await Promise.all([
           localPreviousId
-            ? Promise.resolve(localPreviousId)
-            : findAdjacentItemId("previous"),
+            ? Promise.resolve(
+                isArchiveContext
+                  ? storedState.itemHrefs?.[localPreviousId] ?? null
+                  : `/agent/matches/${localPreviousId}`,
+              )
+            : findAdjacentHref("previous"),
           localNextId
-            ? Promise.resolve(localNextId)
-            : findAdjacentItemId("next"),
+            ? Promise.resolve(
+                isArchiveContext
+                  ? storedState.itemHrefs?.[localNextId] ?? null
+                  : `/agent/matches/${localNextId}`,
+              )
+            : findAdjacentHref("next"),
         ]);
 
         if (!controller.signal.aborted) {
-          setNavigationTargets({ previousId, nextId });
+          setNavigationTargets({ previousHref, nextHref });
         }
       } catch {
         if (!controller.signal.aborted) {
           setNavigationTargets({
-            previousId: localPreviousId,
-            nextId: localNextId,
+            previousHref: localPreviousId
+              ? isArchiveContext
+                ? storedState.itemHrefs?.[localPreviousId] ?? null
+                : `/agent/matches/${localPreviousId}`
+              : null,
+            nextHref: localNextId
+              ? isArchiveContext
+                ? storedState.itemHrefs?.[localNextId] ?? null
+                : `/agent/matches/${localNextId}`
+              : null,
           });
         }
       } finally {
@@ -283,7 +322,7 @@ export default function AgentMatchDetailsPage() {
     resolveNavigation();
 
     return () => controller.abort();
-  }, [accessToken, currentAgentId, requestId]);
+  }, [accessToken, currentAgentId, isArchiveContext, requestId]);
 
   const {
     movingDateRange,
@@ -447,24 +486,27 @@ export default function AgentMatchDetailsPage() {
     };
   }, [renterInfo]);
 
-  const navigateToAdjacentRequest = (targetId: string | null) => {
-    if (!targetId || targetId === requestId) return;
-    router.push(`/agent/matches/${targetId}`);
+  const navigateToAdjacentRequest = (targetHref: string | null) => {
+    if (!targetHref) return;
+    router.push(targetHref);
   };
+
+  const backHref = isArchiveContext ? "/agent/archived-requests" : "/agent/matches";
+  const backLabel = isArchiveContext ? "Archived Requests" : "Matched Requests";
 
   return (
     <section className="flex-1 bg-gray-50 min-h-screen px-4 md:px-8 py-6 overflow-y-auto">
       <div className="bg-white rounded-xl shadow-sm p-5 flex flex-wrap justify-between items-center mb-6">
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <ArrowLeft
-            onClick={() => router.back()}
+            onClick={() => router.push(backHref)}
             className="w-4 h-4 text-gray-600 cursor-pointer"
           />
           <span
-            onClick={() => router.push("/agent/matches")}
+            onClick={() => router.push(backHref)}
             className="cursor-pointer"
           >
-            Matched Requests
+            {backLabel}
           </span>
           <span>›</span>
           <span className="font-medium text-gray-800">
@@ -472,15 +514,23 @@ export default function AgentMatchDetailsPage() {
           </span>
         </div>
 
-        <span
-          className={`px-3 py-1 rounded-full text-xs font-semibold ${
-            request?.isActive
-              ? "bg-green-100 text-green-700"
-              : "bg-gray-100 text-gray-600"
-          }`}
-        >
-          {request?.isActive ? "Active" : "Inactive"}
-        </span>
+        {request?.isArchivedForAgent || request?.raw?.isArchivedForAgent ? (
+          <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold">
+            {request.archiveReasonLabel ||
+              request.raw?.archiveReasonLabel ||
+              "Archived"}
+          </span>
+        ) : (
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+              request?.isActive
+                ? "bg-green-100 text-green-700"
+                : "bg-gray-100 text-gray-600"
+            }`}
+          >
+            {request?.isActive ? "Active" : "Inactive"}
+          </span>
+        )}
       </div>
 
       {isLoading ? (
@@ -572,9 +622,9 @@ export default function AgentMatchDetailsPage() {
               <button
                 type="button"
                 onClick={() =>
-                  navigateToAdjacentRequest(navigationTargets.previousId)
+                  navigateToAdjacentRequest(navigationTargets.previousHref)
                 }
-                disabled={!navigationTargets.previousId || isResolvingNavigation}
+                disabled={!navigationTargets.previousHref || isResolvingNavigation}
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 md:min-w-36"
                 aria-label="Previous request"
               >
@@ -583,8 +633,8 @@ export default function AgentMatchDetailsPage() {
               </button>
               <button
                 type="button"
-                onClick={() => navigateToAdjacentRequest(navigationTargets.nextId)}
-                disabled={!navigationTargets.nextId || isResolvingNavigation}
+                onClick={() => navigateToAdjacentRequest(navigationTargets.nextHref)}
+                disabled={!navigationTargets.nextHref || isResolvingNavigation}
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 md:min-w-36"
                 aria-label="Next request"
               >

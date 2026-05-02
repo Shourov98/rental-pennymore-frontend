@@ -19,28 +19,18 @@ import {
   cacheSingleAgentRequest,
   normalizeAgentRequest,
 } from "../dashboard/utils";
-import { cacheSingleAgentMatch } from "../matches/utils";
+import {
+  cacheSingleAgentMatch,
+  type NormalizedAgentMatch,
+} from "../matches/utils";
+import {
+  getEmptyFilters,
+  getAgentRequestHref,
+  isCurrentAgentRegisteredForRequest,
+  writeStoredAgentListState,
+} from "../requestNavigation";
 
-const isCurrentAgentRegisteredForRequest = (
-  request: NormalizedAgentRequest,
-  currentAgentId?: string | null,
-) => {
-  if (!currentAgentId) return false;
-
-  const raw = request.raw;
-  const registeredAgentIds = [
-    raw?.referralAgentId,
-    raw?.referrerId,
-    raw?.referralInfo?.referrer?.id,
-    raw?.referralInfo?.referrer?.referrerId,
-    raw?.renterInfo?.referralInfo?.referrerId,
-    raw?.renterInfo?.referralInfo?.referredByAdmin?.referredBy,
-  ]
-    .map((value) => (value ? String(value) : ""))
-    .filter(Boolean);
-
-  return registeredAgentIds.includes(String(currentAgentId));
-};
+const NAVIGATION_STORAGE_KEY = "agent-archived-navigation";
 
 const formatRenterDisplayName = (fullName?: string | null) => {
   const parts = fullName?.trim().split(/\s+/).filter(Boolean) ?? [];
@@ -129,20 +119,39 @@ export default function AgentArchivedRequestsPage() {
     return () => controller.abort();
   }, [accessToken, page]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    writeStoredAgentListState(NAVIGATION_STORAGE_KEY, {
+      page,
+      limit,
+      totalPages: Math.max(1, pagination?.totalPages ?? 1),
+      itemIds: requests.map((request) => request.id),
+      itemHrefs: Object.fromEntries(
+        requests.map((request) => [
+          request.id,
+          getAgentRequestHref(request.raw, request.id, currentAgentId),
+        ]),
+      ),
+      filters: getEmptyFilters(),
+      showOwnReferrals: false,
+    });
+  }, [currentAgentId, limit, page, pagination?.totalPages, requests]);
+
   const handleView = (request: NormalizedAgentRequest) => {
     const isRegistered = isCurrentAgentRegisteredForRequest(
-      request,
+      request.raw,
       currentAgentId,
     );
 
     if (isRegistered) {
       cacheSingleAgentRequest(request);
-      router.push(`/agent/dashboard/${request.id}`);
+      router.push(`/agent/dashboard/${request.id}?from=archive`);
       return;
     }
 
-    cacheSingleAgentMatch(request as any);
-    router.push(`/agent/matches/${request.id}`);
+    cacheSingleAgentMatch(request as unknown as NormalizedAgentMatch);
+    router.push(`/agent/matches/${request.id}?from=archive`);
   };
 
   const handleUnarchive = async () => {
@@ -242,7 +251,7 @@ export default function AgentArchivedRequestsPage() {
                 <tbody>
                   {requests.map((request) => {
                     const isRegistered = isCurrentAgentRegisteredForRequest(
-                      request,
+                      request.raw,
                       currentAgentId,
                     );
                     const isRegistrationDisclosureLocked =
@@ -398,7 +407,10 @@ export default function AgentArchivedRequestsPage() {
       {unarchiveTarget ? (
         <UnarchiveRequestDialog
           mode={
-            isCurrentAgentRegisteredForRequest(unarchiveTarget, currentAgentId)
+            isCurrentAgentRegisteredForRequest(
+              unarchiveTarget.raw,
+              currentAgentId,
+            )
               ? "registered"
               : "matched"
           }

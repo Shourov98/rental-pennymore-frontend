@@ -4,6 +4,21 @@ import type { FilterType } from "@/components/modals/FilterModals";
 
 export interface FilterableAgentRequestLike {
   referralAgentId?: string | null;
+  referrerId?: string | null;
+  referralInfo?: {
+    referrer?: {
+      id?: string | null;
+      referrerId?: string | null;
+    } | null;
+  } | null;
+  renterInfo?: {
+    referralInfo?: {
+      referrerId?: string | null;
+      referredByAdmin?: {
+        referredBy?: string | null;
+      } | null;
+    } | null;
+  } | null;
   priceRange?: {
     min?: number;
     max?: number;
@@ -21,6 +36,7 @@ export interface AgentListNavigationState {
   limit: number;
   totalPages: number;
   itemIds: string[];
+  itemHrefs?: Record<string, string>;
   filters: FilterType;
   showOwnReferrals: boolean;
 }
@@ -150,6 +166,15 @@ export const readStoredAgentListState = (
             (itemId): itemId is string => typeof itemId === "string",
           )
         : [],
+      itemHrefs:
+        parsed.itemHrefs && typeof parsed.itemHrefs === "object"
+          ? Object.fromEntries(
+              Object.entries(parsed.itemHrefs).filter(
+                (entry): entry is [string, string] =>
+                  typeof entry[0] === "string" && typeof entry[1] === "string",
+              ),
+            )
+          : undefined,
       filters: sanitizeFilters(parsed.filters),
       showOwnReferrals: Boolean(parsed.showOwnReferrals),
     };
@@ -174,3 +199,32 @@ export const writeStoredAgentListState = (
 };
 
 export const getEmptyFilters = () => defaultFilters;
+
+export const isCurrentAgentRegisteredForRequest = (
+  raw: FilterableAgentRequestLike | undefined,
+  currentAgentId?: string | null,
+) => {
+  if (!raw || !currentAgentId) return false;
+
+  const registeredAgentIds = [
+    raw.referralAgentId,
+    raw.referrerId,
+    raw.referralInfo?.referrer?.id,
+    raw.referralInfo?.referrer?.referrerId,
+    raw.renterInfo?.referralInfo?.referrerId,
+    raw.renterInfo?.referralInfo?.referredByAdmin?.referredBy,
+  ]
+    .map((value) => (value ? String(value) : ""))
+    .filter(Boolean);
+
+  return registeredAgentIds.includes(String(currentAgentId));
+};
+
+export const getAgentRequestHref = (
+  raw: FilterableAgentRequestLike | undefined,
+  requestId: string,
+  currentAgentId?: string | null,
+) =>
+  isCurrentAgentRegisteredForRequest(raw, currentAgentId)
+    ? `/agent/dashboard/${requestId}?from=archive`
+    : `/agent/matches/${requestId}?from=archive`;

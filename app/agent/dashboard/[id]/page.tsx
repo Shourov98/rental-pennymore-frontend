@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { ArrowLeft, ChevronLeft, ChevronRight, Mail, Phone, User } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
@@ -25,11 +25,13 @@ import {
 import { selectAgentHasGrantAccess } from "@/store/slices/authSlice";
 import { fetchAgentProfile } from "@/store/slices/agentProfileSlice";
 import {
+  getAgentRequestHref,
   matchesAgentFilters,
   readStoredAgentListState,
 } from "../../requestNavigation";
 
 const NAVIGATION_STORAGE_KEY = "agent-dashboard-navigation";
+const ARCHIVE_NAVIGATION_STORAGE_KEY = "agent-archived-navigation";
 const NAVIGATION_LIMIT_FALLBACK = 10;
 type RepresentationType = "owner_representation" | "renter_representation";
 
@@ -172,12 +174,14 @@ function StripePaymentForm({
 export default function AgentRenterRequestDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useDispatch<AppDispatch>();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
   const currentUserId = useSelector((state: RootState) => state.auth.user?._id);
   const hasGrantAccess = useSelector(selectAgentHasGrantAccess);
 
   const requestId = params?.id as string | undefined;
+  const isArchiveContext = searchParams.get("from") === "archive";
 
   const [request, setRequest] = useState<NormalizedAgentRequest | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -209,11 +213,11 @@ export default function AgentRenterRequestDetailsPage() {
   const [selectedRepresentationType, setSelectedRepresentationType] =
     useState<RepresentationType | "">("");
   const [navigationTargets, setNavigationTargets] = useState<{
-    previousId: string | null;
-    nextId: string | null;
+    previousHref: string | null;
+    nextHref: string | null;
   }>({
-    previousId: null,
-    nextId: null,
+    previousHref: null,
+    nextHref: null,
   });
   const [isResolvingNavigation, setIsResolvingNavigation] = useState(false);
 
@@ -302,7 +306,10 @@ export default function AgentRenterRequestDetailsPage() {
     const controller = new AbortController();
 
     const resolveNavigation = async () => {
-      const storedState = readStoredAgentListState(NAVIGATION_STORAGE_KEY);
+      const storageKey = isArchiveContext
+        ? ARCHIVE_NAVIGATION_STORAGE_KEY
+        : NAVIGATION_STORAGE_KEY;
+      const storedState = readStoredAgentListState(storageKey);
       const useStoredContext =
         storedState?.itemIds?.some((itemId) => itemId === requestId) ?? false;
       const pageLimit =
@@ -321,20 +328,23 @@ export default function AgentRenterRequestDetailsPage() {
 
       try {
         setIsResolvingNavigation(true);
-        let previousId: string | null = null;
-        let nextId: string | null = null;
+        let previousHref: string | null = null;
+        let nextHref: string | null = null;
         let foundCurrent = false;
         let pageToFetch = 1;
         let totalPages = 1;
 
-        while (pageToFetch <= totalPages && !nextId) {
+        while (pageToFetch <= totalPages && !nextHref) {
           const params = new URLSearchParams({
             page: String(pageToFetch),
             limit: String(pageLimit),
           });
 
+          const endpoint = isArchiveContext
+            ? "/pre-market/agent/archived-requests"
+            : "/pre-market/all";
           const response = await fetch(
-            `${API_BASE_URL}/pre-market/all?${params.toString()}`,
+            `${API_BASE_URL}${endpoint}?${params.toString()}`,
             {
               method: "GET",
               headers,
@@ -358,7 +368,7 @@ export default function AgentRenterRequestDetailsPage() {
           totalPages = Math.max(1, data.pagination?.totalPages ?? totalPages);
 
           const visibleRequests =
-            useStoredContext && storedState
+            !isArchiveContext && useStoredContext && storedState
               ? normalized.filter((item) =>
                   matchesAgentFilters(
                     item.raw,
@@ -370,15 +380,18 @@ export default function AgentRenterRequestDetailsPage() {
               : normalized;
 
           for (const item of visibleRequests) {
+            const itemHref = isArchiveContext
+              ? getAgentRequestHref(item.raw, item.id, currentUserId)
+              : `/agent/dashboard/${item.id}`;
             if (foundCurrent) {
-              nextId = item.id;
+              nextHref = itemHref;
               break;
             }
 
             if (matchesCurrentRequest(item)) {
               foundCurrent = true;
             } else {
-              previousId = item.id;
+              previousHref = itemHref;
             }
           }
 
@@ -388,13 +401,13 @@ export default function AgentRenterRequestDetailsPage() {
         if (!controller.signal.aborted) {
           setNavigationTargets(
             foundCurrent
-              ? { previousId, nextId }
-              : { previousId: null, nextId: null },
+              ? { previousHref, nextHref }
+              : { previousHref: null, nextHref: null },
           );
         }
       } catch {
         if (!controller.signal.aborted) {
-          setNavigationTargets({ previousId: null, nextId: null });
+          setNavigationTargets({ previousHref: null, nextHref: null });
         }
       } finally {
         if (!controller.signal.aborted) {
@@ -406,7 +419,7 @@ export default function AgentRenterRequestDetailsPage() {
     resolveNavigation();
 
     return () => controller.abort();
-  }, [accessToken, currentUserId, requestId]);
+  }, [accessToken, currentUserId, isArchiveContext, requestId]);
 
   const {
     movingDateRange,
@@ -812,24 +825,27 @@ export default function AgentRenterRequestDetailsPage() {
     });
   };
 
-  const navigateToAdjacentRequest = (targetId: string | null) => {
-    if (!targetId || targetId === requestId) return;
-    router.push(`/agent/dashboard/${targetId}`);
+  const navigateToAdjacentRequest = (targetHref: string | null) => {
+    if (!targetHref) return;
+    router.push(targetHref);
   };
+
+  const backHref = isArchiveContext ? "/agent/archived-requests" : "/agent/dashboard";
+  const backLabel = isArchiveContext ? "Archived Requests" : "Renter Requests";
 
   return (
     <section className="flex-1 bg-gray-50 h-full min-h-0 px-4 md:px-8 py-6 overflow-y-auto">
       <div className="bg-white rounded-xl shadow-sm p-5 flex flex-wrap justify-between items-center mb-6">
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <ArrowLeft
-            onClick={() => router.back()}
+            onClick={() => router.push(backHref)}
             className="w-4 h-4 text-gray-600 cursor-pointer"
           />
           <span
-            onClick={() => router.push("/agent/dashboard")}
+            onClick={() => router.push(backHref)}
             className="cursor-pointer"
           >
-            Renter Requests
+            {backLabel}
           </span>
           <span>›</span>
           <span className="font-medium text-gray-800">
@@ -839,7 +855,23 @@ export default function AgentRenterRequestDetailsPage() {
 
         {(() => {
           const rawStatus = request?.raw?.status || request?.status;
-          if (!rawStatus) return null;
+          const archiveLabel =
+            request?.archiveReasonLabel || request?.raw?.archiveReasonLabel;
+          if (!rawStatus && !archiveLabel) return null;
+          if (request?.isArchivedForAgent || request?.raw?.isArchivedForAgent) {
+            return (
+              <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold">
+                {archiveLabel || "Archived"}
+              </span>
+            );
+          }
+          if (!rawStatus) {
+            return (
+              <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-semibold">
+                {archiveLabel}
+              </span>
+            );
+          }
           const normalizedStatus = rawStatus.toLowerCase();
           const statusLabel =
             rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1);
@@ -1129,10 +1161,10 @@ export default function AgentRenterRequestDetailsPage() {
                   <button
                     type="button"
                     onClick={() =>
-                      navigateToAdjacentRequest(navigationTargets.previousId)
+                      navigateToAdjacentRequest(navigationTargets.previousHref)
                     }
                     disabled={
-                      !navigationTargets.previousId || isResolvingNavigation
+                      !navigationTargets.previousHref || isResolvingNavigation
                     }
                     className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 md:min-w-36"
                     aria-label="Previous request"
@@ -1143,9 +1175,9 @@ export default function AgentRenterRequestDetailsPage() {
                   <button
                     type="button"
                     onClick={() =>
-                      navigateToAdjacentRequest(navigationTargets.nextId)
+                      navigateToAdjacentRequest(navigationTargets.nextHref)
                     }
-                    disabled={!navigationTargets.nextId || isResolvingNavigation}
+                    disabled={!navigationTargets.nextHref || isResolvingNavigation}
                     className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 md:min-w-36"
                     aria-label="Next request"
                   >
