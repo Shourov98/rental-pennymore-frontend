@@ -60,6 +60,9 @@ const formatRenterDisplayName = (fullName?: string | null) => {
   return `${parts[0]} ${parts[parts.length - 1][0]}`;
 };
 
+const isSharedVisibility = (visibility?: string | null) =>
+  visibility?.trim().toLowerCase() === "shared";
+
 const readStoredFilters = (): FilterType => {
   if (typeof window === "undefined") return defaultFilters;
 
@@ -556,6 +559,9 @@ export default function AgentRenterRequestsPage() {
                         isCurrentAgentRegisteredForRequest(req, currentAgentId);
                       const shareConsent = req.raw?.shareConsent;
                       const visibility = req.raw?.visibility;
+                      const shouldShowRegistrationDisclosure =
+                        isCurrentAgentsRequest ||
+                        !isSharedVisibility(visibility);
                       const isArchivedForAgent = Boolean(
                         req.isArchivedForAgent,
                       );
@@ -703,29 +709,31 @@ export default function AgentRenterRequestsPage() {
                             })()}
                           </td>
                           <td className="py-3 px-5">
-                            <div className="flex items-center justify-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={req.registrationDisclosureConfirmed}
-                                disabled={
-                                  req.registrationDisclosureConfirmed ||
-                                  mutatingRegistrationDisclosureId === req.id
-                                }
-                                onChange={(event) => {
-                                  if (event.target.checked) {
-                                    handleConfirmRegistrationDisclosure(req);
+                            {shouldShowRegistrationDisclosure ? (
+                              <div className="flex items-center justify-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  checked={req.registrationDisclosureConfirmed}
+                                  disabled={
+                                    req.registrationDisclosureConfirmed ||
+                                    mutatingRegistrationDisclosureId === req.id
                                   }
-                                }}
-                                aria-label={`Confirm Registration / Disclosure for ${req.requestName}`}
-                                className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
-                              />
-                              {isRegistrationDisclosureLocked ? (
-                                <Lock
-                                  className="h-4 w-4 text-gray-500"
-                                  aria-hidden="true"
+                                  onChange={(event) => {
+                                    if (event.target.checked) {
+                                      handleConfirmRegistrationDisclosure(req);
+                                    }
+                                  }}
+                                  aria-label={`Confirm Registration / Disclosure for ${req.requestName}`}
+                                  className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
                                 />
-                              ) : null}
-                            </div>
+                                {isRegistrationDisclosureLocked ? (
+                                  <Lock
+                                    className="h-4 w-4 text-gray-500"
+                                    aria-hidden="true"
+                                  />
+                                ) : null}
+                              </div>
+                            ) : null}
                           </td>
                           <td className="py-3 px-5 flex justify-end gap-2">
                             {isCurrentAgentsRequest &&
