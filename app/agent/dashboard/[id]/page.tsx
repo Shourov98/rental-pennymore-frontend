@@ -35,6 +35,10 @@ const NAVIGATION_STORAGE_KEY = "agent-dashboard-navigation";
 const ARCHIVE_NAVIGATION_STORAGE_KEY = "agent-archived-navigation";
 const NAVIGATION_LIMIT_FALLBACK = 10;
 type RepresentationType = "owner_representation" | "renter_representation";
+type OwnerRepresentationRegisteredAgent =
+  NonNullable<
+    NormalizedAgentRequest["raw"]["ownerRepresentationRegisteredAgent"]
+  >;
 
 const unitFeatureLabels: Record<string, string> = {
   laundryInUnit: "Laundry in unit",
@@ -653,15 +657,29 @@ export default function AgentRenterRequestDetailsPage() {
           },
         );
 
-        const data = await response
-          .json()
-          .catch(() => ({}) as { success?: boolean; message?: string });
+        const data = await response.json().catch(
+          () =>
+            ({}) as {
+              success?: boolean;
+              message?: string;
+              data?: {
+                registeredAgentInfo?: OwnerRepresentationRegisteredAgent | null;
+                representationSelectedAt?: string | null;
+              };
+              registeredAgentInfo?: OwnerRepresentationRegisteredAgent | null;
+              representationSelectedAt?: string | null;
+            },
+        );
 
         if (!response.ok || data?.success === false) {
           const errorMessage =
             data?.message || "Match request failed. Please try again.";
           throw new Error(errorMessage);
         }
+
+        const matchPayload = data?.data ?? data;
+        const representationSelectedAt =
+          matchPayload?.representationSelectedAt ?? new Date().toISOString();
 
         setRequest((prev) =>
           prev
@@ -677,7 +695,7 @@ export default function AgentRenterRequestDetailsPage() {
                     : representationType,
                 representationSelectedAt:
                   representationType === "owner_representation"
-                    ? new Date().toISOString()
+                    ? representationSelectedAt
                     : prev.representationSelectedAt,
                 raw: {
                   ...prev.raw,
@@ -685,17 +703,17 @@ export default function AgentRenterRequestDetailsPage() {
                     ? {
                         ownerRepresentationSelected: true,
                         ownerRepresentationRegisteredAgent:
-                          data?.data?.registeredAgentInfo ??
+                          matchPayload?.registeredAgentInfo ??
                           prev.raw.ownerRepresentationRegisteredAgent,
                         representation_type: representationType,
-                        representationSelectedAt: new Date().toISOString(),
+                        representationSelectedAt,
                       }
                     : {
                         listingStatus: "matched",
                         status: "matched",
                         grantAccessStatus: "free",
                         representation_type: representationType,
-                        representationSelectedAt: new Date().toISOString(),
+                        representationSelectedAt,
                       }),
                 },
               }
@@ -1065,46 +1083,6 @@ export default function AgentRenterRequestDetailsPage() {
             </div>
           )}
 
-          {ownerRepresentationRegisteredAgent && (
-            <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-              <h2 className="text-lg font-semibold text-[#0A093D] mb-4">
-                Registered Renter Agent
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="flex items-center gap-3 border-b border-gray-100 pb-2">
-                  <User className="w-4 h-4 text-blue-600" />
-                  <div>
-                    <p className="text-xs text-gray-500">Name</p>
-                    <p className="text-gray-900 font-medium">
-                      {ownerRepresentationRegisteredAgent.fullName ||
-                        "Not provided"}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 border-b border-gray-100 pb-2">
-                  <Mail className="w-4 h-4 text-blue-600" />
-                  <div>
-                    <p className="text-xs text-gray-500">Email</p>
-                    <p className="text-gray-900 font-medium">
-                      {ownerRepresentationRegisteredAgent.email ||
-                        "Not provided"}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 border-b border-gray-100 pb-2">
-                  <Phone className="w-4 h-4 text-blue-600" />
-                  <div>
-                    <p className="text-xs text-gray-500">Phone</p>
-                    <p className="text-gray-900 font-medium">
-                      {ownerRepresentationRegisteredAgent.phoneNumber ||
-                        "Not provided"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Preferences */}
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -1193,6 +1171,46 @@ export default function AgentRenterRequestDetailsPage() {
 
                 <div aria-hidden="true" />
               </div>
+
+              {ownerRepresentationRegisteredAgent && (
+                <div className="border-t border-gray-100 pt-4">
+                  <h3 className="mb-3 text-base font-semibold text-[#0A093D]">
+                    Registered Renter Agent
+                  </h3>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="flex items-center gap-3 border-b border-gray-100 pb-2">
+                      <User className="w-4 h-4 text-blue-600" />
+                      <div>
+                        <p className="text-xs text-gray-500">Name</p>
+                        <p className="font-medium text-gray-900">
+                          {ownerRepresentationRegisteredAgent.fullName ||
+                            "Not provided"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 border-b border-gray-100 pb-2">
+                      <Mail className="w-4 h-4 text-blue-600" />
+                      <div>
+                        <p className="text-xs text-gray-500">Email</p>
+                        <p className="font-medium text-gray-900">
+                          {ownerRepresentationRegisteredAgent.email ||
+                            "Not provided"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 border-b border-gray-100 pb-2">
+                      <Phone className="w-4 h-4 text-blue-600" />
+                      <div>
+                        <p className="text-xs text-gray-500">Phone</p>
+                        <p className="font-medium text-gray-900">
+                          {ownerRepresentationRegisteredAgent.phoneNumber ||
+                            "Not provided"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {ownerRepresentationMatches.length > 0 && (
