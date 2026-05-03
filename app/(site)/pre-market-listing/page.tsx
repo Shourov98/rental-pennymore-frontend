@@ -683,7 +683,7 @@ export default function PreMarketListingPage() {
                 />
                 <span className="space-y-1">
                   <span className="block text-[13px] font-semibold leading-snug text-gray-600 sm:text-sm md:text-[15px]">
-                    Rentals not publicly advertised
+                    Rentals not publicly advertised only
                   </span>
                   <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
                     We will only notify you if an upcoming rental that matches
@@ -731,9 +731,10 @@ export default function PreMarketListingPage() {
               </p>
               <p className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
                 To receive assistance beyond one agent, you may choose to allow
-                your request to be shared with other licensed New York real
-                estate agents who could assist in identifying potential rental
-                opportunities that may not yet be publicly advertised.
+                your request, including your first name and last initial, to be
+                shared with other licensed New York real estate agents who could
+                assist in identifying potential rental opportunities that may
+                not yet be publicly advertised.
               </p>
               <label className="flex items-start gap-1 cursor-pointer">
                 <input

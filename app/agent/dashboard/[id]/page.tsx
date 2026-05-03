@@ -26,6 +26,7 @@ import { selectAgentHasGrantAccess } from "@/store/slices/authSlice";
 import { fetchAgentProfile } from "@/store/slices/agentProfileSlice";
 import {
   getAgentRequestHref,
+  isCurrentAgentRegisteredForRequest,
   matchesAgentFilters,
   readStoredAgentListState,
 } from "../../requestNavigation";
@@ -571,8 +572,12 @@ export default function AgentRenterRequestDetailsPage() {
   }, [currentUserId, renterInfo, request]);
   const ownerRepresentationRegisteredAgent =
     request?.raw?.ownerRepresentationRegisteredAgent;
+  const canViewOwnerRepresentationMatches =
+    isCurrentAgentRegisteredForRequest(request?.raw, currentUserId ?? null);
   const ownerRepresentationMatches =
-    request?.raw?.ownerRepresentationMatches ?? [];
+    canViewOwnerRepresentationMatches
+      ? request?.raw?.ownerRepresentationMatches ?? []
+      : [];
   const canRequestAccess =
     request?.raw?.canRequestAccess &&
     (request?.raw?.status === "Available" || "available");
