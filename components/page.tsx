@@ -7,6 +7,7 @@ import BrucherLanding from "@/components/BrucherLanding";
 import {
   selectAccessToken,
   selectRenter,
+  selectSessionReady,
   selectUser,
 } from "@/store/slices/authSlice";
 
@@ -15,16 +16,18 @@ export default function BrucherPage() {
   const accessToken = useSelector(selectAccessToken);
   const user = useSelector(selectUser);
   const renter = useSelector(selectRenter);
+  const sessionReady = useSelector(selectSessionReady);
 
   const hasSession = Boolean(accessToken || user || renter);
 
   useEffect(() => {
+    if (!sessionReady) return;
     if (hasSession) {
       router.replace("/");
     }
-  }, [hasSession, router]);
+  }, [hasSession, router, sessionReady]);
 
-  if (hasSession) return null;
+  if (!sessionReady || hasSession) return null;
 
   return <BrucherLanding />;
 }

@@ -6,6 +6,7 @@ import { useLazyGetProfileQuery, useRefreshTokenMutation } from "@/store/api";
 import {
   logout,
   selectAuth,
+  sessionChecked,
   setAuthFromProfile,
 } from "@/store/slices/authSlice";
 
@@ -16,24 +17,8 @@ export default function AuthBootstrap() {
   const auth = useSelector(selectAuth);
   const [refreshToken] = useRefreshTokenMutation();
   const [getProfile] = useLazyGetProfileQuery();
-  const didRun = useRef(false);
+  const didBootstrap = useRef(false);
   const isVerifyingSession = useRef(false);
-
-  const isTokenValid = (token: string | null) => {
-    if (!token) return false;
-    try {
-      const payload = token.split(".")[1];
-      if (!payload) return false;
-      const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
-      const padded =
-        normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
-      const json = atob(padded);
-      const data = JSON.parse(json) as { exp?: number };
-      return Boolean(data.exp && data.exp * 1000 > Date.now());
-    } catch {
-      return false;
-    }
-  };
 
   const shouldForceLogout = (error: unknown) => {
     const value = error as {
@@ -78,50 +63,30 @@ export default function AuthBootstrap() {
   ]);
 
   useEffect(() => {
-    if (didRun.current) return;
-    didRun.current = true;
+    if (didBootstrap.current) return;
+    didBootstrap.current = true;
 
     const bootstrap = async () => {
-      const hasProfile = Boolean(auth.user || auth.renter);
-
-      if (isTokenValid(auth.accessToken)) {
-        try {
-          const profile = await getProfile().unwrap();
-          if (profile) {
-            dispatch(setAuthFromProfile(profile));
-            return;
-          }
-
-          if (hasProfile) {
-            return;
-          }
-
-          dispatch(logout());
-          return;
-        } catch (error) {
-          if (shouldForceLogout(error) || !hasProfile) {
-            dispatch(logout());
-          }
-          return;
-        }
-      }
-
       try {
-        await refreshToken().unwrap();
+        if (!auth.accessToken) {
+          await refreshToken().unwrap();
+        }
+
         const profile = await getProfile().unwrap();
         if (profile) {
           dispatch(setAuthFromProfile(profile));
-          return;
+        } else {
+          dispatch(logout());
         }
-
-        dispatch(logout());
       } catch {
         dispatch(logout());
+      } finally {
+        dispatch(sessionChecked());
       }
     };
 
     void bootstrap();
-  }, [auth.accessToken, auth.renter, auth.user, dispatch, getProfile, refreshToken]);
+  }, [auth.accessToken, dispatch, getProfile, refreshToken]);
 
   useEffect(() => {
     if (!auth.accessToken) return;

@@ -47,6 +47,7 @@ export const fetchAgentProfile = createAsyncThunk<
     const response = await fetch(`${API_BASE_URL}/agent/profile`, {
       method: "GET",
       headers,
+      credentials: "include",
     });
 
     const data: AgentProfileResponse = await response

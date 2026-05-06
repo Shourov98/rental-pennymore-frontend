@@ -114,6 +114,7 @@ export interface AuthState {
   referrerName: string | null;
   referrerTitle: string | null;
   referrerBrokerageName: string | null;
+  sessionReady: boolean;
   status: "idle" | "loading" | "authenticated" | "error";
   error: string | null;
 }
@@ -133,6 +134,7 @@ const initialState: AuthState = {
   referrerName: null,
   referrerTitle: null,
   referrerBrokerageName: null,
+  sessionReady: false,
   status: "idle",
   error: null,
 };
@@ -165,6 +167,9 @@ const authSlice = createSlice({
       state.status = "loading";
       state.error = null;
     },
+    sessionChecked(state) {
+      state.sessionReady = true;
+    },
     agentLoginSuccess(state, action: PayloadAction<AgentLoginPayload>) {
       const {
         user,
@@ -193,6 +198,7 @@ const authSlice = createSlice({
       state.referrerName = null;
       state.referrerTitle = null;
       state.referrerBrokerageName = null;
+      state.sessionReady = true;
       state.status = "authenticated";
       state.error = null;
     },
@@ -225,6 +231,7 @@ const authSlice = createSlice({
       state.referrerName = state.referrer?.fullName ?? null;
       state.referrerTitle = state.referrer?.title ?? null;
       state.referrerBrokerageName = state.referrer?.brokerageName ?? null;
+      state.sessionReady = true;
       state.status = "authenticated";
       state.error = null;
     },
@@ -232,6 +239,7 @@ const authSlice = createSlice({
       state.accessToken = action.payload.accessToken;
       state.refreshToken = action.payload.refreshToken ?? state.refreshToken;
       state.expiresIn = action.payload.expiresIn ?? state.expiresIn;
+      state.sessionReady = true;
       state.status = "authenticated";
       state.error = null;
     },
@@ -241,6 +249,7 @@ const authSlice = createSlice({
     },
     logout(state) {
       Object.assign(state, initialState);
+      state.sessionReady = true;
     },
     updateUser(state, action: PayloadAction<Partial<UserBase>>) {
       if (state.user) {
@@ -275,6 +284,7 @@ const authSlice = createSlice({
         };
         state.role = "Renter";
       }
+      state.sessionReady = true;
       state.status = "authenticated";
       state.error = null;
     },
@@ -283,6 +293,7 @@ const authSlice = createSlice({
 
 export const {
   authStart,
+  sessionChecked,
   agentLoginSuccess,
   renterLoginSuccess,
   refreshSuccess,
@@ -301,6 +312,7 @@ export const selectAuth = (state: RootState) => state.auth;
 export const selectUser = (state: RootState) => state.auth.user;
 export const selectRenter = (state: RootState) => state.auth.renter;
 export const selectAccessToken = (state: RootState) => state.auth.accessToken;
+export const selectSessionReady = (state: RootState) => state.auth.sessionReady;
 export const selectIsAuthed = (state: RootState) =>
   state.auth.status === "authenticated" &&
   !!state.auth.accessToken &&

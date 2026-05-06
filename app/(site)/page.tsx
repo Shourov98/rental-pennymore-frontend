@@ -10,8 +10,8 @@ import {
   selectIsAuthed,
   selectReferrerBrokerageName,
   selectReferrerName,
+  selectSessionReady,
 } from "@/store/slices/authSlice";
-import { useSyncExternalStore } from "react";
 import { useSelector } from "react-redux";
 import Image from "next/image";
 import Link from "next/link";
@@ -21,6 +21,7 @@ export default function HomePage() {
   const auth = useSelector(selectAuth);
   const referrerName = useSelector(selectReferrerName);
   const referrerBrokerageName = useSelector(selectReferrerBrokerageName);
+  const sessionReady = useSelector(selectSessionReady);
   const role = auth.role ?? auth.user?.role ?? null;
   const isAgent = role === "Agent";
   const displayName = isAgent
@@ -31,13 +32,7 @@ export default function HomePage() {
   const displayBrokerageName = isAgent
     ? (auth.agentProfile?.brokerageName ?? "The Corcoran Group")
     : referrerBrokerageName || "The Corcoran Group";
-  const isHydrated = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  );
-
-  if (!isHydrated) return null;
+  if (!sessionReady) return null;
   if (!isAuthed) return <BrucherLanding />;
 
   return (

@@ -4,10 +4,13 @@ import { Suspense, useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import {
   agentLoginSuccess,
   authFailure,
   authStart,
+  selectIsAuthed,
+  selectSessionReady,
   renterLoginSuccess,
 } from "@/store/slices/authSlice";
 import { fetchAgentProfile } from "@/store/slices/agentProfileSlice";
@@ -44,6 +47,8 @@ function SigninPageContent() {
   const searchParams = useSearchParams();
   const referralFromUrl = searchParams.get("ref");
   const dispatch = useDispatch<AppDispatch>();
+  const isAuthed = useSelector(selectIsAuthed);
+  const sessionReady = useSelector(selectSessionReady);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -58,6 +63,14 @@ function SigninPageContent() {
   const [isContinueLoading, setIsContinueLoading] = useState(false);
   const [defaultReferralAgent, setDefaultReferralAgent] =
     useState<DefaultReferralAgent | null>(null);
+
+  useEffect(() => {
+    if (!sessionReady || !isAuthed) return;
+    const redirectTarget = searchParams.get("redirect");
+    const destination =
+      redirectTarget === "pre-market-listing" ? "/pre-market-listing" : "/";
+    router.replace(destination);
+  }, [isAuthed, router, searchParams, sessionReady]);
 
   useEffect(() => {
     const nextSaved = referralFromUrl

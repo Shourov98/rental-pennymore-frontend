@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import boroughNeighborhoodsData from "../../data/neighborhoods.manhattan-brooklyn";
 
 export interface FilterType {
@@ -63,15 +63,6 @@ export default function FilterModal({
   const [maxPrice, setMaxPrice] = useState<number | null>(
     resolvedInitialFilters.maxPrice,
   );
-
-  useEffect(() => {
-    if (!isOpen) return;
-    setBorough(resolvedInitialFilters.borough);
-    setSelectedNeighborhoods(resolvedInitialFilters.neighborhoods);
-    setBedrooms(resolvedInitialFilters.bedrooms);
-    setBathrooms(resolvedInitialFilters.bathrooms);
-    setMaxPrice(resolvedInitialFilters.maxPrice);
-  }, [isOpen, resolvedInitialFilters]);
 
   const neighborhoods = useMemo(
     () => (borough ? boroughNeighborhoods[borough] : []),

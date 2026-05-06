@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import AgentNavbar from "@/components/agent/AgentNavbar";
 import AgentSidebar from "@/components/agent/AgentSidebar";
-import { selectAuth, selectIsAuthed } from "@/store/slices/authSlice";
+import {
+  selectAuth,
+  selectIsAuthed,
+  selectSessionReady,
+} from "@/store/slices/authSlice";
 
 export default function AgentLayout({
   children,
@@ -15,6 +19,7 @@ export default function AgentLayout({
   const router = useRouter();
   const auth = useSelector(selectAuth);
   const isAuthed = useSelector(selectIsAuthed);
+  const sessionReady = useSelector(selectSessionReady);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
   const role = auth.role ?? auth.user?.role ?? null;
@@ -50,6 +55,7 @@ export default function AgentLayout({
   };
 
   useEffect(() => {
+    if (!sessionReady) return;
     if (!isAuthed) {
       router.replace(shouldRedirectHomeOnLogout() ? "/" : "/signin");
       return;
@@ -57,9 +63,9 @@ export default function AgentLayout({
     if (hasRole && !isAgent) {
       router.replace("/renter/saved-requests");
     }
-  }, [hasRole, isAgent, isAuthed, router]);
+  }, [hasRole, isAgent, isAuthed, router, sessionReady]);
 
-  if (!mounted || !isAuthed || (hasRole && !isAgent)) {
+  if (!mounted || !sessionReady || !isAuthed || (hasRole && !isAgent)) {
     return null;
   }
 

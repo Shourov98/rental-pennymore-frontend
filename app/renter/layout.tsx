@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import AgentNavbar from "@/components/agent/AgentNavbar";
 import RenterSidebar from "@/components/renter/RenterSidebar";
-import { selectAuth, selectIsAuthed } from "@/store/slices/authSlice";
+import {
+  selectAuth,
+  selectIsAuthed,
+  selectSessionReady,
+} from "@/store/slices/authSlice";
 
 export default function RenterLayout({
   children,
@@ -15,6 +19,7 @@ export default function RenterLayout({
   const router = useRouter();
   const auth = useSelector(selectAuth);
   const isAuthed = useSelector(selectIsAuthed);
+  const sessionReady = useSelector(selectSessionReady);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
   const role = auth.role ?? auth.user?.role ?? null;
@@ -48,6 +53,7 @@ export default function RenterLayout({
   };
 
   useEffect(() => {
+    if (!sessionReady) return;
     if (!isAuthed) {
       router.replace(shouldRedirectHomeOnLogout() ? "/" : "/signin");
       return;
@@ -55,9 +61,9 @@ export default function RenterLayout({
     if (hasRole && !isRenter) {
       router.replace("/agent/dashboard");
     }
-  }, [hasRole, isAuthed, isRenter, router]);
+  }, [hasRole, isAuthed, isRenter, router, sessionReady]);
 
-  if (!mounted || !isAuthed || (hasRole && !isRenter)) {
+  if (!mounted || !sessionReady || !isAuthed || (hasRole && !isRenter)) {
     return null;
   }
 
