@@ -684,7 +684,7 @@ export default function PreMarketListingPage() {
                 />
                 <span className="space-y-1">
                   <span className="block text-[13px] font-semibold leading-snug text-gray-600 sm:text-sm md:text-[15px]">
-                    Rentals not publicly advertised only
+                    Rentals Not Publicly Advertised Only (BeforeListed)
                   </span>
                   <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
                     We will only notify you if an upcoming rental that matches
@@ -703,13 +703,13 @@ export default function PreMarketListingPage() {
                 />
                 <span className="space-y-1">
                   <span className="block text-[13px] font-semibold leading-snug text-gray-600 sm:text-sm md:text-[15px]">
-                    Rentals publicly listed and not publicly advertised, <br />
-                    and you will be notified if an upcoming rental that matches
-                    your request is found.
+                    Rentals Publicly Listed + BeforeListed <br />
                   </span>
                   <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
-                    Ask for a rental specialist to assist you with the full
-                    rental market.
+                    A rental specialist agent will assist you with the full
+                    rental market, <br />
+                    and you will be notified if an upcoming rental that matches
+                    your request is found
                   </span>
                 </span>
               </label>
