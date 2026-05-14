@@ -707,9 +707,10 @@ export default function PreMarketListingPage() {
                   </span>
                   <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
                     A rental specialist agent will assist you with the full
-                    rental market, <br />
-                    and you will be notified if an upcoming rental that matches
-                    your request is found
+                    rental
+                    <br className="sm:hidden" /> market, and you will be
+                    notified if an upcoming rental that{" "}
+                    <br className="sm:hidden" /> matches your request is found
                   </span>
                 </span>
               </label>
