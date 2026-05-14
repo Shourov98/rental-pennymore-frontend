@@ -705,12 +705,16 @@ export default function PreMarketListingPage() {
                   <span className="block text-[13px] font-semibold leading-snug text-gray-600 sm:text-sm md:text-[15px]">
                     Rentals Publicly Listed + BeforeListed <br />
                   </span>
-                  <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
+                  <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:hidden">
                     A rental specialist agent will assist you with the full
                     rental
-                    <br className="sm:hidden" /> market, and you will be
-                    notified if an upcoming rental that{" "}
-                    <br className="sm:hidden" /> matches your request is found
+                    <br /> market, and you will be notified if an upcoming
+                    rental that <br /> matches your request is found
+                  </span>
+                  <span className="hidden text-[13px] leading-relaxed text-gray-600 sm:text-sm md:block md:text-[15px] md:leading-7">
+                    A rental specialist agent will assist you with the full
+                    rental market, and you will be <br /> notified if an
+                    upcoming rental that matches your request is found
                   </span>
                 </span>
               </label>
