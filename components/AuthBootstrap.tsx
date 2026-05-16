@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
+import { clearServerAuthSession } from "@/lib/authSession";
 import { useLazyGetProfileQuery, useRefreshTokenMutation } from "@/store/api";
 import {
   logout,
@@ -17,8 +19,11 @@ export default function AuthBootstrap() {
   const auth = useSelector(selectAuth);
   const [refreshToken] = useRefreshTokenMutation();
   const [getProfile] = useLazyGetProfileQuery();
+  const pathname = usePathname();
   const didBootstrap = useRef(false);
+  const didClearAnonymousSession = useRef(false);
   const isVerifyingSession = useRef(false);
+  const shouldForceAnonymousSession = pathname === "/signup/renter";
 
   const shouldForceLogout = (error: unknown) => {
     const value = error as {
@@ -48,6 +53,7 @@ export default function AuthBootstrap() {
       }
     } catch (error) {
       if (shouldForceLogout(error)) {
+        await clearServerAuthSession(auth.accessToken);
         dispatch(logout());
       }
     } finally {
@@ -63,11 +69,39 @@ export default function AuthBootstrap() {
   ]);
 
   useEffect(() => {
+    if (!shouldForceAnonymousSession) {
+      didClearAnonymousSession.current = false;
+      return;
+    }
+
+    if (didClearAnonymousSession.current) return;
+    didClearAnonymousSession.current = true;
+
+    const clearAnonymousSession = async () => {
+      try {
+        await clearServerAuthSession(auth.accessToken);
+      } catch {
+        // The client state still needs to be anonymous even if the network call fails.
+      } finally {
+        dispatch(logout());
+        dispatch(sessionChecked());
+      }
+    };
+
+    void clearAnonymousSession();
+  }, [auth.accessToken, dispatch, shouldForceAnonymousSession]);
+
+  useEffect(() => {
     if (didBootstrap.current) return;
     didBootstrap.current = true;
 
     const bootstrap = async () => {
       try {
+        if (shouldForceAnonymousSession) {
+          dispatch(logout());
+          return;
+        }
+
         if (!auth.accessToken) {
           await refreshToken().unwrap();
         }
@@ -79,6 +113,7 @@ export default function AuthBootstrap() {
           dispatch(logout());
         }
       } catch {
+        await clearServerAuthSession(auth.accessToken);
         dispatch(logout());
       } finally {
         dispatch(sessionChecked());
@@ -86,7 +121,13 @@ export default function AuthBootstrap() {
     };
 
     void bootstrap();
-  }, [auth.accessToken, dispatch, getProfile, refreshToken]);
+  }, [
+    auth.accessToken,
+    dispatch,
+    getProfile,
+    refreshToken,
+    shouldForceAnonymousSession,
+  ]);
 
   useEffect(() => {
     if (!auth.accessToken) return;

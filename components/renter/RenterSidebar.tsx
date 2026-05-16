@@ -14,10 +14,9 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
+import { clearServerAuthSession } from "@/lib/authSession";
 import { logout } from "@/store/slices/authSlice";
 import type { AppDispatch, RootState } from "@/store/store";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function AgentSidebar({ open }: { open?: boolean }) {
   const pathname = usePathname();
@@ -73,15 +72,7 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
 
   const handleLogout = async () => {
     try {
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
-
-      await fetch(`${API_BASE_URL}/auth/logout`, {
-        method: "POST",
-        headers,
-      });
+      await clearServerAuthSession(accessToken);
     } catch (err) {
       console.error("Logout failed", err);
     } finally {

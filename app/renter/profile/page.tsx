@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Lock, ArrowRight, Edit2, Phone, Mail, User, Eye, EyeOff } from "lucide-react";
+import { clearServerAuthSession } from "@/lib/authSession";
 import { logout, updateRenter, updateUser } from "@/store/slices/authSlice";
 import type { AppDispatch, RootState } from "@/store/store";
 
@@ -177,10 +178,7 @@ export default function ProfilePage() {
         );
       }
 
-      await fetch(`${API_BASE_URL}/auth/logout`, {
-        method: "POST",
-        headers,
-      });
+      await clearServerAuthSession(accessToken);
 
       dispatch(logout());
       router.replace("/signin");

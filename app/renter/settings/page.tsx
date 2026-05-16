@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import { useDispatch, useSelector } from "react-redux";
+import { clearServerAuthSession } from "@/lib/authSession";
 import { logout, updateRenter } from "@/store/slices/authSlice";
 import type { AppDispatch, RootState } from "@/store/store";
 import { useRouter } from "next/navigation";
@@ -101,6 +102,7 @@ export default function SettingsPage() {
         );
       }
 
+      await clearServerAuthSession(accessToken);
       dispatch(logout());
       setShowDeleteModal(false);
       router.replace("/signin");

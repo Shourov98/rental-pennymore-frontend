@@ -4,6 +4,7 @@ import {
   type BaseQueryFn,
 } from "@reduxjs/toolkit/query/react";
 import type { FetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { clearServerAuthSession } from "@/lib/authSession";
 import {
   selectAccessToken,
   logout,
@@ -66,6 +67,7 @@ const baseQueryWithAuth: BaseQueryFn<
   const url = typeof args === "string" ? args : args.url;
 
   if (isEmailBlockedError(result.error)) {
+    await clearServerAuthSession(selectAccessToken(api.getState() as RootState));
     api.dispatch(logout());
     return result;
   }
@@ -84,14 +86,21 @@ const baseQueryWithAuth: BaseQueryFn<
       api.dispatch(refreshSuccess({ accessToken }));
       result = await rawBaseQuery(args, api, extraOptions);
       if (isEmailBlockedError(result.error)) {
+        await clearServerAuthSession(
+          selectAccessToken(api.getState() as RootState),
+        );
         api.dispatch(logout());
       }
     } else {
+      await clearServerAuthSession(
+        selectAccessToken(api.getState() as RootState),
+      );
       api.dispatch(logout());
     }
   } else if (result.error?.status === 401 || result.error?.status === 403) {
     const token = selectAccessToken(api.getState() as RootState);
     if (!isTokenValid(token) || isEmailBlockedError(result.error)) {
+      await clearServerAuthSession(token);
       api.dispatch(logout());
     }
   }
@@ -233,6 +242,7 @@ export const api = createApi({
             })
           );
         } catch {
+          await clearServerAuthSession();
           dispatch(logout());
         }
       },

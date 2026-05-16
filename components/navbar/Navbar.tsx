@@ -6,9 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { X, ChevronDown, User, ClipboardList, Menu } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
+import { clearServerAuthSession } from "@/lib/authSession";
 import { selectAuth, logout, selectIsAuthed } from "@/store/slices/authSlice";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function Navbar() {
   const dispatch = useDispatch();
@@ -173,16 +172,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (auth.accessToken)
-        headers.Authorization = `Bearer ${auth.accessToken}`;
-
-      await fetch(`${API_BASE_URL}/auth/logout`, {
-        method: "POST",
-        headers,
-      });
+      await clearServerAuthSession(auth.accessToken);
     } catch (err) {
       console.error("Logout failed", err);
     } finally {
