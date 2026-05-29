@@ -11,10 +11,31 @@ type ConfirmationState = "loading" | "success" | "error";
 export default function ConfirmActiveRequestPage() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token")?.trim() || "";
+  const status = searchParams.get("status");
+  const redirectMessage = searchParams.get("message");
+  const redirectRenterFullName = searchParams.get("renterFullName");
   const [state, setState] = useState<ConfirmationState>("loading");
   const [message, setMessage] = useState("Confirming your request...");
 
   useEffect(() => {
+    if (status === "success") {
+      setState("success");
+      setMessage(
+        redirectMessage ||
+          `Thank you, ${redirectRenterFullName || "there"}. Your request has been confirmed and your search remains active.`,
+      );
+      return;
+    }
+
+    if (status === "error") {
+      setState("error");
+      setMessage(
+        redirectMessage ||
+          "We couldn't confirm your request right now. Please try again.",
+      );
+      return;
+    }
+
     const controller = new AbortController();
 
     const confirmRequest = async () => {
@@ -26,7 +47,7 @@ export default function ConfirmActiveRequestPage() {
 
       try {
         const response = await fetch(
-          `${API_BASE_URL}/pre-market/confirm-active-search?token=${encodeURIComponent(token)}`,
+          `${API_BASE_URL}/pre-market/confirm-active-search?token=${encodeURIComponent(token)}&response=json`,
           {
             method: "GET",
             signal: controller.signal,
@@ -67,7 +88,7 @@ export default function ConfirmActiveRequestPage() {
     void confirmRequest();
 
     return () => controller.abort();
-  }, [token]);
+  }, [redirectMessage, redirectRenterFullName, status, token]);
 
   const toneClasses = useMemo(() => {
     if (state === "success") {
