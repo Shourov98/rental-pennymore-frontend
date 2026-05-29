@@ -1,5 +1,4 @@
 // Brooklyn neighborhood data
-import type { LatLngExpression } from "leaflet";
 import { Area } from "./manhattanAreas";
 
 export const brooklynAreas: Area[] = [

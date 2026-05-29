@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Eye, Filter, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
+import { CenteredPageSpinner } from "@/components/ui/centered-page-spinner";
 import type { AppDispatch, RootState } from "@/store/store";
 import { fetchAgentProfile } from "@/store/slices/agentProfileSlice";
 import ArchiveRequestDialog, {
@@ -30,6 +31,60 @@ const FILTERS_STORAGE_KEY = "agent-dashboard-filters";
 const LIST_STATE_STORAGE_KEY = "agent-dashboard-list-state";
 const defaultFilters: FilterType = getEmptyFilters();
 const NAVIGATION_STORAGE_KEY = "agent-dashboard-navigation";
+
+const bedroomQueryLabels: Record<number, string> = {
+  0: "Studio",
+  1: "1BR",
+  2: "2BR",
+  3: "3BR",
+  4: "4BR+",
+};
+
+const bathroomQueryLabels: Record<number, string> = {
+  1: "1",
+  2: "2",
+  3: "3",
+  4: "4+",
+};
+
+const appendCsvParam = (
+  params: URLSearchParams,
+  key: string,
+  values: string[],
+) => {
+  const activeValues = values.filter(Boolean);
+  if (activeValues.length) params.set(key, activeValues.join(","));
+};
+
+const appendFilterParams = (params: URLSearchParams, filters: FilterType) => {
+  if (filters.borough) params.set("borough", filters.borough);
+  appendCsvParam(
+    params,
+    "bedrooms",
+    filters.bedrooms.flatMap((value) =>
+      bedroomQueryLabels[value] ? [bedroomQueryLabels[value]] : [],
+    ),
+  );
+  appendCsvParam(
+    params,
+    "bathrooms",
+    filters.bathrooms.flatMap((value) =>
+      bathroomQueryLabels[value] ? [bathroomQueryLabels[value]] : [],
+    ),
+  );
+  if (filters.maxPrice != null) params.set("rent", String(filters.maxPrice));
+  if (filters.movingDate.earliest) {
+    params.set("movingDateEarliest", filters.movingDate.earliest);
+  }
+  if (filters.movingDate.latest) {
+    params.set("movingDateLatest", filters.movingDate.latest);
+  }
+  appendCsvParam(params, "unitFeatures", filters.unitFeatures);
+  appendCsvParam(params, "buildingFeatures", filters.buildingFeatures);
+  appendCsvParam(params, "petPolicy", filters.petPolicy);
+  appendCsvParam(params, "guarantorRequired", filters.guarantorRequired);
+  appendCsvParam(params, "availableFeatures", filters.availableFeatures);
+};
 
 const isCurrentAgentRegisteredForRequest = (
   request: NormalizedAgentRequest,
@@ -173,6 +228,7 @@ export default function AgentRenterRequestsPage() {
           page: String(page),
           limit: String(limit),
         });
+        appendFilterParams(params, filters);
 
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
@@ -225,7 +281,7 @@ export default function AgentRenterRequestsPage() {
     fetchRequests();
 
     return () => controller.abort();
-  }, [accessToken, isStateRestored, page]);
+  }, [accessToken, filters, isStateRestored, page]);
 
   const filteredRequests = useMemo(() => {
     return requests.filter((req) =>
@@ -484,6 +540,15 @@ export default function AgentRenterRequestsPage() {
     setPage(value);
   };
 
+  const handleApplyFilters = (nextFilters: FilterType) => {
+    setPage(1);
+    setFilters(sanitizeFilters(nextFilters));
+  };
+
+  if (isLoading) {
+    return <CenteredPageSpinner />;
+  }
+
   return (
     <section className="bg-gray-50 min-h-screen px-4 lg:px-6 py-6 overflow-y-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 bg-white p-5 rounded-xl shadow-sm gap-3">
@@ -498,29 +563,24 @@ export default function AgentRenterRequestsPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowOwnReferrals((prev) => !prev)}
-            className={`px-4 py-2 rounded-full font-medium border transition ${
+            className={`cursor-pointer rounded-full border px-4 py-2 font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 ${
               showOwnReferrals
-                ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
-                : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100"
+                ? "border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-sm"
+                : "border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm"
             }`}
           >
             Direct Renters
           </button>
           <button
             onClick={() => setIsFilterOpen(true)}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full font-medium hover:bg-blue-700 transition"
+            className="flex cursor-pointer items-center gap-2 rounded-full bg-blue-600 px-4 py-2 font-medium text-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-sm"
           >
             <Filter className="w-4 h-4" />
             Find Matches
           </button>
         </div>
       </div>
-
-      {isLoading ? (
-        <div className="bg-white rounded-xl shadow-sm p-6 text-gray-600">
-          Loading renter requests…
-        </div>
-      ) : error ? (
+      {error ? (
         <div className="bg-red-50 text-red-700 border border-red-100 rounded-xl p-4 text-sm">
           {error}
         </div>
@@ -773,7 +833,7 @@ export default function AgentRenterRequestsPage() {
                             <button
                               onClick={() => handleView(req)}
                               title="View request"
-                              className="p-2 rounded-full transition bg-gray-100 hover:bg-gray-200"
+                              className="cursor-pointer rounded-full bg-gray-100 p-2 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-gray-200 hover:shadow-sm"
                             >
                               <Eye className="w-4 h-4 text-gray-600" />
                             </button>
@@ -840,11 +900,13 @@ export default function AgentRenterRequestsPage() {
         </>
       )}
       <FilterModal
+        key={`agent-dashboard-filters-${JSON.stringify(filters)}`}
         isOpen={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}
-        onApply={(f) => setFilters(f)}
+        onApply={handleApplyFilters}
         initialFilters={filters}
         resultCount={filteredRequests.length}
+        variant="matchRequests"
       />
       {archiveTarget ? (
         <ArchiveRequestDialog

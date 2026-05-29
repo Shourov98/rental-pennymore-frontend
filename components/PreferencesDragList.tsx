@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { defaultPreferencesList } from "@/store/slices/preferenceSlice";
 
 import {

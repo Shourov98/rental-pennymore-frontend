@@ -218,7 +218,7 @@ export default function HeroSection() {
 
               router.push("/signin?redirect=pre-market-listing");
             }}
-            className="w-full sm:w-[20%] bg-blue-500 text-white text-sm font-semibold rounded-xl mt-5 px-6 py-2 hover:bg-blue-700"
+            className="mt-5 w-full cursor-pointer rounded-xl bg-blue-500 px-6 py-2 text-sm font-semibold text-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-md sm:w-[20%]"
           >
             Next
           </button>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ArrowLeft, Save, Phone, IdCard, User, Building2 } from "lucide-react";
+import { CenteredPageSpinner } from "@/components/ui/centered-page-spinner";
 import { updateAgentProfile } from "@/store/slices/agentProfileSlice";
 import { updateUser, type AgentProfile } from "@/store/slices/authSlice";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -88,6 +89,10 @@ export default function EditAgentProfile() {
 
     return () => controller.abort();
   }, [accessToken, dispatch]);
+
+  if (isLoading) {
+    return <CenteredPageSpinner />;
+  }
 
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>

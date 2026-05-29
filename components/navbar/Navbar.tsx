@@ -310,7 +310,7 @@ export default function Navbar() {
                     e.preventDefault();
                     handleNavClick(item.id, item.name);
                   }}
-                  className={`relative pb-1 lg:px-2 transition ${
+                  className={`relative pb-1 lg:px-2 cursor-pointer transition-all duration-200 ease-out hover:-translate-y-0.5 ${
                     activeItem === item.name
                       ? "text-blue-600"
                       : "hover:text-blue-600"
@@ -337,7 +337,7 @@ export default function Navbar() {
               <>
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-gray-100 transition"
+                  className="flex cursor-pointer items-center gap-2 rounded-full px-3 py-1.5 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-gray-100 hover:shadow-sm"
                 >
                   {avatarSrc ? (
                     <div className="relative w-7 h-7 rounded-full overflow-hidden border border-gray-300">
@@ -374,7 +374,7 @@ export default function Navbar() {
                               ? handleLogout()
                               : handleMenuItemClick(menu.path)
                           }
-                          className="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-blue-100 text-gray-800 text-sm"
+                          className="flex w-full cursor-pointer items-center gap-3 px-4 py-2 text-left text-sm text-gray-800 transition-all duration-200 ease-out hover:translate-x-1 hover:bg-blue-100"
                         >
                           {menu.icon}
                           {menu.label}
@@ -531,7 +531,7 @@ export default function Navbar() {
                         ? handleLogout()
                         : handleMenuItemClick(menu.path)
                     }
-                    className="w-full text-left flex items-center gap-3 px-2 py-2 hover:bg-blue-50 text-gray-800 text-sm"
+                    className="flex w-full cursor-pointer items-center gap-3 px-2 py-2 text-left text-sm text-gray-800 transition-all duration-200 ease-out hover:translate-x-1 hover:bg-blue-50"
                   >
                     {menu.icon}
                     {menu.label}

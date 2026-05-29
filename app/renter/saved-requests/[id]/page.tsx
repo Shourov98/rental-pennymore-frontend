@@ -199,7 +199,7 @@ export default function EditPreMarketListingPage() {
     fetchRequest();
 
     return () => controller.abort();
-  }, [accessToken, requestId]);
+  }, [accessToken, dispatch, requestId]);
 
   const locationEntries = useMemo(() => {
     if (!locations?.length) return [];

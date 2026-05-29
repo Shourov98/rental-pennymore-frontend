@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Edit3, Eye, EyeOff, Lock, RefreshCw, User } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { CenteredPageSpinner } from "@/components/ui/centered-page-spinner";
 import { clearServerAuthSession } from "@/lib/authSession";
 import {
   fetchAgentProfile,
@@ -56,6 +57,10 @@ export default function AgentProfile() {
   const avatar = userInfo?.profileImageUrl || null;
 
   const isLoading = status === "loading" && !profile;
+
+  if (isLoading) {
+    return <CenteredPageSpinner />;
+  }
 
   const handleChangePassword = async (
     event: React.FormEvent<HTMLFormElement>
@@ -166,12 +171,6 @@ export default function AgentProfile() {
             <h2 className="text-lg font-semibold text-gray-900">
               Personal Information
             </h2>
-            {isLoading && (
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                Syncing profile...
-              </div>
-            )}
           </div>
           <p className="text-xs text-gray-500 mb-6">
             Updated {formattedDates.updated} • Member since{" "}

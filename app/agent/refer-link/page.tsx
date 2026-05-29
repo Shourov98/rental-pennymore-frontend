@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Copy, Check, RefreshCw } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
+import { CenteredPageSpinner } from "@/components/ui/centered-page-spinner";
 import type { AppDispatch, RootState } from "@/store/store";
 import {
   fetchAgentProfile,
@@ -59,6 +60,10 @@ export default function AgentReferLink() {
 
   const isLoading = status === "loading" && !profile;
 
+  if (isLoading) {
+    return <CenteredPageSpinner />;
+  }
+
   return (
     <div className="bg-white rounded-2xl shadow-sm p-6">
       <div className="flex items-start justify-between gap-3 mb-4">
@@ -68,12 +73,6 @@ export default function AgentReferLink() {
             Share your unique code and link to register new renters.
           </p>
         </div>
-        {isLoading && (
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <RefreshCw className="w-4 h-4 animate-spin" />
-            Loading...
-          </div>
-        )}
       </div>
 
       {error && (

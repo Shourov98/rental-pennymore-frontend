@@ -143,7 +143,7 @@ export default function FaqSection() {
         if (items.length > 0) {
           setFaqItems(items);
         }
-      } catch (err) {
+      } catch {
         if (controller.signal.aborted) return;
       }
     };

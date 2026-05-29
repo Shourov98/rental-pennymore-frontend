@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
+import { CenteredPageSpinner } from "@/components/ui/centered-page-spinner";
 import UnarchiveRequestDialog from "@/components/agent/UnarchiveRequestDialog";
 import type { RootState } from "@/store/store";
 import {
@@ -201,6 +202,10 @@ export default function AgentArchivedRequestsPage() {
   const totalItems = pagination?.totalItems ?? requests.length;
   const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
 
+  if (isLoading) {
+    return <CenteredPageSpinner />;
+  }
+
   return (
     <section className="bg-gray-50 min-h-screen px-4 lg:px-6 py-6 overflow-y-auto">
       <div className="mb-6 rounded-xl bg-white p-5 shadow-sm">
@@ -211,12 +216,7 @@ export default function AgentArchivedRequestsPage() {
           View archived renter requests.
         </p>
       </div>
-
-      {isLoading ? (
-        <div className="bg-white rounded-xl shadow-sm p-6 text-gray-600">
-          Loading archived requests...
-        </div>
-      ) : error ? (
+      {error ? (
         <div className="bg-red-50 text-red-700 border border-red-100 rounded-xl p-4 text-sm">
           {error}
         </div>

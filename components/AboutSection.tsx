@@ -2,11 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { selectReferrerName } from "@/store/slices/authSlice";
-import { useSelector } from "react-redux";
 
 export default function AboutSection() {
-  const referrerName = useSelector(selectReferrerName);
   return (
     <section className="md:mx-3 md:mt-3 lg:mx-6 lg:mt-6">
       <div className="relative w-full py-16 px-6 rounded-2xl md:px-16 lg:px-24 bg-white">

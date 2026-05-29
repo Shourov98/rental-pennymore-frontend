@@ -1,6 +1,5 @@
 import ntaData from "@/data/exact-neighborhoods.json";
 import type {
-  Feature,
   Polygon as GeoPolygon,
   MultiPolygon as GeoMultiPolygon,
 } from "geojson";

@@ -26,22 +26,6 @@ export default function RenterPreferenceView({
   const bedroomOptions = ["Studio", "1BR", "2BR", "3BR", "4BR+"];
   const bathroomOptions = ["1", "2", "3", "4+"];
 
-  const renderBadgeRow = (items: string[]) =>
-    items.length ? (
-      <div className="flex flex-wrap gap-2">
-        {items.map((item) => (
-          <span
-            key={item}
-            className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full"
-          >
-            {item}
-          </span>
-        ))}
-      </div>
-    ) : (
-      <p className="text-sm text-gray-500">Not specified</p>
-    );
-
   const renderCheckboxList = (items: string[]) =>
     items.length ? (
       <div className="space-y-2">

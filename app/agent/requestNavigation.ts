@@ -27,8 +27,17 @@ export interface FilterableAgentRequestLike {
     borough?: string;
     neighborhoods?: string[];
   }[];
+  movingDateRange?: {
+    earliest?: string | Date | null;
+    latest?: string | Date | null;
+  };
   bedrooms?: string[];
   bathrooms?: string[];
+  unitFeatures?: Record<string, boolean | undefined>;
+  buildingFeatures?: Record<string, boolean | undefined>;
+  petPolicy?: Record<string, boolean | undefined>;
+  guarantorRequired?: Record<string, boolean | undefined>;
+  preferences?: string[];
 }
 
 export interface AgentListNavigationState {
@@ -47,12 +56,21 @@ const defaultFilters: FilterType = {
   bedrooms: [],
   bathrooms: [],
   maxPrice: null,
+  movingDate: {
+    earliest: "",
+    latest: "",
+  },
+  unitFeatures: [],
+  buildingFeatures: [],
+  petPolicy: [],
+  guarantorRequired: [],
+  availableFeatures: [],
 };
 
 const getBedroomValue = (bedroom: string) =>
   bedroom === "Studio" ? 0 : parseInt(bedroom, 10);
 
-const hasValueAtOrBelowThreshold = (
+const hasAnyExactValue = (
   requestedValues: number[],
   selectedFilters: number[],
 ) => {
@@ -62,8 +80,70 @@ const hasValueAtOrBelowThreshold = (
     return false;
   }
 
-  const threshold = Math.max(...validSelectedFilters);
-  return validRequestedValues.some((value) => value <= threshold);
+  return validRequestedValues.some((value) =>
+    validSelectedFilters.includes(value),
+  );
+};
+
+const normalizeText = (value: string) => value.trim().toLowerCase();
+
+const toDateValue = (value?: string | Date | null) => {
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const startOfSelectedDate = (value?: string | null) => {
+  if (!value) return null;
+  const date = new Date(`${value}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const endOfSelectedDate = (value?: string | null) => {
+  if (!value) return null;
+  const date = new Date(`${value}T23:59:59`);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const everySelectedFlagIsEnabled = (
+  source: Record<string, boolean | undefined> | undefined,
+  selectedKeys: string[],
+) => {
+  if (!selectedKeys.length) return true;
+  if (!source) return false;
+
+  return selectedKeys.every((key) => source[key] === true);
+};
+
+const availableFeatureAliases: Record<string, string[]> = {
+  lotsOfStorage: ["Lots of Storage"],
+  lotsOfLight: ["Lots of Light"],
+  gymInBuilding: ["Gym in Building"],
+  largeApartment: ["Large Apartment"],
+  openViews: ["Open Views"],
+  newRenovation: ["New Renovation"],
+  openKitchen: ["Open Kitchen"],
+  highCeilings: ["High Ceilings"],
+  ifWalkUpBelow3rdFloor: [
+    "If Walk-Up: Below 3rd Floor",
+    "If Walk-Up: Prefer Lower Floors",
+  ],
+  notGroundFloor: ["Not Ground Floor", "Avoid Ground Floor"],
+};
+
+const everySelectedPreferenceIsPresent = (
+  preferences: string[] | undefined,
+  selectedKeys: string[],
+) => {
+  if (!selectedKeys.length) return true;
+  if (!preferences?.length) return false;
+
+  const normalizedPreferences = new Set(preferences.map(normalizeText));
+
+  return selectedKeys.every((key) => {
+    const aliases = availableFeatureAliases[key] ?? [key];
+    return aliases.some((alias) => normalizedPreferences.has(normalizeText(alias)));
+  });
 };
 
 export const sanitizeFilters = (
@@ -76,6 +156,29 @@ export const sanitizeFilters = (
   bedrooms: Array.isArray(filters?.bedrooms) ? filters.bedrooms : [],
   bathrooms: Array.isArray(filters?.bathrooms) ? filters.bathrooms : [],
   maxPrice: typeof filters?.maxPrice === "number" ? filters.maxPrice : null,
+  movingDate: {
+    earliest:
+      typeof filters?.movingDate?.earliest === "string"
+        ? filters.movingDate.earliest
+        : "",
+    latest:
+      typeof filters?.movingDate?.latest === "string"
+        ? filters.movingDate.latest
+        : "",
+  },
+  unitFeatures: Array.isArray(filters?.unitFeatures)
+    ? filters.unitFeatures
+    : [],
+  buildingFeatures: Array.isArray(filters?.buildingFeatures)
+    ? filters.buildingFeatures
+    : [],
+  petPolicy: Array.isArray(filters?.petPolicy) ? filters.petPolicy : [],
+  guarantorRequired: Array.isArray(filters?.guarantorRequired)
+    ? filters.guarantorRequired
+    : [],
+  availableFeatures: Array.isArray(filters?.availableFeatures)
+    ? filters.availableFeatures
+    : [],
 });
 
 export const matchesAgentFilters = (
@@ -88,7 +191,9 @@ export const matchesAgentFilters = (
 
   if (filters.borough) {
     const hasBorough = raw.locations?.some(
-      (loc) => loc?.borough === filters.borough,
+      (loc) =>
+        normalizeText(loc?.borough ?? "") ===
+        normalizeText(filters.borough ?? ""),
     );
     if (!hasBorough) return false;
   }
@@ -97,8 +202,9 @@ export const matchesAgentFilters = (
     const neighborhoods = raw.locations
       ?.flatMap((loc) => loc?.neighborhoods || [])
       .filter(Boolean) as string[];
+    const normalizedNeighborhoods = neighborhoods.map(normalizeText);
     const hasNeighborhood = filters.neighborhoods.some((neighborhood) =>
-      neighborhoods.includes(neighborhood),
+      normalizedNeighborhoods.includes(normalizeText(neighborhood)),
     );
     if (!hasNeighborhood) return false;
   }
@@ -106,26 +212,54 @@ export const matchesAgentFilters = (
   if (filters.bedrooms.length) {
     const bedroomValues =
       raw.bedrooms?.map((bedroom) => getBedroomValue(bedroom)) || [];
-    const hasBedroom = hasValueAtOrBelowThreshold(
-      bedroomValues,
-      filters.bedrooms,
-    );
+    const hasBedroom = hasAnyExactValue(bedroomValues, filters.bedrooms);
     if (!hasBedroom) return false;
   }
 
   if (filters.bathrooms.length) {
     const bathroomValues =
       raw.bathrooms?.map((bathroom) => parseInt(bathroom, 10)) || [];
-    const hasBathroom = hasValueAtOrBelowThreshold(
-      bathroomValues,
-      filters.bathrooms,
-    );
+    const hasBathroom = hasAnyExactValue(bathroomValues, filters.bathrooms);
     if (!hasBathroom) return false;
   }
 
   if (filters.maxPrice != null) {
     const maxPrice = raw.priceRange?.max ?? raw.priceRange?.min;
-    if (maxPrice != null && maxPrice < filters.maxPrice) return false;
+    if (maxPrice == null || maxPrice < filters.maxPrice) return false;
+  }
+
+  const selectedEarliest = startOfSelectedDate(filters.movingDate.earliest);
+  const selectedLatest = endOfSelectedDate(filters.movingDate.latest);
+  const requestEarliest = toDateValue(raw.movingDateRange?.earliest);
+  const requestLatest = toDateValue(raw.movingDateRange?.latest);
+
+  if (selectedEarliest || selectedLatest) {
+    if (!requestEarliest && !requestLatest) return false;
+    if (selectedEarliest && requestLatest && requestLatest < selectedEarliest) {
+      return false;
+    }
+    if (selectedLatest && requestEarliest && requestEarliest > selectedLatest) {
+      return false;
+    }
+  }
+
+  if (
+    !everySelectedFlagIsEnabled(raw.unitFeatures, filters.unitFeatures) ||
+    !everySelectedFlagIsEnabled(
+      raw.buildingFeatures,
+      filters.buildingFeatures,
+    ) ||
+    !everySelectedFlagIsEnabled(raw.petPolicy, filters.petPolicy) ||
+    !everySelectedFlagIsEnabled(
+      raw.guarantorRequired,
+      filters.guarantorRequired,
+    ) ||
+    !everySelectedPreferenceIsPresent(
+      raw.preferences,
+      filters.availableFeatures,
+    )
+  ) {
+    return false;
   }
 
   if (showOwnReferrals) {

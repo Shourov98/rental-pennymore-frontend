@@ -80,7 +80,7 @@ export default function MonthlyReportSection() {
             return b.month - a.month;
           });
         setReports(availableReports);
-      } catch (error) {
+      } catch {
         if (!controller.signal.aborted) {
           setReports([]);
         }
@@ -145,13 +145,6 @@ export default function MonthlyReportSection() {
             <div className="flex gap-6 py-2">
               {reports.map((report) => {
                 const monthName = monthLabel[report.month - 1] || "Unknown";
-                const updatedLabel = report.updatedAt
-                  ? new Date(report.updatedAt).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })
-                  : "N/A";
                 return (
                   <div
                     key={report._id}

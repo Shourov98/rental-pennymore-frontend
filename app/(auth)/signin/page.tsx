@@ -17,6 +17,7 @@ import { fetchAgentProfile } from "@/store/slices/agentProfileSlice";
 import type { AppDispatch } from "@/store/store";
 import Link from "next/link";
 import { getSavedReferralCode, saveReferralCode } from "@/lib/referralCode";
+import { Spinner } from "@/components/ui/spinner";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -399,12 +400,19 @@ function SigninPageContent() {
           type="submit"
           disabled={isLoading}
           className="
-            w-full bg-action hover:bg-action-hover text-text-inverted
+            flex w-full items-center justify-center gap-2 bg-action hover:bg-action-hover text-text-inverted
             py-3 sm:py-3.5 rounded-xl
             transition disabled:opacity-70 disabled:cursor-not-allowed
           "
         >
-          {isLoading ? "Logging in..." : "Login"}
+          {isLoading ? (
+            <>
+              <span>Logging in</span>
+              <Spinner className="size-4 text-white" />
+            </>
+          ) : (
+            "Login"
+          )}
         </button>
 
         {/* Footer */}

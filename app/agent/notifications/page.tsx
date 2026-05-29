@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { Bell, CreditCard, Handshake, Home, Trash2 } from "lucide-react";
+import { CenteredPageSpinner } from "@/components/ui/centered-page-spinner";
 import type { RootState } from "@/store/store";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -295,6 +296,10 @@ export default function NotificationsPage() {
     }
   };
 
+  if (isLoading) {
+    return <CenteredPageSpinner />;
+  }
+
   return (
     <section className="w-full min-h-screen bg-[#F8F9FB] px-4 md:px-8 py-6 space-y-6">
       {/* Header */}
@@ -322,14 +327,8 @@ export default function NotificationsPage() {
           {error}
         </div>
       )}
-
       <div className="bg-white rounded-xl shadow-sm divide-y">
-        {isLoading ? (
-          <div className="px-6 py-8 text-sm text-gray-500">
-            Loading notifications...
-          </div>
-        ) : (
-          notifications.map((notification) => {
+        {notifications.map((notification) => {
             const Icon = iconByType[notification.type || "info"] || Bell;
             const isUnread = !notification.isRead;
             const timeLabel = notification.createdAt
@@ -398,12 +397,11 @@ export default function NotificationsPage() {
                 </div>
               </div>
             );
-          })
-        )}
+          })}
       </div>
 
       {/* Empty State (optional) */}
-      {!isLoading && notifications.length === 0 && (
+      {notifications.length === 0 && (
         <div className="bg-white rounded-xl shadow-sm p-10 text-center text-gray-500">
           <Bell size={36} className="mx-auto mb-3 text-gray-400" />
           <p>No notifications yet.</p>

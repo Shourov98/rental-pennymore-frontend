@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { User } from "lucide-react";
-import { logout, selectAuth, selectIsAuthed } from "@/store/slices/authSlice";
+import { selectAuth, selectIsAuthed } from "@/store/slices/authSlice";
 
 export default function AgentNavbar({
   onMenuToggle,
@@ -14,11 +13,8 @@ export default function AgentNavbar({
   onMenuToggle?: () => void;
 }) {
   const router = useRouter();
-  const dispatch = useDispatch();
   const auth = useSelector(selectAuth);
   const isAuthed = useSelector(selectIsAuthed);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const getFirstName = (fullName?: string | null, email?: string | null) => {
     const safeFullName = fullName?.trim();
@@ -45,19 +41,6 @@ export default function AgentNavbar({
     avatarUrl && avatarVersionKey
       ? `${avatarUrl}${avatarUrl.includes("?") ? "&" : "?"}v=${encodeURIComponent(avatarVersionKey)}`
       : avatarUrl;
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      )
-        setDropdownOpen(false);
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 h-16 flex items-center justify-between px-6">
@@ -97,7 +80,6 @@ export default function AgentNavbar({
       {/* User Section */}
       <div
         className="relative flex items-center gap-2 md:gap-3 lg:gap-4"
-        ref={dropdownRef}
       >
         {canShowAuthed && hasDisplayName ? (
           <button className="flex items-right md:items-center gap-2 rounded-full hover:bg-gray-100 transition px-2 py-1">

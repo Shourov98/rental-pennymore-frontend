@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import { useDispatch, useSelector } from "react-redux";
 import { clearServerAuthSession } from "@/lib/authSession";
-import { logout, updateRenter } from "@/store/slices/authSlice";
+import { logout } from "@/store/slices/authSlice";
 import type { AppDispatch, RootState } from "@/store/store";
 import { useRouter } from "next/navigation";
 
@@ -14,70 +14,9 @@ export default function SettingsPage() {
   const dispatch = useDispatch<AppDispatch>();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
   const router = useRouter();
-  const renterSubscription = useSelector(
-    (state: RootState) => state.auth.renter?.emailSubscriptionEnabled,
-  );
-  const [subscribed, setSubscribed] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof renterSubscription === "boolean") {
-      setSubscribed(renterSubscription);
-    }
-  }, [renterSubscription]);
-
-  const toggleSubscription = async () => {
-    setError(null);
-    setIsSaving(true);
-
-    try {
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
-
-      const response = await fetch(
-        `${API_BASE_URL}/renter/email-subscription/toggle`,
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify({}),
-        },
-      );
-
-      const data = await response.json().catch(() => ({}));
-
-      if (!response.ok || data?.success === false) {
-        throw new Error(
-          data?.message ||
-            "We couldn't update your email subscription right now.",
-        );
-      }
-
-      const isEnabled =
-        typeof data?.data?.emailSubscriptionEnabled === "boolean"
-          ? data.data.emailSubscriptionEnabled
-          : !subscribed;
-      setSubscribed(isEnabled);
-      dispatch(
-        updateRenter({
-          emailSubscriptionEnabled: isEnabled,
-        }),
-      );
-    } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : "We couldn't update your email subscription right now.";
-      setError(message);
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const handleDelete = async () => {
     setDeleteError(null);

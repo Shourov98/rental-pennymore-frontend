@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Eye, Filter, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
+import { CenteredPageSpinner } from "@/components/ui/centered-page-spinner";
 import FilterModal, { type FilterType } from "@/components/modals/FilterModals";
 import ArchiveRequestDialog, {
   type ArchiveReason,
@@ -475,6 +476,10 @@ export default function AgentMatchesPage() {
     setPage(value);
   };
 
+  if (isLoading) {
+    return <CenteredPageSpinner />;
+  }
+
   return (
     <section className="bg-gray-50 min-h-screen px-4 lg:px-6 py-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 bg-white p-5 rounded-xl shadow-sm gap-3">
@@ -506,12 +511,7 @@ export default function AgentMatchesPage() {
           </button>
         </div>
       </div>
-
-      {isLoading ? (
-        <div className="bg-white rounded-xl shadow-sm p-6 text-gray-600">
-          Loading matched requests…
-        </div>
-      ) : error ? (
+      {error ? (
         <div className="bg-red-50 text-red-700 border border-red-100 rounded-xl p-4 text-sm">
           {error}
         </div>
