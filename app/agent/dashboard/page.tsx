@@ -545,7 +545,7 @@ export default function AgentRenterRequestsPage() {
     setFilters(sanitizeFilters(nextFilters));
   };
 
-  if (isLoading) {
+  if (isLoading && !isFilterOpen) {
     return <CenteredPageSpinner />;
   }
 
@@ -899,15 +899,17 @@ export default function AgentRenterRequestsPage() {
           )}
         </>
       )}
-      <FilterModal
-        key={`agent-dashboard-filters-${JSON.stringify(filters)}`}
-        isOpen={isFilterOpen}
-        onClose={() => setIsFilterOpen(false)}
-        onApply={handleApplyFilters}
-        initialFilters={filters}
-        resultCount={filteredRequests.length}
-        variant="matchRequests"
-      />
+      {isFilterOpen ? (
+        <FilterModal
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+          onApply={handleApplyFilters}
+          initialFilters={filters}
+          resultCount={filteredRequests.length}
+          variant="matchRequests"
+          isApplying={isLoading}
+        />
+      ) : null}
       {archiveTarget ? (
         <ArchiveRequestDialog
           mode="registered"

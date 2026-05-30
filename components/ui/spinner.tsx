@@ -13,3 +13,11 @@ export function Spinner({ className, ...props }: ComponentProps<"svg">) {
     />
   );
 }
+
+export function SpinnerCustom() {
+  return (
+    <div className="flex items-center gap-4">
+      <Spinner />
+    </div>
+  );
+}

@@ -104,7 +104,7 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
                     key={item.name}
                     type="button"
                     onClick={handleLogout}
-                    className="flex items-center gap-3 px-4 py-4 rounded-2xl border bg-white text-gray-800 hover:bg-gray-100 border-gray-200"
+                    className="flex cursor-pointer items-center gap-3 px-4 py-4 rounded-2xl border bg-white text-gray-800 hover:bg-gray-100 border-gray-200"
                   >
                     <span className="w-5 h-5">{item.icon}</span>
                     <span className="text-sm font-medium">{item.name}</span>

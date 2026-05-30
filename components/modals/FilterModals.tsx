@@ -2,6 +2,7 @@
 
 import { Calendar, X } from "lucide-react";
 import { useMemo, useState } from "react";
+import { Spinner } from "@/components/ui/spinner";
 import boroughNeighborhoodsData from "../../data/neighborhoods.manhattan-brooklyn";
 
 export interface FilterType {
@@ -155,6 +156,7 @@ export default function FilterModal({
   initialFilters,
   resultCount,
   variant = "default",
+  isApplying = false,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -162,7 +164,10 @@ export default function FilterModal({
   initialFilters?: FilterType;
   resultCount?: number;
   variant?: FilterModalVariant;
+  isApplying?: boolean;
 }) {
+  const isMatchRequestsVariant = variant === "matchRequests";
+  const isMatchRequestsApplying = isMatchRequestsVariant && isApplying;
   const resolvedInitialFilters = resolveFilters(initialFilters);
   const [borough, setBorough] = useState<string | null>(
     resolvedInitialFilters.borough,
@@ -197,6 +202,21 @@ export default function FilterModal({
   );
   const [enabledFeatureGroups, setEnabledFeatureGroups] =
     useState(defaultFeatureGroups);
+
+  const syncLocalFilters = (nextFilters: FilterType) => {
+    setBorough(nextFilters.borough);
+    setSelectedNeighborhoods(nextFilters.neighborhoods);
+    setBedrooms(nextFilters.bedrooms);
+    setBathrooms(nextFilters.bathrooms);
+    setMaxPrice(nextFilters.maxPrice);
+    setMovingDate(nextFilters.movingDate);
+    setUnitFeatures(nextFilters.unitFeatures);
+    setBuildingFeatures(nextFilters.buildingFeatures);
+    setPetPolicy(nextFilters.petPolicy);
+    setGuarantorRequired(nextFilters.guarantorRequired);
+    setAvailableFeatures(nextFilters.availableFeatures);
+    setEnabledFeatureGroups(defaultFeatureGroups);
+  };
 
   const neighborhoods = useMemo(
     () => (borough ? boroughNeighborhoods[borough] : []),
@@ -243,24 +263,13 @@ export default function FilterModal({
 
   const resetAll = () => {
     const next = resolveFilters(defaultFilters);
-    setBorough(next.borough);
-    setSelectedNeighborhoods(next.neighborhoods);
-    setBedrooms(next.bedrooms);
-    setBathrooms(next.bathrooms);
-    setMaxPrice(next.maxPrice);
-    setMovingDate(next.movingDate);
-    setUnitFeatures(next.unitFeatures);
-    setBuildingFeatures(next.buildingFeatures);
-    setPetPolicy(next.petPolicy);
-    setGuarantorRequired(next.guarantorRequired);
-    setAvailableFeatures(next.availableFeatures);
-    setEnabledFeatureGroups(defaultFeatureGroups);
+    syncLocalFilters(next);
     onApply(next);
   };
 
   const applyFilters = () => {
     onApply(currentFilters());
-    onClose();
+    if (!isMatchRequestsVariant) onClose();
   };
 
   const clearFeatureGroup = (group: FeatureGroupKey) => {
@@ -710,15 +719,15 @@ export default function FilterModal({
 
   if (!isOpen) return null;
 
-  const isMatchRequestsVariant = variant === "matchRequests";
-
   return (
     <div
       className="fixed inset-0 z-50 flex justify-end bg-black/30 text-black"
-      onClick={onClose}
+      onClick={() => {
+        if (!isMatchRequestsApplying) onClose();
+      }}
     >
       <div
-        className={`flex h-full max-w-[calc(100vw-24px)] animate-slideIn flex-col bg-white shadow-xl ${
+        className={`relative flex h-full max-w-[calc(100vw-24px)] animate-slideIn flex-col bg-white shadow-xl ${
           isMatchRequestsVariant ? "w-[350px]" : "w-[85%] sm:w-[350px]"
         }`}
         onClick={(event) => event.stopPropagation()}
@@ -738,43 +747,66 @@ export default function FilterModal({
           <button
             type="button"
             onClick={onClose}
+            disabled={isMatchRequestsApplying}
             aria-label="Close filters"
-            className="cursor-pointer rounded-full p-1 text-gray-600 transition-all duration-200 ease-out hover:rotate-90 hover:bg-gray-100"
+            className="cursor-pointer rounded-full p-1 text-gray-600 transition-all duration-200 ease-out hover:rotate-90 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:rotate-0 disabled:hover:bg-transparent"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {isMatchRequestsVariant
-          ? renderMatchRequestsFilters()
-          : renderDefaultFilters()}
+        <div className="relative flex min-h-0 flex-1 flex-col">
+          <fieldset
+            disabled={isMatchRequestsApplying}
+            aria-hidden={isMatchRequestsApplying}
+            className={`m-0 flex min-h-0 min-w-0 flex-1 flex-col border-0 p-0 transition-opacity duration-200 ${
+              isMatchRequestsApplying
+                ? "pointer-events-none select-none opacity-45"
+                : ""
+            }`}
+          >
+            {isMatchRequestsVariant
+              ? renderMatchRequestsFilters()
+              : renderDefaultFilters()}
 
-        <div
-          className={`shrink-0 border-t border-gray-200 bg-white ${
-            isMatchRequestsVariant ? "px-4 py-4" : "p-5"
-          }`}
-        >
-          {typeof resultCount === "number" && (
-            <div className="mb-3 text-xs text-gray-500">
-              Showing {resultCount} request{resultCount === 1 ? "" : "s"}
+            <div
+              className={`shrink-0 border-t border-gray-200 bg-white ${
+                isMatchRequestsVariant ? "px-4 py-4" : "p-5"
+              }`}
+            >
+              {typeof resultCount === "number" && (
+                <div className="mb-3 text-xs text-gray-500">
+                  Showing {resultCount} request{resultCount === 1 ? "" : "s"}
+                </div>
+              )}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={resetAll}
+                  className="flex-1 cursor-pointer rounded-full border border-gray-200 bg-white py-2 text-sm font-medium text-gray-700 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-gray-50 hover:shadow-sm disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-white disabled:hover:shadow-none"
+                >
+                  Reset
+                </button>
+                <button
+                  type="button"
+                  onClick={applyFilters}
+                  className="flex-1 cursor-pointer rounded-full bg-blue-600 py-2 text-sm font-medium text-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-sm disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-blue-600 disabled:hover:shadow-none"
+                >
+                  {isMatchRequestsVariant ? "Match" : "Apply"}
+                </button>
+              </div>
             </div>
-          )}
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={resetAll}
-              className="flex-1 cursor-pointer rounded-full border border-gray-200 bg-white py-2 text-sm font-medium text-gray-700 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-gray-50 hover:shadow-sm"
+          </fieldset>
+
+          {isMatchRequestsApplying ? (
+            <div
+              className="absolute inset-0 z-10 flex items-center justify-center bg-white/50"
+              aria-live="polite"
+              aria-label="Matching requests"
             >
-              Reset
-            </button>
-            <button
-              type="button"
-              onClick={applyFilters}
-              className="flex-1 cursor-pointer rounded-full bg-blue-600 py-2 text-sm font-medium text-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-sm"
-            >
-              {isMatchRequestsVariant ? "Match" : "Apply"}
-            </button>
-          </div>
+              <Spinner className="size-8 text-blue-600" />
+            </div>
+          ) : null}
         </div>
       </div>
 
