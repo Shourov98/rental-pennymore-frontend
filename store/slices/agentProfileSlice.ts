@@ -76,6 +76,15 @@ export const fetchAgentProfile = createAsyncThunk<
       ...data.data,
       userInfo: normalizedUserInfo,
     };
+
+    if (typeof normalizedProfile.emailSubscriptionEnabled === "boolean") {
+      dispatch(
+        updateUser({
+          emailSubscriptionEnabled: normalizedProfile.emailSubscriptionEnabled,
+        })
+      );
+    }
+
     dispatch(setAgentProfile(normalizedProfile));
     return normalizedProfile;
   } catch (error) {

@@ -54,10 +54,16 @@ export default function AgentLayout({
     return true;
   };
 
+  const getCurrentPath = () => {
+    if (typeof window === "undefined") return "/agent/dashboard";
+    return `${window.location.pathname}${window.location.search}`;
+  };
+
   useEffect(() => {
     if (!sessionReady) return;
     if (!isAuthed) {
-      router.replace(shouldRedirectHomeOnLogout() ? "/" : "/signin");
+      const signinPath = `/signin?redirect=${encodeURIComponent(getCurrentPath())}`;
+      router.replace(shouldRedirectHomeOnLogout() ? "/" : signinPath);
       return;
     }
     if (hasRole && !isAgent) {

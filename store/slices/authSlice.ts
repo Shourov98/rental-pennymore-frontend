@@ -64,6 +64,9 @@ export interface AgentProfile {
   licenseNumber?: string;
   brokerageName?: string;
   isActive?: boolean;
+  emailSubscriptionEnabled?: boolean;
+  acceptingRequests?: boolean;
+  acceptingRequestsToggledAt?: string;
   totalRentersReferred?: number;
   activeReferrals?: number;
   referralConversionRate?: number;
@@ -180,10 +183,19 @@ const authSlice = createSlice({
         agentProfile,
       } =
         action.payload;
+      const emailSubscriptionEnabled =
+        typeof user.emailSubscriptionEnabled === "boolean"
+          ? user.emailSubscriptionEnabled
+          : typeof agentProfile?.emailSubscriptionEnabled === "boolean"
+            ? agentProfile.emailSubscriptionEnabled
+            : undefined;
       state.user = {
         ...user,
         title: user.title ?? title ?? null,
         profileImage: user.profileImage ?? user.profileImageUrl ?? null,
+        ...(typeof emailSubscriptionEnabled === "boolean"
+          ? { emailSubscriptionEnabled }
+          : {}),
       };
       state.agentProfile = agentProfile ?? null;
       state.role = user.role;
@@ -239,8 +251,11 @@ const authSlice = createSlice({
       state.accessToken = action.payload.accessToken;
       state.refreshToken = action.payload.refreshToken ?? state.refreshToken;
       state.expiresIn = action.payload.expiresIn ?? state.expiresIn;
-      state.sessionReady = true;
-      state.status = "authenticated";
+      const hasLoadedProfile = Boolean(state.user || state.renter);
+      state.status = hasLoadedProfile ? "authenticated" : "loading";
+      if (hasLoadedProfile) {
+        state.sessionReady = true;
+      }
       state.error = null;
     },
     authFailure(state, action: PayloadAction<string>) {

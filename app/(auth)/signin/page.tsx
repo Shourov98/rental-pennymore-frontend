@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatch } from "react-redux";
@@ -65,13 +65,34 @@ function SigninPageContent() {
   const [defaultReferralAgent, setDefaultReferralAgent] =
     useState<DefaultReferralAgent | null>(null);
 
+  const getRedirectDestination = useCallback(
+    (forcedDestination?: string) => {
+      if (forcedDestination) return forcedDestination;
+
+      const redirectTarget = searchParams.get("redirect");
+      if (redirectTarget === "pre-market-listing") {
+        return "/pre-market-listing";
+      }
+
+      if (
+        redirectTarget &&
+        redirectTarget.startsWith("/") &&
+        !redirectTarget.startsWith("//") &&
+        !redirectTarget.startsWith("/signin")
+      ) {
+        return redirectTarget;
+      }
+
+      return "/";
+    },
+    [searchParams],
+  );
+
   useEffect(() => {
     if (!sessionReady || !isAuthed) return;
-    const redirectTarget = searchParams.get("redirect");
-    const destination =
-      redirectTarget === "pre-market-listing" ? "/pre-market-listing" : "/";
+    const destination = getRedirectDestination();
     router.replace(destination);
-  }, [isAuthed, router, searchParams, sessionReady]);
+  }, [getRedirectDestination, isAuthed, router, sessionReady]);
 
   useEffect(() => {
     const nextSaved = referralFromUrl
@@ -79,6 +100,14 @@ function SigninPageContent() {
       : getSavedReferralCode();
     setSavedReferralCode(nextSaved);
   }, [referralFromUrl]);
+
+  if (!sessionReady || isAuthed) {
+    return (
+      <div className="flex min-h-48 w-full items-center justify-center">
+        <Spinner className="size-6 text-action" />
+      </div>
+    );
+  }
 
   const signupHref = (() => {
     const referralCode = referralFromUrl || savedReferralCode;
@@ -159,10 +188,7 @@ function SigninPageContent() {
       dispatch(fetchAgentProfile());
     }
 
-    const redirectTarget = searchParams.get("redirect");
-    const destination =
-      forcedDestination ??
-      (redirectTarget === "pre-market-listing" ? "/pre-market-listing" : "/");
+    const destination = getRedirectDestination(forcedDestination);
     setStatusMessage({
       type: "success",
       message: data.message || "Login successful.",

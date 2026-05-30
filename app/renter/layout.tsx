@@ -52,10 +52,16 @@ export default function RenterLayout({
     return true;
   };
 
+  const getCurrentPath = () => {
+    if (typeof window === "undefined") return "/renter/saved-requests";
+    return `${window.location.pathname}${window.location.search}`;
+  };
+
   useEffect(() => {
     if (!sessionReady) return;
     if (!isAuthed) {
-      router.replace(shouldRedirectHomeOnLogout() ? "/" : "/signin");
+      const signinPath = `/signin?redirect=${encodeURIComponent(getCurrentPath())}`;
+      router.replace(shouldRedirectHomeOnLogout() ? "/" : signinPath);
       return;
     }
     if (hasRole && !isRenter) {

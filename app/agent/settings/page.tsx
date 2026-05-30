@@ -2,33 +2,90 @@
 
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchAgentProfile,
+  updateAgentProfile,
+} from "@/store/slices/agentProfileSlice";
 import { updateUser } from "@/store/slices/authSlice";
 import type { AppDispatch, RootState } from "@/store/store";
+import { Spinner } from "@/components/ui/spinner";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function SettingsPage() {
   const dispatch = useDispatch<AppDispatch>();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
-  const agentSubscription = useSelector(
-    (state: RootState) => state.auth.user?.emailSubscriptionEnabled,
+  const agentSubscription = useSelector((state: RootState) => {
+    const profileSubscription =
+      state.agentProfile.profile?.emailSubscriptionEnabled ??
+      state.auth.agentProfile?.emailSubscriptionEnabled;
+
+    return typeof profileSubscription === "boolean"
+      ? profileSubscription
+      : state.auth.user?.emailSubscriptionEnabled;
+  });
+  const [subscribed, setSubscribed] = useState<boolean | null>(
+    typeof agentSubscription === "boolean" ? agentSubscription : null,
   );
-  const [subscribed, setSubscribed] = useState(true);
+  const [isLoadingSubscription, setIsLoadingSubscription] = useState(
+    typeof agentSubscription !== "boolean",
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [acceptingRequests, setAcceptingRequests] = useState(true);
+  const [isLoadingRequests, setIsLoadingRequests] = useState(true);
   const [isTogglingRequests, setIsTogglingRequests] = useState(false);
   const [requestsError, setRequestsError] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof agentSubscription === "boolean") {
       setSubscribed(agentSubscription);
+      setIsLoadingSubscription(false);
     }
   }, [agentSubscription]);
 
   useEffect(() => {
+    if (!accessToken) return;
+
+    let isCurrent = true;
+
+    const fetchEmailSubscription = async () => {
+      setError(null);
+      setIsLoadingSubscription(true);
+
+      try {
+        const profile = await dispatch(fetchAgentProfile()).unwrap();
+        if (!isCurrent) return;
+
+        setSubscribed(profile.emailSubscriptionEnabled !== false);
+      } catch (err) {
+        if (!isCurrent) return;
+
+        const message =
+          err instanceof Error
+            ? err.message
+            : typeof err === "string"
+              ? err
+              : "We couldn't load your email notification setting right now.";
+        setError(message);
+      } finally {
+        if (isCurrent) {
+          setIsLoadingSubscription(false);
+        }
+      }
+    };
+
+    fetchEmailSubscription();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [accessToken, dispatch]);
+
+  useEffect(() => {
     const fetchAcceptingRequests = async () => {
       setRequestsError(null);
+      setIsLoadingRequests(true);
       try {
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
@@ -58,6 +115,8 @@ export default function SettingsPage() {
             ? err.message
             : "We couldn't load your request status right now.";
         setRequestsError(message);
+      } finally {
+        setIsLoadingRequests(false);
       }
     };
 
@@ -103,6 +162,8 @@ export default function SettingsPage() {
   };
 
   const toggleSubscription = async () => {
+    if (subscribed === null) return;
+
     setError(null);
     setIsSaving(true);
 
@@ -135,6 +196,11 @@ export default function SettingsPage() {
           : !subscribed;
       setSubscribed(isEnabled);
       dispatch(
+        updateAgentProfile({
+          emailSubscriptionEnabled: isEnabled,
+        }),
+      );
+      dispatch(
         updateUser({
           emailSubscriptionEnabled: isEnabled,
         }),
@@ -149,6 +215,24 @@ export default function SettingsPage() {
       setIsSaving(false);
     }
   };
+
+  const isRequestsBusy = isLoadingRequests || isTogglingRequests;
+  const requestsStatusLabel = isLoadingRequests
+    ? "Loading"
+    : isTogglingRequests
+      ? "Updating"
+      : acceptingRequests
+        ? "Accepting requests"
+        : "Not accepting requests";
+
+  const isSubscriptionBusy = isLoadingSubscription || isSaving;
+  const subscriptionStatusLabel = isLoadingSubscription
+    ? "Loading"
+    : isSaving
+      ? "Updating"
+      : subscribed
+        ? "Receiving notification emails"
+        : "Not receiving notification emails";
 
   return (
     <section className="w-full bg-gray-50 min-h-screen py-10 px-4 sm:px-8 md:px-12">
@@ -178,8 +262,9 @@ export default function SettingsPage() {
               role="switch"
               aria-checked={acceptingRequests}
               aria-label="Accept renter requests"
+              aria-busy={isRequestsBusy}
               onClick={toggleAcceptingRequests}
-              disabled={isTogglingRequests}
+              disabled={isRequestsBusy}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-70 ${
                 acceptingRequests
                   ? "bg-blue-600"
@@ -187,17 +272,14 @@ export default function SettingsPage() {
               }`}
             >
               <span
-                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${
+                className={`inline-flex h-5 w-5 transform items-center justify-center rounded-full bg-white shadow transition ${
                   acceptingRequests ? "translate-x-5" : "translate-x-1"
                 }`}
               />
             </button>
-            <span className="text-sm font-medium text-gray-700">
-              {isTogglingRequests
-                ? "Updating..."
-                : acceptingRequests
-                  ? "Accepting requests"
-                  : "Not accepting requests"}
+            <span className="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+              {requestsStatusLabel}
+              {isRequestsBusy && <Spinner className="size-4 text-blue-600" />}
             </span>
           </div>
         </div>
@@ -216,26 +298,26 @@ export default function SettingsPage() {
             <button
               type="button"
               role="switch"
-              aria-checked={subscribed}
+              aria-checked={subscribed ?? false}
               aria-label="Email notifications"
+              aria-busy={isSubscriptionBusy}
               onClick={toggleSubscription}
-              disabled={isSaving}
+              disabled={isSubscriptionBusy || subscribed === null}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-70 ${
                 subscribed ? "bg-blue-600" : "bg-gray-300 hover:bg-gray-400"
               }`}
             >
               <span
-                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${
+                className={`inline-flex h-5 w-5 transform items-center justify-center rounded-full bg-white shadow transition ${
                   subscribed ? "translate-x-5" : "translate-x-1"
                 }`}
               />
             </button>
-            <span className="text-sm font-medium text-gray-700">
-              {isSaving
-                ? "Updating..."
-                : subscribed
-                  ? "Receiving notification emails"
-                  : "Not receiving notification emails"}
+            <span className="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+              {subscriptionStatusLabel}
+              {isSubscriptionBusy && (
+                <Spinner className="size-4 text-blue-600" />
+              )}
             </span>
           </div>
         </div>

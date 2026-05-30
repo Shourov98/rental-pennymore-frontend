@@ -7,12 +7,18 @@ import Link from "next/link";
 import { X, ChevronDown, User, ClipboardList, Menu } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { clearServerAuthSession } from "@/lib/authSession";
-import { selectAuth, logout, selectIsAuthed } from "@/store/slices/authSlice";
+import {
+  selectAuth,
+  logout,
+  selectIsAuthed,
+  selectSessionReady,
+} from "@/store/slices/authSlice";
 
 export default function Navbar() {
   const dispatch = useDispatch();
   const auth = useSelector(selectAuth);
   const isAuthed = useSelector(selectIsAuthed);
+  const sessionReady = useSelector(selectSessionReady);
   const [isClient, setIsClient] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -22,7 +28,8 @@ export default function Navbar() {
   const drawerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const hasSession = isClient && isAuthed;
+  const canResolveSession = isClient && sessionReady;
+  const hasSession = canResolveSession && isAuthed;
   const isBrucherView =
     pathname === "/brucher" || (pathname === "/" && !hasSession);
   const hideNavItems = pathname === "/about" || isBrucherView;
@@ -37,7 +44,8 @@ export default function Navbar() {
     return cleanedEmail.split(" ")[0];
   };
 
-  const canShowAuthed = isClient && isAuthed;
+  const canShowAuthed = canResolveSession && isAuthed;
+  const canShowSignedOut = canResolveSession && !isAuthed;
   const authName = auth.user?.fullName ?? auth.renter?.fullName ?? null;
   const authEmail = auth.user?.email ?? auth.renter?.email ?? null;
   const displayName = canShowAuthed ? getFirstName(authName, authEmail) : "";
@@ -384,7 +392,7 @@ export default function Navbar() {
                   </div>
                 )}
               </>
-            ) : (
+            ) : canShowSignedOut ? (
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => router.push("/signin")}
@@ -399,13 +407,15 @@ export default function Navbar() {
                   Sign Up
                 </button>
               </div>
+            ) : (
+              <div className="h-9 w-40" aria-hidden="true" />
             )}
           </div>
         </div>
 
         {/* Mobile + Tablet Menu Trigger (shown until lg) */}
         <div className="lg:hidden flex items-end gap-3">
-          {!canShowAuthed && (
+          {canShowSignedOut && (
             <div className="flex flex-col items-start gap-2">
               <a
                 className="flex items-start"
@@ -476,8 +486,10 @@ export default function Navbar() {
                   <ChevronDown size={18} className="text-gray-600" />
                 </div>
               </div>
-            ) : (
+            ) : canShowSignedOut ? (
               <Menu size={22} />
+            ) : (
+              <span className="block h-6 w-6" aria-hidden="true" />
             )}
           </button>
         </div>
@@ -537,7 +549,7 @@ export default function Navbar() {
                     {menu.label}
                   </button>
                 ))
-              ) : (
+              ) : canShowSignedOut ? (
                 <div className="flex flex-col gap-3">
                   <button
                     onClick={() => router.push("/signin")}
@@ -552,6 +564,8 @@ export default function Navbar() {
                     Sign Up
                   </button>
                 </div>
+              ) : (
+                <div className="h-10" aria-hidden="true" />
               )}
             </div>
           </div>
