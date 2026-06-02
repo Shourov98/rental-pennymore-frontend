@@ -9,7 +9,7 @@ const STATIC_TITLES: Record<string, string> = {
   "/": "Home",
   "/matches": "Matches",
   "/saved-searches": "Saved Searches",
-  "/pre-market-listing": "Pre-Market Listing",
+  "/Request-Submlsslon-Page": "Pre-Market Listing",
   "/terms-conditions": "Terms & Conditions",
   "/signin": "Sign In",
   "/signup": "Sign Up",

@@ -3,6 +3,15 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   output: "standalone",
+  async redirects() {
+    return [
+      {
+        source: "/pre-market-listing",
+        destination: "/Request-Submlsslon-Page",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

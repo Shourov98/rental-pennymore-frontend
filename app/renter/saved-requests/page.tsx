@@ -475,7 +475,7 @@ export default function RenterDetails() {
         <div className="bg-white rounded-2xl shadow-sm p-6 text-center text-gray-500">
           No saved requests yet. To get started,
           <br />{" "}
-          <Link className="text-blue-700 underline" href="/pre-market-listing/">
+          <Link className="text-blue-700 underline" href="/Request-Submlsslon-Page">
             {" "}
             submit your first request.
           </Link>

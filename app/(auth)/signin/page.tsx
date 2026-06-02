@@ -70,8 +70,11 @@ function SigninPageContent() {
       if (forcedDestination) return forcedDestination;
 
       const redirectTarget = searchParams.get("redirect");
-      if (redirectTarget === "pre-market-listing") {
-        return "/pre-market-listing";
+      if (
+        redirectTarget === "Request-Submlsslon-Page" ||
+        redirectTarget === "pre-market-listing"
+      ) {
+        return "/Request-Submlsslon-Page";
       }
 
       if (
