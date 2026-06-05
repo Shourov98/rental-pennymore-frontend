@@ -521,7 +521,7 @@ export default function PreMarketListingPage() {
                   key={br}
                   type="button"
                   onClick={() => dispatch(toggleBedroom(br))}
-                  className={`py-2 rounded-lg text-sm font-medium border ${
+                  className={`cursor-pointer py-2 rounded-lg text-sm font-medium border ${
                     bedrooms.includes(br)
                       ? "bg-blue-600 text-white border-blue-600"
                       : "bg-gray-50 text-gray-700 border-gray-200 hover:border-blue-500"
@@ -550,7 +550,7 @@ export default function PreMarketListingPage() {
                   key={b}
                   type="button"
                   onClick={() => dispatch(toggleBathroom(b))}
-                  className={`py-2 rounded-lg text-sm font-medium border ${
+                  className={`cursor-pointer py-2 rounded-lg text-sm font-medium border ${
                     bathrooms.includes(b)
                       ? "bg-blue-600 text-white border-blue-600"
                       : "bg-gray-50 text-gray-700 border-gray-200 hover:border-blue-500"
@@ -581,13 +581,13 @@ export default function PreMarketListingPage() {
                 {unitOptions.map((f) => (
                   <label
                     key={f}
-                    className="flex items-center gap-2 mb-1 text-sm"
+                    className="flex cursor-pointer items-center gap-2 mb-1 text-sm"
                   >
                     <input
                       type="checkbox"
                       checked={unitFeatures.includes(f)}
                       onChange={() => dispatch(toggleUnitFeature(f))}
-                      className="w-4 h-4 text-blue-600"
+                      className="w-4 h-4 cursor-pointer text-blue-600"
                     />
                     {f}
                   </label>
@@ -602,13 +602,13 @@ export default function PreMarketListingPage() {
                 {buildingOptions.map((f) => (
                   <label
                     key={f}
-                    className="flex items-center gap-2 mb-1 text-sm"
+                    className="flex cursor-pointer items-center gap-2 mb-1 text-sm"
                   >
                     <input
                       type="checkbox"
                       checked={buildingFeatures.includes(f)}
                       onChange={() => dispatch(toggleBuildingFeature(f))}
-                      className="w-4 h-4 text-blue-600"
+                      className="w-4 h-4 cursor-pointer text-blue-600"
                     />
                     {f}
                   </label>
@@ -623,13 +623,13 @@ export default function PreMarketListingPage() {
                 {petOptions.map((f) => (
                   <label
                     key={f}
-                    className="flex items-center gap-2 mb-1 text-sm"
+                    className="flex cursor-pointer items-center gap-2 mb-1 text-sm"
                   >
                     <input
                       type="checkbox"
                       checked={petPolicy.includes(f)}
                       onChange={() => dispatch(togglePetPolicy(f))}
-                      className="w-4 h-4 text-blue-600"
+                      className="w-4 h-4 cursor-pointer text-blue-600"
                     />
                     {f}
                   </label>
@@ -646,12 +646,15 @@ export default function PreMarketListingPage() {
 
             <div className="flex flex-col sm:flex-row gap-3">
               {guarantorOptions.map((f) => (
-                <label key={f} className="flex items-center gap-2 text-sm">
+                <label
+                  key={f}
+                  className="flex cursor-pointer items-center gap-2 text-sm"
+                >
                   <input
                     type="checkbox"
                     checked={guarantor.includes(f)}
                     onChange={() => dispatch(toggleGuarantor(f))}
-                    className="w-4 h-4 text-blue-600"
+                    className="w-4 h-4 cursor-pointer text-blue-600"
                   />
                   {f}
                 </label>
@@ -673,12 +676,38 @@ export default function PreMarketListingPage() {
               agent focus on?
             </p>
             <p className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
-              Your agent can guide you, schedule tours, communicate with owners
-              or listing agents, represent your interests throughout the rental
-              process, and improve your chances in a competitive market.
+              Your agent can guide you, research and arrange viewings, filter
+              out bad listings, represent your interests, and help with offers
+              and your application package - all to improve your chances in a
+              competitive market.
             </p>
 
             <div className="space-y-4 text-gray-800">
+              <label className="flex items-start gap-1 cursor-pointer">
+                <input
+                  type="radio"
+                  name="marketScope"
+                  checked={marketScope === "All Market"}
+                  onChange={() => setMarketScope("All Market")}
+                  className="h-6 w-6 shrink-0 accent-gray-600"
+                />
+                <span className="space-y-1">
+                  <span className="block text-[13px] font-semibold leading-snug text-gray-600 sm:text-sm md:text-[15px]">
+                    Rentals Publicly Advertised + BeforeListed
+                  </span>
+                  <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:hidden">
+                    A rental specialist agent will assist you with the full
+                    rental market, and you will also be notified if an upcoming
+                    rental that matches your request is found.
+                  </span>
+                  <span className="hidden text-[13px] leading-relaxed text-gray-600 sm:text-sm md:block md:text-[15px] md:leading-7">
+                    A rental specialist agent will assist you with the full
+                    rental market, and you will also be notified if an upcoming
+                    rental that matches your request is found.
+                  </span>
+                </span>
+              </label>
+
               <label className="flex items-start gap-1 cursor-pointer">
                 <input
                   type="radio"
@@ -694,32 +723,6 @@ export default function PreMarketListingPage() {
                   <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
                     We will only notify you if an upcoming rental that matches
                     your request is found.
-                  </span>
-                </span>
-              </label>
-
-              <label className="flex items-start gap-1 cursor-pointer">
-                <input
-                  type="radio"
-                  name="marketScope"
-                  checked={marketScope === "All Market"}
-                  onChange={() => setMarketScope("All Market")}
-                  className="h-6 w-6 shrink-0 accent-gray-600"
-                />
-                <span className="space-y-1">
-                  <span className="block text-[13px] font-semibold leading-snug text-gray-600 sm:text-sm md:text-[15px]">
-                    Rentals Publicly Listed + BeforeListed <br />
-                  </span>
-                  <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:hidden">
-                    A rental specialist agent will assist you with the full
-                    rental
-                    <br /> market, and you will be notified if an upcoming
-                    rental that <br /> matches your request is found
-                  </span>
-                  <span className="hidden text-[13px] leading-relaxed text-gray-600 sm:text-sm md:block md:text-[15px] md:leading-7">
-                    A rental specialist agent will assist you with the full
-                    rental market, and you will be <br /> notified if an
-                    upcoming rental that matches your request is found
                   </span>
                 </span>
               </label>

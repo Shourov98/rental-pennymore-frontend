@@ -50,6 +50,7 @@ function SigninPageContent() {
   const dispatch = useDispatch<AppDispatch>();
   const isAuthed = useSelector(selectIsAuthed);
   const sessionReady = useSelector(selectSessionReady);
+  const [hasMounted, setHasMounted] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -64,6 +65,10 @@ function SigninPageContent() {
   const [isContinueLoading, setIsContinueLoading] = useState(false);
   const [defaultReferralAgent, setDefaultReferralAgent] =
     useState<DefaultReferralAgent | null>(null);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   const getRedirectDestination = useCallback(
     (forcedDestination?: string) => {
@@ -104,7 +109,7 @@ function SigninPageContent() {
     setSavedReferralCode(nextSaved);
   }, [referralFromUrl]);
 
-  if (!sessionReady || isAuthed) {
+  if (!hasMounted || !sessionReady || isAuthed) {
     return (
       <div className="flex min-h-48 w-full items-center justify-center">
         <Spinner className="size-6 text-action" />

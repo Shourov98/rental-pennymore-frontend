@@ -14,10 +14,14 @@ export const clearServerAuthSession = async (
     headers.Authorization = `Bearer ${accessToken}`;
   }
 
-  await fetch(getAuthEndpoint("/auth/logout"), {
-    method: "POST",
-    headers,
-    credentials: "include",
-    cache: "no-store",
-  });
+  try {
+    await fetch(getAuthEndpoint("/auth/logout"), {
+      method: "POST",
+      headers,
+      credentials: "include",
+      cache: "no-store",
+    });
+  } catch {
+    // Clearing client auth state should still proceed if server cleanup is unreachable.
+  }
 };

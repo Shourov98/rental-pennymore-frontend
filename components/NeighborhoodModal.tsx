@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 import dynamic from "next/dynamic";
 import boroughNeighborhoods from "@/data/neighborhoods.manhattan-brooklyn";
 import { neighborhoods } from "@/data/neighborhoods";
-import type { LatLngExpression } from "leaflet";
+import type { LatLngExpression, PathOptions } from "leaflet";
 
 // Redux
 import { useDispatch, useSelector } from "react-redux";
@@ -35,6 +35,26 @@ const Polygon = dynamic(
   { ssr: false }
 );
 
+const selectedPolygonStyle: PathOptions = {
+  color: "#2563eb",
+  fillColor: "#3b82f6",
+  fillOpacity: 0.42,
+  opacity: 0.95,
+  weight: 3,
+};
+
+const unselectedPolygonStyle: PathOptions = {
+  color: "#7c9fca",
+  fillColor: "#dbeafe",
+  fillOpacity: 0.16,
+  opacity: 0.65,
+  weight: 1,
+};
+
+const getPolygonStyle = (isSelected: boolean): PathOptions => ({
+  ...(isSelected ? selectedPolygonStyle : unselectedPolygonStyle),
+});
+
 export default function NeighborhoodModal({
   isOpen,
   onClose,
@@ -53,6 +73,21 @@ export default function NeighborhoodModal({
       Brooklyn: [] as string[],
     },
   });
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+    };
+  }, [isOpen]);
 
   // -------------------------------------------------------
   // 🔥 PREFILL ONLY WHEN MODAL OPENS (fixes setState warnings)
@@ -80,16 +115,6 @@ export default function NeighborhoodModal({
   const currentSelections = state.selectedAreasByBorough[state.activeTab];
   const activeBoroughData = boroughNeighborhoods[state.activeTab];
 
-  const neighborhoodLabelByKey = useMemo(() => {
-    const map = new globalThis.Map<string, string>();
-    activeBoroughData.sections.forEach((section) => {
-      section.items.forEach((item) => {
-        map.set(item.key, item.label);
-      });
-    });
-    return map;
-  }, [activeBoroughData.sections]);
-
   const geometryByLabel = useMemo(() => {
     const map = new globalThis.Map<
       string,
@@ -100,6 +125,34 @@ export default function NeighborhoodModal({
     });
     return map;
   }, [state.activeTab]);
+
+  const activeMapAreas = useMemo(() => {
+    const areasByKey = new globalThis.Map<
+      string,
+      {
+        key: string;
+        label: string;
+        area: (typeof neighborhoods)["Manhattan"][number];
+      }
+    >();
+
+    activeBoroughData.sections.forEach((section) => {
+      section.items.forEach((item) => {
+        const area =
+          geometryByLabel.get(item.label) ?? geometryByLabel.get(item.key);
+
+        if (!area || areasByKey.has(item.key)) return;
+
+        areasByKey.set(item.key, {
+          key: item.key,
+          label: item.label,
+          area,
+        });
+      });
+    });
+
+    return Array.from(areasByKey.values());
+  }, [activeBoroughData.sections, geometryByLabel]);
 
   // -------------------------------------------------------
   // EARLY RETURN AFTER HOOKS (no conditional hooks error)
@@ -197,7 +250,7 @@ export default function NeighborhoodModal({
   // RENDER
   // -------------------------------------------------------
   return (
-    <div className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-3 sm:p-4">
+    <div className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-3 sm:p-4 overscroll-contain">
       <div className="bg-white w-full max-w-6xl h-[90vh] rounded-2xl shadow-xl flex flex-col overflow-hidden text-sm sm:text-base">
         {/* Header */}
         <div className="flex justify-between items-center px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-white">
@@ -213,7 +266,7 @@ export default function NeighborhoodModal({
 
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-800 transition p-1"
+            className="cursor-pointer text-gray-500 hover:text-gray-800 transition p-1"
           >
             <X size={24} />
           </button>
@@ -254,25 +307,22 @@ export default function NeighborhoodModal({
             >
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-              {currentSelections.map((key) => {
-                const label = neighborhoodLabelByKey.get(key);
-                if (!label) return null;
-
-                const area = geometryByLabel.get(label);
-                if (!area) return null;
+              {activeMapAreas.map(({ key, area }) => {
+                const isSelected = currentSelections.includes(key);
+                const selectionState = isSelected ? "selected" : "default";
+                const pathOptions = getPolygonStyle(isSelected);
+                const eventHandlers = {
+                  click: () => handleToggleArea(key),
+                };
 
                 if (area.geometryType === "MultiPolygon") {
                   return (area.coords as LatLngExpression[][]).map(
                     (poly, idx) => (
                       <Polygon
-                        key={`${area.name}-${idx}`}
+                        key={`${state.activeTab}-${key}-${selectionState}-${area.name}-${idx}`}
                         positions={poly}
-                        pathOptions={{
-                          color: "#2563eb",
-                          fillColor: "#3b82f6",
-                          fillOpacity: 0.4,
-                          weight: 2,
-                        }}
+                        pathOptions={pathOptions}
+                        eventHandlers={eventHandlers}
                       />
                     )
                   );
@@ -280,14 +330,10 @@ export default function NeighborhoodModal({
 
                 return (
                   <Polygon
-                    key={area.name}
+                    key={`${state.activeTab}-${key}-${selectionState}-${area.name}`}
                     positions={area.coords as LatLngExpression[]}
-                    pathOptions={{
-                      color: "#2563eb",
-                      fillColor: "#3b82f6",
-                      fillOpacity: 0.4,
-                      weight: 2,
-                    }}
+                    pathOptions={pathOptions}
+                    eventHandlers={eventHandlers}
                   />
                 );
               })}
@@ -305,7 +351,7 @@ export default function NeighborhoodModal({
               </p>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2 min-h-0">
+            <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2 min-h-0">
               {activeBoroughData.sections.map((section) => (
                 <div key={section.title} className="sm:col-span-2">
                   <div className="flex items-center justify-center gap-2 mb-2">

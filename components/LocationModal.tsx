@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { X, Search, Map as MapIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 
@@ -32,6 +32,21 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
   const [selectedBorough, setSelectedBorough] = useState<
     "" | "Manhattan" | "Brooklyn"
   >("");
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+    };
+  }, [isOpen]);
 
   // SEARCH LOGIC
   const allNeighborhoods = useMemo(
@@ -131,12 +146,12 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+      <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50 overscroll-contain">
         <div className="bg-white w-[90%] sm:w-[400px] md:w-[460px] rounded-2xl shadow-lg p-6 relative animate-fadeIn">
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 text-gray-500 hover:text-gray-800 transition"
+            className="absolute right-4 top-4 cursor-pointer text-gray-500 hover:text-gray-800 transition"
           >
             <X size={20} />
           </button>
@@ -160,7 +175,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
               <p className="text-xs text-gray-500 mb-2">
                 Selected neighborhoods
               </p>
-              <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto pr-1">
+              <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto overscroll-contain pr-1">
                 {selectedNeighborhoods.map((item) => (
                   <span
                     key={`${item.borough}-${item.key}`}
@@ -182,7 +197,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
 
           {/* SEARCH RESULTS */}
           {/* BROWSE BY BOROUGH → SECTION → NEIGHBORHOOD */}
-          <div className="max-h-56 overflow-y-auto mb-4 rounded-lg bg-gray-100 p-3 space-y-4">
+          <div className="max-h-56 overflow-y-auto overscroll-contain mb-4 rounded-lg bg-gray-100 p-3 space-y-4">
             {(
               Object.keys(filteredBoroughs) as Array<"Manhattan" | "Brooklyn">
             ).map((borough) => {
@@ -192,9 +207,13 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
               return (
                 <div key={borough}>
                   {/* Borough Title */}
-                  <h4 className="text-sm font-semibold text-gray-900 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => openNeighborhoodModal(borough)}
+                    className="mb-2 block cursor-pointer border-0 bg-transparent p-0 text-left text-sm font-semibold text-gray-900"
+                  >
                     {borough}
-                  </h4>
+                  </button>
 
                   {boroughData.sections.map((section) => (
                     <div key={section.title} className="mb-3 pl-2">
