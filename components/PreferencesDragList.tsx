@@ -123,6 +123,7 @@ function SortableItem({ id, index }: { id: string; index: number }) {
     transition,
     touchAction: "none", // allow touch drag without the browser turning it into a scroll gesture
   };
+  const isPriority = index < 4;
 
   return (
     <div
@@ -130,11 +131,13 @@ function SortableItem({ id, index }: { id: string; index: number }) {
       style={style}
       {...listeners}
       {...attributes}
-      className={`flex items-center gap-3 bg-gray-50 border rounded-lg px-4 py-2 select-none
+      className={`flex items-center gap-3 border rounded-lg px-4 py-2 select-none
         ${
           isDragging
             ? "shadow-xl bg-white scale-[1.02] z-50"
-            : "border-gray-200 hover:bg-gray-100"
+            : isPriority
+              ? "border-blue-200 bg-blue-50 hover:bg-blue-100"
+              : "border-gray-200 bg-gray-50 hover:bg-gray-100"
         }`}
     >
       <div className="cursor-grab active:cursor-grabbing">
@@ -145,6 +148,11 @@ function SortableItem({ id, index }: { id: string; index: number }) {
         {index + 1}.
       </span>
       <span className="text-sm text-gray-800">{id}</span>
+      {isPriority ? (
+        <span className="ml-auto rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-blue-700">
+          Priority #{index + 1}
+        </span>
+      ) : null}
     </div>
   );
 }

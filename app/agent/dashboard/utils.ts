@@ -123,6 +123,17 @@ export interface ApiAgentRequest {
     } | null;
   } | null;
   canRequestAccess?: boolean;
+  alreadyMatchedByAgent?: boolean;
+  matchScore?: number;
+  matchStarRating?: number;
+  matchMissingFeatures?: Array<{
+    code: string;
+    label: string;
+    description: string;
+    deduction: number;
+  }>;
+  matchPreferenceMatches?: boolean[] | null;
+  matchPriorityBonus?: number;
 }
 
 export interface ApiAgentRequestsResponse {
@@ -173,6 +184,17 @@ export interface NormalizedAgentRequest {
   ownerRepresentationMatchCount?: number;
   hasOwnerRepresentationMatches?: boolean;
   hasNewOwnerRepresentationMatches?: boolean;
+  alreadyMatchedByAgent?: boolean;
+  matchScore?: number;
+  matchStarRating?: number;
+  matchMissingFeatures?: Array<{
+    code: string;
+    label: string;
+    description: string;
+    deduction: number;
+  }>;
+  matchPreferenceMatches?: boolean[] | null;
+  matchPriorityBonus?: number;
 }
 
 const formatCurrency = (value?: number) => {
@@ -329,6 +351,12 @@ export const normalizeAgentRequest = (
       req.hasNewOwnerRepresentationMatches ??
         req.ownerRepresentationStatus?.hasNewOwnerRepresentationMatches,
     ),
+    alreadyMatchedByAgent: Boolean(req.alreadyMatchedByAgent),
+    matchScore: req.matchScore,
+    matchStarRating: req.matchStarRating,
+    matchMissingFeatures: req.matchMissingFeatures ?? [],
+    matchPreferenceMatches: req.matchPreferenceMatches ?? null,
+    matchPriorityBonus: req.matchPriorityBonus,
   };
 };
 

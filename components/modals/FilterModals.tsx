@@ -20,6 +20,7 @@ export interface FilterType {
   petPolicy: string[];
   guarantorRequired: string[];
   availableFeatures: string[];
+  enabledFeatureGroups?: Record<FeatureGroupKey, boolean>;
 }
 
 type FilterModalVariant = "default" | "matchRequests";
@@ -34,6 +35,14 @@ interface FeatureOption {
   label: string;
   value: string;
 }
+
+const defaultFeatureGroups: Record<FeatureGroupKey, boolean> = {
+  unitFeatures: true,
+  buildingFeatures: true,
+  guarantorRequired: true,
+  petPolicy: true,
+  availableFeatures: true,
+};
 
 const defaultFilters: FilterType = {
   borough: null,
@@ -50,14 +59,7 @@ const defaultFilters: FilterType = {
   petPolicy: [],
   guarantorRequired: [],
   availableFeatures: [],
-};
-
-const defaultFeatureGroups: Record<FeatureGroupKey, boolean> = {
-  unitFeatures: true,
-  buildingFeatures: true,
-  guarantorRequired: true,
-  petPolicy: true,
-  availableFeatures: true,
+  enabledFeatureGroups: defaultFeatureGroups,
 };
 
 const unitFeatureOptions: FeatureOption[] = [
@@ -147,6 +149,7 @@ const resolveFilters = (filters?: Partial<FilterType>): FilterType => ({
   availableFeatures: Array.isArray(filters?.availableFeatures)
     ? filters.availableFeatures
     : defaultFilters.availableFeatures,
+  enabledFeatureGroups: filters?.enabledFeatureGroups ?? defaultFeatureGroups,
 });
 
 export default function FilterModal({
@@ -201,7 +204,8 @@ export default function FilterModal({
     resolvedInitialFilters.availableFeatures,
   );
   const [enabledFeatureGroups, setEnabledFeatureGroups] =
-    useState(defaultFeatureGroups);
+    useState(resolvedInitialFilters.enabledFeatureGroups ?? defaultFeatureGroups);
+  const [showNeighborhoodPicker, setShowNeighborhoodPicker] = useState(false);
 
   const syncLocalFilters = (nextFilters: FilterType) => {
     setBorough(nextFilters.borough);
@@ -215,7 +219,8 @@ export default function FilterModal({
     setPetPolicy(nextFilters.petPolicy);
     setGuarantorRequired(nextFilters.guarantorRequired);
     setAvailableFeatures(nextFilters.availableFeatures);
-    setEnabledFeatureGroups(defaultFeatureGroups);
+    setEnabledFeatureGroups(nextFilters.enabledFeatureGroups ?? defaultFeatureGroups);
+    setShowNeighborhoodPicker(false);
   };
 
   const neighborhoods = useMemo(
@@ -259,6 +264,7 @@ export default function FilterModal({
     petPolicy,
     guarantorRequired,
     availableFeatures,
+    enabledFeatureGroups,
   });
 
   const resetAll = () => {
@@ -355,6 +361,7 @@ export default function FilterModal({
                 onClick={() => {
                   setBorough(borough === b ? null : b);
                   setSelectedNeighborhoods([]);
+                  setShowNeighborhoodPicker(false);
                 }}
                 className={`h-8 cursor-pointer rounded-2xl border px-2 text-xs font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-sm ${
                   borough === b
@@ -368,6 +375,59 @@ export default function FilterModal({
           </div>
         </div>
 
+        {borough && (
+          <div>
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="text-xs font-semibold text-gray-700">
+                Neighborhood
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowNeighborhoodPicker((prev) => !prev)}
+                className="cursor-pointer rounded-full border border-gray-100 bg-gray-50 px-3 py-1 text-[11px] font-medium text-gray-700 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-gray-200 hover:shadow-sm"
+              >
+                See All Neighborhoods
+              </button>
+            </div>
+
+            {selectedNeighborhoods[0] ? (
+              <div className="mb-2 inline-flex items-center gap-1 rounded-full border border-gray-200 bg-blue-50 px-2.5 py-1 text-[11px] font-medium text-blue-700">
+                {selectedNeighborhoods[0]}
+                <button
+                  type="button"
+                  onClick={() => setSelectedNeighborhoods([])}
+                  aria-label="Clear selected neighborhood"
+                  className="text-blue-500"
+                >
+                  x
+                </button>
+              </div>
+            ) : null}
+
+            {showNeighborhoodPicker ? (
+              <div className="max-h-36 space-y-1 overflow-y-auto rounded-lg border border-gray-100 bg-gray-50 p-2">
+                {neighborhoods.map((neighborhood) => (
+                  <button
+                    type="button"
+                    key={neighborhood}
+                    onClick={() => {
+                      setSelectedNeighborhoods([neighborhood]);
+                      setShowNeighborhoodPicker(false);
+                    }}
+                    className={`block w-full rounded-md border p-2 text-left text-xs transition ${
+                      selectedNeighborhoods.includes(neighborhood)
+                        ? "border-blue-600 bg-blue-600 text-white"
+                        : "border-gray-100 bg-white text-gray-700 hover:border-gray-200"
+                    }`}
+                  >
+                    {neighborhood}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        )}
+
         <div>
           <p className="mb-2 text-xs font-semibold text-gray-700">Bedrooms</p>
           <div className="grid grid-cols-3 gap-2">
@@ -377,7 +437,7 @@ export default function FilterModal({
                 <button
                   type="button"
                   key={label}
-                  onClick={() => toggleSelection(value, setBedrooms, bedrooms)}
+                  onClick={() => setBedrooms([value])}
                   className={`h-8 cursor-pointer rounded-lg border text-xs transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-sm ${
                     bedrooms.includes(value)
                       ? "border-blue-600 bg-blue-600 text-white"
@@ -400,7 +460,7 @@ export default function FilterModal({
                 <button
                   type="button"
                   key={label}
-                  onClick={() => toggleSelection(value, setBathrooms, bathrooms)}
+                  onClick={() => setBathrooms([value])}
                   className={`h-8 cursor-pointer rounded-lg border text-xs transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-sm ${
                     bathrooms.includes(value)
                       ? "border-blue-600 bg-blue-600 text-white"

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { Eye, Filter, ChevronLeft, ChevronRight, Lock } from "lucide-react";
+import { Eye, Filter, ChevronLeft, ChevronRight, Lock, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { CenteredPageSpinner } from "@/components/ui/centered-page-spinner";
@@ -14,6 +14,7 @@ import ArchiveRequestDialog, {
 import FilterModal, { type FilterType } from "@/components/modals/FilterModals";
 import {
   API_BASE_URL,
+  ApiAgentRequest,
   ApiAgentRequestsResponse,
   NormalizedAgentRequest,
   cacheAgentRequests,
@@ -31,6 +32,22 @@ const FILTERS_STORAGE_KEY = "agent-dashboard-filters";
 const LIST_STATE_STORAGE_KEY = "agent-dashboard-list-state";
 const defaultFilters: FilterType = getEmptyFilters();
 const NAVIGATION_STORAGE_KEY = "agent-dashboard-navigation";
+const MATCH_DEMO_STORAGE_KEY = "beforelisted-match-demo";
+
+type QuickSelectThreshold = "none" | "one" | "two" | "three" | "four" | "five";
+
+const quickSelectOptions: Array<{
+  key: QuickSelectThreshold;
+  label: string;
+  threshold: number;
+}> = [
+  { key: "none", label: "None", threshold: Infinity },
+  { key: "one", label: "★ & above", threshold: 1 },
+  { key: "two", label: "★★ & above", threshold: 2 },
+  { key: "three", label: "★★★ & above", threshold: 3 },
+  { key: "four", label: "★★★★ & above", threshold: 4 },
+  { key: "five", label: "★★★★★ only", threshold: 5 },
+];
 
 const bedroomQueryLabels: Record<number, string> = {
   0: "Studio",
@@ -45,6 +62,403 @@ const bathroomQueryLabels: Record<number, string> = {
   2: "2",
   3: "3",
   4: "4+",
+};
+
+const missingFeatureIcons: Record<string, string> = {
+  bedrooms: "/icons/match/bedrooms.svg",
+  bathrooms: "/icons/match/bathrooms.svg",
+  rent: "/icons/match/rent.svg",
+  location: "/icons/match/location.svg",
+  moveDateTotalMiss: "/icons/match/move-date-total-miss.svg",
+  moveDateNearMiss: "/icons/match/move-date-near-miss.svg",
+  laundryInUnit: "/icons/match/laundry-in-unit.svg",
+  privateOutdoorSpace: "/icons/match/private-outdoor-space.svg",
+  dishwasher: "/icons/match/dishwasher.svg",
+  doorman: "/icons/match/doorman.svg",
+  elevator: "/icons/match/elevator.svg",
+  laundryInBuilding: "/icons/match/laundry-in-building.svg",
+};
+
+const missingFeatureLegend = [
+  ["rent", "Rent over budget", "1-10% above renter's budget"],
+  ["location", "Location", "Neighborhood mismatch, same region match only"],
+  ["moveDateNearMiss", "Move date near miss", "Move date gap within 16 days"],
+  ["moveDateTotalMiss", "Move date total miss", "Move date mismatch more than 16 days"],
+  ["bedrooms", "Bedrooms", "One bedroom shortfall"],
+  ["bathrooms", "Bathrooms", "One bathroom shortfall"],
+  ["laundryInUnit", "W/D in Unit", "No in-unit W/D"],
+  ["privateOutdoorSpace", "Outdoor space", "No private outdoor space"],
+  ["dishwasher", "Dishwasher", "No dishwasher"],
+  ["doorman", "Doorman", "No doorman"],
+  ["elevator", "Elevator", "No elevator"],
+  ["laundryInBuilding", "Laundry in building", "No building laundry"],
+] as const;
+
+const demoMatchFilters: FilterType = {
+  borough: "Manhattan",
+  neighborhoods: ["Upper West Side (Central)"],
+  bedrooms: [2],
+  bathrooms: [2],
+  maxPrice: 5000,
+  movingDate: {
+    earliest: "2026-05-15",
+    latest: "2026-06-15",
+  },
+  unitFeatures: ["laundryInUnit", "privateOutdoorSpace", "dishwasher"],
+  buildingFeatures: ["doorman", "elevator", "laundryInBuilding"],
+  petPolicy: ["catsAllowed", "dogsAllowed"],
+  guarantorRequired: ["personalGuarantor", "thirdPartyGuarantor"],
+  availableFeatures: ["largeApartment", "lotsOfLight", "newRenovation", "highCeilings"],
+  enabledFeatureGroups: {
+    unitFeatures: true,
+    buildingFeatures: true,
+    guarantorRequired: true,
+    petPolicy: true,
+    availableFeatures: true,
+  },
+};
+
+const isLocalMatchDemoEnabled = () => {
+  if (typeof window === "undefined" || process.env.NODE_ENV === "production") {
+    return false;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("matchDemo") === "1") {
+    sessionStorage.setItem(MATCH_DEMO_STORAGE_KEY, "1");
+    return true;
+  }
+
+  return sessionStorage.getItem(MATCH_DEMO_STORAGE_KEY) === "1";
+};
+
+const getDemoParam = (key: string) => {
+  if (typeof window === "undefined") return null;
+  return new URLSearchParams(window.location.search).get(key);
+};
+
+const createDemoRequest = (
+  index: number,
+  overrides: Partial<ApiAgentRequest>,
+) =>
+  normalizeAgentRequest({
+    _id: `local-demo-request-${index}`,
+    requestId: `R-DEMO-${String(index).padStart(3, "0")}`,
+    requestName: `R-DEMO-${String(index).padStart(3, "0")}`,
+    renterId: `local-demo-renter-${index}`,
+    renterName: [
+      "Michael B",
+      "Naomi L",
+      "Michael J",
+      "Bundit S",
+      "Aashima P",
+      "Donna M",
+      "Josh D",
+      "Ofek I",
+      "Abhishek S",
+      "Jesus D",
+    ][index - 1],
+    createdAt: `2026-04-${String(31 - index).padStart(2, "0")}T12:00:00.000Z`,
+    movingDateRange: {
+      earliest: "2026-05-20T00:00:00.000Z",
+      latest: "2026-06-10T00:00:00.000Z",
+    },
+    priceRange: { min: 3500, max: 5000 },
+    locations: [
+      {
+        borough: "Manhattan",
+        neighborhoods: ["Upper West Side (Central)"],
+      },
+    ],
+    bedrooms: ["2BR"],
+    bathrooms: ["2"],
+    unitFeatures: {
+      laundryInUnit: true,
+      privateOutdoorSpace: true,
+      dishwasher: true,
+    },
+    buildingFeatures: {
+      doorman: true,
+      elevator: true,
+      laundryInBuilding: true,
+    },
+    petPolicy: {
+      catsAllowed: true,
+      dogsAllowed: true,
+    },
+    guarantorRequired: {
+      personalGuarantor: true,
+      thirdPartyGuarantor: true,
+    },
+    shareConsent: true,
+    scope: "Upcoming",
+    visibility: "shared",
+    registrationDisclosureConfirmed: true,
+    status: "available",
+    preferences: ["Large Apartment", "Lots of Light", "New Renovation", "High Ceilings"],
+    isActive: true,
+    matchScore: 100,
+    matchStarRating: 5,
+    matchMissingFeatures: [],
+    matchPreferenceMatches: [true, true, true, true],
+    matchPriorityBonus: 20,
+    ...overrides,
+  });
+
+const createDemoRequests = () =>
+  [
+    createDemoRequest(1, {
+      priceRange: { min: 60000, max: 80000 },
+      alreadyMatchedByAgent: true,
+      status: "matched",
+    }),
+    createDemoRequest(2, {
+      scope: "All Market",
+      matchPreferenceMatches: [false, true, true, false],
+    }),
+    createDemoRequest(3, {
+      priceRange: { min: 45000, max: 50000 },
+      matchPreferenceMatches: [false, true, true, false],
+    }),
+    createDemoRequest(4, {
+      bedrooms: ["1BR", "2BR"],
+      priceRange: { min: 3000, max: 3500 },
+      matchScore: 92,
+      matchStarRating: 4.5,
+      matchMissingFeatures: [
+        {
+          code: "rent",
+          label: "Rent over budget",
+          description: "1-10% above renter's budget",
+          deduction: -30,
+        },
+      ],
+      matchPreferenceMatches: [false, true, true, false],
+      alreadyMatchedByAgent: true,
+      status: "matched",
+    }),
+    createDemoRequest(5, {
+      bedrooms: ["1BR"],
+      priceRange: { min: 3500, max: 4000 },
+      matchScore: 90,
+      matchStarRating: 4.5,
+      matchMissingFeatures: [
+        {
+          code: "moveDateNearMiss",
+          label: "Move date near miss",
+          description: "Move date gap within 16 days",
+          deduction: -10,
+        },
+      ],
+    }),
+    createDemoRequest(6, {
+      bedrooms: ["Studio"],
+      priceRange: { min: 3500, max: 4000 },
+      matchScore: 54,
+      matchStarRating: 2.5,
+      matchMissingFeatures: [
+        {
+          code: "rent",
+          label: "Rent over budget",
+          description: "1-10% above renter's budget",
+          deduction: -30,
+        },
+        {
+          code: "bedrooms",
+          label: "Bedrooms",
+          description: "One bedroom shortfall",
+          deduction: -50,
+        },
+        {
+          code: "laundryInUnit",
+          label: "W/D in Unit",
+          description: "No in-unit W/D",
+          deduction: -40,
+        },
+      ],
+      matchPreferenceMatches: [false, true, true, false],
+    }),
+    createDemoRequest(7, {
+      bedrooms: ["1BR", "2BR"],
+      bathrooms: ["1", "2"],
+      matchScore: 50,
+      matchStarRating: 2.5,
+      matchMissingFeatures: [
+        {
+          code: "moveDateTotalMiss",
+          label: "Move date total miss",
+          description: "Move date mismatch more than 16 days",
+          deduction: -40,
+        },
+        {
+          code: "privateOutdoorSpace",
+          label: "Outdoor space",
+          description: "No private outdoor space",
+          deduction: -40,
+        },
+        {
+          code: "doorman",
+          label: "Doorman",
+          description: "No doorman",
+          deduction: -40,
+        },
+      ],
+      matchPreferenceMatches: [false, true, true, true],
+    }),
+    createDemoRequest(8, {
+      bedrooms: ["1BR"],
+      bathrooms: ["1"],
+      priceRange: { min: 3500, max: 4000 },
+      matchScore: 28,
+      matchStarRating: 1.5,
+      matchMissingFeatures: [
+        {
+          code: "location",
+          label: "Location",
+          description: "Neighborhood mismatch, same region match only",
+          deduction: -40,
+        },
+        {
+          code: "elevator",
+          label: "Elevator",
+          description: "No elevator",
+          deduction: -40,
+        },
+        {
+          code: "laundryInBuilding",
+          label: "Laundry in building",
+          description: "No building laundry",
+          deduction: -40,
+        },
+      ],
+      matchPreferenceMatches: [false, false, false, false],
+    }),
+    createDemoRequest(9, {
+      bedrooms: ["1BR"],
+      bathrooms: ["1"],
+      scope: "All Market",
+      priceRange: { min: 3300, max: 3800 },
+      matchScore: 22,
+      matchStarRating: 1.5,
+      matchMissingFeatures: [
+        {
+          code: "moveDateNearMiss",
+          label: "Move date near miss",
+          description: "Move date gap within 16 days",
+          deduction: -10,
+        },
+        {
+          code: "location",
+          label: "Location",
+          description: "Neighborhood mismatch, same region match only",
+          deduction: -40,
+        },
+        {
+          code: "bathrooms",
+          label: "Bathrooms",
+          description: "One bathroom shortfall",
+          deduction: -50,
+        },
+      ],
+      matchPreferenceMatches: [true, true, true, false],
+    }),
+    createDemoRequest(10, {
+      bedrooms: ["1BR"],
+      bathrooms: ["1"],
+      priceRange: { min: 3200, max: 3600 },
+      matchScore: 20,
+      matchStarRating: 1.5,
+      matchMissingFeatures: [
+        {
+          code: "moveDateTotalMiss",
+          label: "Move date total miss",
+          description: "Move date mismatch more than 16 days",
+          deduction: -40,
+        },
+        {
+          code: "dishwasher",
+          label: "Dishwasher",
+          description: "No dishwasher",
+          deduction: -40,
+        },
+        {
+          code: "elevator",
+          label: "Elevator",
+          description: "No elevator",
+          deduction: -40,
+        },
+      ],
+      matchPreferenceMatches: [false, true, true, false],
+    }),
+  ].sort((a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0));
+
+const renderStars = (rating?: number) => {
+  const value = rating ?? 0;
+  const full = Math.floor(value);
+  const hasHalf = value % 1 === 0.5;
+  const empty = Math.max(0, 5 - full - (hasHalf ? 1 : 0));
+
+  return (
+    <span className="inline-flex min-w-[110px] items-center gap-0.5 text-lg leading-none">
+      {Array.from({ length: full }).map((_, index) => (
+        <span key={`full-${index}`} className="text-amber-400">★</span>
+      ))}
+      {hasHalf ? <span className="text-amber-400">★</span> : null}
+      {Array.from({ length: empty }).map((_, index) => (
+        <span key={`empty-${index}`} className="text-gray-300">★</span>
+      ))}
+    </span>
+  );
+};
+
+const buildMatchSearchPayload = (filters: FilterType) => {
+  const enabled = filters.enabledFeatureGroups ?? {
+    unitFeatures: true,
+    buildingFeatures: true,
+    guarantorRequired: true,
+    petPolicy: true,
+    availableFeatures: true,
+  };
+
+  return {
+    borough: filters.borough,
+    neighborhood: filters.neighborhoods[0],
+    bedrooms: bedroomQueryLabels[filters.bedrooms[0]],
+    bathrooms: bathroomQueryLabels[filters.bathrooms[0]],
+    rent: filters.maxPrice,
+    movingDateRange: {
+      earliest: filters.movingDate.earliest,
+      latest: filters.movingDate.latest,
+    },
+    unitFeatures: {
+      laundryInUnit: filters.unitFeatures.includes("laundryInUnit"),
+      privateOutdoorSpace: filters.unitFeatures.includes("privateOutdoorSpace"),
+      dishwasher: filters.unitFeatures.includes("dishwasher"),
+    },
+    buildingFeatures: {
+      doorman: filters.buildingFeatures.includes("doorman"),
+      elevator: filters.buildingFeatures.includes("elevator"),
+      laundryInBuilding: filters.buildingFeatures.includes("laundryInBuilding"),
+    },
+    petPolicy: {
+      catsAllowed: filters.petPolicy.includes("catsAllowed"),
+      dogsAllowed: filters.petPolicy.includes("dogsAllowed"),
+    },
+    guarantorPolicy: {
+      personalGuarantor: filters.guarantorRequired.includes("personalGuarantor"),
+      thirdPartyGuarantor: filters.guarantorRequired.includes("thirdPartyGuarantor"),
+    },
+    availableFeatures: Object.fromEntries(
+      filters.availableFeatures.map((feature) => [feature, true]),
+    ),
+    toggles: {
+      unitFeatures: enabled.unitFeatures,
+      buildingFeatures: enabled.buildingFeatures,
+      petPolicy: enabled.petPolicy,
+      guarantorsPolicy: enabled.guarantorRequired,
+      priorityBonuses: enabled.availableFeatures,
+    },
+  };
 };
 
 const appendCsvParam = (
@@ -162,6 +576,9 @@ export default function AgentRenterRequestsPage() {
   );
   const [requests, setRequests] = useState<NormalizedAgentRequest[]>([]);
   const [filters, setFilters] = useState<FilterType>(defaultFilters);
+  const [matchSearchFilters, setMatchSearchFilters] =
+    useState<FilterType | null>(null);
+  const [isMatchResultsMode, setIsMatchResultsMode] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [showOwnReferrals, setShowOwnReferrals] = useState(false);
   const [isStateRestored, setIsStateRestored] = useState(false);
@@ -176,6 +593,12 @@ export default function AgentRenterRequestsPage() {
     useState<NormalizedAgentRequest | null>(null);
   const [archiveReason, setArchiveReason] = useState<ArchiveReason | "">("");
   const [isArchiving, setIsArchiving] = useState(false);
+  const [selectedRequestIds, setSelectedRequestIds] = useState<string[]>([]);
+  const [quickSelect, setQuickSelect] =
+    useState<QuickSelectThreshold>("none");
+  const [isMatchingChecked, setIsMatchingChecked] = useState(false);
+  const [isLegendOpen, setIsLegendOpen] = useState(false);
+  const [isMatchDemoMode, setIsMatchDemoMode] = useState(false);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState<
     ApiAgentRequestsResponse["pagination"]
@@ -189,11 +612,21 @@ export default function AgentRenterRequestsPage() {
   const limit = 10;
 
   useEffect(() => {
+    const demoEnabled = isLocalMatchDemoEnabled();
+    setIsMatchDemoMode(demoEnabled);
     setFilters(readStoredFilters());
     const { page: storedPage, showOwnReferrals: storedShowOwnReferrals } =
       readStoredListState();
     setPage(storedPage);
     setShowOwnReferrals(storedShowOwnReferrals);
+    if (demoEnabled) {
+      const shouldShowResults = getDemoParam("results") === "1";
+      setFilters(demoMatchFilters);
+      setMatchSearchFilters(demoMatchFilters);
+      setIsMatchResultsMode(shouldShowResults);
+      setIsFilterOpen(getDemoParam("openDrawer") === "1");
+      setIsLegendOpen(getDemoParam("legend") === "1");
+    }
     setIsStateRestored(true);
   }, []);
 
@@ -212,8 +645,9 @@ export default function AgentRenterRequestsPage() {
 
   useEffect(() => {
     if (!accessToken) return;
+    if (isMatchDemoMode) return;
     dispatch(fetchAgentProfile());
-  }, [accessToken, dispatch]);
+  }, [accessToken, dispatch, isMatchDemoMode]);
 
   useEffect(() => {
     if (!isStateRestored) return;
@@ -224,6 +658,43 @@ export default function AgentRenterRequestsPage() {
       setError(null);
 
       try {
+        if (isMatchDemoMode) {
+          const demoRequests = createDemoRequests();
+          setRequests(demoRequests);
+          setPagination({
+            currentPage: 1,
+            totalPages: 1,
+            totalItems: demoRequests.length,
+            itemsPerPage: limit,
+            hasNext: false,
+            hasPrev: false,
+            nextPage: null,
+            prevPage: null,
+          });
+          cacheAgentRequests(demoRequests);
+
+          const quickParam = getDemoParam("quick") as QuickSelectThreshold | null;
+          const quickOption = quickSelectOptions.find(
+            (option) => option.key === quickParam,
+          );
+          if (quickOption && quickOption.key !== "none") {
+            setQuickSelect(quickOption.key);
+            setSelectedRequestIds(
+              demoRequests
+                .filter(
+                  (request) =>
+                    (request.matchStarRating ?? 0) >= quickOption.threshold,
+                )
+                .map((request) => request.id),
+            );
+          } else {
+            setSelectedRequestIds([]);
+            setQuickSelect("none");
+          }
+
+          return;
+        }
+
         const params = new URLSearchParams({
           page: String(page),
           limit: String(limit),
@@ -235,14 +706,29 @@ export default function AgentRenterRequestsPage() {
         };
         if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
-        const response = await fetch(
-          `${API_BASE_URL}/pre-market/all?${params.toString()}`,
-          {
-            method: "GET",
-            headers,
-            signal: controller.signal,
-          },
-        );
+        const response =
+          isMatchResultsMode && matchSearchFilters
+            ? await fetch(
+                `${API_BASE_URL}/pre-market/agent/match-search`,
+                {
+                  method: "POST",
+                  headers,
+                  signal: controller.signal,
+                  body: JSON.stringify({
+                    ...buildMatchSearchPayload(matchSearchFilters),
+                    page,
+                    limit,
+                  }),
+                },
+              )
+            : await fetch(
+                `${API_BASE_URL}/pre-market/all?${params.toString()}`,
+                {
+                  method: "GET",
+                  headers,
+                  signal: controller.signal,
+                },
+              );
 
         const data: ApiAgentRequestsResponse = await response
           .json()
@@ -258,6 +744,8 @@ export default function AgentRenterRequestsPage() {
         const normalized = (data.data ?? []).map(normalizeAgentRequest);
         setRequests(normalized);
         setPagination(data.pagination);
+        setSelectedRequestIds([]);
+        setQuickSelect("none");
         cacheAgentRequests(normalized);
       } catch (err) {
         if (controller.signal.aborted) return;
@@ -281,13 +769,29 @@ export default function AgentRenterRequestsPage() {
     fetchRequests();
 
     return () => controller.abort();
-  }, [accessToken, filters, isStateRestored, page]);
+  }, [
+    accessToken,
+    filters,
+    isMatchResultsMode,
+    isMatchDemoMode,
+    isStateRestored,
+    matchSearchFilters,
+    page,
+  ]);
 
   const filteredRequests = useMemo(() => {
+    if (isMatchResultsMode) return requests;
+
     return requests.filter((req) =>
       matchesAgentFilters(req.raw, filters, showOwnReferrals, currentAgentId),
     );
-  }, [currentAgentId, filters, requests, showOwnReferrals]);
+  }, [
+    currentAgentId,
+    filters,
+    isMatchResultsMode,
+    requests,
+    showOwnReferrals,
+  ]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !isStateRestored) return;
@@ -541,8 +1045,167 @@ export default function AgentRenterRequestsPage() {
   };
 
   const handleApplyFilters = (nextFilters: FilterType) => {
+    if (
+      !nextFilters.borough ||
+      !nextFilters.neighborhoods[0] ||
+      nextFilters.bedrooms[0] == null ||
+      nextFilters.bathrooms[0] == null ||
+      nextFilters.maxPrice == null ||
+      !nextFilters.movingDate.earliest ||
+      !nextFilters.movingDate.latest
+    ) {
+      setError(
+        "Please enter borough, neighborhood, bedrooms, bathrooms, rent, and move-in dates before matching.",
+      );
+      return;
+    }
+
     setPage(1);
-    setFilters(sanitizeFilters(nextFilters));
+    setMatchSearchFilters(nextFilters);
+    setIsMatchResultsMode(true);
+    setIsFilterOpen(false);
+  };
+
+  const handleQuickSelect = (option: (typeof quickSelectOptions)[number]) => {
+    setQuickSelect(option.key);
+    if (option.key === "none") {
+      setSelectedRequestIds([]);
+      return;
+    }
+
+    setSelectedRequestIds(
+      filteredRequests
+        .filter((request) => (request.matchStarRating ?? 0) >= option.threshold)
+        .map((request) => request.id),
+    );
+  };
+
+  const handleToggleRequestSelection = (requestId: string) => {
+    setQuickSelect("none");
+    setSelectedRequestIds((prev) =>
+      prev.includes(requestId)
+        ? prev.filter((id) => id !== requestId)
+        : [...prev, requestId],
+    );
+  };
+
+  const handleToggleSelectAll = () => {
+    setQuickSelect("none");
+    const visibleIds = filteredRequests.map((request) => request.id);
+    const allSelected =
+      visibleIds.length > 0 &&
+      visibleIds.every((requestId) => selectedRequestIds.includes(requestId));
+
+    setSelectedRequestIds(allSelected ? [] : visibleIds);
+  };
+
+  const handleMatchChecked = async () => {
+    if (!selectedRequestIds.length) return;
+
+    setIsMatchingChecked(true);
+    setError(null);
+
+    try {
+      if (isMatchDemoMode) {
+        const matchedIds = new Set(selectedRequestIds);
+        setRequests((prev) => {
+          const next = prev.map((request) =>
+            matchedIds.has(request.id)
+              ? {
+                  ...request,
+                  alreadyMatchedByAgent: true,
+                  status: "matched",
+                  raw: {
+                    ...request.raw,
+                    alreadyMatchedByAgent: true,
+                    status: "matched",
+                  },
+                }
+              : request,
+          );
+          cacheAgentRequests(next);
+          return next;
+        });
+        setSelectedRequestIds([]);
+        setQuickSelect("none");
+        return;
+      }
+
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(
+        `${API_BASE_URL}/pre-market/agent/match-checked`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ requestIds: selectedRequestIds }),
+        },
+      );
+      const data: {
+        success?: boolean;
+        message?: string;
+        data?: {
+          matched?: Array<{ requestId: string }>;
+          failed?: Array<{ requestId: string; message: string }>;
+        };
+      } = await response.json().catch(
+        () =>
+          ({}) as {
+            success?: boolean;
+            message?: string;
+            data?: {
+              matched?: Array<{ requestId: string }>;
+              failed?: Array<{ requestId: string; message: string }>;
+            };
+          },
+      );
+
+      if (!response.ok || data?.success === false) {
+        throw new Error(data?.message || "We couldn't match selected requests.");
+      }
+
+      const matchedIds = new Set(
+        (data.data?.matched ?? []).map((item) => item.requestId),
+      );
+
+      setRequests((prev) =>
+        prev.map((request) =>
+          matchedIds.has(request.id)
+            ? {
+                ...request,
+                alreadyMatchedByAgent: true,
+                status: "matched",
+                raw: {
+                  ...request.raw,
+                  alreadyMatchedByAgent: true,
+                  status: "matched",
+                },
+              }
+            : request,
+        ),
+      );
+      setSelectedRequestIds([]);
+      setQuickSelect("none");
+
+      if (data.data?.failed?.length) {
+        setError(
+          `${data.data.failed.length} selected request${
+            data.data.failed.length === 1 ? "" : "s"
+          } could not be matched.`,
+        );
+      }
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "We couldn't match selected requests.";
+      setError(message);
+    } finally {
+      setIsMatchingChecked(false);
+    }
   };
 
   if (isLoading && !isFilterOpen) {
@@ -554,11 +1217,39 @@ export default function AgentRenterRequestsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 bg-white p-5 rounded-xl shadow-sm gap-3">
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-            Renter Requests
+            {isMatchResultsMode ? "Renter Matches" : "Renter Requests"}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
             View all available pre-market requests from renters.
           </p>
+          {isMatchResultsMode ? (
+            <div className="mt-3">
+              <p className="mb-1 text-[11px] font-medium text-gray-500">
+                Quick select:
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                {quickSelectOptions.map((option) => (
+                  <button
+                    key={option.key}
+                    type="button"
+                    onClick={() => handleQuickSelect(option)}
+                    className={`rounded-md border px-3 py-1 text-xs transition ${
+                      quickSelect === option.key
+                        ? "border-blue-600 bg-blue-600 text-white"
+                        : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+                {selectedRequestIds.length ? (
+                  <span className="text-xs text-gray-500">
+                    {selectedRequestIds.length} selected on this page
+                  </span>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -593,24 +1284,64 @@ export default function AgentRenterRequestsPage() {
           {hasFilteredResults ? (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-hidden">
               <div className="overflow-x-auto">
-                <table className="min-w-[1320px] w-full text-sm">
+                <table
+                  className={`w-full text-sm ${
+                    isMatchResultsMode ? "min-w-[1720px]" : "min-w-[1320px]"
+                  }`}
+                >
                   <thead className="bg-blue-100 text-gray-800">
-                    <tr>
-                      <th className="py-3 px-5 text-left">Date</th>
-                      <th className="py-3 px-5 text-left">Request</th>
-                      <th className="py-3 px-5 text-left">Renter</th>
-                      <th className="py-3 px-5 text-left">Scope</th>
-                      <th className="py-3 px-5 text-left">Visibility</th>
-                      <th className="py-3 px-5 text-left">Borough</th>
-                      <th className="py-3 px-5 text-left">Price (Max)</th>
-                      <th className="py-3 px-5 text-left">Beds</th>
-                      <th className="py-3 px-5 text-left">Baths</th>
-                      <th className="py-3 px-5 text-left">Status</th>
-                      <th className="py-3 px-5 text-center">
-                        Registration / Disclosure
-                      </th>
-                      <th className="py-3 px-5 text-right">Actions</th>
-                    </tr>
+                    {isMatchResultsMode ? (
+                      <tr>
+                        <th className="py-3 px-5 text-left">Date</th>
+                        <th className="py-3 px-5 text-left">
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={
+                                filteredRequests.length > 0 &&
+                                filteredRequests.every((req) =>
+                                  selectedRequestIds.includes(req.id),
+                                )
+                              }
+                              onChange={handleToggleSelectAll}
+                              className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                              aria-label="Select all visible match results"
+                            />
+                            <span>Select</span>
+                          </label>
+                        </th>
+                        <th className="py-3 px-5 text-left">Request</th>
+                        <th className="py-3 px-5 text-left">Match Rating</th>
+                        <th className="py-3 px-5 text-left">What's Missing</th>
+                        <th className="py-3 px-5 text-left">Preference Match</th>
+                        <th className="py-3 px-5 text-left">Renter</th>
+                        <th className="py-3 px-5 text-left">Scope</th>
+                        <th className="py-3 px-5 text-left">Visibility</th>
+                        <th className="py-3 px-5 text-left">Borough</th>
+                        <th className="py-3 px-5 text-left">Price (Max)</th>
+                        <th className="py-3 px-5 text-left">Beds</th>
+                        <th className="py-3 px-5 text-left">Baths</th>
+                        <th className="py-3 px-5 text-left">Status</th>
+                        <th className="py-3 px-5 text-right">Actions</th>
+                      </tr>
+                    ) : (
+                      <tr>
+                        <th className="py-3 px-5 text-left">Date</th>
+                        <th className="py-3 px-5 text-left">Request</th>
+                        <th className="py-3 px-5 text-left">Renter</th>
+                        <th className="py-3 px-5 text-left">Scope</th>
+                        <th className="py-3 px-5 text-left">Visibility</th>
+                        <th className="py-3 px-5 text-left">Borough</th>
+                        <th className="py-3 px-5 text-left">Price (Max)</th>
+                        <th className="py-3 px-5 text-left">Beds</th>
+                        <th className="py-3 px-5 text-left">Baths</th>
+                        <th className="py-3 px-5 text-left">Status</th>
+                        <th className="py-3 px-5 text-center">
+                          Registration / Disclosure
+                        </th>
+                        <th className="py-3 px-5 text-right">Actions</th>
+                      </tr>
+                    )}
                   </thead>
 
                   <tbody>
@@ -651,16 +1382,106 @@ export default function AgentRenterRequestsPage() {
                               {req.dateLabel}
                             </div>
                           </td>
-                          <td className="py-3 px-5">
-                            <div className="text-gray-900">
-                              {req.requestName}
-                            </div>
-                          </td>
-                          <td className="py-3 px-5">
-                            <div className="font-medium text-gray-900">
-                              {formatRenterDisplayName(req.renterName)}
-                            </div>
-                          </td>
+                          {isMatchResultsMode ? (
+                            <>
+                              <td className="py-3 px-5">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedRequestIds.includes(req.id)}
+                                  onChange={() =>
+                                    handleToggleRequestSelection(req.id)
+                                  }
+                                  aria-label={`Select ${req.requestName}`}
+                                  className={`h-5 w-5 rounded text-blue-600 focus:ring-blue-500 ${
+                                    req.alreadyMatchedByAgent
+                                      ? "border-2 border-blue-600"
+                                      : "border border-gray-300"
+                                  }`}
+                                  style={
+                                    req.alreadyMatchedByAgent
+                                      ? {
+                                          borderColor: "#2563eb",
+                                          boxShadow: "0 0 0 2px #2563eb",
+                                        }
+                                      : undefined
+                                  }
+                                />
+                              </td>
+                              <td className="py-3 px-5">
+                                <div className="text-gray-900">
+                                  {req.requestName}
+                                </div>
+                              </td>
+                              <td className="py-3 px-5">
+                                {renderStars(req.matchStarRating)}
+                              </td>
+                              <td className="py-3 px-5">
+                                {req.matchMissingFeatures?.length ? (
+                                  <div className="flex items-center gap-2">
+                                    {req.matchMissingFeatures
+                                      .slice(0, 3)
+                                      .map((feature) => (
+                                        <Image
+                                          key={feature.code}
+                                          src={
+                                            missingFeatureIcons[feature.code] ??
+                                            "/icons/alert-circle.svg"
+                                          }
+                                          alt={feature.label}
+                                          width={34}
+                                          height={34}
+                                          title={feature.description}
+                                          className="h-8 w-8 object-contain opacity-70"
+                                        />
+                                      ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-xs font-semibold text-amber-500">
+                                    PERFECT MATCH
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-3 px-5">
+                                {req.matchPreferenceMatches ? (
+                                  <div className="flex items-center gap-1.5">
+                                    {req.matchPreferenceMatches.map(
+                                      (matched, index) => (
+                                        <span
+                                          key={index}
+                                          title={`Priority ${index + 1}`}
+                                          className={`h-5 w-5 border ${
+                                            matched
+                                              ? "border-amber-300 bg-gradient-to-b from-amber-300 to-yellow-700"
+                                              : "border-gray-300 bg-white"
+                                          }`}
+                                        />
+                                      ),
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span className="text-gray-400">-</span>
+                                )}
+                              </td>
+                              <td className="py-3 px-5">
+                                <div className="font-medium text-gray-900">
+                                  {formatRenterDisplayName(req.renterName)}
+                                </div>
+                              </td>
+                            </>
+                          ) : (
+                            <>
+                              <td className="py-3 px-5">
+                                <div className="text-gray-900">
+                                  {req.requestName}
+                                </div>
+                              </td>
+                              <td className="py-3 px-5">
+                                <div className="font-medium text-gray-900">
+                                  {formatRenterDisplayName(req.renterName)}
+                                </div>
+                              </td>
+                            </>
+                          )}
                           <td className="py-3 px-5">
                             <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
                               {req.scopeLabel}
@@ -738,8 +1559,13 @@ export default function AgentRenterRequestsPage() {
                           <td className="py-3 px-5">{req.bathroomsLabel}</td>
                           <td className="py-3 px-5">
                             {(() => {
-                              const rawStatus =
-                                req.raw?.status || req.status || "unknown";
+                              const rawStatus = isMatchResultsMode
+                                ? req.alreadyMatchedByAgent
+                                  ? "matched"
+                                  : req.raw?.listingStatus ||
+                                    req.raw?.status ||
+                                    "Available"
+                                : req.raw?.status || req.status || "unknown";
                               const statusText =
                                 typeof rawStatus === "string"
                                   ? rawStatus
@@ -755,10 +1581,15 @@ export default function AgentRenterRequestsPage() {
                               const isActiveStatus = /active|available/i.test(
                                 statusText,
                               );
+                              const isMatchedStatus = /matched/i.test(
+                                statusText,
+                              );
                               return (
                                 <span
                                   className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                    isActiveStatus
+                                    isMatchedStatus
+                                      ? "bg-green-100 text-green-700"
+                                      : isActiveStatus
                                       ? "bg-green-100 text-green-700"
                                       : "bg-gray-100 text-gray-600"
                                   }`}
@@ -768,33 +1599,38 @@ export default function AgentRenterRequestsPage() {
                               );
                             })()}
                           </td>
-                          <td className="py-3 px-5">
-                            {shouldShowRegistrationDisclosure ? (
-                              <div className="flex items-center justify-center gap-2">
-                                <input
-                                  type="checkbox"
-                                  checked={req.registrationDisclosureConfirmed}
-                                  disabled={
-                                    req.registrationDisclosureConfirmed ||
-                                    mutatingRegistrationDisclosureId === req.id
-                                  }
-                                  onChange={(event) => {
-                                    if (event.target.checked) {
-                                      handleConfirmRegistrationDisclosure(req);
+                          {!isMatchResultsMode ? (
+                            <td className="py-3 px-5">
+                              {shouldShowRegistrationDisclosure ? (
+                                <div className="flex items-center justify-center gap-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={
+                                      req.registrationDisclosureConfirmed
                                     }
-                                  }}
-                                  aria-label={`Confirm Registration / Disclosure for ${req.requestName}`}
-                                  className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
-                                />
-                                {isRegistrationDisclosureLocked ? (
-                                  <Lock
-                                    className="h-4 w-4 text-gray-500"
-                                    aria-hidden="true"
+                                    disabled={
+                                      req.registrationDisclosureConfirmed ||
+                                      mutatingRegistrationDisclosureId ===
+                                        req.id
+                                    }
+                                    onChange={(event) => {
+                                      if (event.target.checked) {
+                                        handleConfirmRegistrationDisclosure(req);
+                                      }
+                                    }}
+                                    aria-label={`Confirm Registration / Disclosure for ${req.requestName}`}
+                                    className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
                                   />
-                                ) : null}
-                              </div>
-                            ) : null}
-                          </td>
+                                  {isRegistrationDisclosureLocked ? (
+                                    <Lock
+                                      className="h-4 w-4 text-gray-500"
+                                      aria-hidden="true"
+                                    />
+                                  ) : null}
+                                </div>
+                              ) : null}
+                            </td>
+                          ) : null}
                           <td className="py-3 px-5 flex justify-end gap-2">
                             {isCurrentAgentsRequest &&
                             req.hasOwnerRepresentationMatches ? (
@@ -847,9 +1683,82 @@ export default function AgentRenterRequestsPage() {
             </div>
           ) : (
             <div className="bg-white rounded-xl shadow-sm p-6 text-gray-600">
-              No renter requests match the current filters on this page.
+              {isMatchResultsMode
+                ? "No renter requests matched this apartment."
+                : "No renter requests match the current filters on this page."}
             </div>
           )}
+
+          {isMatchResultsMode ? (
+            <div className="mt-5 space-y-4">
+              <button
+                type="button"
+                onClick={handleMatchChecked}
+                disabled={!selectedRequestIds.length || isMatchingChecked}
+                className="rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:bg-blue-600 disabled:hover:shadow-none"
+              >
+                {isMatchingChecked ? "Matching..." : "Match Checked"}
+              </button>
+
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setIsLegendOpen((prev) => !prev)}
+                  className="inline-flex items-center gap-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs font-semibold text-gray-700"
+                >
+                  ICONS LEGEND
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 transition ${
+                      isLegendOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {isLegendOpen ? (
+                  <div className="mt-4 grid grid-cols-1 gap-x-8 gap-y-4 text-xs text-gray-500 sm:grid-cols-2 lg:grid-cols-4">
+                    {missingFeatureLegend.map(([code, label, description]) => (
+                      <div key={code} className="flex items-center gap-3">
+                        <Image
+                          src={missingFeatureIcons[code]}
+                          alt=""
+                          aria-hidden="true"
+                          width={44}
+                          height={44}
+                          className="h-11 w-11 object-contain opacity-60"
+                        />
+                        <div>
+                          <p className="font-semibold text-gray-700">
+                            {label}
+                          </p>
+                          <p>{description}</p>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1">
+                        {[true, false, false, false].map((matched, index) => (
+                          <span
+                            key={index}
+                            className={`h-5 w-5 border ${
+                              matched
+                                ? "border-amber-300 bg-gradient-to-b from-amber-300 to-yellow-700"
+                                : "border-gray-300 bg-white"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-700">
+                          Preferences
+                        </p>
+                        <p>Gold is present; grey is not present.</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
 
           {pagination && (
             <div className="flex flex-col sm:flex-row justify-between items-center mt-6 text-sm text-gray-600 gap-3">
@@ -904,7 +1813,7 @@ export default function AgentRenterRequestsPage() {
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
           onApply={handleApplyFilters}
-          initialFilters={filters}
+          initialFilters={matchSearchFilters ?? filters}
           resultCount={filteredRequests.length}
           variant="matchRequests"
           isApplying={isLoading}

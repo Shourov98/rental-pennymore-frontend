@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { clearServerAuthSession } from "@/lib/authSession";
 import { useLazyGetProfileQuery, useRefreshTokenMutation } from "@/store/api";
 import {
+  agentLoginSuccess,
   logout,
   selectAuth,
   sessionChecked,
@@ -13,6 +14,21 @@ import {
 } from "@/store/slices/authSlice";
 
 const SESSION_VERIFY_INTERVAL_MS = 15000;
+const MATCH_DEMO_STORAGE_KEY = "beforelisted-match-demo";
+
+const isLocalMatchDemoEnabled = () => {
+  if (typeof window === "undefined" || process.env.NODE_ENV === "production") {
+    return false;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("matchDemo") === "1") {
+    sessionStorage.setItem(MATCH_DEMO_STORAGE_KEY, "1");
+    return true;
+  }
+
+  return sessionStorage.getItem(MATCH_DEMO_STORAGE_KEY) === "1";
+};
 
 export default function AuthBootstrap() {
   const dispatch = useDispatch();
@@ -99,6 +115,47 @@ export default function AuthBootstrap() {
       try {
         if (shouldForceAnonymousSession) {
           dispatch(logout());
+          return;
+        }
+
+        if (isLocalMatchDemoEnabled()) {
+          const now = new Date().toISOString();
+          dispatch(
+            agentLoginSuccess({
+              user: {
+                _id: "local-match-demo-agent",
+                email: "agent.demo@beforelisted.local",
+                fullName: "Local Match Demo",
+                title: "Agent",
+                phone: "000-000-0000",
+                role: "Agent",
+                accountStatus: "active",
+                emailVerified: true,
+                createdAt: now,
+                updatedAt: now,
+              },
+              accessToken: "local-match-demo-token",
+              expiresIn: "1h",
+              mustChangePassword: false,
+              agentProfile: {
+                _id: "local-match-demo-profile",
+                userInfo: {
+                  _id: "local-match-demo-agent",
+                  email: "agent.demo@beforelisted.local",
+                  phoneNumber: "000-000-0000",
+                  fullName: "Local Match Demo",
+                  role: "Agent",
+                  accountStatus: "active",
+                  emailVerified: true,
+                },
+                title: "Agent",
+                brokerageName: "BeforeListed Local",
+                isActive: true,
+                hasGrantAccess: true,
+              },
+            }),
+          );
+          dispatch(sessionChecked());
           return;
         }
 

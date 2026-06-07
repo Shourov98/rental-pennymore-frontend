@@ -9,6 +9,8 @@ export const defaultPreferencesList = [
   "Laundry in Building",
   "Dishwasher",
   "New Renovation",
+  "Open Kitchen",
+  "Open Views",
   "W/D in Unit",
   "High Ceilings",
   "Avoid Ground Floor",
