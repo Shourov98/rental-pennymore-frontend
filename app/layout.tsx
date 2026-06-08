@@ -6,7 +6,7 @@ import TitleManager from "@/components/TitleManager";
 import ViewportManager from "@/components/ViewportManager";
 
 const poppins = Poppins({
-  weight: ["400", "500", "600", "700"], // multiple weights
+  weight: ["400", "500", "600", "700"], // multiple weights for flexibility
   variable: "--font-poppins",
   subsets: ["latin"],
 });
