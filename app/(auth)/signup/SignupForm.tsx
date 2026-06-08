@@ -11,6 +11,10 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const INACTIVE_REGISTRATION_LINK_CODE = "REGISTRATION_LINK_INACTIVE";
 
 type SignupRole = "renter" | "agent";
+type ReferralDisplay = {
+  referrerName?: string | null;
+  brokerageName?: string | null;
+};
 
 export default function SignupForm({ role }: { role: SignupRole }) {
   const router = useRouter();
@@ -26,6 +30,8 @@ export default function SignupForm({ role }: { role: SignupRole }) {
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const [referralDisplay, setReferralDisplay] =
+    useState<ReferralDisplay | null>(null);
   const [formData, setFormData] = useState({
     fullName: "",
     phoneNumber: "",
@@ -68,6 +74,7 @@ export default function SignupForm({ role }: { role: SignupRole }) {
   useEffect(() => {
     if (!isRenter) return;
     const referralCode = referralFromUrl || savedReferralCode;
+    setReferralDisplay(null);
     if (!referralCode) return;
 
     setFormData((prev) => ({
@@ -94,6 +101,7 @@ export default function SignupForm({ role }: { role: SignupRole }) {
         const data = (await response.json().catch(() => ({}))) as {
           success?: boolean;
           errorCode?: string;
+          data?: ReferralDisplay;
         };
 
         if (
@@ -101,6 +109,10 @@ export default function SignupForm({ role }: { role: SignupRole }) {
           data?.errorCode === INACTIVE_REGISTRATION_LINK_CODE
         ) {
           router.replace("/registration-link-not-active");
+        }
+
+        if (response.ok && data?.data) {
+          setReferralDisplay(data.data);
         }
       } catch {
         if (controller.signal.aborted) return;
@@ -308,19 +320,32 @@ export default function SignupForm({ role }: { role: SignupRole }) {
         </Link>
       </div>
       <h2 className="text-2xl font-semibold text-center text-text-primary mb-1">
-        Create an Account
+        {isRenter ? "Start Your Rental Request" : "Create an Account"}
       </h2>
-      <div className="flex justify-center mb-2">
-        <span
-          className={`inline-flex items-center rounded-full px-4 py-1 text-xs sm:text-sm font-semibold border ${
-            isAgent
-              ? "bg-blue-400 text-white border-[#CFE1FF]"
-              : "bg-blue-400 text-white border-[#ABEFC6]"
-          }`}
-        >
-          {isAgent ? "Agent" : "Renter"}
-        </span>
-      </div>
+      {isRenter ? (
+        <div className="mb-4 text-center">
+          {referralDisplay?.referrerName && referralDisplay?.brokerageName && (
+            <p className="text-sm font-semibold text-text-primary">
+              {referralDisplay.referrerName} . {referralDisplay.brokerageName}
+            </p>
+          )}
+          <p className="mt-2 text-sm font-semibold text-action">
+            Complete your request in less than 2 minutes
+          </p>
+        </div>
+      ) : (
+        <div className="flex justify-center mb-2">
+          <span
+            className={`inline-flex items-center rounded-full px-4 py-1 text-xs sm:text-sm font-semibold border ${
+              isAgent
+                ? "bg-blue-400 text-white border-[#CFE1FF]"
+                : "bg-blue-400 text-white border-[#ABEFC6]"
+            }`}
+          >
+            Agent
+          </span>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
         <InputField
@@ -445,7 +470,7 @@ export default function SignupForm({ role }: { role: SignupRole }) {
             disabled:opacity-20
           "
         >
-          {loading ? "Signing up..." : "Signup"}
+          {loading ? "Signing up..." : isRenter ? "Continue" : "Signup"}
         </button>
 
         <div className="text-center text-sm sm:text-base mt-2">
