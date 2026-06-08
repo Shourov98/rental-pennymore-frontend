@@ -1312,7 +1312,7 @@ export default function AgentRenterRequestsPage() {
                         </th>
                         <th className="py-3 px-5 text-left">Request</th>
                         <th className="py-3 px-5 text-left">Match Rating</th>
-                        <th className="py-3 px-5 text-left">What's Missing</th>
+                        <th className="py-3 px-5 text-left">What&apos;s Missing</th>
                         <th className="py-3 px-5 text-left">Preference Match</th>
                         <th className="py-3 px-5 text-left">Renter</th>
                         <th className="py-3 px-5 text-left">Scope</th>

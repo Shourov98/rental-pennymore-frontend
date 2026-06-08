@@ -4,6 +4,7 @@ import {
   type BaseQueryFn,
 } from "@reduxjs/toolkit/query/react";
 import type { FetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { API_BASE_URL, applyApiHeaders } from "@/lib/apiClient";
 import { clearServerAuthSession } from "@/lib/authSession";
 import {
   selectAccessToken,
@@ -18,12 +19,11 @@ import { fetchAgentProfile } from "./slices/agentProfileSlice";
 import type { RootState } from "./store";
 import type { UserBase } from "./slices/authSlice";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: API_BASE_URL,
   credentials: "include",
   prepareHeaders: (headers, { getState }) => {
+    applyApiHeaders(headers);
     const token = selectAccessToken(getState() as RootState);
     if (token) {
       headers.set("authorization", `Bearer ${token}`);
