@@ -59,7 +59,7 @@ function RentersEdgeFormInner() {
           </p>
         </div>
 
-        {/* Sub Logo + Info */}
+        {/* Sub Logo + Information */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <Link href="/" className="text-black pr-3">
