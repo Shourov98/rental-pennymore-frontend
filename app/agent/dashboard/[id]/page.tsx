@@ -39,6 +39,14 @@ type OwnerRepresentationRegisteredAgent =
   NonNullable<
     NormalizedAgentRequest["raw"]["ownerRepresentationRegisteredAgent"]
   >;
+const OPPORTUNITY_DETAILS_MAX_LENGTH = 300;
+
+const opportunityDetailsHelperText: Record<RepresentationType, string> = {
+  renter_representation:
+    "Included in the email to the renter and visible to the registered agent. Kindly use neutral, factual details only (apartment features, address, cross streets, viewing times, next steps).",
+  owner_representation:
+    "Included in the email to the registered agent. Kindly use neutral, factual details only (apartment features, address, cross streets, viewing times, next steps).",
+};
 
 const unitFeatureLabels: Record<string, string> = {
   laundryInUnit: "Laundry in unit",
@@ -217,6 +225,7 @@ export default function AgentRenterRequestDetailsPage() {
   const [isRepresentationOpen, setIsRepresentationOpen] = useState(false);
   const [selectedRepresentationType, setSelectedRepresentationType] =
     useState<RepresentationType | "">("");
+  const [opportunityDetails, setOpportunityDetails] = useState("");
   const [navigationTargets, setNavigationTargets] = useState<{
     previousHref: string | null;
     nextHref: string | null;
@@ -634,9 +643,11 @@ export default function AgentRenterRequestDetailsPage() {
 
   const handleMatchRequest = async (
     representationType: RepresentationType = "renter_representation",
+    details: string = "",
   ) => {
     if (!requestId || isDisabled || isSubmitting) return;
     setStatusMessage(null);
+    const normalizedOpportunityDetails = details.trim().slice(0, 300);
 
     try {
       setIsSubmitting(true);
@@ -653,6 +664,9 @@ export default function AgentRenterRequestDetailsPage() {
             headers,
             body: JSON.stringify({
               representation_type: representationType,
+              ...(normalizedOpportunityDetails
+                ? { opportunityDetails: normalizedOpportunityDetails }
+                : {}),
             }),
           },
         );
@@ -736,6 +750,9 @@ export default function AgentRenterRequestDetailsPage() {
             body: JSON.stringify({
               preMarketRequestId: requestId,
               representation_type: representationType,
+              ...(normalizedOpportunityDetails
+                ? { opportunityDetails: normalizedOpportunityDetails }
+                : {}),
             }),
           },
         );
@@ -855,6 +872,13 @@ export default function AgentRenterRequestDetailsPage() {
 
   const backHref = isArchiveContext ? "/agent/archived-requests" : "/agent/dashboard";
   const backLabel = isArchiveContext ? "Archived Requests" : "Renter Requests";
+  const opportunityDetailsCount = opportunityDetails.length;
+  const opportunityDetailsCounterClass =
+    opportunityDetailsCount >= OPPORTUNITY_DETAILS_MAX_LENGTH
+      ? "text-red-600"
+      : opportunityDetailsCount >= 240
+        ? "text-orange-400"
+        : "text-[#999999]";
 
   return (
     <section className="flex-1 bg-gray-50 h-full min-h-0 px-4 md:px-8 py-6 overflow-y-auto">
@@ -1118,6 +1142,7 @@ export default function AgentRenterRequestDetailsPage() {
                       return;
                     }
                     setSelectedRepresentationType("");
+                    setOpportunityDetails("");
                     setIsRepresentationOpen(true);
                   }}
                   disabled={isDisabled || isAccessRequestLocked}
@@ -1285,12 +1310,45 @@ export default function AgentRenterRequestDetailsPage() {
                 <span>I intend to represent the renter</span>
               </label>
             </div>
+            {selectedRepresentationType ? (
+              <div className="mt-5">
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Add Opportunity Details
+                </h3>
+                <p className="mt-1 text-xs leading-5 text-gray-500">
+                  {opportunityDetailsHelperText[selectedRepresentationType]}
+                </p>
+                <div className="relative mt-3">
+                  <textarea
+                    rows={3}
+                    maxLength={OPPORTUNITY_DETAILS_MAX_LENGTH}
+                    value={opportunityDetails}
+                    onChange={(event) =>
+                      setOpportunityDetails(
+                        event.target.value.slice(
+                          0,
+                          OPPORTUNITY_DETAILS_MAX_LENGTH,
+                        ),
+                      )
+                    }
+                    placeholder="e.g., 123 W 85th St — Available Thursday at 3pm."
+                    className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 pb-7 text-sm text-gray-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  />
+                  <span
+                    className={`absolute bottom-2 right-3 text-xs ${opportunityDetailsCounterClass}`}
+                  >
+                    {opportunityDetailsCount} / {OPPORTUNITY_DETAILS_MAX_LENGTH}
+                  </span>
+                </div>
+              </div>
+            ) : null}
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
                 type="button"
                 onClick={() => {
                   setIsRepresentationOpen(false);
                   setSelectedRepresentationType("");
+                  setOpportunityDetails("");
                 }}
                 className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
               >
@@ -1303,7 +1361,10 @@ export default function AgentRenterRequestDetailsPage() {
 
                   setIsRepresentationOpen(false);
                   if (selectedRepresentationType === "owner_representation") {
-                    handleMatchRequest("owner_representation");
+                    handleMatchRequest(
+                      "owner_representation",
+                      opportunityDetails,
+                    );
                     return;
                   }
 
@@ -1405,7 +1466,10 @@ export default function AgentRenterRequestDetailsPage() {
                 onClick={() => {
                   if (!isConfirmChecked) return;
                   setIsConfirmOpen(false);
-                  handleMatchRequest("renter_representation");
+                  handleMatchRequest(
+                    "renter_representation",
+                    opportunityDetails,
+                  );
                 }}
                 disabled={!isConfirmChecked || isSubmitting}
                 className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
