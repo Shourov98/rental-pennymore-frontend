@@ -1,8 +1,10 @@
 "use client";
 
 import { Calendar, X } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
+import type { NeighborhoodSelection } from "@/components/NeighborhoodModal";
 import boroughNeighborhoodsData from "../../data/neighborhoods.manhattan-brooklyn";
 
 export interface FilterType {
@@ -35,6 +37,10 @@ interface FeatureOption {
   label: string;
   value: string;
 }
+
+const NeighborhoodModal = dynamic(() => import("@/components/NeighborhoodModal"), {
+  ssr: false,
+});
 
 const defaultFeatureGroups: Record<FeatureGroupKey, boolean> = {
   unitFeatures: true,
@@ -102,16 +108,21 @@ const availableFeatureOptions: FeatureOption[] = [
 
 const uniqueLabels = (labels: string[]) => Array.from(new Set(labels));
 
+const boroughNeighborhoodItems = {
+  Manhattan: boroughNeighborhoodsData.Manhattan.sections.flatMap(
+    (section) => section.items,
+  ),
+  Brooklyn: boroughNeighborhoodsData.Brooklyn.sections.flatMap(
+    (section) => section.items,
+  ),
+};
+
 const boroughNeighborhoods: Record<string, string[]> = {
   Manhattan: uniqueLabels(
-    boroughNeighborhoodsData.Manhattan.sections.flatMap((section) =>
-      section.items.map((item) => item.label),
-    ),
+    boroughNeighborhoodItems.Manhattan.map((item) => item.label),
   ),
   Brooklyn: uniqueLabels(
-    boroughNeighborhoodsData.Brooklyn.sections.flatMap((section) =>
-      section.items.map((item) => item.label),
-    ),
+    boroughNeighborhoodItems.Brooklyn.map((item) => item.label),
   ),
 };
 
@@ -205,7 +216,7 @@ export default function FilterModal({
   );
   const [enabledFeatureGroups, setEnabledFeatureGroups] =
     useState(resolvedInitialFilters.enabledFeatureGroups ?? defaultFeatureGroups);
-  const [showNeighborhoodPicker, setShowNeighborhoodPicker] = useState(false);
+  const [isNeighborhoodMapOpen, setIsNeighborhoodMapOpen] = useState(false);
 
   const syncLocalFilters = (nextFilters: FilterType) => {
     setBorough(nextFilters.borough);
@@ -220,7 +231,7 @@ export default function FilterModal({
     setGuarantorRequired(nextFilters.guarantorRequired);
     setAvailableFeatures(nextFilters.availableFeatures);
     setEnabledFeatureGroups(nextFilters.enabledFeatureGroups ?? defaultFeatureGroups);
-    setShowNeighborhoodPicker(false);
+    setIsNeighborhoodMapOpen(false);
   };
 
   const neighborhoods = useMemo(
@@ -266,6 +277,42 @@ export default function FilterModal({
     availableFeatures,
     enabledFeatureGroups,
   });
+
+  const selectedBoroughForMap =
+    borough === "Manhattan" || borough === "Brooklyn" ? borough : "";
+
+  const selectedAreasByBorough = useMemo(() => {
+    const selectedAreas = {
+      Manhattan: [] as string[],
+      Brooklyn: [] as string[],
+    };
+
+    if (!selectedBoroughForMap) return selectedAreas;
+
+    const boroughItems = boroughNeighborhoodItems[selectedBoroughForMap];
+    selectedAreas[selectedBoroughForMap] = selectedNeighborhoods.flatMap(
+      (neighborhood) => {
+        const item = boroughItems.find(
+          (candidate) =>
+            candidate.label === neighborhood || candidate.key === neighborhood,
+        );
+
+        return item ? [item.key] : [];
+      },
+    );
+
+    return selectedAreas;
+  }, [selectedBoroughForMap, selectedNeighborhoods]);
+
+  const applyExactNeighborhood = (selection: NeighborhoodSelection | null) => {
+    if (!selection) {
+      setSelectedNeighborhoods([]);
+      return;
+    }
+
+    setBorough(selection.borough);
+    setSelectedNeighborhoods([selection.label]);
+  };
 
   const resetAll = () => {
     const next = resolveFilters(defaultFilters);
@@ -361,7 +408,7 @@ export default function FilterModal({
                 onClick={() => {
                   setBorough(borough === b ? null : b);
                   setSelectedNeighborhoods([]);
-                  setShowNeighborhoodPicker(false);
+                  setIsNeighborhoodMapOpen(false);
                 }}
                 className={`h-8 cursor-pointer rounded-2xl border px-2 text-xs font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-sm ${
                   borough === b
@@ -383,7 +430,7 @@ export default function FilterModal({
               </p>
               <button
                 type="button"
-                onClick={() => setShowNeighborhoodPicker((prev) => !prev)}
+                onClick={() => setIsNeighborhoodMapOpen(true)}
                 className="cursor-pointer rounded-full border border-gray-100 bg-gray-50 px-3 py-1 text-[11px] font-medium text-gray-700 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-gray-200 hover:shadow-sm"
               >
                 See All Neighborhoods
@@ -401,28 +448,6 @@ export default function FilterModal({
                 >
                   x
                 </button>
-              </div>
-            ) : null}
-
-            {showNeighborhoodPicker ? (
-              <div className="max-h-36 space-y-1 overflow-y-auto rounded-lg border border-gray-100 bg-gray-50 p-2">
-                {neighborhoods.map((neighborhood) => (
-                  <button
-                    type="button"
-                    key={neighborhood}
-                    onClick={() => {
-                      setSelectedNeighborhoods([neighborhood]);
-                      setShowNeighborhoodPicker(false);
-                    }}
-                    className={`block w-full rounded-md border p-2 text-left text-xs transition ${
-                      selectedNeighborhoods.includes(neighborhood)
-                        ? "border-blue-600 bg-blue-600 text-white"
-                        : "border-gray-100 bg-white text-gray-700 hover:border-gray-200"
-                    }`}
-                  >
-                    {neighborhood}
-                  </button>
-                ))}
               </div>
             ) : null}
           </div>
@@ -780,111 +805,124 @@ export default function FilterModal({
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex justify-end bg-black/30 text-black"
-      onClick={() => {
-        if (!isMatchRequestsApplying) onClose();
-      }}
-    >
+    <>
       <div
-        className={`relative flex h-full max-w-[calc(100vw-24px)] animate-slideIn flex-col bg-white shadow-xl ${
-          isMatchRequestsVariant ? "w-[350px]" : "w-[85%] sm:w-[350px]"
-        }`}
-        onClick={(event) => event.stopPropagation()}
+        className="fixed inset-0 z-50 flex justify-end bg-black/30 text-black"
+        onClick={() => {
+          if (!isMatchRequestsApplying) onClose();
+        }}
       >
         <div
-          className={`flex shrink-0 items-center justify-between border-b border-gray-200 ${
-            isMatchRequestsVariant ? "px-4 py-4" : "p-5"
+          className={`relative flex h-full max-w-[calc(100vw-24px)] animate-slideIn flex-col bg-white shadow-xl ${
+            isMatchRequestsVariant ? "w-[350px]" : "w-[85%] sm:w-[350px]"
           }`}
+          onClick={(event) => event.stopPropagation()}
         >
-          <h2
-            className={`font-semibold text-gray-900 ${
-              isMatchRequestsVariant ? "text-sm" : "text-lg"
+          <div
+            className={`flex shrink-0 items-center justify-between border-b border-gray-200 ${
+              isMatchRequestsVariant ? "px-4 py-4" : "p-5"
             }`}
           >
-            {isMatchRequestsVariant ? "Match Requests" : "Filter"}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isMatchRequestsApplying}
-            aria-label="Close filters"
-            className="cursor-pointer rounded-full p-1 text-gray-600 transition-all duration-200 ease-out hover:rotate-90 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:rotate-0 disabled:hover:bg-transparent"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="relative flex min-h-0 flex-1 flex-col">
-          <fieldset
-            disabled={isMatchRequestsApplying}
-            aria-hidden={isMatchRequestsApplying}
-            className={`m-0 flex min-h-0 min-w-0 flex-1 flex-col border-0 p-0 transition-opacity duration-200 ${
-              isMatchRequestsApplying
-                ? "pointer-events-none select-none opacity-45"
-                : ""
-            }`}
-          >
-            {isMatchRequestsVariant
-              ? renderMatchRequestsFilters()
-              : renderDefaultFilters()}
-
-            <div
-              className={`shrink-0 border-t border-gray-200 bg-white ${
-                isMatchRequestsVariant ? "px-4 py-4" : "p-5"
+            <h2
+              className={`font-semibold text-gray-900 ${
+                isMatchRequestsVariant ? "text-sm" : "text-lg"
               }`}
             >
-              {typeof resultCount === "number" && (
-                <div className="mb-3 text-xs text-gray-500">
-                  Showing {resultCount} request{resultCount === 1 ? "" : "s"}
-                </div>
-              )}
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={resetAll}
-                  className="flex-1 cursor-pointer rounded-full border border-gray-200 bg-white py-2 text-sm font-medium text-gray-700 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-gray-50 hover:shadow-sm disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-white disabled:hover:shadow-none"
-                >
-                  Reset
-                </button>
-                <button
-                  type="button"
-                  onClick={applyFilters}
-                  className="flex-1 cursor-pointer rounded-full bg-blue-600 py-2 text-sm font-medium text-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-sm disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-blue-600 disabled:hover:shadow-none"
-                >
-                  {isMatchRequestsVariant ? "Match" : "Apply"}
-                </button>
-              </div>
-            </div>
-          </fieldset>
-
-          {isMatchRequestsApplying ? (
-            <div
-              className="absolute inset-0 z-10 flex items-center justify-center bg-white/50"
-              aria-live="polite"
-              aria-label="Matching requests"
+              {isMatchRequestsVariant ? "Match Requests" : "Filter"}
+            </h2>
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isMatchRequestsApplying}
+              aria-label="Close filters"
+              className="cursor-pointer rounded-full p-1 text-gray-600 transition-all duration-200 ease-out hover:rotate-90 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:rotate-0 disabled:hover:bg-transparent"
             >
-              <Spinner className="size-8 text-blue-600" />
-            </div>
-          ) : null}
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="relative flex min-h-0 flex-1 flex-col">
+            <fieldset
+              disabled={isMatchRequestsApplying}
+              aria-hidden={isMatchRequestsApplying}
+              className={`m-0 flex min-h-0 min-w-0 flex-1 flex-col border-0 p-0 transition-opacity duration-200 ${
+                isMatchRequestsApplying
+                  ? "pointer-events-none select-none opacity-45"
+                  : ""
+              }`}
+            >
+              {isMatchRequestsVariant
+                ? renderMatchRequestsFilters()
+                : renderDefaultFilters()}
+
+              <div
+                className={`shrink-0 border-t border-gray-200 bg-white ${
+                  isMatchRequestsVariant ? "px-4 py-4" : "p-5"
+                }`}
+              >
+                {typeof resultCount === "number" && (
+                  <div className="mb-3 text-xs text-gray-500">
+                    Showing {resultCount} request{resultCount === 1 ? "" : "s"}
+                  </div>
+                )}
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={resetAll}
+                    className="flex-1 cursor-pointer rounded-full border border-gray-200 bg-white py-2 text-sm font-medium text-gray-700 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-gray-50 hover:shadow-sm disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-white disabled:hover:shadow-none"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    type="button"
+                    onClick={applyFilters}
+                    className="flex-1 cursor-pointer rounded-full bg-blue-600 py-2 text-sm font-medium text-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-sm disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-blue-600 disabled:hover:shadow-none"
+                  >
+                    {isMatchRequestsVariant ? "Match" : "Apply"}
+                  </button>
+                </div>
+              </div>
+            </fieldset>
+
+            {isMatchRequestsApplying ? (
+              <div
+                className="absolute inset-0 z-10 flex items-center justify-center bg-white/50"
+                aria-live="polite"
+                aria-label="Matching requests"
+              >
+                <Spinner className="size-8 text-blue-600" />
+              </div>
+            ) : null}
+          </div>
         </div>
+
+        <style jsx>{`
+          @keyframes slideIn {
+            from {
+              transform: translateX(100%);
+              opacity: 0;
+            }
+            to {
+              transform: translateX(0%);
+              opacity: 1;
+            }
+          }
+          .animate-slideIn {
+            animation: slideIn 0.25s ease-out forwards;
+          }
+        `}</style>
       </div>
 
-      <style jsx>{`
-        @keyframes slideIn {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0%);
-            opacity: 1;
-          }
-        }
-        .animate-slideIn {
-          animation: slideIn 0.25s ease-out forwards;
-        }
-      `}</style>
-    </div>
+      {isMatchRequestsVariant ? (
+        <NeighborhoodModal
+          isOpen={isNeighborhoodMapOpen}
+          onClose={() => setIsNeighborhoodMapOpen(false)}
+          selectedBorough={selectedBoroughForMap}
+          selectionMode="single"
+          selectedAreasByBorough={selectedAreasByBorough}
+          onApplySelection={applyExactNeighborhood}
+        />
+      ) : null}
+    </>
   );
 }

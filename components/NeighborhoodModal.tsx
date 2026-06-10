@@ -15,10 +15,23 @@ import {
   removeNeighborhood,
 } from "@/store/slices/preferenceSlice";
 
+type Borough = "Manhattan" | "Brooklyn";
+type SelectionMode = "multiple" | "single";
+type SelectedAreasByBorough = Record<Borough, string[]>;
+
+export interface NeighborhoodSelection {
+  borough: Borough;
+  key: string;
+  label: string;
+}
+
 interface NeighborhoodModalProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedBorough: "Manhattan" | "Brooklyn" | "";
+  selectedBorough: Borough | "";
+  selectionMode?: SelectionMode;
+  selectedAreasByBorough?: Partial<SelectedAreasByBorough>;
+  onApplySelection?: (selection: NeighborhoodSelection | null) => void;
 }
 
 // Dynamic imports for Leaflet
@@ -59,7 +72,11 @@ export default function NeighborhoodModal({
   isOpen,
   onClose,
   selectedBorough,
+  selectionMode = "multiple",
+  selectedAreasByBorough,
+  onApplySelection,
 }: NeighborhoodModalProps) {
+  const isSingleSelection = selectionMode === "single";
   const dispatch = useDispatch();
   const locations = useSelector(
     (state: RootState) => state.preferences.locations
@@ -67,7 +84,7 @@ export default function NeighborhoodModal({
 
   // LOCAL UI STATE (track selections per borough so they stay highlighted)
   const [state, setState] = useState({
-    activeTab: "Manhattan" as "Manhattan" | "Brooklyn",
+    activeTab: "Manhattan" as Borough,
     selectedAreasByBorough: {
       Manhattan: [] as string[],
       Brooklyn: [] as string[],
@@ -95,8 +112,10 @@ export default function NeighborhoodModal({
   useEffect(() => {
     if (!isOpen) return; // prevent unnecessary effects
 
-    const getSelections = (borough: "Manhattan" | "Brooklyn") =>
-      locations.find((loc) => loc.borough === borough)?.neighborhoods ?? [];
+    const getSelections = (borough: Borough) =>
+      selectedAreasByBorough?.[borough] ??
+      locations.find((loc) => loc.borough === borough)?.neighborhoods ??
+      [];
 
     // determine which tab to show
     const newTab = selectedBorough === "Brooklyn" ? "Brooklyn" : "Manhattan";
@@ -110,9 +129,12 @@ export default function NeighborhoodModal({
         Brooklyn: getSelections("Brooklyn"),
       },
     });
-  }, [isOpen, locations, selectedBorough]); // ONLY trigger when modal becomes visible
+  }, [isOpen, locations, selectedAreasByBorough, selectedBorough]); // ONLY trigger when modal becomes visible
 
   const currentSelections = state.selectedAreasByBorough[state.activeTab];
+  const totalSelectionCount =
+    state.selectedAreasByBorough.Manhattan.length +
+    state.selectedAreasByBorough.Brooklyn.length;
   const activeBoroughData = boroughNeighborhoods[state.activeTab];
 
   const geometryByLabel = useMemo(() => {
@@ -160,19 +182,57 @@ export default function NeighborhoodModal({
   if (!isOpen) return null;
 
   // -------------------------------------------------------
-  // Toggle single neighborhood
+  const findItemByKey = (borough: Borough, key: string) => {
+    for (const section of boroughNeighborhoods[borough].sections) {
+      const item = section.items.find((sectionItem) => sectionItem.key === key);
+      if (item) return item;
+    }
+
+    return null;
+  };
+
+  const firstSelectedNeighborhood = (): NeighborhoodSelection | null => {
+    for (const borough of ["Manhattan", "Brooklyn"] as const) {
+      const key = state.selectedAreasByBorough[borough][0];
+      if (!key) continue;
+
+      const item = findItemByKey(borough, key);
+
+      return {
+        borough,
+        key,
+        label: item?.label ?? key,
+      };
+    }
+
+    return null;
+  };
+
+  // Toggle neighborhood
   // -------------------------------------------------------
   const handleToggleArea = (key: string) => {
     setState((prev) => ({
       ...prev,
-      selectedAreasByBorough: {
-        ...prev.selectedAreasByBorough,
-        [prev.activeTab]: prev.selectedAreasByBorough[prev.activeTab].includes(
-          key
-        )
-          ? prev.selectedAreasByBorough[prev.activeTab].filter((x) => x !== key)
-          : [...prev.selectedAreasByBorough[prev.activeTab], key],
-      },
+      selectedAreasByBorough: isSingleSelection
+        ? {
+            Manhattan: [],
+            Brooklyn: [],
+            [prev.activeTab]: prev.selectedAreasByBorough[
+              prev.activeTab
+            ].includes(key)
+              ? []
+              : [key],
+          }
+        : {
+            ...prev.selectedAreasByBorough,
+            [prev.activeTab]: prev.selectedAreasByBorough[
+              prev.activeTab
+            ].includes(key)
+              ? prev.selectedAreasByBorough[prev.activeTab].filter(
+                  (x) => x !== key
+                )
+              : [...prev.selectedAreasByBorough[prev.activeTab], key],
+          },
     }));
   };
 
@@ -180,6 +240,12 @@ export default function NeighborhoodModal({
   // Apply button → Sync Redux
   // -------------------------------------------------------
   const handleApply = () => {
+    if (onApplySelection) {
+      onApplySelection(firstSelectedNeighborhood());
+      onClose();
+      return;
+    }
+
     (["Manhattan", "Brooklyn"] as const).forEach((borough) => {
       const desired = state.selectedAreasByBorough[borough];
       const existing =
@@ -211,7 +277,9 @@ export default function NeighborhoodModal({
 
     setState((prev) => ({
       ...prev,
-      selectedAreasByBorough: { ...prev.selectedAreasByBorough, [borough]: [] },
+      selectedAreasByBorough: isSingleSelection
+        ? { Manhattan: [], Brooklyn: [] }
+        : { ...prev.selectedAreasByBorough, [borough]: [] },
     }));
   };
 
@@ -219,6 +287,8 @@ export default function NeighborhoodModal({
     items: { key: string; label: string }[],
     shouldSelect: boolean
   ) => {
+    if (isSingleSelection) return;
+
     setState((prev) => {
       const current = new globalThis.Set(
         prev.selectedAreasByBorough[prev.activeTab]
@@ -259,8 +329,13 @@ export default function NeighborhoodModal({
               Select Your Neighborhoods
             </h2>
             <p className="text-xs sm:text-sm text-gray-600 mt-1">
-              {currentSelections.length} area
-              {currentSelections.length !== 1 ? "s" : ""} selected
+              {isSingleSelection
+                ? `${totalSelectionCount} area${
+                    totalSelectionCount !== 1 ? "s" : ""
+                  } selected`
+                : `${currentSelections.length} area${
+                    currentSelections.length !== 1 ? "s" : ""
+                  } selected`}
             </p>
           </div>
 
@@ -355,20 +430,22 @@ export default function NeighborhoodModal({
               {activeBoroughData.sections.map((section) => (
                 <div key={section.title} className="sm:col-span-2">
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <input
-                      type="checkbox"
-                      checked={section.items.every((item) =>
-                        currentSelections.includes(item.key)
-                      )}
-                      onChange={(event) =>
-                        handleToggleSection(
-                          section.items,
-                          event.target.checked
-                        )
-                      }
-                      className="w-4 h-4 shrink-0 accent-blue-600"
-                      aria-label={`Select ${section.title}`}
-                    />
+                    {!isSingleSelection ? (
+                      <input
+                        type="checkbox"
+                        checked={section.items.every((item) =>
+                          currentSelections.includes(item.key)
+                        )}
+                        onChange={(event) =>
+                          handleToggleSection(
+                            section.items,
+                            event.target.checked
+                          )
+                        }
+                        className="w-4 h-4 shrink-0 accent-blue-600"
+                        aria-label={`Select ${section.title}`}
+                      />
+                    ) : null}
                     <p className="text-xs sm:text-sm font-semibold text-gray-700 text-center">
                       {section.title}
                     </p>
@@ -387,7 +464,12 @@ export default function NeighborhoodModal({
                           }`}
                         >
                           <input
-                            type="checkbox"
+                            type={isSingleSelection ? "radio" : "checkbox"}
+                            name={
+                              isSingleSelection
+                                ? "match-search-neighborhood"
+                                : undefined
+                            }
                             checked={isChecked}
                             onChange={() => handleToggleArea(item.key)}
                             className="w-4 h-4 accent-blue-600"
