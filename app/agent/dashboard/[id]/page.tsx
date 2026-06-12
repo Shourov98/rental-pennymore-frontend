@@ -629,10 +629,10 @@ export default function AgentRenterRequestDetailsPage() {
   }, [currentUserId, renterInfo, request]);
   const ownerRepresentationRegisteredAgent =
     request?.raw?.ownerRepresentationRegisteredAgent;
-  const canViewOwnerRepresentationMatches =
+  const isRegisteredAgentForRequest =
     isCurrentAgentRegisteredForRequest(request?.raw, currentUserId ?? null);
   const ownerRepresentationMatches =
-    canViewOwnerRepresentationMatches
+    isRegisteredAgentForRequest
       ? request?.raw?.ownerRepresentationMatches ?? []
       : [];
   const canRequestAccess =
@@ -655,7 +655,8 @@ export default function AgentRenterRequestDetailsPage() {
     grantAccessEnabled && isRenterRepresentationMatched;
   const canAddAdditionalOpportunity =
     shouldShowAddOpportunity && isRegistrationDisclosureConfirmed;
-  const isAccessRequestLocked = request?.raw?.shareConsent === false;
+  const isAccessRequestLocked =
+    request?.raw?.shareConsent === false && !isRegisteredAgentForRequest;
   const confirmRequestScope =
     request?.raw?.scope?.trim() || request?.scopeLabel?.trim() || "Request";
   const isAllMarketRequest = confirmRequestScope === "All Market";
@@ -722,7 +723,11 @@ export default function AgentRenterRequestDetailsPage() {
       };
       if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
-      if (grantAccessEnabled || representationType === "owner_representation") {
+      if (
+        grantAccessEnabled ||
+        isRegisteredAgentForRequest ||
+        representationType === "owner_representation"
+      ) {
         const response = await fetch(
           `${API_BASE_URL}/pre-market/agent/${requestId}/match`,
           {
@@ -1209,7 +1214,12 @@ export default function AgentRenterRequestDetailsPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (!requestId || isDisabled || isSubmitting) {
+                    if (
+                      !requestId ||
+                      isDisabled ||
+                      isAccessRequestLocked ||
+                      isSubmitting
+                    ) {
                       return;
                     }
                     setSelectedRepresentationType("");
