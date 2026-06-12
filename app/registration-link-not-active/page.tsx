@@ -3,6 +3,8 @@ import Link from "next/link";
 export default function RegistrationLinkNotActivePage() {
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-10">
+      {" "}
+      {/* Container for the content, centered and with a max width */}
       <div className="mx-auto max-w-xl rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
         <h1 className="text-2xl font-semibold text-gray-900">
           Registration Link Not Active
