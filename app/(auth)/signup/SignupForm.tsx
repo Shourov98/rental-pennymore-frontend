@@ -332,6 +332,11 @@ export default function SignupForm({ role }: { role: SignupRole }) {
           <p className="mt-2 text-sm font-semibold text-action">
             Complete your request in less than 2 minutes
           </p>
+          <div className="mt-3 flex justify-center">
+            <span className="inline-flex items-center rounded-full border border-[#CFE1FF] bg-blue-400 px-4 py-1 text-xs font-semibold text-white sm:text-sm">
+              Renter
+            </span>
+          </div>
         </div>
       ) : (
         <div className="flex justify-center mb-2">

@@ -1,3 +1,9 @@
+import {
+  formatBathroomRange,
+  formatBedroomRange,
+  formatBedsBathsRange,
+} from "@/lib/bedBathFormat";
+
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export interface ApiAgentMatch {
@@ -110,6 +116,7 @@ export interface NormalizedAgentMatch {
   priceMaxLabel: string;
   bedroomsLabel: string;
   bathroomsLabel: string;
+  bedsBathsLabel: string;
   scopeLabel: string;
   visibilityLabel: string;
   isPrivateVisibility: boolean;
@@ -165,12 +172,6 @@ const formatLocations = (locations?: ApiAgentMatch["locations"]) => {
   return boroughs.length ? boroughs.join(", ") : "Not specified";
 };
 
-const formatBedrooms = (bedrooms?: string[]) =>
-  bedrooms?.length ? bedrooms.join(", ") : "Not specified";
-
-const formatBathrooms = (bathrooms?: string[]) =>
-  bathrooms?.length ? bathrooms.join(", ") : "Not specified";
-
 const formatScope = (scope?: string) => {
   const value = scope?.trim();
   return value ? value : "Not specified";
@@ -216,8 +217,9 @@ export const normalizeAgentMatch = (
     boroughsLabel: formatLocations(req.locations),
     dateLabel: formatDate(req.createdAt || req.movingDateRange?.earliest),
     priceMaxLabel: formatCurrency(req.priceRange?.max ?? req.priceRange?.min),
-    bedroomsLabel: formatBedrooms(req.bedrooms),
-    bathroomsLabel: formatBathrooms(req.bathrooms),
+    bedroomsLabel: formatBedroomRange(req.bedrooms),
+    bathroomsLabel: formatBathroomRange(req.bathrooms),
+    bedsBathsLabel: formatBedsBathsRange(req.bedrooms, req.bathrooms),
     scopeLabel: formatScope(req.scope),
     visibilityLabel,
     isPrivateVisibility,
@@ -254,7 +256,12 @@ export const readCachedAgentMatches = (): NormalizedAgentMatch[] => {
   const stored = sessionStorage.getItem(CACHE_KEY);
   if (!stored) return [];
   try {
-    return JSON.parse(stored) as NormalizedAgentMatch[];
+    return (JSON.parse(stored) as NormalizedAgentMatch[]).map((request) => ({
+      ...request,
+      bedsBathsLabel:
+        request.bedsBathsLabel ??
+        formatBedsBathsRange(request.raw?.bedrooms, request.raw?.bathrooms),
+    }));
   } catch {
     return [];
   }

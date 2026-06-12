@@ -65,18 +65,18 @@ const bathroomQueryLabels: Record<number, string> = {
 };
 
 const missingFeatureIcons: Record<string, string> = {
-  bedrooms: "/icons/match/bedrooms.svg",
-  bathrooms: "/icons/match/bathrooms.svg",
-  rent: "/icons/match/rent.svg",
-  location: "/icons/match/location.svg",
-  moveDateTotalMiss: "/icons/match/move-date-total-miss.svg",
-  moveDateNearMiss: "/icons/match/move-date-near-miss.svg",
-  laundryInUnit: "/icons/match/laundry-in-unit.svg",
-  privateOutdoorSpace: "/icons/match/private-outdoor-space.svg",
-  dishwasher: "/icons/match/dishwasher.svg",
-  doorman: "/icons/match/doorman.svg",
-  elevator: "/icons/match/elevator.svg",
-  laundryInBuilding: "/icons/match/laundry-in-building.svg",
+  bedrooms: "/icons/match/bedrooms.png",
+  bathrooms: "/icons/match/bathrooms.png",
+  rent: "/icons/match/rent.png",
+  location: "/icons/match/location.png",
+  moveDateTotalMiss: "/icons/match/move-date-total-miss.png",
+  moveDateNearMiss: "/icons/match/move-date-near-miss.png",
+  laundryInUnit: "/icons/match/laundry-in-unit.png",
+  privateOutdoorSpace: "/icons/match/private-outdoor-space.png",
+  dishwasher: "/icons/match/dishwasher.png",
+  doorman: "/icons/match/doorman.png",
+  elevator: "/icons/match/elevator.png",
+  laundryInBuilding: "/icons/match/laundry-in-building.png",
 };
 
 const missingFeatureLegend = [
@@ -1286,7 +1286,7 @@ export default function AgentRenterRequestsPage() {
               <div className="overflow-x-auto">
                 <table
                   className={`w-full text-sm ${
-                    isMatchResultsMode ? "min-w-[1720px]" : "min-w-[1320px]"
+                    isMatchResultsMode ? "min-w-[1640px]" : "min-w-[1240px]"
                   }`}
                 >
                   <thead className="bg-blue-100 text-gray-800">
@@ -1294,7 +1294,7 @@ export default function AgentRenterRequestsPage() {
                       <tr>
                         <th className="py-3 px-5 text-left">Date</th>
                         <th className="py-3 px-5 text-left">
-                          <label className="flex items-center gap-2">
+                          <label className="flex items-center">
                             <input
                               type="checkbox"
                               checked={
@@ -1307,7 +1307,6 @@ export default function AgentRenterRequestsPage() {
                               className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                               aria-label="Select all visible match results"
                             />
-                            <span>Select</span>
                           </label>
                         </th>
                         <th className="py-3 px-5 text-left">Request</th>
@@ -1319,8 +1318,7 @@ export default function AgentRenterRequestsPage() {
                         <th className="py-3 px-5 text-left">Visibility</th>
                         <th className="py-3 px-5 text-left">Borough</th>
                         <th className="py-3 px-5 text-left">Price (Max)</th>
-                        <th className="py-3 px-5 text-left">Beds</th>
-                        <th className="py-3 px-5 text-left">Baths</th>
+                        <th className="py-3 px-5 text-left">Beds / Baths</th>
                         <th className="py-3 px-5 text-left">Status</th>
                         <th className="py-3 px-5 text-right">Actions</th>
                       </tr>
@@ -1333,8 +1331,7 @@ export default function AgentRenterRequestsPage() {
                         <th className="py-3 px-5 text-left">Visibility</th>
                         <th className="py-3 px-5 text-left">Borough</th>
                         <th className="py-3 px-5 text-left">Price (Max)</th>
-                        <th className="py-3 px-5 text-left">Beds</th>
-                        <th className="py-3 px-5 text-left">Baths</th>
+                        <th className="py-3 px-5 text-left">Beds / Baths</th>
                         <th className="py-3 px-5 text-left">Status</th>
                         <th className="py-3 px-5 text-center">
                           Registration / Disclosure
@@ -1420,20 +1417,24 @@ export default function AgentRenterRequestsPage() {
                                   <div className="flex items-center gap-2">
                                     {req.matchMissingFeatures
                                       .slice(0, 3)
-                                      .map((feature) => (
-                                        <Image
-                                          key={feature.code}
-                                          src={
-                                            missingFeatureIcons[feature.code] ??
-                                            "/icons/alert-circle.svg"
-                                          }
-                                          alt={feature.label}
-                                          width={34}
-                                          height={34}
-                                          title={feature.description}
-                                          className="h-8 w-8 object-contain opacity-70"
-                                        />
-                                      ))}
+                                      .map((feature) => {
+                                        const iconSrc =
+                                          missingFeatureIcons[feature.code];
+
+                                        if (!iconSrc) return null;
+
+                                        return (
+                                          <Image
+                                            key={feature.code}
+                                            src={iconSrc}
+                                            alt={feature.label}
+                                            width={34}
+                                            height={34}
+                                            title={feature.description}
+                                            className="h-8 w-8 object-contain"
+                                          />
+                                        );
+                                      })}
                                   </div>
                                 ) : (
                                   <span className="text-xs font-semibold text-amber-500">
@@ -1555,8 +1556,7 @@ export default function AgentRenterRequestsPage() {
                             </div>
                           </td>
                           <td className="py-3 px-5">{req.priceMaxLabel}</td>
-                          <td className="py-3 px-5">{req.bedroomsLabel}</td>
-                          <td className="py-3 px-5">{req.bathroomsLabel}</td>
+                          <td className="py-3 px-5">{req.bedsBathsLabel}</td>
                           <td className="py-3 px-5">
                             {(() => {
                               const rawStatus = isMatchResultsMode
@@ -1724,7 +1724,7 @@ export default function AgentRenterRequestsPage() {
                           aria-hidden="true"
                           width={44}
                           height={44}
-                          className="h-11 w-11 object-contain opacity-60"
+                          className="h-10 w-10 shrink-0 object-contain"
                         />
                         <div>
                           <p className="font-semibold text-gray-700">

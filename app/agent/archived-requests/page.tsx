@@ -228,7 +228,7 @@ export default function AgentArchivedRequestsPage() {
         <>
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-[1320px] w-full text-sm">
+              <table className="min-w-[1240px] w-full text-sm">
                 <thead className="bg-blue-100 text-gray-800">
                   <tr>
                     <th className="py-3 px-5 text-left">Date</th>
@@ -238,8 +238,7 @@ export default function AgentArchivedRequestsPage() {
                     <th className="py-3 px-5 text-left">Visibility</th>
                     <th className="py-3 px-5 text-left">Borough</th>
                     <th className="py-3 px-5 text-left">Price (Max)</th>
-                    <th className="py-3 px-5 text-left">Beds</th>
-                    <th className="py-3 px-5 text-left">Baths</th>
+                    <th className="py-3 px-5 text-left">Beds / Baths</th>
                     <th className="py-3 px-5 text-left">Status</th>
                     <th className="py-3 px-5 text-center">
                       Registration / Disclosure
@@ -305,8 +304,7 @@ export default function AgentArchivedRequestsPage() {
                           {request.boroughsLabel}
                         </td>
                         <td className="py-3 px-5">{request.priceMaxLabel}</td>
-                        <td className="py-3 px-5">{request.bedroomsLabel}</td>
-                        <td className="py-3 px-5">{request.bathroomsLabel}</td>
+                        <td className="py-3 px-5">{request.bedsBathsLabel}</td>
                         <td className="py-3 px-5">
                           <span className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
                             Archived

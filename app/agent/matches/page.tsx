@@ -524,7 +524,7 @@ export default function AgentMatchesPage() {
           {hasFilteredResults ? (
             <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="min-w-[1320px] w-full text-sm">
+                <table className="min-w-[1240px] w-full text-sm">
                   <thead className="bg-blue-100 text-gray-800">
                     <tr>
                       <th className="py-3 px-5 text-left">Date</th>
@@ -534,8 +534,7 @@ export default function AgentMatchesPage() {
                       <th className="py-3 px-5 text-left">Visibility</th>
                       <th className="py-3 px-5 text-left">Borough</th>
                       <th className="py-3 px-5 text-left">Price (Max)</th>
-                      <th className="py-3 px-5 text-left">Beds</th>
-                      <th className="py-3 px-5 text-left">Baths</th>
+                      <th className="py-3 px-5 text-left">Beds / Baths</th>
                       <th className="py-3 px-5 text-left">Status</th>
                       <th className="py-3 px-5 text-center">
                         Registration / Disclosure
@@ -658,8 +657,7 @@ export default function AgentMatchesPage() {
                             {req.boroughsLabel}
                           </td>
                           <td className="py-3 px-5">{req.priceMaxLabel}</td>
-                          <td className="py-3 px-5">{req.bedroomsLabel}</td>
-                          <td className="py-3 px-5">{req.bathroomsLabel}</td>
+                          <td className="py-3 px-5">{req.bedsBathsLabel}</td>
                           <td className="py-3 px-5">
                             <span
                               className={`px-3 py-1 rounded-full text-xs font-semibold ${

@@ -40,6 +40,50 @@ type OwnerRepresentationRegisteredAgent =
     NormalizedAgentRequest["raw"]["ownerRepresentationRegisteredAgent"]
   >;
 const OPPORTUNITY_DETAILS_MAX_LENGTH = 300;
+const RISKY_OPPORTUNITY_DETAIL_PHRASES = [
+  "I have a listing",
+  "exclusive",
+  "my owner",
+  "my landlord",
+  "my building",
+  "private listing",
+  "only through me",
+  "off-market listing",
+  "guaranteed",
+  "no one else has access",
+];
+const OPPORTUNITY_DETAILS_RISKY_WORDING_MESSAGE =
+  "Please revise this wording to use neutral, factual language. The message should not suggest that you represent the owner unless that has been properly selected and disclosed.";
+
+const riskyOpportunityDetailsPattern = () =>
+  new RegExp(
+    `(${RISKY_OPPORTUNITY_DETAIL_PHRASES.map(escapeRegExp).join("|")})`,
+    "gi",
+  );
+
+const hasRiskyOpportunityDetailsWording = (value: string) =>
+  riskyOpportunityDetailsPattern().test(value);
+
+const renderHighlightedOpportunityDetails = (value: string) => {
+  const pattern = riskyOpportunityDetailsPattern();
+  const parts = value.split(pattern);
+
+  return parts.map((part, index) =>
+    RISKY_OPPORTUNITY_DETAIL_PHRASES.some(
+      (phrase) => phrase.toLowerCase() === part.toLowerCase(),
+    ) ? (
+      <mark key={`${part}-${index}`} className="bg-red-50 text-red-600">
+        {part}
+      </mark>
+    ) : (
+      <span key={`${part}-${index}`}>{part}</span>
+    ),
+  );
+};
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 const opportunityDetailsHelperText: Record<RepresentationType, string> = {
   renter_representation:
@@ -597,6 +641,20 @@ export default function AgentRenterRequestDetailsPage() {
   const listingStatus = request?.raw?.listingStatus || "";
   const isListingMatched = listingStatus.toLowerCase() === "matched";
   const grantAccessEnabled = hasGrantAccess === true;
+  const grantAccessStatus = request?.raw?.grantAccessStatus?.toLowerCase();
+  const isRenterRepresentationMatched =
+    isListingMatched &&
+    (grantAccessStatus === "free" || grantAccessStatus === "paid") &&
+    request?.representation_type !== "owner_representation" &&
+    request?.raw?.representation_type !== "owner_representation";
+  const isRegistrationDisclosureConfirmed = Boolean(
+    request?.registrationDisclosureConfirmed ||
+      request?.raw?.registrationDisclosureConfirmed,
+  );
+  const shouldShowAddOpportunity =
+    grantAccessEnabled && isRenterRepresentationMatched;
+  const canAddAdditionalOpportunity =
+    shouldShowAddOpportunity && isRegistrationDisclosureConfirmed;
   const isAccessRequestLocked = request?.raw?.shareConsent === false;
   const confirmRequestScope =
     request?.raw?.scope?.trim() || request?.scopeLabel?.trim() || "Request";
@@ -615,7 +673,7 @@ export default function AgentRenterRequestDetailsPage() {
   const paymentCurrency = request?.raw?.payment?.currency || "USD";
 
   const isDisabled = grantAccessEnabled
-    ? isListingMatched
+    ? isListingMatched && !canAddAdditionalOpportunity
     : canRequestAccess === false || isSubmitting
       ? true
       : false;
@@ -644,10 +702,18 @@ export default function AgentRenterRequestDetailsPage() {
   const handleMatchRequest = async (
     representationType: RepresentationType = "renter_representation",
     details: string = "",
+    additionalOpportunity: boolean = false,
   ) => {
     if (!requestId || isDisabled || isSubmitting) return;
     setStatusMessage(null);
     const normalizedOpportunityDetails = details.trim().slice(0, 300);
+    if (hasRiskyOpportunityDetailsWording(normalizedOpportunityDetails)) {
+      setStatusMessage({
+        type: "error",
+        message: OPPORTUNITY_DETAILS_RISKY_WORDING_MESSAGE,
+      });
+      return;
+    }
 
     try {
       setIsSubmitting(true);
@@ -664,6 +730,7 @@ export default function AgentRenterRequestDetailsPage() {
             headers,
             body: JSON.stringify({
               representation_type: representationType,
+              ...(additionalOpportunity ? { additionalOpportunity: true } : {}),
               ...(normalizedOpportunityDetails
                 ? { opportunityDetails: normalizedOpportunityDetails }
                 : {}),
@@ -737,7 +804,9 @@ export default function AgentRenterRequestDetailsPage() {
           type: "success",
           message:
             data?.message ||
-            (representationType === "owner_representation"
+            (additionalOpportunity
+              ? "Additional opportunity sent."
+              : representationType === "owner_representation"
               ? "Owner representation selection saved."
               : "Match request created."),
         });
@@ -879,6 +948,8 @@ export default function AgentRenterRequestDetailsPage() {
       : opportunityDetailsCount >= 240
         ? "text-orange-400"
         : "text-[#999999]";
+  const hasRiskyOpportunityDetails =
+    hasRiskyOpportunityDetailsWording(opportunityDetails);
 
   return (
     <section className="flex-1 bg-gray-50 h-full min-h-0 px-4 md:px-8 py-6 overflow-y-auto">
@@ -1153,7 +1224,9 @@ export default function AgentRenterRequestDetailsPage() {
                   }`}
                 >
                   {grantAccessEnabled
-                    ? isListingMatched
+                    ? shouldShowAddOpportunity
+                      ? "Add Opportunity"
+                      : isListingMatched
                       ? "Already Matched"
                       : isSubmitting
                         ? "Matching..."
@@ -1318,7 +1391,15 @@ export default function AgentRenterRequestDetailsPage() {
                 <p className="mt-1 text-xs leading-5 text-gray-500">
                   {opportunityDetailsHelperText[selectedRepresentationType]}
                 </p>
-                <div className="relative mt-3">
+                <div className="relative mt-3 rounded-lg bg-white">
+                  {hasRiskyOpportunityDetails ? (
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 whitespace-pre-wrap break-words rounded-lg px-3 py-2 pb-7 text-sm leading-5 text-gray-800"
+                    >
+                      {renderHighlightedOpportunityDetails(opportunityDetails)}
+                    </div>
+                  ) : null}
                   <textarea
                     rows={3}
                     maxLength={OPPORTUNITY_DETAILS_MAX_LENGTH}
@@ -1332,14 +1413,24 @@ export default function AgentRenterRequestDetailsPage() {
                       )
                     }
                     placeholder="e.g., 123 W 85th St — Available Thursday at 3pm."
-                    className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 pb-7 text-sm text-gray-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    aria-invalid={hasRiskyOpportunityDetails}
+                    className={`relative z-10 w-full resize-none rounded-lg border px-3 py-2 pb-7 text-sm leading-5 outline-none transition focus:ring-2 ${
+                      hasRiskyOpportunityDetails
+                        ? "border-red-300 bg-transparent text-transparent caret-gray-800 focus:border-red-500 focus:ring-red-100"
+                        : "border-gray-200 text-gray-800 focus:border-blue-500 focus:ring-blue-100"
+                    }`}
                   />
                   <span
-                    className={`absolute bottom-2 right-3 text-xs ${opportunityDetailsCounterClass}`}
+                    className={`absolute bottom-2 right-3 z-20 text-xs ${opportunityDetailsCounterClass}`}
                   >
                     {opportunityDetailsCount} / {OPPORTUNITY_DETAILS_MAX_LENGTH}
                   </span>
                 </div>
+                {hasRiskyOpportunityDetails ? (
+                  <p className="mt-2 text-xs leading-5 text-red-600">
+                    {OPPORTUNITY_DETAILS_RISKY_WORDING_MESSAGE}
+                  </p>
+                ) : null}
               </div>
             ) : null}
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
@@ -1357,7 +1448,9 @@ export default function AgentRenterRequestDetailsPage() {
               <button
                 type="button"
                 onClick={() => {
-                  if (!selectedRepresentationType) return;
+                  if (!selectedRepresentationType || hasRiskyOpportunityDetails) {
+                    return;
+                  }
 
                   setIsRepresentationOpen(false);
                   if (selectedRepresentationType === "owner_representation") {
@@ -1371,7 +1464,11 @@ export default function AgentRenterRequestDetailsPage() {
                   setIsConfirmChecked(false);
                   setIsConfirmOpen(true);
                 }}
-                disabled={!selectedRepresentationType || isSubmitting}
+                disabled={
+                  !selectedRepresentationType ||
+                  hasRiskyOpportunityDetails ||
+                  isSubmitting
+                }
                 className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 Confirm
@@ -1464,14 +1561,17 @@ export default function AgentRenterRequestDetailsPage() {
               <button
                 type="button"
                 onClick={() => {
-                  if (!isConfirmChecked) return;
+                  if (!isConfirmChecked || hasRiskyOpportunityDetails) return;
                   setIsConfirmOpen(false);
                   handleMatchRequest(
                     "renter_representation",
                     opportunityDetails,
+                    canAddAdditionalOpportunity,
                   );
                 }}
-                disabled={!isConfirmChecked || isSubmitting}
+                disabled={
+                  !isConfirmChecked || hasRiskyOpportunityDetails || isSubmitting
+                }
                 className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? "Sending..." : "Confirm & Send"}

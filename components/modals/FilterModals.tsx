@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, X } from "lucide-react";
+import { Calendar, ListChecks, X } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
@@ -341,37 +341,75 @@ export default function FilterModal({
     });
   };
 
-  const renderFeatureGroupHeader = (label: string, group: FeatureGroupKey) => (
-    <div className="flex items-center gap-2">
-      <button
-        type="button"
-        role="switch"
-        aria-checked={enabledFeatureGroups[group]}
-        onClick={() => toggleFeatureGroup(group)}
-        className={`relative inline-flex h-3.5 w-6 shrink-0 cursor-pointer items-center rounded-full transition-all duration-200 ease-out hover:scale-105 ${
-          enabledFeatureGroups[group] ? "bg-blue-500" : "bg-gray-300"
-        }`}
-      >
-        <span
-          className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition ${
-            enabledFeatureGroups[group] ? "translate-x-3" : "translate-x-0.5"
-          }`}
-        />
-      </button>
-      <p className="text-xs font-semibold text-gray-700">{label}</p>
-    </div>
-  );
+  const selectAllFeatureGroup = (
+    group: FeatureGroupKey,
+    options: FeatureOption[],
+    setter: React.Dispatch<React.SetStateAction<string[]>>,
+  ) => {
+    setEnabledFeatureGroups((prev) => ({ ...prev, [group]: true }));
+    setter(options.map((option) => option.value));
+  };
+
+  const renderFeatureGroupHeader = (
+    label: string,
+    group: FeatureGroupKey,
+    options: FeatureOption[],
+    selected: string[],
+    setter: React.Dispatch<React.SetStateAction<string[]>>,
+  ) => {
+    const isAllSelected = options.every((option) =>
+      selected.includes(option.value),
+    );
+
+    return (
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={enabledFeatureGroups[group]}
+            onClick={() => toggleFeatureGroup(group)}
+            className={`relative inline-flex h-3.5 w-6 shrink-0 cursor-pointer items-center rounded-full transition-all duration-200 ease-out hover:scale-105 ${
+              enabledFeatureGroups[group] ? "bg-blue-500" : "bg-gray-300"
+            }`}
+          >
+            <span
+              className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition ${
+                enabledFeatureGroups[group]
+                  ? "translate-x-3"
+                  : "translate-x-0.5"
+              }`}
+            />
+          </button>
+          <p className="min-w-0 text-xs font-semibold leading-4 text-gray-700 sm:whitespace-nowrap">
+            {label}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => selectAllFeatureGroup(group, options, setter)}
+          disabled={enabledFeatureGroups[group] && isAllSelected}
+          aria-label={`Select all ${label}`}
+          title={`Select all ${label}`}
+          className="inline-flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-gray-700 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-400 disabled:hover:translate-y-0"
+        >
+          <ListChecks className="h-3.5 w-3.5" aria-hidden="true" />
+        </button>
+      </div>
+    );
+  };
 
   const renderFeatureCheckboxes = (
     group: FeatureGroupKey,
     options: FeatureOption[],
     selected: string[],
     setter: React.Dispatch<React.SetStateAction<string[]>>,
+    listClassName = "mt-2 space-y-2",
   ) => {
     const isEnabled = enabledFeatureGroups[group];
 
     return (
-      <div className="mt-2 space-y-2">
+      <div className={listClassName}>
         {options.map((option) => (
           <label
             key={option.value}
@@ -400,7 +438,7 @@ export default function FilterModal({
       <div className="space-y-4">
         <div>
           <p className="mb-2 text-xs font-semibold text-gray-700">Borough</p>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {["Manhattan", "Brooklyn"].map((b) => (
               <button
                 type="button"
@@ -523,7 +561,7 @@ export default function FilterModal({
           <p className="mb-2 text-xs font-semibold text-gray-700">
             Moving Date
           </p>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <label className="block">
               <span className="mb-1 block text-[10px] font-medium text-gray-500">
                 Earliest
@@ -572,9 +610,15 @@ export default function FilterModal({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+        <div className="grid grid-cols-1 gap-y-4 sm:grid-cols-2 sm:gap-x-6">
           <div>
-            {renderFeatureGroupHeader("Unit Features", "unitFeatures")}
+            {renderFeatureGroupHeader(
+              "Unit Features",
+              "unitFeatures",
+              unitFeatureOptions,
+              unitFeatures,
+              setUnitFeatures,
+            )}
             {renderFeatureCheckboxes(
               "unitFeatures",
               unitFeatureOptions,
@@ -584,7 +628,13 @@ export default function FilterModal({
           </div>
 
           <div>
-            {renderFeatureGroupHeader("Building Features", "buildingFeatures")}
+            {renderFeatureGroupHeader(
+              "Building Features",
+              "buildingFeatures",
+              buildingFeatureOptions,
+              buildingFeatures,
+              setBuildingFeatures,
+            )}
             {renderFeatureCheckboxes(
               "buildingFeatures",
               buildingFeatureOptions,
@@ -597,6 +647,9 @@ export default function FilterModal({
             {renderFeatureGroupHeader(
               "Guarantors Policy",
               "guarantorRequired",
+              guarantorOptions,
+              guarantorRequired,
+              setGuarantorRequired,
             )}
             {renderFeatureCheckboxes(
               "guarantorRequired",
@@ -607,7 +660,13 @@ export default function FilterModal({
           </div>
 
           <div>
-            {renderFeatureGroupHeader("Pet Policy", "petPolicy")}
+            {renderFeatureGroupHeader(
+              "Pet Policy",
+              "petPolicy",
+              petPolicyOptions,
+              petPolicy,
+              setPetPolicy,
+            )}
             {renderFeatureCheckboxes(
               "petPolicy",
               petPolicyOptions,
@@ -621,34 +680,17 @@ export default function FilterModal({
           {renderFeatureGroupHeader(
             "Please check available features",
             "availableFeatures",
+            availableFeatureOptions,
+            availableFeatures,
+            setAvailableFeatures,
           )}
-          <div className="mt-2 grid grid-cols-2 gap-x-5 gap-y-2">
-            {availableFeatureOptions.map((option) => (
-              <label
-                key={option.value}
-                className={`flex cursor-pointer items-start gap-2 text-xs leading-4 ${
-                  enabledFeatureGroups.availableFeatures
-                    ? "text-gray-700"
-                    : "text-gray-400"
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={availableFeatures.includes(option.value)}
-                  disabled={!enabledFeatureGroups.availableFeatures}
-                  onChange={() =>
-                    toggleStringSelection(
-                      option.value,
-                      setAvailableFeatures,
-                      availableFeatures,
-                    )
-                  }
-                  className="mt-0.5 h-3.5 w-3.5 shrink-0 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-                />
-                <span>{option.label}</span>
-              </label>
-            ))}
-          </div>
+          {renderFeatureCheckboxes(
+            "availableFeatures",
+            availableFeatureOptions,
+            availableFeatures,
+            setAvailableFeatures,
+            "mt-2 grid grid-cols-1 gap-y-2 sm:grid-cols-2 sm:gap-x-5",
+          )}
         </div>
       </div>
     </div>
@@ -813,8 +855,10 @@ export default function FilterModal({
         }}
       >
         <div
-          className={`relative flex h-full max-w-[calc(100vw-24px)] animate-slideIn flex-col bg-white shadow-xl ${
-            isMatchRequestsVariant ? "w-[350px]" : "w-[85%] sm:w-[350px]"
+          className={`relative flex h-full animate-slideIn flex-col bg-white shadow-xl ${
+            isMatchRequestsVariant
+              ? "w-full sm:w-[410px]"
+              : "w-[85%] max-w-[calc(100vw-24px)] sm:w-[350px]"
           }`}
           onClick={(event) => event.stopPropagation()}
         >
