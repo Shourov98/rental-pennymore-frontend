@@ -36,6 +36,19 @@ const extractBorough = (message: string) => {
   return match?.[1];
 };
 
+const extractSubmittedLocation = (message: string) => {
+  const match = message.match(/was (?:submitted|posted) in\s+(.+?)\.?$/i);
+  return match?.[1]?.trim();
+};
+
+const formatNotificationTitle = (notification: NotificationItem) => {
+  if (notification.title?.toLowerCase().includes("new pre-market listing")) {
+    return "New Fee-Paying Renter Request Available";
+  }
+
+  return notification.title;
+};
+
 const formatWithBoldRequestName = (message: string, requestName?: string) => {
   if (!requestName) return message;
   const token = `"${requestName}"`;
@@ -76,21 +89,24 @@ const formatNotificationMessage = (notification: NotificationItem) => {
     };
   }
 
-  if (notification.title?.toLowerCase().includes("new pre-market listing")) {
-    const borough = extractBorough(message);
+  if (
+    notification.title?.toLowerCase().includes("new pre-market listing")
+    || notification.title?.toLowerCase().includes("new fee-paying renter request")
+  ) {
+    const borough = extractBorough(message) || extractSubmittedLocation(message);
     if (borough) {
       return {
         primary: (
           <>
-            A new listing{" "}
+            A new request{" "}
             {requestName ? (
               <span className="font-semibold text-gray-800">
                 &quot;{requestName}&quot;
               </span>
             ) : (
-              "has been posted"
+              "has been submitted"
             )}{" "}
-            was posted in{" "}
+            was submitted in{" "}
             <span className="font-semibold text-gray-800">{borough}</span>.
           </>
         ),
@@ -362,7 +378,7 @@ export default function NotificationsPage() {
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-[#0A093D] mb-1">
-                      {notification.title}
+                      {formatNotificationTitle(notification)}
                     </h3>
                     <p className="text-sm text-gray-700 leading-relaxed">
                       {primary}

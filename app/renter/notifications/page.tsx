@@ -35,6 +35,14 @@ const extractBorough = (message: string) => {
   return match?.[1];
 };
 
+const formatNotificationTitle = (notification: NotificationItem) => {
+  if (notification.title?.toLowerCase() === "pre-market request submitted") {
+    return "Request submitted.";
+  }
+
+  return notification.title;
+};
+
 const formatWithBoldRequestName = (message: string, requestName?: string) => {
   if (!requestName) return message;
   const token = `"${requestName}"`;
@@ -362,7 +370,7 @@ export default function NotificationsPage() {
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-[#0A093D] mb-1">
-                      {notification.title}
+                      {formatNotificationTitle(notification)}
                     </h3>
                     <p className="text-sm text-gray-700 leading-relaxed">
                       {primary}
