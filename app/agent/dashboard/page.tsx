@@ -39,14 +39,16 @@ type QuickSelectThreshold = "none" | "one" | "two" | "three" | "four" | "five";
 const quickSelectOptions: Array<{
   key: QuickSelectThreshold;
   label: string;
+  starCount: number;
+  suffix: string;
   threshold: number;
 }> = [
-  { key: "none", label: "None", threshold: Infinity },
-  { key: "one", label: "★ & above", threshold: 1 },
-  { key: "two", label: "★★ & above", threshold: 2 },
-  { key: "three", label: "★★★ & above", threshold: 3 },
-  { key: "four", label: "★★★★ & above", threshold: 4 },
-  { key: "five", label: "★★★★★ only", threshold: 5 },
+  { key: "none", label: "None", starCount: 0, suffix: "", threshold: Infinity },
+  { key: "one", label: "1 star & above", starCount: 1, suffix: "& above", threshold: 1 },
+  { key: "two", label: "2 stars & above", starCount: 2, suffix: "& above", threshold: 2 },
+  { key: "three", label: "3 stars & above", starCount: 3, suffix: "& above", threshold: 3 },
+  { key: "four", label: "4 stars & above", starCount: 4, suffix: "& above", threshold: 4 },
+  { key: "five", label: "5 stars only", starCount: 5, suffix: "only", threshold: 5 },
 ];
 
 const bedroomQueryLabels: Record<number, string> = {
@@ -65,19 +67,24 @@ const bathroomQueryLabels: Record<number, string> = {
 };
 
 const missingFeatureIcons: Record<string, string> = {
-  bedrooms: "/icons/match/bedrooms.png",
-  bathrooms: "/icons/match/bathrooms.png",
-  rent: "/icons/match/rent.png",
-  location: "/icons/match/location.png",
-  moveDateTotalMiss: "/icons/match/move-date-total-miss.png",
-  moveDateNearMiss: "/icons/match/move-date-near-miss.png",
-  laundryInUnit: "/icons/match/laundry-in-unit.png",
-  privateOutdoorSpace: "/icons/match/private-outdoor-space.png",
-  dishwasher: "/icons/match/dishwasher.png",
-  doorman: "/icons/match/doorman.png",
-  elevator: "/icons/match/elevator.png",
-  laundryInBuilding: "/icons/match/laundry-in-building.png",
+  bedrooms: "/icons/match/bedrooms.svg",
+  bathrooms: "/icons/match/bathrooms.svg",
+  rent: "/icons/match/rent.svg",
+  location: "/icons/match/location.svg",
+  moveDateTotalMiss: "/icons/match/move-date-total-miss.svg",
+  moveDateNearMiss: "/icons/match/move-date-near-miss.svg",
+  laundryInUnit: "/icons/match/laundry-in-unit.svg",
+  privateOutdoorSpace: "/icons/match/private-outdoor-space.svg",
+  dishwasher: "/icons/match/dishwasher.svg",
+  doorman: "/icons/match/doorman.svg",
+  elevator: "/icons/match/elevator.svg",
+  laundryInBuilding: "/icons/match/laundry-in-building.svg",
 };
+
+const starIconSrc = "/icons/match/star-filled.svg";
+const starEmptyIconSrc = "/icons/match/star-empty.svg";
+const preferenceFilledIconSrc = "/icons/match/preference-filled.svg";
+const preferenceEmptyIconSrc = "/icons/match/preference-empty.svg";
 
 const missingFeatureLegend = [
   ["rent", "Rent over budget", "1-10% above renter's budget"],
@@ -392,6 +399,56 @@ const createDemoRequests = () =>
     }),
   ].sort((a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0));
 
+const StarSvgIcon = ({
+  filled,
+  half = false,
+  size = 18,
+}: {
+  filled: boolean;
+  half?: boolean;
+  size?: number;
+}) => {
+  if (half) {
+    return (
+      <span
+        className="relative inline-block shrink-0 overflow-hidden"
+        style={{ width: size, height: size }}
+      >
+        <Image
+          src={starEmptyIconSrc}
+          alt=""
+          aria-hidden="true"
+          width={size}
+          height={size}
+          className="absolute inset-0 h-full w-full"
+        />
+        <span className="absolute inset-y-0 left-0 w-1/2 overflow-hidden">
+          <Image
+            src={starIconSrc}
+            alt=""
+            aria-hidden="true"
+            width={size}
+            height={size}
+            className="h-full max-w-none"
+            style={{ width: size, height: size }}
+          />
+        </span>
+      </span>
+    );
+  }
+
+  return (
+    <Image
+      src={filled ? starIconSrc : starEmptyIconSrc}
+      alt=""
+      aria-hidden="true"
+      width={size}
+      height={size}
+      className="shrink-0"
+    />
+  );
+};
+
 const renderStars = (rating?: number) => {
   const value = rating ?? 0;
   const full = Math.floor(value);
@@ -399,14 +456,29 @@ const renderStars = (rating?: number) => {
   const empty = Math.max(0, 5 - full - (hasHalf ? 1 : 0));
 
   return (
-    <span className="inline-flex min-w-[110px] items-center gap-0.5 text-lg leading-none">
+    <span className="inline-flex min-w-[110px] items-center gap-0.5 leading-none">
       {Array.from({ length: full }).map((_, index) => (
-        <span key={`full-${index}`} className="text-amber-400">★</span>
+        <StarSvgIcon key={`full-${index}`} filled />
       ))}
-      {hasHalf ? <span className="text-amber-400">★</span> : null}
+      {hasHalf ? <StarSvgIcon filled half /> : null}
       {Array.from({ length: empty }).map((_, index) => (
-        <span key={`empty-${index}`} className="text-gray-300">★</span>
+        <StarSvgIcon key={`empty-${index}`} filled={false} />
       ))}
+    </span>
+  );
+};
+
+const renderQuickSelectLabel = (option: (typeof quickSelectOptions)[number]) => {
+  if (option.key === "none") return option.label;
+
+  return (
+    <span className="inline-flex items-center gap-1">
+      <span className="inline-flex items-center gap-0.5">
+        {Array.from({ length: option.starCount }).map((_, index) => (
+          <StarSvgIcon key={index} filled size={12} />
+        ))}
+      </span>
+      <span>{option.suffix}</span>
     </span>
   );
 };
@@ -1233,13 +1305,14 @@ export default function AgentRenterRequestsPage() {
                     key={option.key}
                     type="button"
                     onClick={() => handleQuickSelect(option)}
+                    aria-label={option.label}
                     className={`rounded-md border px-3 py-1 text-xs transition ${
                       quickSelect === option.key
                         ? "border-blue-600 bg-blue-600 text-white"
                         : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
                     }`}
                   >
-                    {option.label}
+                    {renderQuickSelectLabel(option)}
                   </button>
                 ))}
                 {selectedRequestIds.length ? (
@@ -1318,7 +1391,8 @@ export default function AgentRenterRequestsPage() {
                         <th className="py-3 px-5 text-left">Visibility</th>
                         <th className="py-3 px-5 text-left">Borough</th>
                         <th className="py-3 px-5 text-left">Price (Max)</th>
-                        <th className="py-3 px-5 text-left">Beds / Baths</th>
+                        <th className="py-3 px-5 text-left">Beds</th>
+                        <th className="py-3 px-5 text-left">Baths</th>
                         <th className="py-3 px-5 text-left">Status</th>
                         <th className="py-3 px-5 text-right">Actions</th>
                       </tr>
@@ -1447,14 +1521,19 @@ export default function AgentRenterRequestsPage() {
                                   <div className="flex items-center gap-1.5">
                                     {req.matchPreferenceMatches.map(
                                       (matched, index) => (
-                                        <span
+                                        <Image
                                           key={index}
-                                          title={`Priority ${index + 1}`}
-                                          className={`h-5 w-5 border ${
+                                          src={
                                             matched
-                                              ? "border-amber-300 bg-gradient-to-b from-amber-300 to-yellow-700"
-                                              : "border-gray-300 bg-white"
-                                          }`}
+                                              ? preferenceFilledIconSrc
+                                              : preferenceEmptyIconSrc
+                                          }
+                                          alt=""
+                                          aria-hidden="true"
+                                          width={20}
+                                          height={20}
+                                          title={`Priority ${index + 1}`}
+                                          className="h-5 w-5"
                                         />
                                       ),
                                     )}
@@ -1556,7 +1635,14 @@ export default function AgentRenterRequestsPage() {
                             </div>
                           </td>
                           <td className="py-3 px-5">{req.priceMaxLabel}</td>
-                          <td className="py-3 px-5">{req.bedsBathsLabel}</td>
+                          {isMatchResultsMode ? (
+                            <>
+                              <td className="py-3 px-5">{req.bedroomsLabel}</td>
+                              <td className="py-3 px-5">{req.bathroomsLabel}</td>
+                            </>
+                          ) : (
+                            <td className="py-3 px-5">{req.bedsBathsLabel}</td>
+                          )}
                           <td className="py-3 px-5">
                             {(() => {
                               const rawStatus = isMatchResultsMode
@@ -1737,13 +1823,18 @@ export default function AgentRenterRequestsPage() {
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-1">
                         {[true, false, false, false].map((matched, index) => (
-                          <span
+                          <Image
                             key={index}
-                            className={`h-5 w-5 border ${
+                            src={
                               matched
-                                ? "border-amber-300 bg-gradient-to-b from-amber-300 to-yellow-700"
-                                : "border-gray-300 bg-white"
-                            }`}
+                                ? preferenceFilledIconSrc
+                                : preferenceEmptyIconSrc
+                            }
+                            alt=""
+                            aria-hidden="true"
+                            width={20}
+                            height={20}
+                            className="h-5 w-5"
                           />
                         ))}
                       </div>
