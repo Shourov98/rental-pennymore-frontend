@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { defaultPreferencesList } from "@/store/slices/preferenceSlice";
 
 import {
@@ -27,19 +27,49 @@ interface Props {
   onChange: (list: string[]) => void;
   initialList?: string[];
 }
+
+function areListsEqual(first: string[], second: string[]) {
+  return (
+    first.length === second.length &&
+    first.every((item, index) => item === second[index])
+  );
+}
+
+function normalizePreferencesList(list?: string[]) {
+  if (!list?.length) return defaultPreferencesList;
+
+  const defaultItems = new Set(defaultPreferencesList);
+  const knownItems = list.filter((item) => defaultItems.has(item));
+  const missingItems = defaultPreferencesList.filter(
+    (item) => !knownItems.includes(item),
+  );
+  const normalized = [...knownItems, ...missingItems];
+
+  return normalized.length === defaultPreferencesList.length
+    ? normalized
+    : defaultPreferencesList;
+}
+
 export default function PreferencesDragList({ onChange, initialList }: Props) {
-  const items = initialList?.length ? initialList : defaultPreferencesList;
+  const items = useMemo(
+    () => normalizePreferencesList(initialList),
+    [initialList],
+  );
   const hasSeededDefaults = useRef(false);
+
   useEffect(() => {
     if (initialList && initialList.length > 0) {
       hasSeededDefaults.current = false;
+      if (!areListsEqual(initialList, items)) {
+        onChange(items);
+      }
       return;
     }
     if (!hasSeededDefaults.current) {
       onChange(defaultPreferencesList);
       hasSeededDefaults.current = true;
     }
-  }, [initialList, onChange]);
+  }, [initialList, items, onChange]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -73,7 +103,9 @@ export default function PreferencesDragList({ onChange, initialList }: Props) {
       <h3 className="text-sm font-semibold text-gray-900 mb-1">
         Rank Importance of Features
       </h3>
-      <p className="text-xs text-gray-500 mb-4">Drag to reorder.</p>
+      <p className="text-xs text-gray-500 mb-4">
+        {"\u2192"} Drag to reorder and select your top 4 ranked priorities
+      </p>
 
       <DndContext
         sensors={sensors}
@@ -81,8 +113,9 @@ export default function PreferencesDragList({ onChange, initialList }: Props) {
         onDragEnd={handleDragEnd}
       >
         <SortableContext items={items} strategy={verticalListSortingStrategy}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
+          <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="relative space-y-2 pl-6 sm:pl-8">
+              <PriorityBracket />
               {leftCol.map((item) => (
                 <SortableItem
                   key={item}
@@ -105,6 +138,28 @@ export default function PreferencesDragList({ onChange, initialList }: Props) {
         </SortableContext>
       </DndContext>
     </div>
+  );
+}
+
+function PriorityBracket() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 28 176"
+      className="pointer-events-none absolute left-1 top-0 h-[176px] w-6 overflow-visible text-blue-600 drop-shadow-[0_1px_1px_rgba(37,99,235,0.2)]"
+      fill="none"
+      shapeRendering="geometricPrecision"
+    >
+      <path
+        d="M27 1.5H18C10 1.5 7.5 8.5 7.5 19V68C7.5 78.5 4.75 84.5 1.5 88C4.75 91.5 7.5 97.5 7.5 108V157C7.5 167.5 10 174.5 18 174.5H27"
+        stroke="currentColor"
+        strokeLinecap="butt"
+        strokeLinejoin="miter"
+        strokeMiterlimit="10"
+        strokeWidth="2.5"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
   );
 }
 

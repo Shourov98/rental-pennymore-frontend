@@ -3,16 +3,20 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export const defaultPreferencesList = [
-  "Lots of Storage",
-  "Gym in Building",
-  "Open Views",
-  "Open Kitchen",
-  "If Walk-Up Below 3rd Floor",
+  "Outdoor Space",
   "Lots of Light",
   "Large Apartment",
-  "New Renovation",
+  "Laundry in the Building",
+  "Dishwasher",
+  "New Ranovation",
+  "Open Kitchen",
+  "Open Views",
+  "W/D in Unit",
   "High Ceilings",
-  "Not Ground Floor",
+  "Avoid the Ground Floor",
+  "Lots of Storage",
+  "Gym in Building",
+  "If Walk-Up: Prefer Lower Floors",
 ];
 
 export interface LocationEntry {

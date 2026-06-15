@@ -121,14 +121,18 @@ const availableFeatureAliases: Record<string, string[]> = {
   gymInBuilding: ["Gym in Building"],
   largeApartment: ["Large Apartment"],
   openViews: ["Open Views"],
-  newRenovation: ["New Renovation"],
+  newRenovation: ["New Renovation", "New Ranovation"],
   openKitchen: ["Open Kitchen"],
   highCeilings: ["High Ceilings"],
   ifWalkUpBelow3rdFloor: [
     "If Walk-Up: Below 3rd Floor",
     "If Walk-Up: Prefer Lower Floors",
   ],
-  notGroundFloor: ["Not Ground Floor", "Avoid Ground Floor"],
+  notGroundFloor: [
+    "Not Ground Floor",
+    "Avoid Ground Floor",
+    "Avoid the Ground Floor",
+  ],
 };
 
 const everySelectedPreferenceIsPresent = (
