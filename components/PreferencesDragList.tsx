@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { defaultPreferencesList } from "@/store/slices/preferenceSlice";
 
 import {
@@ -50,6 +57,21 @@ function normalizePreferencesList(list?: string[]) {
     : defaultPreferencesList;
 }
 
+// Scales the original 176px bracket path proportionally to any target height.
+function generateBracketPath(h: number): string {
+  const s = h / 176;
+  const y = (v: number) => parseFloat((v * s).toFixed(3));
+  return (
+    `M27 ${y(1.5)}H18` +
+    `C10 ${y(1.5)} 7.5 ${y(8.5)} 7.5 ${y(19)}` +
+    `V${y(68)}` +
+    `C7.5 ${y(78.5)} 4.75 ${y(84.5)} 1.5 ${y(88)}` +
+    `C4.75 ${y(91.5)} 7.5 ${y(97.5)} 7.5 ${y(108)}` +
+    `V${y(157)}` +
+    `C7.5 ${y(167.5)} 10 ${y(174.5)} 18 ${y(174.5)}H27`
+  );
+}
+
 export default function PreferencesDragList({ onChange, initialList }: Props) {
   const items = useMemo(
     () => normalizePreferencesList(initialList),
@@ -80,7 +102,7 @@ export default function PreferencesDragList({ onChange, initialList }: Props) {
         delay: 200,
         tolerance: 5,
       },
-    })
+    }),
   );
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -91,12 +113,49 @@ export default function PreferencesDragList({ onChange, initialList }: Props) {
     const newIndex = items.indexOf(over.id as string);
 
     const updated = arrayMove(items, oldIndex, newIndex);
-    onChange(updated); // ALWAYS send changes to Redux
+    onChange(updated);
   };
 
   const midPoint = Math.ceil(items.length / 2);
   const leftCol = items.slice(0, midPoint);
   const rightCol = items.slice(midPoint);
+
+  // Measure the exact top/height of the first 4 items in the left column so the
+  // bracket SVG is always pixel-perfect regardless of item height or screen size.
+  const leftColRef = useRef<HTMLDivElement>(null);
+  const [bracket, setBracket] = useState({ top: 0, height: 176 });
+
+  const measureBracket = useCallback(() => {
+    const container = leftColRef.current;
+    if (!container) return;
+    const children = Array.from(container.children);
+    if (children.length < 4) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const firstRect = children[0].getBoundingClientRect();
+    const fourthRect = children[3].getBoundingClientRect();
+
+    const top = Math.round(firstRect.top - containerRect.top);
+    const height = Math.round(fourthRect.bottom - firstRect.top);
+
+    setBracket((prev) => {
+      if (prev.top === top && prev.height === height) return prev;
+      return { top, height };
+    });
+  }, []);
+
+  // Synchronous measurement on every render to avoid flash of misaligned bracket.
+  useLayoutEffect(() => {
+    measureBracket();
+  }, [measureBracket, items]);
+
+  // Re-measure whenever the column resizes (e.g. window resize, font load).
+  useEffect(() => {
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(measureBracket);
+    if (leftColRef.current) observer.observe(leftColRef.current);
+    return () => observer.disconnect();
+  }, [measureBracket]);
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5">
@@ -104,7 +163,7 @@ export default function PreferencesDragList({ onChange, initialList }: Props) {
         Rank Importance of Features
       </h3>
       <p className="text-xs text-gray-500 mb-4">
-        {"\u2192"} Drag to reorder and select your top 4 ranked priorities
+        {"→"} Drag to reorder and select your top 4 ranked priorities
       </p>
 
       <DndContext
@@ -114,15 +173,19 @@ export default function PreferencesDragList({ onChange, initialList }: Props) {
       >
         <SortableContext items={items} strategy={verticalListSortingStrategy}>
           <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="relative space-y-2 pl-6 sm:pl-8">
-              <PriorityBracket />
-              {leftCol.map((item) => (
-                <SortableItem
-                  key={item}
-                  id={item}
-                  index={items.indexOf(item)}
-                />
-              ))}
+            {/* Left column: bracket is a sibling of the items wrapper, not the
+                items themselves, so space-y-2 doesn't add margin before item 1. */}
+            <div className="relative pl-6 sm:pl-8">
+              <PriorityBracket top={bracket.top} height={bracket.height} />
+              <div className="space-y-2" ref={leftColRef}>
+                {leftCol.map((item) => (
+                  <SortableItem
+                    key={item}
+                    id={item}
+                    index={items.indexOf(item)}
+                  />
+                ))}
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -141,17 +204,19 @@ export default function PreferencesDragList({ onChange, initialList }: Props) {
   );
 }
 
-function PriorityBracket() {
+function PriorityBracket({ top, height }: { top: number; height: number }) {
+  if (height <= 0) return null;
   return (
     <svg
       aria-hidden="true"
-      viewBox="0 0 28 176"
-      className="pointer-events-none absolute left-1 top-0 h-[176px] w-6 overflow-visible text-blue-600 drop-shadow-[0_1px_1px_rgba(37,99,235,0.2)]"
+      viewBox={`0 0 28 ${height}`}
+      className="pointer-events-none absolute left-1 w-6 overflow-visible text-blue-600 drop-shadow-[0_1px_1px_rgba(37,99,235,0.2)]"
+      style={{ top, height }}
       fill="none"
       shapeRendering="geometricPrecision"
     >
       <path
-        d="M27 1.5H18C10 1.5 7.5 8.5 7.5 19V68C7.5 78.5 4.75 84.5 1.5 88C4.75 91.5 7.5 97.5 7.5 108V157C7.5 167.5 10 174.5 18 174.5H27"
+        d={generateBracketPath(height)}
         stroke="currentColor"
         strokeLinecap="butt"
         strokeLinejoin="miter"
@@ -176,7 +241,7 @@ function SortableItem({ id, index }: { id: string; index: number }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    touchAction: "none", // allow touch drag without the browser turning it into a scroll gesture
+    touchAction: "none",
   };
   const isPriority = index < 4;
 
