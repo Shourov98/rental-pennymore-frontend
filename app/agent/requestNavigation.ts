@@ -47,6 +47,9 @@ export interface AgentListNavigationState {
   itemIds: string[];
   itemHrefs?: Record<string, string>;
   filters: FilterType;
+  matchSearchFilters?: FilterType | null;
+  isMatchResultsMode?: boolean;
+  isFilterOpen?: boolean;
   showOwnReferrals: boolean;
 }
 
@@ -65,6 +68,13 @@ const defaultFilters: FilterType = {
   petPolicy: [],
   guarantorRequired: [],
   availableFeatures: [],
+  enabledFeatureGroups: {
+    unitFeatures: true,
+    buildingFeatures: true,
+    guarantorRequired: true,
+    petPolicy: true,
+    availableFeatures: true,
+  },
 };
 
 const getBedroomValue = (bedroom: string) =>
@@ -183,7 +193,84 @@ export const sanitizeFilters = (
   availableFeatures: Array.isArray(filters?.availableFeatures)
     ? filters.availableFeatures
     : [],
+  enabledFeatureGroups: filters?.enabledFeatureGroups
+    ? {
+        unitFeatures: filters.enabledFeatureGroups.unitFeatures ?? true,
+        buildingFeatures: filters.enabledFeatureGroups.buildingFeatures ?? true,
+        guarantorRequired:
+          filters.enabledFeatureGroups.guarantorRequired ?? true,
+        petPolicy: filters.enabledFeatureGroups.petPolicy ?? true,
+        availableFeatures: filters.enabledFeatureGroups.availableFeatures ?? true,
+      }
+    : defaultFilters.enabledFeatureGroups,
 });
+
+const bedroomMatchLabels: Record<number, string> = {
+  0: "Studio",
+  1: "1BR",
+  2: "2BR",
+  3: "3BR",
+  4: "4BR+",
+};
+
+const bathroomMatchLabels: Record<number, string> = {
+  1: "1",
+  2: "2",
+  3: "3",
+  4: "4+",
+};
+
+const defaultFeatureGroups = {
+  unitFeatures: true,
+  buildingFeatures: true,
+  guarantorRequired: true,
+  petPolicy: true,
+  availableFeatures: true,
+};
+
+export const buildMatchSearchPayload = (filters: FilterType) => {
+  const enabled = filters.enabledFeatureGroups ?? defaultFeatureGroups;
+
+  return {
+    borough: filters.borough,
+    neighborhood: filters.neighborhoods[0],
+    bedrooms: bedroomMatchLabels[filters.bedrooms[0]],
+    bathrooms: bathroomMatchLabels[filters.bathrooms[0]],
+    rent: filters.maxPrice,
+    movingDateRange: {
+      earliest: filters.movingDate.earliest,
+      latest: filters.movingDate.latest,
+    },
+    unitFeatures: {
+      laundryInUnit: filters.unitFeatures.includes("laundryInUnit"),
+      privateOutdoorSpace: filters.unitFeatures.includes("privateOutdoorSpace"),
+      dishwasher: filters.unitFeatures.includes("dishwasher"),
+    },
+    buildingFeatures: {
+      doorman: filters.buildingFeatures.includes("doorman"),
+      elevator: filters.buildingFeatures.includes("elevator"),
+      laundryInBuilding: filters.buildingFeatures.includes("laundryInBuilding"),
+    },
+    petPolicy: {
+      catsAllowed: filters.petPolicy.includes("catsAllowed"),
+      dogsAllowed: filters.petPolicy.includes("dogsAllowed"),
+    },
+    guarantorPolicy: {
+      personalGuarantor: filters.guarantorRequired.includes("personalGuarantor"),
+      thirdPartyGuarantor: filters.guarantorRequired.includes("thirdPartyGuarantor"),
+    },
+    availableFeatures: Object.fromEntries(
+      filters.availableFeatures.map((feature) => [feature, true]),
+    ),
+    toggles: {
+      unitFeatures: enabled.unitFeatures,
+      buildingFeatures: enabled.buildingFeatures,
+      petPolicy: enabled.petPolicy,
+      guarantorsPolicy: enabled.guarantorRequired,
+      priorityBonuses: enabled.availableFeatures,
+    },
+  };
+};
 
 export const matchesAgentFilters = (
   raw: FilterableAgentRequestLike | undefined,
@@ -314,6 +401,11 @@ export const readStoredAgentListState = (
             )
           : undefined,
       filters: sanitizeFilters(parsed.filters),
+      matchSearchFilters: parsed.matchSearchFilters
+        ? sanitizeFilters(parsed.matchSearchFilters)
+        : null,
+      isMatchResultsMode: Boolean(parsed.isMatchResultsMode),
+      isFilterOpen: Boolean(parsed.isFilterOpen),
       showOwnReferrals: Boolean(parsed.showOwnReferrals),
     };
   } catch {
@@ -332,6 +424,9 @@ export const writeStoredAgentListState = (
     JSON.stringify({
       ...state,
       filters: sanitizeFilters(state.filters),
+      matchSearchFilters: state.matchSearchFilters
+        ? sanitizeFilters(state.matchSearchFilters)
+        : null,
     }),
   );
 };

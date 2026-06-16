@@ -167,6 +167,7 @@ export default function FilterModal({
   isOpen,
   onClose,
   onApply,
+  onReset,
   initialFilters,
   resultCount,
   variant = "default",
@@ -175,6 +176,7 @@ export default function FilterModal({
   isOpen: boolean;
   onClose: () => void;
   onApply: (filters: FilterType) => void;
+  onReset?: (filters: FilterType) => void;
   initialFilters?: FilterType;
   resultCount?: number;
   variant?: FilterModalVariant;
@@ -317,6 +319,11 @@ export default function FilterModal({
   const resetAll = () => {
     const next = resolveFilters(defaultFilters);
     syncLocalFilters(next);
+    if (isMatchRequestsVariant) {
+      onReset?.(next);
+      return;
+    }
+
     onApply(next);
   };
 

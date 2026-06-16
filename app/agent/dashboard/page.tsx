@@ -22,6 +22,7 @@ import {
   normalizeAgentRequest,
 } from "./utils";
 import {
+  buildMatchSearchPayload,
   getEmptyFilters,
   matchesAgentFilters,
   sanitizeFilters,
@@ -35,6 +36,60 @@ const NAVIGATION_STORAGE_KEY = "agent-dashboard-navigation";
 const MATCH_DEMO_STORAGE_KEY = "beforelisted-match-demo";
 
 type QuickSelectThreshold = "none" | "one" | "two" | "three" | "four" | "five";
+type RepresentationType = "owner_representation" | "renter_representation";
+
+const OPPORTUNITY_DETAILS_MAX_LENGTH = 300;
+const RISKY_OPPORTUNITY_DETAIL_PHRASES = [
+  "I have a listing",
+  "exclusive",
+  "my owner",
+  "my landlord",
+  "my building",
+  "private listing",
+  "only through me",
+  "off-market listing",
+  "guaranteed",
+  "no one else has access",
+];
+const OPPORTUNITY_DETAILS_RISKY_WORDING_MESSAGE =
+  "Please revise this wording to use neutral, factual language. The message should not suggest that you represent the owner unless that has been properly selected and disclosed.";
+
+const opportunityDetailsHelperText: Record<RepresentationType, string> = {
+  renter_representation:
+    "Included in the email to the renter and visible to the registered agent. Kindly use neutral, factual details only (apartment features, address, cross streets, viewing times, next steps).",
+  owner_representation:
+    "Included in the email to the registered agent. Kindly use neutral, factual details only (apartment features, address, cross streets, viewing times, next steps).",
+};
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+const riskyOpportunityDetailsPattern = () =>
+  new RegExp(
+    `(${RISKY_OPPORTUNITY_DETAIL_PHRASES.map(escapeRegExp).join("|")})`,
+    "gi",
+  );
+
+const hasRiskyOpportunityDetailsWording = (value: string) =>
+  riskyOpportunityDetailsPattern().test(value);
+
+const renderHighlightedOpportunityDetails = (value: string) => {
+  const pattern = riskyOpportunityDetailsPattern();
+  const parts = value.split(pattern);
+
+  return parts.map((part, index) =>
+    RISKY_OPPORTUNITY_DETAIL_PHRASES.some(
+      (phrase) => phrase.toLowerCase() === part.toLowerCase(),
+    ) ? (
+      <mark key={`${part}-${index}`} className="bg-red-50 text-red-600">
+        {part}
+      </mark>
+    ) : (
+      <span key={`${part}-${index}`}>{part}</span>
+    ),
+  );
+};
 
 const quickSelectOptions: Array<{
   key: QuickSelectThreshold;
@@ -483,56 +538,6 @@ const renderQuickSelectLabel = (option: (typeof quickSelectOptions)[number]) => 
   );
 };
 
-const buildMatchSearchPayload = (filters: FilterType) => {
-  const enabled = filters.enabledFeatureGroups ?? {
-    unitFeatures: true,
-    buildingFeatures: true,
-    guarantorRequired: true,
-    petPolicy: true,
-    availableFeatures: true,
-  };
-
-  return {
-    borough: filters.borough,
-    neighborhood: filters.neighborhoods[0],
-    bedrooms: bedroomQueryLabels[filters.bedrooms[0]],
-    bathrooms: bathroomQueryLabels[filters.bathrooms[0]],
-    rent: filters.maxPrice,
-    movingDateRange: {
-      earliest: filters.movingDate.earliest,
-      latest: filters.movingDate.latest,
-    },
-    unitFeatures: {
-      laundryInUnit: filters.unitFeatures.includes("laundryInUnit"),
-      privateOutdoorSpace: filters.unitFeatures.includes("privateOutdoorSpace"),
-      dishwasher: filters.unitFeatures.includes("dishwasher"),
-    },
-    buildingFeatures: {
-      doorman: filters.buildingFeatures.includes("doorman"),
-      elevator: filters.buildingFeatures.includes("elevator"),
-      laundryInBuilding: filters.buildingFeatures.includes("laundryInBuilding"),
-    },
-    petPolicy: {
-      catsAllowed: filters.petPolicy.includes("catsAllowed"),
-      dogsAllowed: filters.petPolicy.includes("dogsAllowed"),
-    },
-    guarantorPolicy: {
-      personalGuarantor: filters.guarantorRequired.includes("personalGuarantor"),
-      thirdPartyGuarantor: filters.guarantorRequired.includes("thirdPartyGuarantor"),
-    },
-    availableFeatures: Object.fromEntries(
-      filters.availableFeatures.map((feature) => [feature, true]),
-    ),
-    toggles: {
-      unitFeatures: enabled.unitFeatures,
-      buildingFeatures: enabled.buildingFeatures,
-      petPolicy: enabled.petPolicy,
-      guarantorsPolicy: enabled.guarantorRequired,
-      priorityBonuses: enabled.availableFeatures,
-    },
-  };
-};
-
 const appendCsvParam = (
   params: URLSearchParams,
   key: string,
@@ -619,23 +624,53 @@ const readStoredFilters = (): FilterType => {
 
 const readStoredListState = () => {
   if (typeof window === "undefined") {
-    return { page: 1, showOwnReferrals: false };
+    return {
+      page: 1,
+      showOwnReferrals: false,
+      isMatchResultsMode: false,
+      matchSearchFilters: null,
+      isFilterOpen: false,
+    };
   }
 
   try {
     const stored = sessionStorage.getItem(LIST_STATE_STORAGE_KEY);
-    if (!stored) return { page: 1, showOwnReferrals: false };
+    if (!stored) {
+      return {
+        page: 1,
+        showOwnReferrals: false,
+        isMatchResultsMode: false,
+        matchSearchFilters: null,
+        isFilterOpen: false,
+      };
+    }
     const parsed = JSON.parse(stored) as Partial<{
       page: number;
       showOwnReferrals: boolean;
+      isMatchResultsMode: boolean;
+      matchSearchFilters: FilterType | null;
+      isFilterOpen: boolean;
     }>;
+    const restoredMatchSearchFilters = parsed.matchSearchFilters
+      ? sanitizeFilters(parsed.matchSearchFilters)
+      : null;
     return {
       page:
         typeof parsed.page === "number" && parsed.page > 0 ? parsed.page : 1,
       showOwnReferrals: Boolean(parsed.showOwnReferrals),
+      isMatchResultsMode:
+        Boolean(parsed.isMatchResultsMode) && Boolean(restoredMatchSearchFilters),
+      matchSearchFilters: restoredMatchSearchFilters,
+      isFilterOpen: Boolean(parsed.isFilterOpen),
     };
   } catch {
-    return { page: 1, showOwnReferrals: false };
+    return {
+      page: 1,
+      showOwnReferrals: false,
+      isMatchResultsMode: false,
+      matchSearchFilters: null,
+      isFilterOpen: false,
+    };
   }
 };
 
@@ -669,6 +704,13 @@ export default function AgentRenterRequestsPage() {
   const [quickSelect, setQuickSelect] =
     useState<QuickSelectThreshold>("none");
   const [isMatchingChecked, setIsMatchingChecked] = useState(false);
+  const [isBulkRepresentationOpen, setIsBulkRepresentationOpen] =
+    useState(false);
+  const [isBulkConfirmOpen, setIsBulkConfirmOpen] = useState(false);
+  const [bulkRepresentationType, setBulkRepresentationType] =
+    useState<RepresentationType | "">("");
+  const [bulkOpportunityDetails, setBulkOpportunityDetails] = useState("");
+  const [isBulkConfirmChecked, setIsBulkConfirmChecked] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(false);
   const [isMatchDemoMode, setIsMatchDemoMode] = useState(false);
   const [page, setPage] = useState(1);
@@ -687,10 +729,18 @@ export default function AgentRenterRequestsPage() {
     const demoEnabled = isLocalMatchDemoEnabled();
     setIsMatchDemoMode(demoEnabled);
     setFilters(readStoredFilters());
-    const { page: storedPage, showOwnReferrals: storedShowOwnReferrals } =
-      readStoredListState();
+    const {
+      page: storedPage,
+      showOwnReferrals: storedShowOwnReferrals,
+      isMatchResultsMode: storedIsMatchResultsMode,
+      matchSearchFilters: storedMatchSearchFilters,
+      isFilterOpen: storedIsFilterOpen,
+    } = readStoredListState();
     setPage(storedPage);
     setShowOwnReferrals(storedShowOwnReferrals);
+    setMatchSearchFilters(storedMatchSearchFilters);
+    setIsMatchResultsMode(storedIsMatchResultsMode);
+    setIsFilterOpen(storedIsFilterOpen);
     if (demoEnabled) {
       const shouldShowResults = getDemoParam("results") === "1";
       setFilters(demoMatchFilters);
@@ -711,9 +761,22 @@ export default function AgentRenterRequestsPage() {
     if (typeof window === "undefined" || !isStateRestored) return;
     sessionStorage.setItem(
       LIST_STATE_STORAGE_KEY,
-      JSON.stringify({ page, showOwnReferrals }),
+      JSON.stringify({
+        page,
+        showOwnReferrals,
+        isMatchResultsMode,
+        matchSearchFilters,
+        isFilterOpen,
+      }),
     );
-  }, [isStateRestored, page, showOwnReferrals]);
+  }, [
+    isFilterOpen,
+    isMatchResultsMode,
+    isStateRestored,
+    matchSearchFilters,
+    page,
+    showOwnReferrals,
+  ]);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -874,13 +937,19 @@ export default function AgentRenterRequestsPage() {
       totalPages: Math.max(1, pagination?.totalPages ?? 1),
       itemIds: filteredRequests.map((request) => request.id),
       filters,
+      matchSearchFilters,
+      isMatchResultsMode,
+      isFilterOpen,
       showOwnReferrals,
     });
   }, [
     filteredRequests,
     filters,
+    isFilterOpen,
+    isMatchResultsMode,
     isStateRestored,
     limit,
+    matchSearchFilters,
     page,
     pagination?.totalPages,
     showOwnReferrals,
@@ -1111,6 +1180,16 @@ export default function AgentRenterRequestsPage() {
   const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
   const hasServerResults = requests.length > 0;
   const hasFilteredResults = filteredRequests.length > 0;
+  const selectedRequestCount = selectedRequestIds.length;
+  const bulkOpportunityDetailsCount = bulkOpportunityDetails.length;
+  const bulkOpportunityDetailsCounterClass =
+    bulkOpportunityDetailsCount >= OPPORTUNITY_DETAILS_MAX_LENGTH
+      ? "text-red-600"
+      : bulkOpportunityDetailsCount >= 240
+        ? "text-amber-600"
+        : "text-gray-400";
+  const hasRiskyBulkOpportunityDetails =
+    hasRiskyOpportunityDetailsWording(bulkOpportunityDetails);
   const handlePageSelect = (value: number) => {
     if (value === currentPage) return;
     setPage(value);
@@ -1136,6 +1215,17 @@ export default function AgentRenterRequestsPage() {
     setMatchSearchFilters(nextFilters);
     setIsMatchResultsMode(true);
     setIsFilterOpen(false);
+  };
+
+  const handleResetMatchFilters = (nextFilters: FilterType) => {
+    setError(null);
+    setPage(1);
+    setFilters(nextFilters);
+    setMatchSearchFilters(null);
+    setIsMatchResultsMode(false);
+    setSelectedRequestIds([]);
+    setQuickSelect("none");
+    setIsFilterOpen(true);
   };
 
   const handleQuickSelect = (option: (typeof quickSelectOptions)[number]) => {
@@ -1171,8 +1261,82 @@ export default function AgentRenterRequestsPage() {
     setSelectedRequestIds(allSelected ? [] : visibleIds);
   };
 
-  const handleMatchChecked = async () => {
+  const resetBulkMatchFlow = () => {
+    setIsBulkRepresentationOpen(false);
+    setIsBulkConfirmOpen(false);
+    setBulkRepresentationType("");
+    setBulkOpportunityDetails("");
+    setIsBulkConfirmChecked(false);
+  };
+
+  const applyBulkMatchResult = (
+    matchedIds: Set<string>,
+    representationType: RepresentationType,
+  ) => {
+    const representationSelectedAt = new Date().toISOString();
+
+    setRequests((prev) => {
+      const next = prev.map((request) => {
+        if (!matchedIds.has(request.id)) return request;
+
+        if (representationType === "owner_representation") {
+          return {
+            ...request,
+            ownerRepresentationSelected: true,
+            representation_type: "owner_representation" as const,
+            representationSelectedAt,
+            raw: {
+              ...request.raw,
+              ownerRepresentationSelected: true,
+              representation_type: "owner_representation" as const,
+              representationSelectedAt,
+            },
+          };
+        }
+
+        return {
+          ...request,
+          alreadyMatchedByAgent: true,
+          status: "matched",
+          representation_type: "renter_representation" as const,
+          representationSelectedAt,
+          raw: {
+            ...request.raw,
+            alreadyMatchedByAgent: true,
+            status: "matched",
+            listingStatus: "matched",
+            representation_type: "renter_representation" as const,
+            representationSelectedAt,
+          },
+        };
+      });
+      cacheAgentRequests(next);
+      return next;
+    });
+  };
+
+  const handleMatchChecked = () => {
     if (!selectedRequestIds.length) return;
+    setError(null);
+    setBulkRepresentationType("");
+    setBulkOpportunityDetails("");
+    setIsBulkConfirmChecked(false);
+    setIsBulkRepresentationOpen(true);
+  };
+
+  const handleSubmitBulkMatch = async (
+    representationType: RepresentationType,
+  ) => {
+    if (!selectedRequestIds.length || isMatchingChecked) return;
+
+    const normalizedOpportunityDetails = bulkOpportunityDetails
+      .trim()
+      .slice(0, OPPORTUNITY_DETAILS_MAX_LENGTH);
+
+    if (hasRiskyOpportunityDetailsWording(normalizedOpportunityDetails)) {
+      setError(OPPORTUNITY_DETAILS_RISKY_WORDING_MESSAGE);
+      return;
+    }
 
     setIsMatchingChecked(true);
     setError(null);
@@ -1180,26 +1344,10 @@ export default function AgentRenterRequestsPage() {
     try {
       if (isMatchDemoMode) {
         const matchedIds = new Set(selectedRequestIds);
-        setRequests((prev) => {
-          const next = prev.map((request) =>
-            matchedIds.has(request.id)
-              ? {
-                  ...request,
-                  alreadyMatchedByAgent: true,
-                  status: "matched",
-                  raw: {
-                    ...request.raw,
-                    alreadyMatchedByAgent: true,
-                    status: "matched",
-                  },
-                }
-              : request,
-          );
-          cacheAgentRequests(next);
-          return next;
-        });
+        applyBulkMatchResult(matchedIds, representationType);
         setSelectedRequestIds([]);
         setQuickSelect("none");
+        resetBulkMatchFlow();
         return;
       }
 
@@ -1213,7 +1361,13 @@ export default function AgentRenterRequestsPage() {
         {
           method: "POST",
           headers,
-          body: JSON.stringify({ requestIds: selectedRequestIds }),
+          body: JSON.stringify({
+            requestIds: selectedRequestIds,
+            representation_type: representationType,
+            ...(normalizedOpportunityDetails
+              ? { opportunityDetails: normalizedOpportunityDetails }
+              : {}),
+          }),
         },
       );
       const data: {
@@ -1243,24 +1397,10 @@ export default function AgentRenterRequestsPage() {
         (data.data?.matched ?? []).map((item) => item.requestId),
       );
 
-      setRequests((prev) =>
-        prev.map((request) =>
-          matchedIds.has(request.id)
-            ? {
-                ...request,
-                alreadyMatchedByAgent: true,
-                status: "matched",
-                raw: {
-                  ...request.raw,
-                  alreadyMatchedByAgent: true,
-                  status: "matched",
-                },
-              }
-            : request,
-        ),
-      );
+      applyBulkMatchResult(matchedIds, representationType);
       setSelectedRequestIds([]);
       setQuickSelect("none");
+      resetBulkMatchFlow();
 
       if (data.data?.failed?.length) {
         setError(
@@ -1904,11 +2044,216 @@ export default function AgentRenterRequestsPage() {
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
           onApply={handleApplyFilters}
+          onReset={handleResetMatchFilters}
           initialFilters={matchSearchFilters ?? filters}
           resultCount={filteredRequests.length}
           variant="matchRequests"
           isApplying={isLoading}
         />
+      ) : null}
+      {isBulkRepresentationOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-5 flex items-center gap-3">
+              <Image
+                src="/Logo_1.svg"
+                alt="BeforeListed"
+                width={180}
+                height={52}
+                className="h-auto w-[160px] sm:w-[180px]"
+                priority
+              />
+            </div>
+            <h2 className="mb-2 text-xl font-semibold text-gray-900">
+              Which side would you like to represent?
+            </h2>
+            <p className="mb-5 text-sm text-gray-600">
+              This will apply to {selectedRequestCount} selected request
+              {selectedRequestCount === 1 ? "" : "s"}.
+            </p>
+            <div className="space-y-4">
+              <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 p-4 text-sm text-gray-800">
+                <input
+                  type="radio"
+                  name="bulk-representation-type"
+                  value="owner_representation"
+                  checked={bulkRepresentationType === "owner_representation"}
+                  onChange={() =>
+                    setBulkRepresentationType("owner_representation")
+                  }
+                  className="h-4 w-4 text-blue-600"
+                />
+                <span>I intend to represent the owner</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 p-4 text-sm text-gray-800">
+                <input
+                  type="radio"
+                  name="bulk-representation-type"
+                  value="renter_representation"
+                  checked={bulkRepresentationType === "renter_representation"}
+                  onChange={() =>
+                    setBulkRepresentationType("renter_representation")
+                  }
+                  className="h-4 w-4 text-blue-600"
+                />
+                <span>I intend to represent the renter</span>
+              </label>
+            </div>
+            {bulkRepresentationType ? (
+              <div className="mt-5">
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Add Opportunity Details
+                </h3>
+                <p className="mt-1 text-xs leading-5 text-gray-500">
+                  {opportunityDetailsHelperText[bulkRepresentationType]}
+                </p>
+                <div className="relative mt-3 rounded-lg bg-white">
+                  {hasRiskyBulkOpportunityDetails ? (
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 whitespace-pre-wrap break-words rounded-lg px-3 py-2 pb-7 text-sm leading-5 text-gray-800"
+                    >
+                      {renderHighlightedOpportunityDetails(
+                        bulkOpportunityDetails,
+                      )}
+                    </div>
+                  ) : null}
+                  <textarea
+                    rows={3}
+                    maxLength={OPPORTUNITY_DETAILS_MAX_LENGTH}
+                    value={bulkOpportunityDetails}
+                    onChange={(event) =>
+                      setBulkOpportunityDetails(
+                        event.target.value.slice(
+                          0,
+                          OPPORTUNITY_DETAILS_MAX_LENGTH,
+                        ),
+                      )
+                    }
+                    placeholder="e.g., 123 W 85th St - Available Thursday at 3pm."
+                    aria-invalid={hasRiskyBulkOpportunityDetails}
+                    className={`relative z-10 w-full resize-none rounded-lg border px-3 py-2 pb-7 text-sm leading-5 outline-none transition focus:ring-2 ${
+                      hasRiskyBulkOpportunityDetails
+                        ? "border-red-300 bg-transparent text-transparent caret-gray-800 focus:border-red-500 focus:ring-red-100"
+                        : "border-gray-200 text-gray-800 focus:border-blue-500 focus:ring-blue-100"
+                    }`}
+                  />
+                  <span
+                    className={`absolute bottom-2 right-3 z-20 text-xs ${bulkOpportunityDetailsCounterClass}`}
+                  >
+                    {bulkOpportunityDetailsCount} /{" "}
+                    {OPPORTUNITY_DETAILS_MAX_LENGTH}
+                  </span>
+                </div>
+                {hasRiskyBulkOpportunityDetails ? (
+                  <p className="mt-2 text-xs leading-5 text-red-600">
+                    {OPPORTUNITY_DETAILS_RISKY_WORDING_MESSAGE}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={resetBulkMatchFlow}
+                disabled={isMatchingChecked}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!bulkRepresentationType || hasRiskyBulkOpportunityDetails) {
+                    return;
+                  }
+
+                  if (bulkRepresentationType === "owner_representation") {
+                    handleSubmitBulkMatch("owner_representation");
+                    return;
+                  }
+
+                  setIsBulkRepresentationOpen(false);
+                  setIsBulkConfirmChecked(false);
+                  setIsBulkConfirmOpen(true);
+                }}
+                disabled={
+                  !bulkRepresentationType ||
+                  hasRiskyBulkOpportunityDetails ||
+                  isMatchingChecked
+                }
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isMatchingChecked ? "Matching..." : "Confirm"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {isBulkConfirmOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Confirm Match Request
+            </h2>
+            <div className="space-y-3 text-sm text-gray-700 mb-4">
+              <p>
+                By proceeding, you confirm that you intend to represent the
+                renter for the selected request
+                {selectedRequestCount === 1 ? "" : "s"} and will verify the
+                required agency disclosures and client registration before
+                taking action on the renter&apos;s behalf.
+              </p>
+              <p>
+                This action may send match-related email notifications using
+                the message you entered.
+              </p>
+            </div>
+            <label className="flex items-start gap-2 text-sm text-gray-700 mb-6">
+              <input
+                type="checkbox"
+                checked={isBulkConfirmChecked}
+                onChange={(event) =>
+                  setIsBulkConfirmChecked(event.target.checked)
+                }
+                className="mt-1 h-4 w-4 text-blue-600"
+              />
+              <span className="font-semibold">
+                I confirm the above and approve proceeding with this match.
+              </span>
+            </label>
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsBulkConfirmOpen(false);
+                  setIsBulkRepresentationOpen(true);
+                }}
+                disabled={isMatchingChecked}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!isBulkConfirmChecked || hasRiskyBulkOpportunityDetails) {
+                    return;
+                  }
+                  handleSubmitBulkMatch("renter_representation");
+                }}
+                disabled={
+                  !isBulkConfirmChecked ||
+                  hasRiskyBulkOpportunityDetails ||
+                  isMatchingChecked
+                }
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isMatchingChecked ? "Matching..." : "Confirm & Send"}
+              </button>
+            </div>
+          </div>
+        </div>
       ) : null}
       {archiveTarget ? (
         <ArchiveRequestDialog

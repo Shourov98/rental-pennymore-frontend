@@ -25,6 +25,7 @@ import {
 import { selectAgentHasGrantAccess } from "@/store/slices/authSlice";
 import { fetchAgentProfile } from "@/store/slices/agentProfileSlice";
 import {
+  buildMatchSearchPayload,
   getAgentRequestHref,
   isCurrentAgentRegisteredForRequest,
   matchesAgentFilters,
@@ -370,6 +371,13 @@ export default function AgentRenterRequestDetailsPage() {
       const storedState = readStoredAgentListState(storageKey);
       const useStoredContext =
         storedState?.itemIds?.some((itemId) => itemId === requestId) ?? false;
+      const storedMatchSearchFilters =
+        !isArchiveContext && useStoredContext
+          ? storedState?.matchSearchFilters ?? null
+          : null;
+      const useStoredMatchContext =
+        Boolean(storedState?.isMatchResultsMode) &&
+        Boolean(storedMatchSearchFilters);
       const pageLimit =
         useStoredContext && storedState?.limit
           ? storedState.limit
@@ -401,14 +409,22 @@ export default function AgentRenterRequestDetailsPage() {
           const endpoint = isArchiveContext
             ? "/pre-market/agent/archived-requests"
             : "/pre-market/all";
-          const response = await fetch(
-            `${API_BASE_URL}${endpoint}?${params.toString()}`,
-            {
-              method: "GET",
-              headers,
-              signal: controller.signal,
-            },
-          );
+          const response = useStoredMatchContext && storedMatchSearchFilters
+            ? await fetch(`${API_BASE_URL}/pre-market/agent/match-search`, {
+                method: "POST",
+                headers,
+                signal: controller.signal,
+                body: JSON.stringify({
+                  ...buildMatchSearchPayload(storedMatchSearchFilters),
+                  page: pageToFetch,
+                  limit: pageLimit,
+                }),
+              })
+            : await fetch(`${API_BASE_URL}${endpoint}?${params.toString()}`, {
+                method: "GET",
+                headers,
+                signal: controller.signal,
+              });
 
           const data: ApiAgentRequestsResponse = await response
             .json()
@@ -426,7 +442,9 @@ export default function AgentRenterRequestDetailsPage() {
           totalPages = Math.max(1, data.pagination?.totalPages ?? totalPages);
 
           const visibleRequests =
-            !isArchiveContext && useStoredContext && storedState
+            useStoredMatchContext
+              ? normalized
+              : !isArchiveContext && useStoredContext && storedState
               ? normalized.filter((item) =>
                   matchesAgentFilters(
                     item.raw,
