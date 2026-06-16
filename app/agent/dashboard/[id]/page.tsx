@@ -240,6 +240,7 @@ export default function AgentRenterRequestDetailsPage() {
 
   const requestId = params?.id as string | undefined;
   const isArchiveContext = searchParams.get("from") === "archive";
+  const isMatchResultsContext = searchParams.get("from") === "matches";
 
   const [request, setRequest] = useState<NormalizedAgentRequest | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -458,7 +459,9 @@ export default function AgentRenterRequestDetailsPage() {
           for (const item of visibleRequests) {
             const itemHref = isArchiveContext
               ? getAgentRequestHref(item.raw, item.id, currentUserId)
-              : `/agent/dashboard/${item.id}`;
+              : isMatchResultsContext
+                ? `/agent/dashboard/${item.id}?from=matches`
+                : `/agent/dashboard/${item.id}`;
             if (foundCurrent) {
               nextHref = itemHref;
               break;
@@ -495,7 +498,7 @@ export default function AgentRenterRequestDetailsPage() {
     resolveNavigation();
 
     return () => controller.abort();
-  }, [accessToken, currentUserId, isArchiveContext, requestId]);
+  }, [accessToken, currentUserId, isArchiveContext, isMatchResultsContext, requestId]);
 
   const {
     movingDateRange,
@@ -963,7 +966,18 @@ export default function AgentRenterRequestDetailsPage() {
   };
 
   const backHref = isArchiveContext ? "/agent/archived-requests" : "/agent/dashboard";
-  const backLabel = isArchiveContext ? "Archived Requests" : "Renter Requests";
+  const backLabel = isArchiveContext
+    ? "Archived Requests"
+    : isMatchResultsContext
+      ? "Renter Matches"
+      : "Renter Requests";
+  const handleBack = () => {
+    if (isMatchResultsContext) {
+      router.back();
+    } else {
+      router.push(backHref);
+    }
+  };
   const opportunityDetailsCount = opportunityDetails.length;
   const opportunityDetailsCounterClass =
     opportunityDetailsCount >= OPPORTUNITY_DETAILS_MAX_LENGTH
@@ -979,11 +993,11 @@ export default function AgentRenterRequestDetailsPage() {
       <div className="bg-white rounded-xl shadow-sm p-5 flex flex-wrap justify-between items-center mb-6">
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <ArrowLeft
-            onClick={() => router.push(backHref)}
+            onClick={handleBack}
             className="w-4 h-4 text-gray-600 cursor-pointer"
           />
           <span
-            onClick={() => router.push(backHref)}
+            onClick={handleBack}
             className="cursor-pointer"
           >
             {backLabel}

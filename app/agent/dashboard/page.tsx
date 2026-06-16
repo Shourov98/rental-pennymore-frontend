@@ -141,11 +141,30 @@ const starEmptyIconSrc = "/icons/match/star-empty.svg";
 const preferenceFilledIconSrc = "/icons/match/preference-filled.svg";
 const preferenceEmptyIconSrc = "/icons/match/preference-empty.svg";
 
+const formatPriorityTitle = (index: number, preference?: string) => {
+  const priorityLabel = `Priority ${index + 1}`;
+  const preferenceLabel = preference?.trim();
+
+  return preferenceLabel ? `${priorityLabel} / ${preferenceLabel}` : priorityLabel;
+};
+
+const formatMissingMatchFieldsMessage = (missingFields: string[]) => {
+  const fields = missingFields.map((field, index) =>
+    field === "move-in dates" && index > 0 ? `and ${field}` : field,
+  );
+
+  return `Please enter ${fields.join(", ")} before matching.`;
+};
+
 const missingFeatureLegend = [
   ["rent", "Rent over budget", "1-10% above renter's budget"],
   ["location", "Location", "Neighborhood mismatch, same region match only"],
   ["moveDateNearMiss", "Move date near miss", "Move date gap within 16 days"],
-  ["moveDateTotalMiss", "Move date total miss", "Move date mismatch more than 16 days"],
+  [
+    "moveDateTotalMiss",
+    "Move date total miss",
+    "Move-in date is more than 16 days from the apartment's availability",
+  ],
   ["bedrooms", "Bedrooms", "One bedroom shortfall"],
   ["bathrooms", "Bathrooms", "One bathroom shortfall"],
   ["laundryInUnit", "W/D in Unit", "No in-unit W/D"],
@@ -349,7 +368,7 @@ const createDemoRequests = () =>
         {
           code: "moveDateTotalMiss",
           label: "Move date total miss",
-          description: "Move date mismatch more than 16 days",
+          description: "Move-in date is more than 16 days from the apartment's availability",
           deduction: -40,
         },
         {
@@ -434,7 +453,7 @@ const createDemoRequests = () =>
         {
           code: "moveDateTotalMiss",
           label: "Move date total miss",
-          description: "Move date mismatch more than 16 days",
+          description: "Move-in date is more than 16 days from the apartment's availability",
           deduction: -40,
         },
         {
@@ -957,7 +976,7 @@ export default function AgentRenterRequestsPage() {
 
   const handleView = (req: NormalizedAgentRequest) => {
     cacheSingleAgentRequest(req);
-    router.push(`/agent/dashboard/${req.id}`);
+    router.push(`/agent/dashboard/${req.id}${isMatchResultsMode ? "?from=matches" : ""}`);
   };
 
   const handleToggleShare = async (request: NormalizedAgentRequest) => {
@@ -1196,18 +1215,19 @@ export default function AgentRenterRequestsPage() {
   };
 
   const handleApplyFilters = (nextFilters: FilterType) => {
-    if (
-      !nextFilters.borough ||
-      !nextFilters.neighborhoods[0] ||
-      nextFilters.bedrooms[0] == null ||
-      nextFilters.bathrooms[0] == null ||
-      nextFilters.maxPrice == null ||
-      !nextFilters.movingDate.earliest ||
-      !nextFilters.movingDate.latest
-    ) {
-      setError(
-        "Please enter borough, neighborhood, bedrooms, bathrooms, rent, and move-in dates before matching.",
-      );
+    const missingFields: string[] = [];
+
+    if (!nextFilters.borough) missingFields.push("borough");
+    if (!nextFilters.neighborhoods[0]) missingFields.push("neighborhood");
+    if (nextFilters.bedrooms[0] == null) missingFields.push("bedrooms");
+    if (nextFilters.bathrooms[0] == null) missingFields.push("bathrooms");
+    if (nextFilters.maxPrice == null) missingFields.push("rent");
+    if (!nextFilters.movingDate.earliest || !nextFilters.movingDate.latest) {
+      missingFields.push("move-in dates");
+    }
+
+    if (missingFields.length) {
+      setError(formatMissingMatchFieldsMessage(missingFields));
       return;
     }
 
@@ -1672,7 +1692,10 @@ export default function AgentRenterRequestsPage() {
                                           aria-hidden="true"
                                           width={20}
                                           height={20}
-                                          title={`Priority ${index + 1}`}
+                                          title={formatPriorityTitle(
+                                            index,
+                                            req.preferences[index],
+                                          )}
                                           className="h-5 w-5"
                                         />
                                       ),
