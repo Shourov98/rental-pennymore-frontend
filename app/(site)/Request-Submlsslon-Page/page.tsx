@@ -484,7 +484,7 @@ export default function PreMarketListingPage() {
             <label className="text-sm font-semibold text-gray-700 mb-1">
               Location
             </label>
-            <p className="mb-1.5 text-xs text-gray-500">
+            <p className="mb-1.5 text-xs" style={{ color: "#3D4148" }}>
               For best results, select no more than 5 favorite
               sub-neighborhoods.
             </p>
