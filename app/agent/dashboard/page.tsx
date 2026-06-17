@@ -1612,8 +1612,7 @@ export default function AgentRenterRequestsPage() {
                         <th className="py-3 px-5 text-left">Visibility</th>
                         <th className="py-3 px-5 text-left">Borough</th>
                         <th className="py-3 px-5 text-left">Price (Max)</th>
-                        <th className="py-3 px-5 text-left">Beds</th>
-                        <th className="py-3 px-5 text-left">Baths</th>
+                        <th className="py-3 px-5 text-left">Beds / Baths</th>
                         <th className="py-3 px-5 text-left">Status</th>
                         <th className="py-3 px-5 text-right">Actions</th>
                       </tr>
@@ -1732,7 +1731,7 @@ export default function AgentRenterRequestsPage() {
                                       })}
                                   </div>
                                 ) : (
-                                  <span className="text-xs font-semibold text-amber-500">
+                                  <span className="whitespace-nowrap text-xs font-semibold text-amber-500">
                                     PERFECT MATCH
                                   </span>
                                 )}
@@ -1859,14 +1858,7 @@ export default function AgentRenterRequestsPage() {
                             </div>
                           </td>
                           <td className="py-3 px-5">{req.priceMaxLabel}</td>
-                          {isMatchResultsMode ? (
-                            <>
-                              <td className="py-3 px-5">{req.bedroomsLabel}</td>
-                              <td className="py-3 px-5">{req.bathroomsLabel}</td>
-                            </>
-                          ) : (
-                            <td className="py-3 px-5">{req.bedsBathsLabel}</td>
-                          )}
+                          <td className="py-3 px-5">{req.bedsBathsLabel}</td>
                           <td className="py-3 px-5">
                             {(() => {
                               const rawStatus = isMatchResultsMode
