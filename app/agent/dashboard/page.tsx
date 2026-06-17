@@ -37,6 +37,7 @@ const MATCH_DEMO_STORAGE_KEY = "beforelisted-match-demo";
 
 type QuickSelectThreshold = "none" | "one" | "two" | "three" | "four" | "five";
 type RepresentationType = "owner_representation" | "renter_representation";
+type ConfirmScopeType = "upcoming" | "all-market" | "mixed" | "request";
 
 const OPPORTUNITY_DETAILS_MAX_LENGTH = 300;
 const RISKY_OPPORTUNITY_DETAIL_PHRASES = [
@@ -73,6 +74,15 @@ const riskyOpportunityDetailsPattern = () =>
 
 const hasRiskyOpportunityDetailsWording = (value: string) =>
   riskyOpportunityDetailsPattern().test(value);
+
+const getConfirmScopeType = (
+  scope?: string,
+): Exclude<ConfirmScopeType, "mixed"> => {
+  const normalized = scope?.trim().toLowerCase();
+  if (normalized === "all market") return "all-market";
+  if (normalized?.startsWith("upcoming")) return "upcoming";
+  return "request";
+};
 
 const renderHighlightedOpportunityDetails = (value: string) => {
   const pattern = riskyOpportunityDetailsPattern();
@@ -1200,6 +1210,51 @@ export default function AgentRenterRequestsPage() {
   const hasServerResults = requests.length > 0;
   const hasFilteredResults = filteredRequests.length > 0;
   const selectedRequestCount = selectedRequestIds.length;
+  const selectedRequests = useMemo(() => {
+    const selectedIds = new Set(selectedRequestIds);
+    return requests.filter((request) => selectedIds.has(request.id));
+  }, [requests, selectedRequestIds]);
+  const selectedHasAlreadyMatchedRequests = selectedRequests.some(
+    (request) => request.alreadyMatchedByAgent,
+  );
+  const selectedAllRequestsAlreadyMatched =
+    selectedRequestCount > 0 &&
+    selectedRequests.length === selectedRequestCount &&
+    selectedRequests.every((request) => request.alreadyMatchedByAgent);
+  const bulkActionIdleLabel = selectedHasAlreadyMatchedRequests
+    ? selectedAllRequestsAlreadyMatched
+      ? "Add Opportunity"
+      : "Match / Add Opportunity"
+    : "Match Checked";
+  const bulkActionLoadingLabel = selectedHasAlreadyMatchedRequests
+    ? "Sending..."
+    : "Matching...";
+  const bulkConfirmScopeType = useMemo<ConfirmScopeType>(() => {
+    const scopeTypes = selectedRequests
+      .map((request) =>
+        getConfirmScopeType(request.raw?.scope || request.scopeLabel),
+      )
+      .filter((scopeType) => scopeType !== "request");
+    const uniqueScopeTypes = new Set(scopeTypes);
+
+    if (
+      uniqueScopeTypes.has("all-market") &&
+      uniqueScopeTypes.has("upcoming")
+    ) {
+      return "mixed";
+    }
+    if (uniqueScopeTypes.has("all-market")) return "all-market";
+    if (uniqueScopeTypes.has("upcoming")) return "upcoming";
+    return "request";
+  }, [selectedRequests]);
+  const bulkConfirmScopeLabel =
+    bulkConfirmScopeType === "all-market"
+      ? "All Market"
+      : bulkConfirmScopeType === "upcoming"
+        ? "Upcoming"
+        : bulkConfirmScopeType === "mixed"
+          ? "Multiple Scopes"
+          : "Request";
   const bulkOpportunityDetailsCount = bulkOpportunityDetails.length;
   const bulkOpportunityDetailsCounterClass =
     bulkOpportunityDetailsCount >= OPPORTUNITY_DETAILS_MAX_LENGTH
@@ -1375,6 +1430,9 @@ export default function AgentRenterRequestsPage() {
         "Content-Type": "application/json",
       };
       if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+      const shouldSendAdditionalOpportunity =
+        representationType === "renter_representation" &&
+        selectedHasAlreadyMatchedRequests;
 
       const response = await fetch(
         `${API_BASE_URL}/pre-market/agent/match-checked`,
@@ -1384,6 +1442,9 @@ export default function AgentRenterRequestsPage() {
           body: JSON.stringify({
             requestIds: selectedRequestIds,
             representation_type: representationType,
+            ...(shouldSendAdditionalOpportunity
+              ? { additionalOpportunity: true }
+              : {}),
             ...(normalizedOpportunityDetails
               ? { opportunityDetails: normalizedOpportunityDetails }
               : {}),
@@ -1946,7 +2007,7 @@ export default function AgentRenterRequestsPage() {
                 disabled={!selectedRequestIds.length || isMatchingChecked}
                 className="rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:bg-blue-600 disabled:hover:shadow-none"
               >
-                {isMatchingChecked ? "Matching..." : "Match Checked"}
+                {isMatchingChecked ? bulkActionLoadingLabel : bulkActionIdleLabel}
               </button>
 
               <div>
@@ -2217,21 +2278,110 @@ export default function AgentRenterRequestsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Confirm Match Request
+              Confirm Match Request &ndash; {bulkConfirmScopeLabel}
             </h2>
-            <div className="space-y-3 text-sm text-gray-700 mb-4">
-              <p>
-                By proceeding, you confirm that you intend to represent the
-                renter for the selected request
-                {selectedRequestCount === 1 ? "" : "s"} and will verify the
-                required agency disclosures and client registration before
-                taking action on the renter&apos;s behalf.
-              </p>
-              <p>
-                This action may send match-related email notifications using
-                the message you entered.
-              </p>
-            </div>
+            {bulkConfirmScopeType === "all-market" ? (
+              <div className="space-y-3 text-sm text-gray-700 mb-4">
+                <p>
+                  By proceeding, you confirm that you intend to represent the
+                  selected renter{selectedRequestCount === 1 ? "" : "s"} with
+                  full-service, full-market representation, including agent
+                  guidance, landlord and building screening, scheduling,
+                  coordination, and ongoing support throughout the rental
+                  process.
+                </p>
+                <p>
+                  You will verify the renter&apos;s Corcoran agency disclosures
+                  and client registration prior to taking any action on the
+                  renter&apos;s behalf.
+                </p>
+              </div>
+            ) : bulkConfirmScopeType === "mixed" ? (
+              <>
+                <p className="text-sm text-gray-700 mb-3">
+                  By proceeding, you confirm that:
+                </p>
+                <ul className="text-sm text-gray-700 space-y-2 mb-4 list-disc pl-5">
+                  <li>
+                    For All Market requests, you intend to provide
+                    full-service, full-market representation, including agent
+                    guidance, landlord and building screening, scheduling,
+                    coordination, and ongoing support throughout the rental
+                    process.
+                  </li>
+                  <li>
+                    You will verify each renter&apos;s Corcoran agency
+                    disclosures and client registration prior to taking any
+                    action on the renter&apos;s behalf.
+                  </li>
+                  <li>
+                    For Upcoming requests, any information about the apartment
+                    being presented to the renter arose from tenant-initiated
+                    outreach or follow-up inquiries made in response to renter
+                    requests.
+                  </li>
+                  <li>
+                    For Upcoming requests, you have not been retained by the
+                    owner to procure a tenant or market this apartment.
+                  </li>
+                  <li>
+                    For Upcoming requests, to the best of your knowledge, this
+                    apartment was not publicly advertised on StreetEasy, Zillow,
+                    or the REBNY Listing Service (RLS) at the time of this
+                    match.
+                  </li>
+                  <li>
+                    If you are the agent identified in the renter&apos;s
+                    disclosure, you may pursue this opportunity on the
+                    renter&apos;s behalf.
+                  </li>
+                  <li>
+                    If you are not identified in the renter&apos;s disclosure, you
+                    will not take steps on the renter&apos;s behalf until you are
+                    properly identified through an additional agency disclosure
+                    signed by the renter.
+                  </li>
+                </ul>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-gray-700 mb-3">
+                  By proceeding, you confirm that:
+                </p>
+                <ul className="text-sm text-gray-700 space-y-2 mb-4 list-disc pl-5">
+                  <li>
+                    You will verify the renter&apos;s Corcoran agency disclosures
+                    and client registration prior to taking any action on the
+                    renter&apos;s behalf.
+                  </li>
+                  <li>
+                    Any information about the apartment being presented to this
+                    renter arose from tenant-initiated outreach or follow-up
+                    inquiries made in response to renter requests.
+                  </li>
+                  <li>
+                    You have not been retained by the owner to procure a tenant
+                    or market this apartment.
+                  </li>
+                  <li>
+                    To the best of your knowledge, this apartment was not
+                    publicly advertised on StreetEasy, Zillow, or the REBNY
+                    Listing Service (RLS) at the time of this match.
+                  </li>
+                  <li>
+                    If you are the agent identified in the renter&apos;s
+                    disclosure, you may pursue this opportunity on the
+                    renter&apos;s behalf.
+                  </li>
+                  <li>
+                    If you are not identified in the renter&apos;s disclosure, you
+                    will not take steps on the renter&apos;s behalf until you are
+                    properly identified through an additional agency disclosure
+                    signed by the renter.
+                  </li>
+                </ul>
+              </>
+            )}
             <label className="flex items-start gap-2 text-sm text-gray-700 mb-6">
               <input
                 type="checkbox"
@@ -2242,7 +2392,9 @@ export default function AgentRenterRequestsPage() {
                 className="mt-1 h-4 w-4 text-blue-600"
               />
               <span className="font-semibold">
-                I confirm the above and approve proceeding with this match.
+                {bulkConfirmScopeType === "all-market"
+                  ? "Confirm Full-Service Full-Market Representation"
+                  : "I confirm the above and approve proceeding with this match."}
               </span>
             </label>
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
