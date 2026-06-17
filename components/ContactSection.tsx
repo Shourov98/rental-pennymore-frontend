@@ -3,8 +3,63 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { API_BASE_URL, apiFetch } from "@/lib/apiClient";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+type ApiErrorDetail = {
+  field?: string;
+  message?: string;
+};
+
+type ApiResponsePayload = {
+  success?: boolean;
+  message?: string;
+  errors?: ApiErrorDetail[];
+};
+
+const isApiResponsePayload = (value: unknown): value is ApiResponsePayload =>
+  typeof value === "object" && value !== null;
+
+const getFieldLabel = (field?: string) => {
+  const label = field?.split(".").filter(Boolean).pop() || "Field";
+
+  return label
+    .replace(/([A-Z])/g, " $1")
+    .replace(/[_-]+/g, " ")
+    .replace(/^./, (char) => char.toUpperCase());
+};
+
+const parseJsonResponse = async (response: Response): Promise<unknown> => {
+  const text = await response.text();
+
+  if (!text) return null;
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+};
+
+const getApiMessage = (data: unknown, fallback: string) => {
+  if (!isApiResponsePayload(data)) return fallback;
+
+  if (Array.isArray(data.errors) && data.errors.length > 0) {
+    const validationMessages = data.errors
+      .map((error) => {
+        const message = error.message?.trim();
+        if (!message) return null;
+
+        return `${getFieldLabel(error.field)}: ${message}`;
+      })
+      .filter((message): message is string => Boolean(message));
+
+    if (validationMessages.length > 0) {
+      return validationMessages.join(" ");
+    }
+  }
+
+  return data.message?.trim() || fallback;
+};
 
 export default function ContactSection() {
   const [email, setEmail] = useState("");
@@ -30,7 +85,7 @@ export default function ContactSection() {
 
     try {
       setIsSubmitting(true);
-      const response = await fetch(`${API_BASE_URL}/support/contact`, {
+      const response = await apiFetch(`${API_BASE_URL}/support/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -40,19 +95,17 @@ export default function ContactSection() {
         }),
       });
 
-      console.log("RESPONSE: ", response);
+      const data = await parseJsonResponse(response);
 
-      const data = await response.json();
-
-      if (!response.ok || !data?.success) {
-        const errorMessage =
-          data?.message || "Message not sent. Please try again.";
-        throw new Error(errorMessage);
+      if (!response.ok || !isApiResponsePayload(data) || !data.success) {
+        throw new Error(
+          getApiMessage(data, "Message not sent. Please try again."),
+        );
       }
 
       setStatusMessage({
         type: "success",
-        message: data.message || "Message sent successfully.",
+        message: getApiMessage(data, "Message sent successfully."),
       });
       setEmail("");
       setSubject("");
