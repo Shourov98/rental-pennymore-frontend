@@ -55,9 +55,9 @@ const guarantorLabels: Record<string, string> = {
 
 const formatDate = (date?: string) =>
   date
-    ? new Date(date).toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "2-digit",
+    ? new Date(date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
         year: "numeric",
       })
     : "Not specified";

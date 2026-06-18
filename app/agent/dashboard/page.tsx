@@ -1445,6 +1445,9 @@ export default function AgentRenterRequestsPage() {
             ...(shouldSendAdditionalOpportunity
               ? { additionalOpportunity: true }
               : {}),
+            ...(matchSearchFilters
+              ? { matchContext: buildMatchSearchPayload(matchSearchFilters) }
+              : {}),
             ...(normalizedOpportunityDetails
               ? { opportunityDetails: normalizedOpportunityDetails }
               : {}),

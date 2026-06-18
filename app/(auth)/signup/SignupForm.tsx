@@ -325,11 +325,11 @@ export default function SignupForm({ role }: { role: SignupRole }) {
       {isRenter ? (
         <div className="mb-4 text-center">
           {referralDisplay?.referrerName && referralDisplay?.brokerageName && (
-            <p className="text-sm font-semibold text-text-primary">
-              {referralDisplay.referrerName} . {referralDisplay.brokerageName}
+            <p className="text-lg font-bold text-text-primary">
+              {referralDisplay.referrerName} &bull; {referralDisplay.brokerageName}
             </p>
           )}
-          <p className="mt-2 text-sm font-semibold text-action">
+          <p className="mt-2 text-base font-semibold text-action">
             Complete your request in less than 2 minutes
           </p>
           <div className="mt-3 flex justify-center">
