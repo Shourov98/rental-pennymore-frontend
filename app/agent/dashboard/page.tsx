@@ -638,6 +638,10 @@ const formatRenterDisplayName = (fullName?: string | null) => {
 const isSharedVisibility = (visibility?: string | null) =>
   visibility?.trim().toLowerCase() === "shared";
 
+const canSelectForBulkMatch = (request: NormalizedAgentRequest) =>
+  !request.alreadyMatchedByAgent ||
+  request.registrationDisclosureConfirmed;
+
 const readStoredFilters = (): FilterType => {
   if (typeof window === "undefined") return defaultFilters;
 
@@ -1214,6 +1218,10 @@ export default function AgentRenterRequestsPage() {
     const selectedIds = new Set(selectedRequestIds);
     return requests.filter((request) => selectedIds.has(request.id));
   }, [requests, selectedRequestIds]);
+  const selectableFilteredRequests = useMemo(
+    () => filteredRequests.filter(canSelectForBulkMatch),
+    [filteredRequests],
+  );
   const selectedHasAlreadyMatchedRequests = selectedRequests.some(
     (request) => request.alreadyMatchedByAgent,
   );
@@ -1312,12 +1320,24 @@ export default function AgentRenterRequestsPage() {
 
     setSelectedRequestIds(
       filteredRequests
-        .filter((request) => (request.matchStarRating ?? 0) >= option.threshold)
+        .filter(
+          (request) =>
+            canSelectForBulkMatch(request) &&
+            (request.matchStarRating ?? 0) >= option.threshold,
+        )
         .map((request) => request.id),
     );
   };
 
   const handleToggleRequestSelection = (requestId: string) => {
+    const request = requests.find((item) => item.id === requestId);
+    if (request && !canSelectForBulkMatch(request)) {
+      setError(
+        `Registration / Disclosure confirmation is required before adding another opportunity to ${request.requestName}.`,
+      );
+      return;
+    }
+
     setQuickSelect("none");
     setSelectedRequestIds((prev) =>
       prev.includes(requestId)
@@ -1328,7 +1348,7 @@ export default function AgentRenterRequestsPage() {
 
   const handleToggleSelectAll = () => {
     setQuickSelect("none");
-    const visibleIds = filteredRequests.map((request) => request.id);
+    const visibleIds = selectableFilteredRequests.map((request) => request.id);
     const allSelected =
       visibleIds.length > 0 &&
       visibleIds.every((requestId) => selectedRequestIds.includes(requestId));
@@ -1403,6 +1423,18 @@ export default function AgentRenterRequestsPage() {
     representationType: RepresentationType,
   ) => {
     if (!selectedRequestIds.length || isMatchingChecked) return;
+
+    const blockedRequests = selectedRequests.filter(
+      (request) => !canSelectForBulkMatch(request),
+    );
+    if (blockedRequests.length) {
+      setError(
+        `Registration / Disclosure confirmation is required before adding another opportunity to ${blockedRequests
+          .map((request) => request.requestName)
+          .join(", ")}.`,
+      );
+      return;
+    }
 
     const normalizedOpportunityDetails = bulkOpportunityDetails
       .trim()
@@ -1488,9 +1520,14 @@ export default function AgentRenterRequestsPage() {
 
       if (data.data?.failed?.length) {
         setError(
-          `${data.data.failed.length} selected request${
-            data.data.failed.length === 1 ? "" : "s"
-          } could not be matched.`,
+          data.data.failed
+            .map((failure) => {
+              const request = requests.find(
+                (item) => item.id === failure.requestId,
+              );
+              return `${request?.requestName || failure.requestId}: ${failure.message}`;
+            })
+            .join(" "),
         );
       }
     } catch (err) {
@@ -1583,7 +1620,7 @@ export default function AgentRenterRequestsPage() {
               <div className="overflow-x-auto">
                 <table
                   className={`w-full text-sm ${
-                    isMatchResultsMode ? "min-w-[1640px]" : "min-w-[1240px]"
+                    isMatchResultsMode ? "min-w-[1760px]" : "min-w-[1240px]"
                   }`}
                 >
                   <thead className="bg-blue-100 text-gray-800">
@@ -1595,8 +1632,8 @@ export default function AgentRenterRequestsPage() {
                             <input
                               type="checkbox"
                               checked={
-                                filteredRequests.length > 0 &&
-                                filteredRequests.every((req) =>
+                                selectableFilteredRequests.length > 0 &&
+                                selectableFilteredRequests.every((req) =>
                                   selectedRequestIds.includes(req.id),
                                 )
                               }
@@ -1617,6 +1654,9 @@ export default function AgentRenterRequestsPage() {
                         <th className="py-3 px-5 text-left">Price (Max)</th>
                         <th className="py-3 px-5 text-left">Beds / Baths</th>
                         <th className="py-3 px-5 text-left">Status</th>
+                        <th className="py-3 px-5 text-center">
+                          Registration / Disclosure
+                        </th>
                         <th className="py-3 px-5 text-right">Actions</th>
                       </tr>
                     ) : (
@@ -1646,6 +1686,7 @@ export default function AgentRenterRequestsPage() {
                       const visibility = req.raw?.visibility;
                       const shouldShowRegistrationDisclosure =
                         isCurrentAgentsRequest ||
+                        req.alreadyMatchedByAgent ||
                         !isSharedVisibility(visibility);
                       const isArchivedForAgent = Boolean(
                         req.isArchivedForAgent,
@@ -1685,7 +1726,13 @@ export default function AgentRenterRequestsPage() {
                                   onChange={() =>
                                     handleToggleRequestSelection(req.id)
                                   }
+                                  disabled={!canSelectForBulkMatch(req)}
                                   aria-label={`Select ${req.requestName}`}
+                                  title={
+                                    canSelectForBulkMatch(req)
+                                      ? undefined
+                                      : "Registration / Disclosure confirmation is required before adding another opportunity"
+                                  }
                                   className={`h-5 w-5 rounded text-blue-600 focus:ring-blue-500 ${
                                     req.alreadyMatchedByAgent
                                       ? "border-2 border-blue-600"
@@ -1904,9 +1951,8 @@ export default function AgentRenterRequestsPage() {
                               );
                             })()}
                           </td>
-                          {!isMatchResultsMode ? (
-                            <td className="py-3 px-5">
-                              {shouldShowRegistrationDisclosure ? (
+                          <td className="py-3 px-5">
+                            {shouldShowRegistrationDisclosure ? (
                                 <div className="flex items-center justify-center gap-2">
                                   <input
                                     type="checkbox"
@@ -1933,9 +1979,8 @@ export default function AgentRenterRequestsPage() {
                                     />
                                   ) : null}
                                 </div>
-                              ) : null}
-                            </td>
-                          ) : null}
+                            ) : null}
+                          </td>
                           <td className="py-3 px-5 flex justify-end gap-2">
                             {isCurrentAgentsRequest &&
                             req.hasOwnerRepresentationMatches ? (
