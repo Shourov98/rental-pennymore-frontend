@@ -641,10 +641,6 @@ const formatRenterDisplayName = (fullName?: string | null) => {
 const isSharedVisibility = (visibility?: string | null) =>
   visibility?.trim().toLowerCase() === "shared";
 
-const canSelectForBulkMatch = (request: NormalizedAgentRequest) =>
-  !request.alreadyMatchedByAgent ||
-  request.registrationDisclosureConfirmed;
-
 const readStoredFilters = (): FilterType => {
   if (typeof window === "undefined") return defaultFilters;
 
@@ -1221,10 +1217,6 @@ export default function AgentRenterRequestsPage() {
     const selectedIds = new Set(selectedRequestIds);
     return requests.filter((request) => selectedIds.has(request.id));
   }, [requests, selectedRequestIds]);
-  const selectableFilteredRequests = useMemo(
-    () => filteredRequests.filter(canSelectForBulkMatch),
-    [filteredRequests],
-  );
   const selectedHasAlreadyMatchedRequests = selectedRequests.some(
     (request) => request.alreadyMatchedByAgent,
   );
@@ -1323,24 +1315,12 @@ export default function AgentRenterRequestsPage() {
 
     setSelectedRequestIds(
       filteredRequests
-        .filter(
-          (request) =>
-            canSelectForBulkMatch(request) &&
-            (request.matchStarRating ?? 0) >= option.threshold,
-        )
+        .filter((request) => (request.matchStarRating ?? 0) >= option.threshold)
         .map((request) => request.id),
     );
   };
 
   const handleToggleRequestSelection = (requestId: string) => {
-    const request = requests.find((item) => item.id === requestId);
-    if (request && !canSelectForBulkMatch(request)) {
-      setError(
-        `Registration / Disclosure confirmation is required before adding another opportunity to ${request.requestName}.`,
-      );
-      return;
-    }
-
     setQuickSelect("none");
     setSelectedRequestIds((prev) =>
       prev.includes(requestId)
@@ -1351,7 +1331,7 @@ export default function AgentRenterRequestsPage() {
 
   const handleToggleSelectAll = () => {
     setQuickSelect("none");
-    const visibleIds = selectableFilteredRequests.map((request) => request.id);
+    const visibleIds = filteredRequests.map((request) => request.id);
     const allSelected =
       visibleIds.length > 0 &&
       visibleIds.every((requestId) => selectedRequestIds.includes(requestId));
@@ -1426,18 +1406,6 @@ export default function AgentRenterRequestsPage() {
     representationType: RepresentationType,
   ) => {
     if (!selectedRequestIds.length || isMatchingChecked) return;
-
-    const blockedRequests = selectedRequests.filter(
-      (request) => !canSelectForBulkMatch(request),
-    );
-    if (blockedRequests.length) {
-      setError(
-        `Registration / Disclosure confirmation is required before adding another opportunity to ${blockedRequests
-          .map((request) => request.requestName)
-          .join(", ")}.`,
-      );
-      return;
-    }
 
     const normalizedOpportunityDetails = bulkOpportunityDetails
       .trim()
@@ -1642,8 +1610,8 @@ export default function AgentRenterRequestsPage() {
                             <input
                               type="checkbox"
                               checked={
-                                selectableFilteredRequests.length > 0 &&
-                                selectableFilteredRequests.every((req) =>
+                                filteredRequests.length > 0 &&
+                                filteredRequests.every((req) =>
                                   selectedRequestIds.includes(req.id),
                                 )
                               }
@@ -1736,13 +1704,7 @@ export default function AgentRenterRequestsPage() {
                                   onChange={() =>
                                     handleToggleRequestSelection(req.id)
                                   }
-                                  disabled={!canSelectForBulkMatch(req)}
                                   aria-label={`Select ${req.requestName}`}
-                                  title={
-                                    canSelectForBulkMatch(req)
-                                      ? undefined
-                                      : "Registration / Disclosure confirmation is required before adding another opportunity"
-                                  }
                                   className={`h-5 w-5 rounded text-blue-600 focus:ring-blue-500 ${
                                     req.alreadyMatchedByAgent
                                       ? "border-2 border-blue-600"
