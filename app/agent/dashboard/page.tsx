@@ -1747,7 +1747,11 @@ export default function AgentRenterRequestsPage() {
                                             width={34}
                                             height={34}
                                             title={feature.description}
-                                            className="h-8 w-8 object-contain"
+                                            className={`h-8 w-8 object-contain ${
+                                              feature.code === "rentBelowMin"
+                                                ? "scale-[1.9]"
+                                                : ""
+                                            }`}
                                           />
                                         );
                                       })}
@@ -2046,7 +2050,9 @@ export default function AgentRenterRequestsPage() {
                           aria-hidden="true"
                           width={44}
                           height={44}
-                          className="h-10 w-10 shrink-0 object-contain"
+                          className={`h-10 w-10 shrink-0 object-contain ${
+                            code === "rentBelowMin" ? "scale-[1.9]" : ""
+                          }`}
                         />
                         <div>
                           <p className="font-semibold text-gray-700">
