@@ -2,6 +2,7 @@
 
 import { Calendar, ListChecks, X } from "lucide-react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import type { NeighborhoodSelection } from "@/components/NeighborhoodModal";
@@ -927,8 +928,18 @@ export default function FilterModal({
                   <button
                     type="button"
                     onClick={applyFilters}
-                    className="flex-1 cursor-pointer rounded-full bg-blue-600 py-2 text-sm font-medium text-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-sm disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-blue-600 disabled:hover:shadow-none"
+                    className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-blue-600 py-2 text-sm font-medium text-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-sm disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-blue-600 disabled:hover:shadow-none"
                   >
+                    {isMatchRequestsVariant ? (
+                      <Image
+                        src="/icons/house.png"
+                        alt=""
+                        aria-hidden="true"
+                        width={18}
+                        height={16}
+                        className="h-4 w-[18px] object-contain"
+                      />
+                    ) : null}
                     {isMatchRequestsVariant ? "Match" : "Apply"}
                   </button>
                 </div>

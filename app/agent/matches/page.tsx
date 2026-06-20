@@ -500,7 +500,7 @@ export default function AgentMatchesPage() {
                 : "bg-white text-blue-500 border-gray-200 hover:bg-gray-100"
             }`}
           >
-            My Referrals
+            Direct Renters
           </button>
           <button
             onClick={() => setIsFilterOpen(true)}

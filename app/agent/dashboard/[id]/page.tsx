@@ -40,9 +40,10 @@ type OwnerRepresentationRegisteredAgent =
   NonNullable<
     NormalizedAgentRequest["raw"]["ownerRepresentationRegisteredAgent"]
   >;
-const OPPORTUNITY_DETAILS_MAX_LENGTH = 300;
+const OPPORTUNITY_DETAILS_MAX_LENGTH = 350;
 const RISKY_OPPORTUNITY_DETAIL_PHRASES = [
   "I have a listing",
+  "I have",
   "exclusive",
   "my owner",
   "my landlord",
@@ -728,7 +729,9 @@ export default function AgentRenterRequestDetailsPage() {
   ) => {
     if (!requestId || isDisabled || isSubmitting) return;
     setStatusMessage(null);
-    const normalizedOpportunityDetails = details.trim().slice(0, 300);
+    const normalizedOpportunityDetails = details
+      .trim()
+      .slice(0, OPPORTUNITY_DETAILS_MAX_LENGTH);
     if (hasRiskyOpportunityDetailsWording(normalizedOpportunityDetails)) {
       setStatusMessage({
         type: "error",
@@ -982,7 +985,7 @@ export default function AgentRenterRequestDetailsPage() {
   const opportunityDetailsCounterClass =
     opportunityDetailsCount >= OPPORTUNITY_DETAILS_MAX_LENGTH
       ? "text-red-600"
-      : opportunityDetailsCount >= 240
+      : opportunityDetailsCount >= 280
         ? "text-orange-400"
         : "text-[#999999]";
   const hasRiskyOpportunityDetails =

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { Eye, Filter, ChevronLeft, ChevronRight, Lock, ChevronDown } from "lucide-react";
+import { Eye, ChevronLeft, ChevronRight, Lock, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { CenteredPageSpinner } from "@/components/ui/centered-page-spinner";
@@ -39,9 +39,10 @@ type QuickSelectThreshold = "none" | "one" | "two" | "three" | "four" | "five";
 type RepresentationType = "owner_representation" | "renter_representation";
 type ConfirmScopeType = "upcoming" | "all-market" | "mixed" | "request";
 
-const OPPORTUNITY_DETAILS_MAX_LENGTH = 300;
+const OPPORTUNITY_DETAILS_MAX_LENGTH = 350;
 const RISKY_OPPORTUNITY_DETAIL_PHRASES = [
   "I have a listing",
+  "I have",
   "exclusive",
   "my owner",
   "my landlord",
@@ -132,18 +133,19 @@ const bathroomQueryLabels: Record<number, string> = {
 };
 
 const missingFeatureIcons: Record<string, string> = {
-  bedrooms: "/icons/match/bedrooms.svg",
-  bathrooms: "/icons/match/bathrooms.svg",
-  rent: "/icons/match/rent.svg",
-  location: "/icons/match/location.svg",
-  moveDateTotalMiss: "/icons/match/move-date-total-miss.svg",
-  moveDateNearMiss: "/icons/match/move-date-near-miss.svg",
-  laundryInUnit: "/icons/match/laundry-in-unit.svg",
-  privateOutdoorSpace: "/icons/match/private-outdoor-space.svg",
-  dishwasher: "/icons/match/dishwasher.svg",
-  doorman: "/icons/match/doorman.svg",
-  elevator: "/icons/match/elevator.svg",
-  laundryInBuilding: "/icons/match/laundry-in-building.svg",
+  bedrooms: "/icons/match/bedrooms.png",
+  bathrooms: "/icons/match/bathrooms.png",
+  rent: "/icons/match/rent.png",
+  rentBelowMin: "/icons/match/rent-below-min.png",
+  location: "/icons/match/location.png",
+  moveDateTotalMiss: "/icons/match/move-date-total-miss.png",
+  moveDateNearMiss: "/icons/match/move-date-near-miss.png",
+  laundryInUnit: "/icons/match/laundry-in-unit.png",
+  privateOutdoorSpace: "/icons/match/private-outdoor-space.png",
+  dishwasher: "/icons/match/dishwasher.png",
+  doorman: "/icons/match/doorman.png",
+  elevator: "/icons/match/elevator.png",
+  laundryInBuilding: "/icons/match/laundry-in-building.png",
 };
 
 const starIconSrc = "/icons/match/star-filled.svg";
@@ -168,6 +170,7 @@ const formatMissingMatchFieldsMessage = (missingFields: string[]) => {
 
 const missingFeatureLegend = [
   ["rent", "Rent over budget", "1-10% above renter's budget"],
+  ["rentBelowMin", "Min price Range", "Rent below min price range"],
   ["location", "Location", "Neighborhood mismatch, same region match only"],
   ["moveDateNearMiss", "Move date near miss", "Move date gap within 16 days"],
   [
@@ -1267,7 +1270,7 @@ export default function AgentRenterRequestsPage() {
   const bulkOpportunityDetailsCounterClass =
     bulkOpportunityDetailsCount >= OPPORTUNITY_DETAILS_MAX_LENGTH
       ? "text-red-600"
-      : bulkOpportunityDetailsCount >= 240
+      : bulkOpportunityDetailsCount >= 280
         ? "text-amber-600"
         : "text-gray-400";
   const hasRiskyBulkOpportunityDetails =
@@ -1600,7 +1603,14 @@ export default function AgentRenterRequestsPage() {
             onClick={() => setIsFilterOpen(true)}
             className="flex cursor-pointer items-center gap-2 rounded-full bg-blue-600 px-4 py-2 font-medium text-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-sm"
           >
-            <Filter className="w-4 h-4" />
+            <Image
+              src="/icons/house.png"
+              alt=""
+              aria-hidden="true"
+              width={18}
+              height={16}
+              className="h-4 w-[18px] object-contain"
+            />
             Find Matches
           </button>
         </div>
@@ -2065,7 +2075,7 @@ export default function AgentRenterRequestsPage() {
                 </button>
 
                 {isLegendOpen ? (
-                  <div className="mt-4 grid grid-cols-1 gap-x-8 gap-y-4 text-xs text-gray-500 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="mt-4 grid grid-cols-1 gap-x-8 gap-y-4 text-xs text-gray-500 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
                     {missingFeatureLegend.map(([code, label, description]) => (
                       <div key={code} className="flex items-center gap-3">
                         <Image
@@ -2104,9 +2114,27 @@ export default function AgentRenterRequestsPage() {
                       </div>
                       <div>
                         <p className="font-semibold text-gray-700">
-                          Preferences
+                          Request 4 Top Preferences
                         </p>
-                        <p>Gold is present; grey is not present.</p>
+                        <p>Gold is present; Grey is not present.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          aria-hidden="true"
+                          className="h-5 w-5 border-2 border-blue-600 bg-white"
+                        />
+                        <span
+                          aria-hidden="true"
+                          className="h-5 w-5 border border-gray-300 bg-white"
+                        />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-700">
+                          Previously Matched / Not Yet Matched
+                        </p>
+                        <p>Blue frame - Previously matched request</p>
                       </div>
                     </div>
                   </div>
