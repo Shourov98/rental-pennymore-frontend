@@ -148,6 +148,10 @@ const missingFeatureIcons: Record<string, string> = {
   laundryInBuilding: "/icons/match/laundry-in-building.png",
 };
 
+const missingFeatureIconVisibilityStyle = {
+  filter: "brightness(0.72) contrast(1.35)",
+};
+
 const starIconSrc = "/icons/match/star-filled.svg";
 const starEmptyIconSrc = "/icons/match/star-empty.svg";
 const preferenceFilledIconSrc = "/icons/match/preference-filled.svg";
@@ -1747,10 +1751,14 @@ export default function AgentRenterRequestsPage() {
                                             width={34}
                                             height={34}
                                             title={feature.description}
-                                            className={`h-8 w-8 object-contain ${
+                                            unoptimized
+                                            style={
+                                              missingFeatureIconVisibilityStyle
+                                            }
+                                            className={`h-8 w-8 ${
                                               feature.code === "rentBelowMin"
-                                                ? "scale-[1.9]"
-                                                : ""
+                                                ? "object-cover scale-[1.45]"
+                                                : "object-contain"
                                             }`}
                                           />
                                         );
@@ -2041,7 +2049,7 @@ export default function AgentRenterRequestsPage() {
                 </button>
 
                 {isLegendOpen ? (
-                  <div className="mt-4 grid grid-cols-1 gap-x-8 gap-y-4 text-xs text-gray-500 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+                  <div className="mt-4 grid grid-cols-1 gap-x-12 gap-y-4 text-xs text-gray-500 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {missingFeatureLegend.map(([code, label, description]) => (
                       <div key={code} className="flex items-center gap-3">
                         <Image
@@ -2050,8 +2058,12 @@ export default function AgentRenterRequestsPage() {
                           aria-hidden="true"
                           width={44}
                           height={44}
-                          className={`h-10 w-10 shrink-0 object-contain ${
-                            code === "rentBelowMin" ? "scale-[1.9]" : ""
+                          unoptimized
+                          style={missingFeatureIconVisibilityStyle}
+                          className={`h-10 w-10 shrink-0 ${
+                            code === "rentBelowMin"
+                              ? "object-cover scale-[1.45]"
+                              : "object-contain"
                           }`}
                         />
                         <div>
