@@ -172,7 +172,7 @@ const missingFeatureIcons: Record<string, string> = {
   bedrooms: "/icons/match/bedrooms.png",
   bathrooms: "/icons/match/bathrooms.png",
   rent: "/icons/match/rent.png",
-  rentBelowMin: "/icons/match/Rent-Below-Min-new.png",
+  rentBelowMin: "/icons/match/rent-min-price.svg",
   location: "/icons/match/location.png",
   moveDateTotalMiss: "/icons/match/move-date-total-miss.png",
   moveDateNearMiss: "/icons/match/move-date-near-miss.png",
