@@ -2,7 +2,13 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { Eye, ChevronLeft, ChevronRight, Lock, ChevronDown } from "lucide-react";
+import {
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+  Lock,
+  ChevronDown,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { CenteredPageSpinner } from "@/components/ui/centered-page-spinner";
@@ -110,11 +116,41 @@ const quickSelectOptions: Array<{
   threshold: number;
 }> = [
   { key: "none", label: "None", starCount: 0, suffix: "", threshold: Infinity },
-  { key: "one", label: "1 star & above", starCount: 1, suffix: "& above", threshold: 1 },
-  { key: "two", label: "2 stars & above", starCount: 2, suffix: "& above", threshold: 2 },
-  { key: "three", label: "3 stars & above", starCount: 3, suffix: "& above", threshold: 3 },
-  { key: "four", label: "4 stars & above", starCount: 4, suffix: "& above", threshold: 4 },
-  { key: "five", label: "5 stars only", starCount: 5, suffix: "only", threshold: 5 },
+  {
+    key: "one",
+    label: "1 star & above",
+    starCount: 1,
+    suffix: "& above",
+    threshold: 1,
+  },
+  {
+    key: "two",
+    label: "2 stars & above",
+    starCount: 2,
+    suffix: "& above",
+    threshold: 2,
+  },
+  {
+    key: "three",
+    label: "3 stars & above",
+    starCount: 3,
+    suffix: "& above",
+    threshold: 3,
+  },
+  {
+    key: "four",
+    label: "4 stars & above",
+    starCount: 4,
+    suffix: "& above",
+    threshold: 4,
+  },
+  {
+    key: "five",
+    label: "5 stars only",
+    starCount: 5,
+    suffix: "only",
+    threshold: 5,
+  },
 ];
 
 const bedroomQueryLabels: Record<number, string> = {
@@ -136,7 +172,7 @@ const missingFeatureIcons: Record<string, string> = {
   bedrooms: "/icons/match/bedrooms.png",
   bathrooms: "/icons/match/bathrooms.png",
   rent: "/icons/match/rent.png",
-  rentBelowMin: "/icons/match/rent-below-min.svg",
+  rentBelowMin: "/icons/match/Rent-Below-Min-new.png",
   location: "/icons/match/location.png",
   moveDateTotalMiss: "/icons/match/move-date-total-miss.png",
   moveDateNearMiss: "/icons/match/move-date-near-miss.png",
@@ -163,7 +199,9 @@ const formatPriorityTitle = (index: number, preference?: string) => {
   const priorityLabel = `Priority ${index + 1}`;
   const preferenceLabel = preference?.trim();
 
-  return preferenceLabel ? `${priorityLabel} / ${preferenceLabel}` : priorityLabel;
+  return preferenceLabel
+    ? `${priorityLabel} / ${preferenceLabel}`
+    : priorityLabel;
 };
 
 const formatMissingMatchFieldsMessage = (missingFields: string[]) => {
@@ -208,7 +246,12 @@ const demoMatchFilters: FilterType = {
   buildingFeatures: ["doorman", "elevator", "laundryInBuilding"],
   petPolicy: ["catsAllowed", "dogsAllowed"],
   guarantorRequired: ["personalGuarantor", "thirdPartyGuarantor"],
-  availableFeatures: ["largeApartment", "lotsOfLight", "newRenovation", "highCeilings"],
+  availableFeatures: [
+    "largeApartment",
+    "lotsOfLight",
+    "newRenovation",
+    "highCeilings",
+  ],
   enabledFeatureGroups: {
     unitFeatures: true,
     buildingFeatures: true,
@@ -295,7 +338,12 @@ const createDemoRequest = (
     visibility: "shared",
     registrationDisclosureConfirmed: true,
     status: "available",
-    preferences: ["Large Apartment", "Lots of Light", "New Renovation", "High Ceilings"],
+    preferences: [
+      "Large Apartment",
+      "Lots of Light",
+      "New Renovation",
+      "High Ceilings",
+    ],
     isActive: true,
     matchScore: 100,
     matchStarRating: 5,
@@ -387,7 +435,8 @@ const createDemoRequests = () =>
         {
           code: "moveDateTotalMiss",
           label: "Move date total miss",
-          description: "Move-in date is more than 16 days from the apartment's availability",
+          description:
+            "Move-in date is more than 16 days from the apartment's availability",
           deduction: -40,
         },
         {
@@ -472,7 +521,8 @@ const createDemoRequests = () =>
         {
           code: "moveDateTotalMiss",
           label: "Move date total miss",
-          description: "Move-in date is more than 16 days from the apartment's availability",
+          description:
+            "Move-in date is more than 16 days from the apartment's availability",
           deduction: -40,
         },
         {
@@ -561,7 +611,9 @@ const renderStars = (rating?: number) => {
   );
 };
 
-const renderQuickSelectLabel = (option: (typeof quickSelectOptions)[number]) => {
+const renderQuickSelectLabel = (
+  option: (typeof quickSelectOptions)[number],
+) => {
   if (option.key === "none") return option.label;
 
   return (
@@ -697,7 +749,8 @@ const readStoredListState = () => {
         typeof parsed.page === "number" && parsed.page > 0 ? parsed.page : 1,
       showOwnReferrals: Boolean(parsed.showOwnReferrals),
       isMatchResultsMode:
-        Boolean(parsed.isMatchResultsMode) && Boolean(restoredMatchSearchFilters),
+        Boolean(parsed.isMatchResultsMode) &&
+        Boolean(restoredMatchSearchFilters),
       matchSearchFilters: restoredMatchSearchFilters,
       isFilterOpen: Boolean(parsed.isFilterOpen),
     };
@@ -739,14 +792,14 @@ export default function AgentRenterRequestsPage() {
   const [archiveReason, setArchiveReason] = useState<ArchiveReason | "">("");
   const [isArchiving, setIsArchiving] = useState(false);
   const [selectedRequestIds, setSelectedRequestIds] = useState<string[]>([]);
-  const [quickSelect, setQuickSelect] =
-    useState<QuickSelectThreshold>("none");
+  const [quickSelect, setQuickSelect] = useState<QuickSelectThreshold>("none");
   const [isMatchingChecked, setIsMatchingChecked] = useState(false);
   const [isBulkRepresentationOpen, setIsBulkRepresentationOpen] =
     useState(false);
   const [isBulkConfirmOpen, setIsBulkConfirmOpen] = useState(false);
-  const [bulkRepresentationType, setBulkRepresentationType] =
-    useState<RepresentationType | "">("");
+  const [bulkRepresentationType, setBulkRepresentationType] = useState<
+    RepresentationType | ""
+  >("");
   const [bulkOpportunityDetails, setBulkOpportunityDetails] = useState("");
   const [isBulkConfirmChecked, setIsBulkConfirmChecked] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(false);
@@ -846,7 +899,9 @@ export default function AgentRenterRequestsPage() {
           });
           cacheAgentRequests(demoRequests);
 
-          const quickParam = getDemoParam("quick") as QuickSelectThreshold | null;
+          const quickParam = getDemoParam(
+            "quick",
+          ) as QuickSelectThreshold | null;
           const quickOption = quickSelectOptions.find(
             (option) => option.key === quickParam,
           );
@@ -881,19 +936,16 @@ export default function AgentRenterRequestsPage() {
 
         const response =
           isMatchResultsMode && matchSearchFilters
-            ? await fetch(
-                `${API_BASE_URL}/pre-market/agent/match-search`,
-                {
-                  method: "POST",
-                  headers,
-                  signal: controller.signal,
-                  body: JSON.stringify({
-                    ...buildMatchSearchPayload(matchSearchFilters),
-                    page,
-                    limit,
-                  }),
-                },
-              )
+            ? await fetch(`${API_BASE_URL}/pre-market/agent/match-search`, {
+                method: "POST",
+                headers,
+                signal: controller.signal,
+                body: JSON.stringify({
+                  ...buildMatchSearchPayload(matchSearchFilters),
+                  page,
+                  limit,
+                }),
+              })
             : await fetch(
                 `${API_BASE_URL}/pre-market/all?${params.toString()}`,
                 {
@@ -958,13 +1010,7 @@ export default function AgentRenterRequestsPage() {
     return requests.filter((req) =>
       matchesAgentFilters(req.raw, filters, showOwnReferrals, currentAgentId),
     );
-  }, [
-    currentAgentId,
-    filters,
-    isMatchResultsMode,
-    requests,
-    showOwnReferrals,
-  ]);
+  }, [currentAgentId, filters, isMatchResultsMode, requests, showOwnReferrals]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !isStateRestored) return;
@@ -995,7 +1041,9 @@ export default function AgentRenterRequestsPage() {
 
   const handleView = (req: NormalizedAgentRequest) => {
     cacheSingleAgentRequest(req);
-    router.push(`/agent/dashboard/${req.id}${isMatchResultsMode ? "?from=matches" : ""}`);
+    router.push(
+      `/agent/dashboard/${req.id}${isMatchResultsMode ? "?from=matches" : ""}`,
+    );
   };
 
   const handleToggleShare = async (request: NormalizedAgentRequest) => {
@@ -1271,8 +1319,9 @@ export default function AgentRenterRequestsPage() {
       : bulkOpportunityDetailsCount >= 280
         ? "text-amber-600"
         : "text-gray-400";
-  const hasRiskyBulkOpportunityDetails =
-    hasRiskyOpportunityDetailsWording(bulkOpportunityDetails);
+  const hasRiskyBulkOpportunityDetails = hasRiskyOpportunityDetailsWording(
+    bulkOpportunityDetails,
+  );
   const handlePageSelect = (value: number) => {
     if (value === currentPage) return;
     setPage(value);
@@ -1483,7 +1532,9 @@ export default function AgentRenterRequestsPage() {
       );
 
       if (!response.ok || data?.success === false) {
-        throw new Error(data?.message || "We couldn't match selected requests.");
+        throw new Error(
+          data?.message || "We couldn't match selected requests.",
+        );
       }
 
       const matchedIds = new Set(
@@ -1936,8 +1987,8 @@ export default function AgentRenterRequestsPage() {
                                     isMatchedStatus
                                       ? "bg-green-100 text-green-700"
                                       : isActiveStatus
-                                      ? "bg-green-100 text-green-700"
-                                      : "bg-gray-100 text-gray-600"
+                                        ? "bg-green-100 text-green-700"
+                                        : "bg-gray-100 text-gray-600"
                                   }`}
                                 >
                                   {statusText}
@@ -1947,32 +1998,29 @@ export default function AgentRenterRequestsPage() {
                           </td>
                           <td className="py-3 px-5">
                             {shouldShowRegistrationDisclosure ? (
-                                <div className="flex items-center justify-center gap-2">
-                                  <input
-                                    type="checkbox"
-                                    checked={
-                                      req.registrationDisclosureConfirmed
+                              <div className="flex items-center justify-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  checked={req.registrationDisclosureConfirmed}
+                                  disabled={
+                                    req.registrationDisclosureConfirmed ||
+                                    mutatingRegistrationDisclosureId === req.id
+                                  }
+                                  onChange={(event) => {
+                                    if (event.target.checked) {
+                                      handleConfirmRegistrationDisclosure(req);
                                     }
-                                    disabled={
-                                      req.registrationDisclosureConfirmed ||
-                                      mutatingRegistrationDisclosureId ===
-                                        req.id
-                                    }
-                                    onChange={(event) => {
-                                      if (event.target.checked) {
-                                        handleConfirmRegistrationDisclosure(req);
-                                      }
-                                    }}
-                                    aria-label={`Confirm Registration / Disclosure for ${req.requestName}`}
-                                    className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
+                                  }}
+                                  aria-label={`Confirm Registration / Disclosure for ${req.requestName}`}
+                                  className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
+                                />
+                                {isRegistrationDisclosureLocked ? (
+                                  <Lock
+                                    className="h-4 w-4 text-gray-500"
+                                    aria-hidden="true"
                                   />
-                                  {isRegistrationDisclosureLocked ? (
-                                    <Lock
-                                      className="h-4 w-4 text-gray-500"
-                                      aria-hidden="true"
-                                    />
-                                  ) : null}
-                                </div>
+                                ) : null}
+                              </div>
                             ) : null}
                           </td>
                           <td className="py-3 px-5 flex justify-end gap-2">
@@ -2041,7 +2089,9 @@ export default function AgentRenterRequestsPage() {
                 disabled={!selectedRequestIds.length || isMatchingChecked}
                 className="rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:bg-blue-600 disabled:hover:shadow-none"
               >
-                {isMatchingChecked ? bulkActionLoadingLabel : bulkActionIdleLabel}
+                {isMatchingChecked
+                  ? bulkActionLoadingLabel
+                  : bulkActionIdleLabel}
               </button>
 
               <div>
@@ -2073,9 +2123,7 @@ export default function AgentRenterRequestsPage() {
                           className="h-10 w-10 shrink-0 object-contain"
                         />
                         <div>
-                          <p className="font-semibold text-gray-700">
-                            {label}
-                          </p>
+                          <p className="font-semibold text-gray-700">{label}</p>
                           <p>{description}</p>
                         </div>
                       </div>
@@ -2302,7 +2350,10 @@ export default function AgentRenterRequestsPage() {
               <button
                 type="button"
                 onClick={() => {
-                  if (!bulkRepresentationType || hasRiskyBulkOpportunityDetails) {
+                  if (
+                    !bulkRepresentationType ||
+                    hasRiskyBulkOpportunityDetails
+                  ) {
                     return;
                   }
 
@@ -2357,11 +2408,10 @@ export default function AgentRenterRequestsPage() {
                 </p>
                 <ul className="text-sm text-gray-700 space-y-2 mb-4 list-disc pl-5">
                   <li>
-                    For All Market requests, you intend to provide
-                    full-service, full-market representation, including agent
-                    guidance, landlord and building screening, scheduling,
-                    coordination, and ongoing support throughout the rental
-                    process.
+                    For All Market requests, you intend to provide full-service,
+                    full-market representation, including agent guidance,
+                    landlord and building screening, scheduling, coordination,
+                    and ongoing support throughout the rental process.
                   </li>
                   <li>
                     You will verify each renter&apos;s Corcoran agency
@@ -2390,10 +2440,10 @@ export default function AgentRenterRequestsPage() {
                     renter&apos;s behalf.
                   </li>
                   <li>
-                    If you are not identified in the renter&apos;s disclosure, you
-                    will not take steps on the renter&apos;s behalf until you are
-                    properly identified through an additional agency disclosure
-                    signed by the renter.
+                    If you are not identified in the renter&apos;s disclosure,
+                    you will not take steps on the renter&apos;s behalf until
+                    you are properly identified through an additional agency
+                    disclosure signed by the renter.
                   </li>
                 </ul>
               </>
@@ -2404,9 +2454,9 @@ export default function AgentRenterRequestsPage() {
                 </p>
                 <ul className="text-sm text-gray-700 space-y-2 mb-4 list-disc pl-5">
                   <li>
-                    You will verify the renter&apos;s Corcoran agency disclosures
-                    and client registration prior to taking any action on the
-                    renter&apos;s behalf.
+                    You will verify the renter&apos;s Corcoran agency
+                    disclosures and client registration prior to taking any
+                    action on the renter&apos;s behalf.
                   </li>
                   <li>
                     Any information about the apartment being presented to this
@@ -2428,10 +2478,10 @@ export default function AgentRenterRequestsPage() {
                     renter&apos;s behalf.
                   </li>
                   <li>
-                    If you are not identified in the renter&apos;s disclosure, you
-                    will not take steps on the renter&apos;s behalf until you are
-                    properly identified through an additional agency disclosure
-                    signed by the renter.
+                    If you are not identified in the renter&apos;s disclosure,
+                    you will not take steps on the renter&apos;s behalf until
+                    you are properly identified through an additional agency
+                    disclosure signed by the renter.
                   </li>
                 </ul>
               </>
