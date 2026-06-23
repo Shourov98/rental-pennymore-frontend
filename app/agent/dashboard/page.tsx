@@ -136,7 +136,7 @@ const missingFeatureIcons: Record<string, string> = {
   bedrooms: "/icons/match/bedrooms.png",
   bathrooms: "/icons/match/bathrooms.png",
   rent: "/icons/match/rent.png",
-  rentBelowMin: "/icons/match/rent-below-min.png",
+  rentBelowMin: "/icons/match/rent-below-min.svg",
   location: "/icons/match/location.png",
   moveDateTotalMiss: "/icons/match/move-date-total-miss.png",
   moveDateNearMiss: "/icons/match/move-date-near-miss.png",
@@ -156,6 +156,8 @@ const starIconSrc = "/icons/match/star-filled.svg";
 const starEmptyIconSrc = "/icons/match/star-empty.svg";
 const preferenceFilledIconSrc = "/icons/match/preference-filled.svg";
 const preferenceEmptyIconSrc = "/icons/match/preference-empty.svg";
+const matchMissingColumnClass = "min-w-[170px]";
+const matchPreferenceColumnClass = "min-w-[175px]";
 
 const formatPriorityTitle = (index: number, preference?: string) => {
   const priorityLabel = `Priority ${index + 1}`;
@@ -1602,7 +1604,7 @@ export default function AgentRenterRequestsPage() {
               <div className="overflow-x-auto">
                 <table
                   className={`w-full text-sm ${
-                    isMatchResultsMode ? "min-w-[1760px]" : "min-w-[1240px]"
+                    isMatchResultsMode ? "min-w-[1880px]" : "min-w-[1240px]"
                   }`}
                 >
                   <thead className="bg-blue-100 text-gray-800">
@@ -1627,8 +1629,16 @@ export default function AgentRenterRequestsPage() {
                         </th>
                         <th className="py-3 px-5 text-left">Request</th>
                         <th className="py-3 px-5 text-left">Match Rating</th>
-                        <th className="py-3 px-5 text-left">What&apos;s Missing</th>
-                        <th className="py-3 px-5 text-left">Preference Match</th>
+                        <th
+                          className={`py-3 px-5 text-left ${matchMissingColumnClass}`}
+                        >
+                          What&apos;s Missing
+                        </th>
+                        <th
+                          className={`py-3 px-5 text-left ${matchPreferenceColumnClass}`}
+                        >
+                          Preference Match
+                        </th>
                         <th className="py-3 px-5 text-left">Renter</th>
                         <th className="py-3 px-5 text-left">Scope</th>
                         <th className="py-3 px-5 text-left">Visibility</th>
@@ -1732,9 +1742,11 @@ export default function AgentRenterRequestsPage() {
                               <td className="py-3 px-5">
                                 {renderStars(req.matchStarRating)}
                               </td>
-                              <td className="py-3 px-5">
+                              <td
+                                className={`py-3 px-5 ${matchMissingColumnClass}`}
+                              >
                                 {req.matchMissingFeatures?.length ? (
-                                  <div className="flex items-center gap-2">
+                                  <div className="inline-flex min-w-[112px] shrink-0 flex-nowrap items-center gap-2">
                                     {req.matchMissingFeatures
                                       .slice(0, 3)
                                       .map((feature) => {
@@ -1755,11 +1767,7 @@ export default function AgentRenterRequestsPage() {
                                             style={
                                               missingFeatureIconVisibilityStyle
                                             }
-                                            className={`h-8 w-8 ${
-                                              feature.code === "rentBelowMin"
-                                                ? "object-cover scale-[1.45]"
-                                                : "object-contain"
-                                            }`}
+                                            className="h-8 w-8 shrink-0 object-contain"
                                           />
                                         );
                                       })}
@@ -1770,9 +1778,11 @@ export default function AgentRenterRequestsPage() {
                                   </span>
                                 )}
                               </td>
-                              <td className="py-3 px-5">
+                              <td
+                                className={`py-3 px-5 ${matchPreferenceColumnClass}`}
+                              >
                                 {req.matchPreferenceMatches ? (
-                                  <div className="flex items-center gap-1.5">
+                                  <div className="inline-flex min-w-[106px] shrink-0 flex-nowrap items-center gap-1.5">
                                     {req.matchPreferenceMatches.map(
                                       (matched, index) => (
                                         <Image
@@ -1790,7 +1800,7 @@ export default function AgentRenterRequestsPage() {
                                             index,
                                             req.preferences[index],
                                           )}
-                                          className="h-5 w-5"
+                                          className="h-5 w-5 shrink-0"
                                         />
                                       ),
                                     )}
@@ -2060,11 +2070,7 @@ export default function AgentRenterRequestsPage() {
                           height={44}
                           unoptimized
                           style={missingFeatureIconVisibilityStyle}
-                          className={`h-10 w-10 shrink-0 ${
-                            code === "rentBelowMin"
-                              ? "object-cover scale-[1.45]"
-                              : "object-contain"
-                          }`}
+                          className="h-10 w-10 shrink-0 object-contain"
                         />
                         <div>
                           <p className="font-semibold text-gray-700">
