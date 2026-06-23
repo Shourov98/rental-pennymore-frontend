@@ -172,7 +172,7 @@ const missingFeatureIcons: Record<string, string> = {
   bedrooms: "/icons/match/bedrooms.png",
   bathrooms: "/icons/match/bathrooms.png",
   rent: "/icons/match/rent.png",
-  rentBelowMin: "/icons/match/rent-min-price.svg",
+  rentBelowMin: "/icons/match/rent-below-min-normalized.png",
   location: "/icons/match/location.png",
   moveDateTotalMiss: "/icons/match/move-date-total-miss.png",
   moveDateNearMiss: "/icons/match/move-date-near-miss.png",
@@ -2111,7 +2111,7 @@ export default function AgentRenterRequestsPage() {
                 {isLegendOpen ? (
                   <div className="mt-4 grid grid-cols-1 gap-x-12 gap-y-4 text-xs text-gray-500 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {missingFeatureLegend.map(([code, label, description]) => (
-                      <div key={code} className="flex items-center gap-3">
+                      <div key={code} className="flex items-start gap-3">
                         <Image
                           src={missingFeatureIcons[code]}
                           alt=""
@@ -2128,7 +2128,7 @@ export default function AgentRenterRequestsPage() {
                         </div>
                       </div>
                     ))}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-start gap-3">
                       <div className="flex items-center gap-1">
                         {[true, false, false, false].map((matched, index) => (
                           <Image
@@ -2153,7 +2153,7 @@ export default function AgentRenterRequestsPage() {
                         <p>Gold is present; Grey is not present.</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-start gap-3">
                       <div className="flex items-center gap-1.5">
                         <span
                           aria-hidden="true"
