@@ -9,11 +9,58 @@ import { getSavedReferralCode, saveReferralCode } from "@/lib/referralCode";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const INACTIVE_REGISTRATION_LINK_CODE = "REGISTRATION_LINK_INACTIVE";
+const RENTER_PASSWORD_MIN_LENGTH = 8;
+const RENTER_PASSWORD_TOO_SHORT_MESSAGE =
+  "Password must be at least 8 characters.";
 
 type SignupRole = "renter" | "agent";
 type ReferralDisplay = {
   referrerName?: string | null;
   brokerageName?: string | null;
+};
+type ApiErrorDetail = {
+  field?: string;
+  message?: string;
+};
+type ApiResponsePayload = {
+  success?: boolean;
+  message?: string;
+  errorCode?: string;
+  errors?: ApiErrorDetail[];
+  data?: ReferralDisplay;
+};
+
+const isApiResponsePayload = (value: unknown): value is ApiResponsePayload =>
+  typeof value === "object" && value !== null;
+
+const getApiFieldError = (
+  data: unknown,
+  fieldName: string,
+): string | null => {
+  if (!isApiResponsePayload(data) || !Array.isArray(data.errors)) {
+    return null;
+  }
+
+  const error = data.errors.find((item) => {
+    const field = item.field?.split(".").filter(Boolean).pop();
+    return field === fieldName;
+  });
+
+  return error?.message?.trim() || null;
+};
+
+const getApiErrorMessage = (data: unknown, fallback: string): string => {
+  if (!isApiResponsePayload(data)) return fallback;
+
+  const validationMessages = data.errors
+    ?.map((error) => error.message?.trim())
+    .filter((message): message is string => Boolean(message));
+
+  if (validationMessages?.length) {
+    return validationMessages.join(" ");
+  }
+
+  return data.message?.trim() || fallback;
 };
 
 export default function SignupForm({ role }: { role: SignupRole }) {
@@ -30,6 +77,7 @@ export default function SignupForm({ role }: { role: SignupRole }) {
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [referralDisplay, setReferralDisplay] =
     useState<ReferralDisplay | null>(null);
   const [formData, setFormData] = useState({
@@ -149,6 +197,7 @@ export default function SignupForm({ role }: { role: SignupRole }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFieldErrors({});
     const trimmedFullName = formData.fullName.trim();
     const hasFullNameSpace = /\s+/.test(trimmedFullName);
 
@@ -165,6 +214,16 @@ export default function SignupForm({ role }: { role: SignupRole }) {
         type: "error",
         message: "Please agree to the terms to continue.",
       });
+      return;
+    }
+
+    if (
+      isRenter &&
+      formData.password.length > 0 &&
+      formData.password.length < RENTER_PASSWORD_MIN_LENGTH
+    ) {
+      setStatusMessage(null);
+      setFieldErrors({ password: RENTER_PASSWORD_TOO_SHORT_MESSAGE });
       return;
     }
 
@@ -191,12 +250,14 @@ export default function SignupForm({ role }: { role: SignupRole }) {
           }),
         });
 
-        const data = await response.json();
+        const data = (await response.json().catch(() => ({}))) as unknown;
 
-        if (!response.ok || !data?.success) {
+        if (!response.ok || !isApiResponsePayload(data) || !data?.success) {
           throw new Error(
-            data?.message ||
+            getApiErrorMessage(
+              data,
               "Unable to sign up at the moment. Please try again.",
+            ),
           );
         }
 
@@ -234,16 +295,29 @@ export default function SignupForm({ role }: { role: SignupRole }) {
         body: JSON.stringify(renterPayload),
       });
 
-      const data = await response.json();
+      const data = (await response.json().catch(() => ({}))) as unknown;
 
-      if (!response.ok || !data?.success) {
-        if (data?.errorCode === INACTIVE_REGISTRATION_LINK_CODE) {
+      if (!response.ok || !isApiResponsePayload(data) || !data?.success) {
+        if (
+          isApiResponsePayload(data) &&
+          data?.errorCode === INACTIVE_REGISTRATION_LINK_CODE
+        ) {
           router.replace("/registration-link-not-active");
           return;
         }
 
+        const passwordError = getApiFieldError(data, "password");
+        if (passwordError) {
+          setFieldErrors({ password: passwordError });
+          setStatusMessage(null);
+          return;
+        }
+
         throw new Error(
-          data?.message || "Unable to sign up at the moment. Please try again.",
+          getApiErrorMessage(
+            data,
+            "Unable to sign up at the moment. Please try again.",
+          ),
         );
       }
 
@@ -433,9 +507,16 @@ export default function SignupForm({ role }: { role: SignupRole }) {
           }
           onRightIconClick={() => setShowPassword((prev) => !prev)}
           value={formData.password}
-          onChange={(value) =>
-            setFormData((prev) => ({ ...prev, password: value }))
-          }
+          onChange={(value) => {
+            setFormData((prev) => ({ ...prev, password: value }));
+            setFieldErrors((prev) => {
+              if (!prev.password) return prev;
+              const next = { ...prev };
+              delete next.password;
+              return next;
+            });
+          }}
+          error={fieldErrors.password}
         />
 
         <div className="flex items-start gap-3 mt-2">
@@ -509,6 +590,7 @@ function InputField({
   onRightIconClick,
   value,
   onChange,
+  error,
 }: {
   icon: string;
   rightIcon?: ReactNode;
@@ -518,6 +600,7 @@ function InputField({
   onRightIconClick?: () => void;
   value?: string;
   onChange?: (value: string) => void;
+  error?: string;
 }) {
   return (
     <div>
@@ -552,6 +635,7 @@ function InputField({
           </button>
         )}
       </div>
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
   );
 }
