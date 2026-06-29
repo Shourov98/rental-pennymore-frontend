@@ -36,6 +36,10 @@ export interface ApiAgentRequest {
   shareConsent?: boolean;
   scope?: string;
   visibility?: string;
+  matchedByAgent?: {
+    agentId?: string;
+    fullName?: string;
+  } | null;
   registrationDisclosureConfirmed?: boolean;
   registrationDisclosureConfirmedAt?: string | null;
   isArchivedForAgent?: boolean;
@@ -171,6 +175,10 @@ export interface NormalizedAgentRequest {
   scopeLabel: string;
   visibilityLabel: string;
   isPrivateVisibility: boolean;
+  matchedByAgent?: {
+    agentId?: string;
+    fullName?: string;
+  } | null;
   registrationDisclosureConfirmed: boolean;
   registrationDisclosureConfirmedAt?: string | null;
   isArchivedForAgent?: boolean;
@@ -317,6 +325,7 @@ export const normalizeAgentRequest = (
     scopeLabel: formatScope(req.scope),
     visibilityLabel,
     isPrivateVisibility,
+    matchedByAgent: req.matchedByAgent ?? null,
     registrationDisclosureConfirmed: Boolean(
       req.registrationDisclosureConfirmed,
     ),

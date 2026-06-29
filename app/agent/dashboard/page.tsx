@@ -1616,12 +1616,24 @@ export default function AgentRenterRequestsPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowOwnReferrals((prev) => !prev)}
-            className={`cursor-pointer rounded-full border px-4 py-2 font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 ${
+            className={`flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 ${
               showOwnReferrals
                 ? "border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-sm"
                 : "border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm"
             }`}
           >
+            <Image
+              src={
+                showOwnReferrals
+                  ? "/icons/direct_renter_white.png"
+                  : "/icons/direct_renter_black.png"
+              }
+              alt=""
+              aria-hidden="true"
+              width={24}
+              height={24}
+              className="h-[24px] w-[24px] object-contain"
+            />
             Direct Renters
           </button>
           <button
@@ -1707,7 +1719,7 @@ export default function AgentRenterRequestsPage() {
                         <th className="py-3 px-5 text-left">Date</th>
                         <th className="py-3 px-5 text-left">Request</th>
                         <th className="py-3 px-5 text-left">Renter</th>
-                        <th className="py-3 px-5 text-left">Scope</th>
+                        <th className="py-3 px-5 text-center">Scope</th>
                         <th className="py-3 px-5 text-left">Visibility</th>
                         <th className="py-3 px-5 text-left">Borough</th>
                         <th className="py-3 px-5 text-left">Price (Max)</th>
@@ -1881,9 +1893,19 @@ export default function AgentRenterRequestsPage() {
                             </>
                           )}
                           <td className="py-3 px-5">
-                            <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
-                              {req.scopeLabel}
-                            </span>
+                            <div className="flex flex-col items-center gap-1">
+                              <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+                                {req.scopeLabel}
+                              </span>
+                              {req.scopeLabel === "Upcoming (M)" &&
+                              req.matchedByAgent?.fullName ? (
+                                <span className="text-xs font-medium text-blue-600">
+                                  {formatRenterDisplayName(
+                                    req.matchedByAgent.fullName,
+                                  )}
+                                </span>
+                              ) : null}
+                            </div>
                           </td>
                           <td className="py-3 px-5">
                             {isCurrentAgentsRequest ? (
