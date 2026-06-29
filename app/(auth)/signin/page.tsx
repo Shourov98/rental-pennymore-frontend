@@ -21,6 +21,8 @@ import { Spinner } from "@/components/ui/spinner";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+const EMAIL_NOT_VERIFIED_MESSAGE = "please verify your email";
+
 type DefaultReferralAgent = {
   id: string;
   role: string;
@@ -262,6 +264,32 @@ function SigninPageContent() {
         setDefaultReferralAgent(data.details.defaultReferralAgent);
         setStatusMessage(null);
         return false;
+      }
+
+      const isEmailNotVerified
+        = typeof message === "string"
+          && message.trim().toLowerCase().includes(EMAIL_NOT_VERIFIED_MESSAGE);
+
+      if (isEmailNotVerified) {
+        const userEmail = email.trim();
+        if (userEmail) {
+          // Fire-and-forget the resend — don't block the redirect on it.
+          // If resend hits the 60s cooldown, the user still has the OTP page
+          // and can use the existing "Resend code" button there.
+          fetch(`${API_BASE_URL}/auth/resend-verification`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: userEmail }),
+          }).catch(() => {
+            // Swallow network errors; the OTP page has its own resend button.
+          });
+          setStatusMessage({
+            type: "success",
+            message: "Sending a verification code to your email...",
+          });
+          router.push(`/otp-verify?email=${encodeURIComponent(userEmail)}`);
+          return false;
+        }
       }
 
       throw new Error(message);
