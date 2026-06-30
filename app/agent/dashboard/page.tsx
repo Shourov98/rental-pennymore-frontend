@@ -719,6 +719,7 @@ const readStoredListState = () => {
     return {
       page: 1,
       showOwnReferrals: false,
+      showAllMarketReferrals: false,
       isMatchResultsMode: false,
       matchSearchFilters: null,
       isFilterOpen: false,
@@ -731,6 +732,7 @@ const readStoredListState = () => {
       return {
         page: 1,
         showOwnReferrals: false,
+        showAllMarketReferrals: false,
         isMatchResultsMode: false,
         matchSearchFilters: null,
         isFilterOpen: false,
@@ -739,6 +741,7 @@ const readStoredListState = () => {
     const parsed = JSON.parse(stored) as Partial<{
       page: number;
       showOwnReferrals: boolean;
+      showAllMarketReferrals: boolean;
       isMatchResultsMode: boolean;
       matchSearchFilters: FilterType | null;
       isFilterOpen: boolean;
@@ -750,6 +753,7 @@ const readStoredListState = () => {
       page:
         typeof parsed.page === "number" && parsed.page > 0 ? parsed.page : 1,
       showOwnReferrals: Boolean(parsed.showOwnReferrals),
+      showAllMarketReferrals: Boolean(parsed.showAllMarketReferrals),
       isMatchResultsMode:
         Boolean(parsed.isMatchResultsMode) &&
         Boolean(restoredMatchSearchFilters),
@@ -760,6 +764,7 @@ const readStoredListState = () => {
     return {
       page: 1,
       showOwnReferrals: false,
+      showAllMarketReferrals: false,
       isMatchResultsMode: false,
       matchSearchFilters: null,
       isFilterOpen: false,
@@ -781,6 +786,7 @@ export default function AgentRenterRequestsPage() {
   const [isMatchResultsMode, setIsMatchResultsMode] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [showOwnReferrals, setShowOwnReferrals] = useState(false);
+  const [showAllMarketReferrals, setShowAllMarketReferrals] = useState(false);
   const [isStateRestored, setIsStateRestored] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -831,12 +837,14 @@ export default function AgentRenterRequestsPage() {
     const {
       page: storedPage,
       showOwnReferrals: storedShowOwnReferrals,
+      showAllMarketReferrals: storedShowAllMarketReferrals,
       isMatchResultsMode: storedIsMatchResultsMode,
       matchSearchFilters: storedMatchSearchFilters,
       isFilterOpen: storedIsFilterOpen,
     } = readStoredListState();
     setPage(storedPage);
     setShowOwnReferrals(storedShowOwnReferrals);
+    setShowAllMarketReferrals(storedShowAllMarketReferrals);
     setMatchSearchFilters(storedMatchSearchFilters);
     setIsMatchResultsMode(storedIsMatchResultsMode);
     setIsFilterOpen(storedIsFilterOpen);
@@ -863,6 +871,7 @@ export default function AgentRenterRequestsPage() {
       JSON.stringify({
         page,
         showOwnReferrals,
+        showAllMarketReferrals,
         isMatchResultsMode,
         matchSearchFilters,
         isFilterOpen,
@@ -874,6 +883,7 @@ export default function AgentRenterRequestsPage() {
     isStateRestored,
     matchSearchFilters,
     page,
+    showAllMarketReferrals,
     showOwnReferrals,
   ]);
 
@@ -1016,9 +1026,22 @@ export default function AgentRenterRequestsPage() {
     if (isMatchResultsMode) return requests;
 
     return requests.filter((req) =>
-      matchesAgentFilters(req.raw, filters, showOwnReferrals, currentAgentId),
+      matchesAgentFilters(
+        req.raw,
+        filters,
+        showOwnReferrals,
+        currentAgentId,
+        showAllMarketReferrals,
+      ),
     );
-  }, [currentAgentId, filters, isMatchResultsMode, requests, showOwnReferrals]);
+  }, [
+    currentAgentId,
+    filters,
+    isMatchResultsMode,
+    requests,
+    showAllMarketReferrals,
+    showOwnReferrals,
+  ]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !isStateRestored) return;
@@ -1033,6 +1056,7 @@ export default function AgentRenterRequestsPage() {
       isMatchResultsMode,
       isFilterOpen,
       showOwnReferrals,
+      showAllMarketReferrals,
     });
   }, [
     filteredRequests,
@@ -1044,6 +1068,7 @@ export default function AgentRenterRequestsPage() {
     matchSearchFilters,
     page,
     pagination?.totalPages,
+    showAllMarketReferrals,
     showOwnReferrals,
   ]);
 
@@ -1747,6 +1772,33 @@ export default function AgentRenterRequestsPage() {
         </div>
         <div className="flex items-center gap-3">
           <button
+            onClick={() => setShowAllMarketReferrals((prev) => !prev)}
+            className={`flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 ${
+              showAllMarketReferrals
+                ? "border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-sm"
+                : "border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm"
+            }`}
+            title={
+              showAllMarketReferrals
+                ? "Show all requests"
+                : "Show only All-Market referrals"
+            }
+          >
+            <img
+              src={
+                showAllMarketReferrals
+                  ? "/icons/all_market_icon_white.svg"
+                  : "/icons/all_market_icon_black.svg"
+              }
+              alt=""
+              aria-hidden="true"
+              width={24}
+              height={56}
+              className="h-[24px] w-[56px] object-contain"
+            />
+            All-Market Referrals
+          </button>
+          <button
             onClick={() => setShowOwnReferrals((prev) => !prev)}
             className={`flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 ${
               showOwnReferrals
@@ -2274,7 +2326,9 @@ export default function AgentRenterRequestsPage() {
             <div className="bg-white rounded-xl shadow-sm p-6 text-gray-600">
               {isMatchResultsMode
                 ? "No renter requests matched this apartment."
-                : "No renter requests match the current filters on this page."}
+                : showAllMarketReferrals
+                  ? "No All-Market referrals available right now."
+                  : "No renter requests match the current filters on this page."}
             </div>
           )}
 

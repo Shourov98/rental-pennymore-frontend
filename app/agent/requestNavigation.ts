@@ -19,6 +19,7 @@ export interface FilterableAgentRequestLike {
       } | null;
     } | null;
   } | null;
+  scope?: string | null;
   priceRange?: {
     min?: number;
     max?: number;
@@ -51,6 +52,7 @@ export interface AgentListNavigationState {
   isMatchResultsMode?: boolean;
   isFilterOpen?: boolean;
   showOwnReferrals: boolean;
+  showAllMarketReferrals?: boolean;
 }
 
 const defaultFilters: FilterType = {
@@ -277,8 +279,13 @@ export const matchesAgentFilters = (
   filters: FilterType,
   showOwnReferrals: boolean,
   currentAgentId?: string | null,
+  showAllMarketReferrals: boolean = false,
 ) => {
   if (!raw) return false;
+
+  if (showAllMarketReferrals) {
+    if (normalizeText(raw.scope ?? "") !== "all market") return false;
+  }
 
   if (filters.borough) {
     const hasBorough = raw.locations?.some(
@@ -407,6 +414,7 @@ export const readStoredAgentListState = (
       isMatchResultsMode: Boolean(parsed.isMatchResultsMode),
       isFilterOpen: Boolean(parsed.isFilterOpen),
       showOwnReferrals: Boolean(parsed.showOwnReferrals),
+      showAllMarketReferrals: Boolean(parsed.showAllMarketReferrals),
     };
   } catch {
     return null;
