@@ -17,6 +17,8 @@ import { fetchAgentProfile } from "@/store/slices/agentProfileSlice";
 import ArchiveRequestDialog, {
   type ArchiveReason,
 } from "@/components/agent/ArchiveRequestDialog";
+import RequestUpdateDialog from "@/components/agent/RequestUpdateDialog";
+import UnmatchRequestDialog from "@/components/agent/UnmatchRequestDialog";
 import FilterModal, { type FilterType } from "@/components/modals/FilterModals";
 import {
   API_BASE_URL,
@@ -791,6 +793,12 @@ export default function AgentRenterRequestsPage() {
     useState<NormalizedAgentRequest | null>(null);
   const [archiveReason, setArchiveReason] = useState<ArchiveReason | "">("");
   const [isArchiving, setIsArchiving] = useState(false);
+  const [requestUpdateTarget, setRequestUpdateTarget] =
+    useState<NormalizedAgentRequest | null>(null);
+  const [unmatchTarget, setUnmatchTarget] =
+    useState<NormalizedAgentRequest | null>(null);
+  const [isRequestUpdating, setIsRequestUpdating] = useState(false);
+  const [isUnmatching, setIsUnmatching] = useState(false);
   const [selectedRequestIds, setSelectedRequestIds] = useState<string[]>([]);
   const [quickSelect, setQuickSelect] = useState<QuickSelectThreshold>("none");
   const [isMatchingChecked, setIsMatchingChecked] = useState(false);
@@ -1194,6 +1202,26 @@ export default function AgentRenterRequestsPage() {
     setError(null);
   };
 
+  const openRequestUpdateDialog = (request: NormalizedAgentRequest) => {
+    setRequestUpdateTarget(request);
+    setError(null);
+  };
+
+  const closeRequestUpdateDialog = () => {
+    if (isRequestUpdating) return;
+    setRequestUpdateTarget(null);
+  };
+
+  const openUnmatchDialog = (request: NormalizedAgentRequest) => {
+    setUnmatchTarget(request);
+    setError(null);
+  };
+
+  const closeUnmatchDialog = () => {
+    if (isUnmatching) return;
+    setUnmatchTarget(null);
+  };
+
   const closeArchiveDialog = () => {
     if (isArchiving) return;
     setArchiveTarget(null);
@@ -1249,6 +1277,110 @@ export default function AgentRenterRequestsPage() {
       setError(message);
     } finally {
       setIsArchiving(false);
+    }
+  };
+
+  const handleRequestUpdateConfirm = async (
+    personalMessage: string | undefined,
+  ) => {
+    if (!requestUpdateTarget) return;
+
+    const apiRequestId = requestUpdateTarget.raw?._id;
+    if (!apiRequestId) {
+      setError("We couldn't send the update request.");
+      return;
+    }
+
+    setIsRequestUpdating(true);
+    setError(null);
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(
+        `${API_BASE_URL}/pre-market/${apiRequestId}/request-update`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ personalMessage }),
+        },
+      );
+      const data = await response
+        .json()
+        .catch(() => ({}) as { success?: boolean; message?: string });
+
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message || "We couldn't send the update request.",
+        );
+      }
+
+      setRequestUpdateTarget(null);
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "We couldn't send the update request.";
+      setError(message);
+    } finally {
+      setIsRequestUpdating(false);
+    }
+  };
+
+  const handleUnmatchConfirm = async (options: {
+    sendEmailNotice: boolean;
+    personalMessage: string | undefined;
+  }) => {
+    if (!unmatchTarget) return;
+
+    const apiRequestId = unmatchTarget.raw?._id;
+    if (!apiRequestId) {
+      setError("We couldn't unmatch this request.");
+      return;
+    }
+
+    setIsUnmatching(true);
+    setError(null);
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(
+        `${API_BASE_URL}/pre-market/${apiRequestId}/unmatch`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify(options),
+        },
+      );
+      const data = await response
+        .json()
+        .catch(() => ({}) as { success?: boolean; message?: string });
+
+      if (!response.ok || data?.success === false) {
+        throw new Error(data?.message || "We couldn't unmatch this request.");
+      }
+
+      setRequests((prev) => {
+        const next = prev.filter((req) => req.id !== unmatchTarget.id);
+        cacheAgentRequests(next);
+        return next;
+      });
+      setUnmatchTarget(null);
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "We couldn't unmatch this request.";
+      setError(message);
+    } finally {
+      setIsUnmatching(false);
     }
   };
 
@@ -2089,6 +2221,40 @@ export default function AgentRenterRequestsPage() {
                                 />
                               </button>
                             ) : null}
+                            {isCurrentAgentsRequest &&
+                            req.scopeLabel === "Upcoming (M)" &&
+                            req.matchedByAgent?.fullName ? (
+                              <>
+                                <button
+                                  onClick={() => openUnmatchDialog(req)}
+                                  title="Unmatch request"
+                                  className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-100 transition hover:bg-red-50"
+                                >
+                                  <Image
+                                    src="/icons/Unmatch.png"
+                                    alt=""
+                                    aria-hidden="true"
+                                    width={20}
+                                    height={20}
+                                    className="h-5 w-5 shrink-0 object-contain"
+                                  />
+                                </button>
+                                <button
+                                  onClick={() => openRequestUpdateDialog(req)}
+                                  title="Request update"
+                                  className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-100 transition hover:bg-blue-50"
+                                >
+                                  <Image
+                                    src="/icons/Ask-for-update.png"
+                                    alt=""
+                                    aria-hidden="true"
+                                    width={20}
+                                    height={20}
+                                    className="h-5 w-5 shrink-0 object-contain"
+                                  />
+                                </button>
+                              </>
+                            ) : null}
                             <button
                               onClick={() => handleView(req)}
                               title="View request"
@@ -2574,6 +2740,24 @@ export default function AgentRenterRequestsPage() {
           onReasonChange={setArchiveReason}
           onCancel={closeArchiveDialog}
           onConfirm={handleArchiveRequest}
+        />
+      ) : null}
+      {requestUpdateTarget ? (
+        <RequestUpdateDialog
+          matchedAgentFullName={requestUpdateTarget.matchedByAgent?.fullName}
+          renterFullName={requestUpdateTarget.renterName}
+          isSubmitting={isRequestUpdating}
+          onCancel={closeRequestUpdateDialog}
+          onConfirm={handleRequestUpdateConfirm}
+        />
+      ) : null}
+      {unmatchTarget ? (
+        <UnmatchRequestDialog
+          matchedAgentFullName={unmatchTarget.matchedByAgent?.fullName}
+          renterFullName={unmatchTarget.renterName}
+          isSubmitting={isUnmatching}
+          onCancel={closeUnmatchDialog}
+          onConfirm={handleUnmatchConfirm}
         />
       ) : null}
     </section>
