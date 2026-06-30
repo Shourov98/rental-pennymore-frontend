@@ -40,6 +40,10 @@ export interface ApiAgentRequest {
     agentId?: string;
     fullName?: string;
   } | null;
+  registeredAgentForView?: {
+    agentId?: string;
+    fullName?: string;
+  } | null;
   registrationDisclosureConfirmed?: boolean;
   registrationDisclosureConfirmedAt?: string | null;
   isArchivedForAgent?: boolean;
@@ -176,6 +180,10 @@ export interface NormalizedAgentRequest {
   visibilityLabel: string;
   isPrivateVisibility: boolean;
   matchedByAgent?: {
+    agentId?: string;
+    fullName?: string;
+  } | null;
+  registeredAgentForView?: {
     agentId?: string;
     fullName?: string;
   } | null;
@@ -326,6 +334,7 @@ export const normalizeAgentRequest = (
     visibilityLabel,
     isPrivateVisibility,
     matchedByAgent: req.matchedByAgent ?? null,
+    registeredAgentForView: req.registeredAgentForView ?? null,
     registrationDisclosureConfirmed: Boolean(
       req.registrationDisclosureConfirmed,
     ),
