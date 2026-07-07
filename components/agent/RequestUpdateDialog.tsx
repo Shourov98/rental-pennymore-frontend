@@ -157,13 +157,13 @@ export default function RequestUpdateDialog({
               </div>
             </div>
 
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-col items-start gap-2">
               {SUGGESTION_CHIPS.map(chip => (
                 <button
                   key={chip}
                   type="button"
                   onClick={() => handleChipClick(chip)}
-                  className="cursor-pointer rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 transition hover:bg-blue-100 sm:text-sm"
+                  className="cursor-pointer whitespace-nowrap rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 transition hover:bg-blue-100 sm:text-sm"
                 >
                   {chip}
                 </button>
