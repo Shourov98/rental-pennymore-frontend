@@ -22,7 +22,7 @@ function MailWithCircleIcon() {
       <Image
         src="/icons/Ask-for-update.png"
         alt=""
-        className="h-10 w-10 object-contain"
+        className="h-8 w-8 object-contain"
       />
     </span>
   );

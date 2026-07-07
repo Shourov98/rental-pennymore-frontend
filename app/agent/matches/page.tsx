@@ -888,7 +888,7 @@ export default function AgentMatchesPage() {
                                     src="/icons/Ask-for-update.png"
                                     alt=""
                                     aria-hidden="true"
-                                    className="h-10 w-10 shrink-0 object-contain"
+                                    className="h-5 w-5 shrink-0 object-contain"
                                   />
                                 </button>
                               </>
