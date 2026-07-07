@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { Eye, Filter, ChevronLeft, ChevronRight, Lock } from "lucide-react";
+import { Eye, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { CenteredPageSpinner } from "@/components/ui/centered-page-spinner";
@@ -77,23 +77,39 @@ const readStoredFilters = (): FilterType => {
 
 const readStoredListState = () => {
   if (typeof window === "undefined") {
-    return { page: 1, showOwnReferrals: false };
+    return {
+      page: 1,
+      showOwnReferrals: false,
+      showAllMarketReferrals: false,
+    };
   }
 
   try {
     const stored = sessionStorage.getItem(LIST_STATE_STORAGE_KEY);
-    if (!stored) return { page: 1, showOwnReferrals: false };
+    if (!stored) {
+      return {
+        page: 1,
+        showOwnReferrals: false,
+        showAllMarketReferrals: false,
+      };
+    }
     const parsed = JSON.parse(stored) as Partial<{
       page: number;
       showOwnReferrals: boolean;
+      showAllMarketReferrals: boolean;
     }>;
     return {
       page:
         typeof parsed.page === "number" && parsed.page > 0 ? parsed.page : 1,
       showOwnReferrals: Boolean(parsed.showOwnReferrals),
+      showAllMarketReferrals: Boolean(parsed.showAllMarketReferrals),
     };
   } catch {
-    return { page: 1, showOwnReferrals: false };
+    return {
+      page: 1,
+      showOwnReferrals: false,
+      showAllMarketReferrals: false,
+    };
   }
 };
 
@@ -108,6 +124,7 @@ export default function AgentMatchesPage() {
   const [filters, setFilters] = useState<FilterType>(defaultFilters);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [showOwnReferrals, setShowOwnReferrals] = useState(false);
+  const [showAllMarketReferrals, setShowAllMarketReferrals] = useState(false);
   const [isStateRestored, setIsStateRestored] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -140,10 +157,14 @@ export default function AgentMatchesPage() {
 
   useEffect(() => {
     setFilters(readStoredFilters());
-    const { page: storedPage, showOwnReferrals: storedShowOwnReferrals } =
-      readStoredListState();
+    const {
+      page: storedPage,
+      showOwnReferrals: storedShowOwnReferrals,
+      showAllMarketReferrals: storedShowAllMarketReferrals,
+    } = readStoredListState();
     setPage(storedPage);
     setShowOwnReferrals(storedShowOwnReferrals);
+    setShowAllMarketReferrals(storedShowAllMarketReferrals);
     setIsStateRestored(true);
   }, []);
 
@@ -156,9 +177,9 @@ export default function AgentMatchesPage() {
     if (typeof window === "undefined" || !isStateRestored) return;
     sessionStorage.setItem(
       LIST_STATE_STORAGE_KEY,
-      JSON.stringify({ page, showOwnReferrals }),
+      JSON.stringify({ page, showOwnReferrals, showAllMarketReferrals }),
     );
-  }, [isStateRestored, page, showOwnReferrals]);
+  }, [isStateRestored, page, showOwnReferrals, showAllMarketReferrals]);
 
   useEffect(() => {
     if (!isStateRestored) return;
@@ -229,9 +250,21 @@ export default function AgentMatchesPage() {
 
   const filteredRequests = useMemo(() => {
     return requests.filter((req) =>
-      matchesAgentFilters(req.raw, filters, showOwnReferrals, currentAgentId),
+      matchesAgentFilters(
+        req.raw,
+        filters,
+        showOwnReferrals,
+        currentAgentId,
+        showAllMarketReferrals,
+      ),
     );
-  }, [currentAgentId, filters, requests, showOwnReferrals]);
+  }, [
+    currentAgentId,
+    filters,
+    requests,
+    showOwnReferrals,
+    showAllMarketReferrals,
+  ]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !isStateRestored) return;
@@ -243,6 +276,7 @@ export default function AgentMatchesPage() {
       itemIds: filteredRequests.map((request) => request.id),
       filters,
       showOwnReferrals,
+      showAllMarketReferrals,
     });
   }, [
     filteredRequests,
@@ -252,6 +286,7 @@ export default function AgentMatchesPage() {
     page,
     pagination?.totalPages,
     showOwnReferrals,
+    showAllMarketReferrals,
   ]);
 
   const handleView = (req: NormalizedAgentMatch) => {
@@ -623,23 +658,71 @@ export default function AgentMatchesPage() {
             Pre-market renter requests matched to you.
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowOwnReferrals((prev) => !prev)}
-            className={`px-4 py-1 rounded-full font-medium border transition ${
-              showOwnReferrals
-                ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
-                : "bg-white text-blue-500 border-gray-200 hover:bg-gray-100"
-            }`}
-          >
-            Direct Renters
-          </button>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => setShowAllMarketReferrals((prev) => !prev)}
+              className={`flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-full border px-4 py-2 font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 ${
+                showAllMarketReferrals
+                  ? "border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-sm"
+                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm"
+              }`}
+              title={
+                showAllMarketReferrals
+                  ? "Show all requests"
+                  : "Show only All-Market referrals"
+              }
+            >
+              <img
+                src={
+                  showAllMarketReferrals
+                    ? "/icons/all_market_icon_white.svg"
+                    : "/icons/all_market_icon_black.svg"
+                }
+                alt=""
+                aria-hidden="true"
+                width={24}
+                height={56}
+                className="h-[24px] w-[56px] object-contain"
+              />
+              All-Market Referrals
+            </button>
+            <button
+              onClick={() => setShowOwnReferrals((prev) => !prev)}
+              className={`flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-full border px-4 py-2 font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 ${
+                showOwnReferrals
+                  ? "border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-sm"
+                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm"
+              }`}
+            >
+              <Image
+                src={
+                  showOwnReferrals
+                    ? "/icons/direct_renter_white.png"
+                    : "/icons/direct_renter_black.png"
+                }
+                alt=""
+                aria-hidden="true"
+                width={24}
+                height={24}
+                className="h-[24px] w-[24px] object-contain"
+              />
+              Direct Renters
+            </button>
+          </div>
           <button
             onClick={() => setIsFilterOpen(true)}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-1 rounded-full font-medium hover:bg-blue-700 transition"
+            className="flex w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-full bg-blue-600 px-4 py-2 font-medium text-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-sm sm:w-auto sm:justify-start"
           >
-            <Filter className="w-4 h-4" />
-            Filter
+            <Image
+              src="/icons/house.png"
+              alt=""
+              aria-hidden="true"
+              width={18}
+              height={16}
+              className="h-4 w-[18px] object-contain"
+            />
+            Find Matches
           </button>
         </div>
       </div>

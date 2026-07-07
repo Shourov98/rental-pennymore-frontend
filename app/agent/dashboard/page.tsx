@@ -1770,59 +1770,61 @@ export default function AgentRenterRequestsPage() {
             </div>
           ) : null}
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowAllMarketReferrals((prev) => !prev)}
-            className={`flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 ${
-              showAllMarketReferrals
-                ? "border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-sm"
-                : "border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm"
-            }`}
-            title={
-              showAllMarketReferrals
-                ? "Show all requests"
-                : "Show only All-Market referrals"
-            }
-          >
-            <img
-              src={
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => setShowAllMarketReferrals((prev) => !prev)}
+              className={`flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-full border px-4 py-2 font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 ${
                 showAllMarketReferrals
-                  ? "/icons/all_market_icon_white.svg"
-                  : "/icons/all_market_icon_black.svg"
+                  ? "border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-sm"
+                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm"
+              }`}
+              title={
+                showAllMarketReferrals
+                  ? "Show all requests"
+                  : "Show only All-Market referrals"
               }
-              alt=""
-              aria-hidden="true"
-              width={24}
-              height={56}
-              className="h-[24px] w-[56px] object-contain"
-            />
-            All-Market Referrals
-          </button>
-          <button
-            onClick={() => setShowOwnReferrals((prev) => !prev)}
-            className={`flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 ${
-              showOwnReferrals
-                ? "border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-sm"
-                : "border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm"
-            }`}
-          >
-            <Image
-              src={
+            >
+              <img
+                src={
+                  showAllMarketReferrals
+                    ? "/icons/all_market_icon_white.svg"
+                    : "/icons/all_market_icon_black.svg"
+                }
+                alt=""
+                aria-hidden="true"
+                width={24}
+                height={56}
+                className="h-[24px] w-[56px] object-contain"
+              />
+              All-Market Referrals
+            </button>
+            <button
+              onClick={() => setShowOwnReferrals((prev) => !prev)}
+              className={`flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-full border px-4 py-2 font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 ${
                 showOwnReferrals
-                  ? "/icons/direct_renter_white.png"
-                  : "/icons/direct_renter_black.png"
-              }
-              alt=""
-              aria-hidden="true"
-              width={24}
-              height={24}
-              className="h-[24px] w-[24px] object-contain"
-            />
-            Direct Renters
-          </button>
+                  ? "border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-sm"
+                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm"
+              }`}
+            >
+              <Image
+                src={
+                  showOwnReferrals
+                    ? "/icons/direct_renter_white.png"
+                    : "/icons/direct_renter_black.png"
+                }
+                alt=""
+                aria-hidden="true"
+                width={24}
+                height={24}
+                className="h-[24px] w-[24px] object-contain"
+              />
+              Direct Renters
+            </button>
+          </div>
           <button
             onClick={() => setIsFilterOpen(true)}
-            className="flex cursor-pointer items-center gap-2 rounded-full bg-blue-600 px-4 py-2 font-medium text-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-sm"
+            className="flex w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-full bg-blue-600 px-4 py-2 font-medium text-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-sm sm:w-auto sm:justify-start"
           >
             <Image
               src="/icons/house.png"
