@@ -22,9 +22,7 @@ function MailWithCircleIcon() {
       <Image
         src="/icons/Ask-for-update.png"
         alt=""
-        width={24}
-        height={24}
-        className="h-6 w-6 object-contain"
+        className="h-10 w-10 object-contain"
       />
     </span>
   );
@@ -101,8 +99,7 @@ export default function RequestUpdateDialog({
                   <span className="font-medium text-gray-900">
                     {matchedAgentLabel}
                   </span>{" "}
-                  <span>(Agent)</span>{" "}
-                  <span>working with</span>{" "}
+                  <span>(Agent)</span> <span>working with</span>{" "}
                   <span className="font-medium text-gray-900">
                     {renterLabel}
                   </span>{" "}
@@ -158,7 +155,7 @@ export default function RequestUpdateDialog({
             </div>
 
             <div className="mt-3 flex flex-col items-start gap-2">
-              {SUGGESTION_CHIPS.map(chip => (
+              {SUGGESTION_CHIPS.map((chip) => (
                 <button
                   key={chip}
                   type="button"
