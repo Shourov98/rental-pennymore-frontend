@@ -10,6 +10,8 @@ import FilterModal, { type FilterType } from "@/components/modals/FilterModals";
 import ArchiveRequestDialog, {
   type ArchiveReason,
 } from "@/components/agent/ArchiveRequestDialog";
+import RequestUpdateDialog from "@/components/agent/RequestUpdateDialog";
+import UnmatchRequestDialog from "@/components/agent/UnmatchRequestDialog";
 import { RootState } from "@/store/store";
 import {
   API_BASE_URL,
@@ -118,6 +120,12 @@ export default function AgentMatchesPage() {
     useState<NormalizedAgentMatch | null>(null);
   const [archiveReason, setArchiveReason] = useState<ArchiveReason | "">("");
   const [isArchiving, setIsArchiving] = useState(false);
+  const [requestUpdateTarget, setRequestUpdateTarget] =
+    useState<NormalizedAgentMatch | null>(null);
+  const [unmatchTarget, setUnmatchTarget] =
+    useState<NormalizedAgentMatch | null>(null);
+  const [isRequestUpdating, setIsRequestUpdating] = useState(false);
+  const [isUnmatching, setIsUnmatching] = useState(false);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState<
     ApiAgentMatchesResponse["pagination"]
@@ -405,6 +413,26 @@ export default function AgentMatchesPage() {
     setArchiveReason("");
   };
 
+  const openRequestUpdateDialog = (request: NormalizedAgentMatch) => {
+    setRequestUpdateTarget(request);
+    setError(null);
+  };
+
+  const closeRequestUpdateDialog = () => {
+    if (isRequestUpdating) return;
+    setRequestUpdateTarget(null);
+  };
+
+  const openUnmatchDialog = (request: NormalizedAgentMatch) => {
+    setUnmatchTarget(request);
+    setError(null);
+  };
+
+  const closeUnmatchDialog = () => {
+    if (isUnmatching) return;
+    setUnmatchTarget(null);
+  };
+
   const handleArchiveRequest = async () => {
     if (!archiveTarget || !archiveReason) return;
 
@@ -454,6 +482,110 @@ export default function AgentMatchesPage() {
       setError(message);
     } finally {
       setIsArchiving(false);
+    }
+  };
+
+  const handleRequestUpdateConfirm = async (
+    personalMessage: string | undefined,
+  ) => {
+    if (!requestUpdateTarget) return;
+
+    const apiRequestId = requestUpdateTarget.raw?._id;
+    if (!apiRequestId) {
+      setError("We couldn't send the update request.");
+      return;
+    }
+
+    setIsRequestUpdating(true);
+    setError(null);
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(
+        `${API_BASE_URL}/pre-market/${apiRequestId}/request-update`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ personalMessage }),
+        },
+      );
+      const data = await response
+        .json()
+        .catch(() => ({}) as { success?: boolean; message?: string });
+
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message || "We couldn't send the update request.",
+        );
+      }
+
+      setRequestUpdateTarget(null);
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "We couldn't send the update request.";
+      setError(message);
+    } finally {
+      setIsRequestUpdating(false);
+    }
+  };
+
+  const handleUnmatchConfirm = async (options: {
+    sendEmailNotice: boolean;
+    personalMessage: string | undefined;
+  }) => {
+    if (!unmatchTarget) return;
+
+    const apiRequestId = unmatchTarget.raw?._id;
+    if (!apiRequestId) {
+      setError("We couldn't unmatch this request.");
+      return;
+    }
+
+    setIsUnmatching(true);
+    setError(null);
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(
+        `${API_BASE_URL}/pre-market/${apiRequestId}/unmatch`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify(options),
+        },
+      );
+      const data = await response
+        .json()
+        .catch(() => ({}) as { success?: boolean; message?: string });
+
+      if (!response.ok || data?.success === false) {
+        throw new Error(data?.message || "We couldn't unmatch this request.");
+      }
+
+      setRequests((prev) => {
+        const next = prev.filter((req) => req.id !== unmatchTarget.id);
+        cacheAgentMatches(next);
+        return next;
+      });
+      setUnmatchTarget(null);
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "We couldn't unmatch this request.";
+      setError(message);
+    } finally {
+      setIsUnmatching(false);
     }
   };
 
@@ -587,9 +719,28 @@ export default function AgentMatchesPage() {
                             </div>
                           </td>
                           <td className="py-3 px-5">
-                            <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
-                              {req.scopeLabel}
-                            </span>
+                            <div className="inline-flex flex-col items-start gap-1">
+                              <span className="inline-flex w-fit items-center whitespace-nowrap rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+                                {req.scopeLabel}
+                              </span>
+                              {req.scopeLabel === "Upcoming (M)" &&
+                              req.registeredAgentForView?.fullName ? (
+                                <span className="self-stretch text-center text-xs font-medium text-blue-600 whitespace-nowrap">
+                                  {formatRenterDisplayName(
+                                    req.registeredAgentForView.fullName,
+                                  )}
+                                </span>
+                              ) : null}
+                              {req.scopeLabel === "Upcoming (M)" &&
+                              req.matchedByAgent?.fullName &&
+                              isCurrentAgentsRequest ? (
+                                <span className="self-stretch text-center text-xs font-medium text-blue-600 whitespace-nowrap">
+                                  {formatRenterDisplayName(
+                                    req.matchedByAgent.fullName,
+                                  )}
+                                </span>
+                              ) : null}
+                            </div>
                           </td>
                           <td className="py-3 px-5">
                             {isCurrentAgentsRequest ? (
@@ -710,6 +861,40 @@ export default function AgentMatchesPage() {
                                 className="h-5 w-5 shrink-0 object-contain"
                               />
                             </button>
+                            {isCurrentAgentsRequest &&
+                            req.scopeLabel === "Upcoming (M)" &&
+                            req.matchedByAgent?.fullName ? (
+                              <>
+                                <button
+                                  onClick={() => openUnmatchDialog(req)}
+                                  title="Unmatch request"
+                                  className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-100 transition hover:bg-red-50"
+                                >
+                                  <Image
+                                    src="/icons/Unmatch.png"
+                                    alt=""
+                                    aria-hidden="true"
+                                    width={20}
+                                    height={20}
+                                    className="h-5 w-5 shrink-0 object-contain"
+                                  />
+                                </button>
+                                <button
+                                  onClick={() => openRequestUpdateDialog(req)}
+                                  title="Request update"
+                                  className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-100 transition hover:bg-blue-50"
+                                >
+                                  <Image
+                                    src="/icons/Ask-for-update.png"
+                                    alt=""
+                                    aria-hidden="true"
+                                    width={20}
+                                    height={20}
+                                    className="h-5 w-5 shrink-0 object-contain"
+                                  />
+                                </button>
+                              </>
+                            ) : null}
                             <button
                               onClick={() => handleView(req)}
                               className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"
@@ -794,6 +979,24 @@ export default function AgentMatchesPage() {
           onReasonChange={setArchiveReason}
           onCancel={closeArchiveDialog}
           onConfirm={handleArchiveRequest}
+        />
+      ) : null}
+      {requestUpdateTarget ? (
+        <RequestUpdateDialog
+          matchedAgentFullName={requestUpdateTarget.matchedByAgent?.fullName}
+          renterFullName={requestUpdateTarget.renterName}
+          isSubmitting={isRequestUpdating}
+          onCancel={closeRequestUpdateDialog}
+          onConfirm={handleRequestUpdateConfirm}
+        />
+      ) : null}
+      {unmatchTarget ? (
+        <UnmatchRequestDialog
+          matchedAgentFullName={unmatchTarget.matchedByAgent?.fullName}
+          renterFullName={unmatchTarget.renterName}
+          isSubmitting={isUnmatching}
+          onCancel={closeUnmatchDialog}
+          onConfirm={handleUnmatchConfirm}
         />
       ) : null}
     </section>

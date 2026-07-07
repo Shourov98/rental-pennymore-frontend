@@ -47,6 +47,8 @@ export interface ApiAgentMatch {
   representation_type?: "owner_representation" | "renter_representation";
   representationSelectedAt?: string | null;
   preferences?: string[];
+  matchedByAgent?: { agentId?: string; fullName?: string } | null;
+  registeredAgentForView?: { agentId?: string; fullName?: string } | null;
   isActive?: boolean;
   referralInfo?: {
     renterName?: string;
@@ -131,6 +133,8 @@ export interface NormalizedAgentMatch {
   representation_type?: "owner_representation" | "renter_representation";
   representationSelectedAt?: string | null;
   isActive: boolean;
+  matchedByAgent?: { agentId?: string; fullName?: string } | null;
+  registeredAgentForView?: { agentId?: string; fullName?: string } | null;
   preferences: string[];
   renterName?: string;
   renterEmail?: string;
@@ -236,6 +240,8 @@ export const normalizeAgentMatch = (
     status: req.status || (req.isActive ? "active" : "inactive"),
     representation_type: req.representation_type,
     representationSelectedAt: req.representationSelectedAt ?? null,
+    matchedByAgent: req.matchedByAgent ?? null,
+    registeredAgentForView: req.registeredAgentForView ?? null,
     isActive: req.isActive ?? false,
     preferences: req.preferences ?? [],
     renterName:
