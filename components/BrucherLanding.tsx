@@ -59,13 +59,18 @@ export default function BrucherLanding() {
                 </div>
 
                 <p className="w-full text-base leading-relaxed text-left text-slate-700 sm:text-lg">
-                  BeforeListed™ is an intake-focused marketing website used by licensed New York real estate agents to collect renter requests. Once a renter has signed the agency agreement and appropriate disclosure forms, agents may conduct outreach on their behalf in an effort to identify potential rental opportunities, including opportunities that may not be publicly advertised.
+                  BeforeListed™ is an intake-focused marketing website used by
+                  licensed New York real estate agents to collect renter
+                  requests. Once a renter has signed the agency agreement and
+                  appropriate disclosure forms, agents may conduct outreach on
+                  their behalf in an effort to identify potential rental
+                  opportunities, including opportunities that may not be
+                  publicly advertised.
                 </p>
                 <p className="w-full text-base leading-relaxed text-left text-slate-700 sm:text-lg">
-                  The website does not advertise or display rental listings and
-                  does not guarantee the availability of any rental property or
-                  represent that any specific property is currently available
-                  for rent.
+                  The website does not guarantee the availability of any rental
+                  property or represent that any specific property is currently
+                  available for rent.
                 </p>
               </div>
             </div>
