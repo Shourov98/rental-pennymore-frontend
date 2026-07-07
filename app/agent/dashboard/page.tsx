@@ -1903,7 +1903,7 @@ export default function AgentRenterRequestsPage() {
                         <th className="py-3 px-5 text-left">Date</th>
                         <th className="py-3 px-5 text-left">Request</th>
                         <th className="py-3 px-5 text-left">Renter</th>
-                        <th className="py-3 px-5 text-center">Scope</th>
+                        <th className="py-3 px-5 text-left">Scope</th>
                         <th className="py-3 px-5 text-left">Visibility</th>
                         <th className="py-3 px-5 text-left">Borough</th>
                         <th className="py-3 px-5 text-left">Price (Max)</th>
@@ -2077,22 +2077,22 @@ export default function AgentRenterRequestsPage() {
                             </>
                           )}
                           <td className="py-3 px-5">
-                            <div className="flex flex-col items-start gap-1">
+                            <div className="inline-flex flex-col items-start gap-1">
+                              <span className="inline-flex w-fit items-center whitespace-nowrap rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+                                {req.scopeLabel}
+                              </span>
                               {req.scopeLabel === "Upcoming (M)" &&
                               req.registeredAgentForView?.fullName ? (
-                                <span className="text-xs font-medium text-blue-600 whitespace-nowrap">
+                                <span className="self-stretch text-center text-xs font-medium text-blue-600 whitespace-nowrap">
                                   {formatRenterDisplayName(
                                     req.registeredAgentForView.fullName,
                                   )}
                                 </span>
                               ) : null}
-                              <span className="inline-flex w-fit items-center whitespace-nowrap rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
-                                {req.scopeLabel}
-                              </span>
                               {req.scopeLabel === "Upcoming (M)" &&
                               req.matchedByAgent?.fullName &&
                               isCurrentAgentsRequest ? (
-                                <span className="text-xs font-medium text-blue-600 whitespace-nowrap">
+                                <span className="self-stretch text-center text-xs font-medium text-blue-600 whitespace-nowrap">
                                   {formatRenterDisplayName(
                                     req.matchedByAgent.fullName,
                                   )}
@@ -2300,7 +2300,7 @@ export default function AgentRenterRequestsPage() {
                                     src="/icons/Ask-for-update.png"
                                     alt=""
                                     aria-hidden="true"
-                                    className="h-8 w-8 shrink-0 object-contain"
+                                    className="h-5 w-5 shrink-0 object-contain"
                                   />
                                 </button>
                               </>
