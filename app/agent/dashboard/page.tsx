@@ -2077,22 +2077,22 @@ export default function AgentRenterRequestsPage() {
                             </>
                           )}
                           <td className="py-3 px-5">
-                            <div className="flex flex-col items-center gap-1">
+                            <div className="flex flex-col items-start gap-1">
                               {req.scopeLabel === "Upcoming (M)" &&
                               req.registeredAgentForView?.fullName ? (
-                                <span className="text-xs font-medium text-blue-600">
+                                <span className="text-xs font-medium text-blue-600 whitespace-nowrap">
                                   {formatRenterDisplayName(
                                     req.registeredAgentForView.fullName,
                                   )}
                                 </span>
                               ) : null}
-                              <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+                              <span className="inline-flex w-fit items-center whitespace-nowrap rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
                                 {req.scopeLabel}
                               </span>
                               {req.scopeLabel === "Upcoming (M)" &&
                               req.matchedByAgent?.fullName &&
                               isCurrentAgentsRequest ? (
-                                <span className="text-xs font-medium text-blue-600">
+                                <span className="text-xs font-medium text-blue-600 whitespace-nowrap">
                                   {formatRenterDisplayName(
                                     req.matchedByAgent.fullName,
                                   )}
@@ -2300,9 +2300,7 @@ export default function AgentRenterRequestsPage() {
                                     src="/icons/Ask-for-update.png"
                                     alt=""
                                     aria-hidden="true"
-                                    width={20}
-                                    height={20}
-                                    className="h-5 w-5 shrink-0 object-contain"
+                                    className="h-8 w-8 shrink-0 object-contain"
                                   />
                                 </button>
                               </>
