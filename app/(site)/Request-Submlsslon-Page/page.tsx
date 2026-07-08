@@ -809,7 +809,7 @@ export default function PreMarketListingPage() {
                   processed.
                 </p>
 
-                <div className="space-y-2 text-left">
+                {/* <div className="space-y-2 text-left">
                   <p className="font-semibold text-black">
                     After signing, return here. If the new window doesn’t open,
                     {registrationLink ? (
@@ -827,7 +827,7 @@ export default function PreMarketListingPage() {
                       </span>
                     )}
                   </p>
-                </div>
+                </div> */}
 
                 <label className="flex cursor-pointer items-start gap-3 pt-1">
                   <input

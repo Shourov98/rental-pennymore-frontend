@@ -33,10 +33,7 @@ type ApiResponsePayload = {
 const isApiResponsePayload = (value: unknown): value is ApiResponsePayload =>
   typeof value === "object" && value !== null;
 
-const getApiFieldError = (
-  data: unknown,
-  fieldName: string,
-): string | null => {
+const getApiFieldError = (data: unknown, fieldName: string): string | null => {
   if (!isApiResponsePayload(data) || !Array.isArray(data.errors)) {
     return null;
   }
@@ -68,7 +65,7 @@ export default function SignupForm({ role }: { role: SignupRole }) {
   const searchParams = useSearchParams();
   const referralFromUrl = searchParams.get("ref");
   const [savedReferralCode, setSavedReferralCode] = useState<string | null>(
-    null
+    null,
   );
   const [agree, setAgree] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -400,11 +397,12 @@ export default function SignupForm({ role }: { role: SignupRole }) {
         <div className="mb-4 text-center">
           {referralDisplay?.referrerName && referralDisplay?.brokerageName && (
             <p className="text-lg font-bold text-text-primary">
-              {referralDisplay.referrerName} &bull; {referralDisplay.brokerageName}
+              {referralDisplay.referrerName} &bull;{" "}
+              {referralDisplay.brokerageName}
             </p>
           )}
           <p className="mt-2 text-base font-semibold text-action">
-            Complete your request in less than 2 minutes
+            Take Less Than 2 Minutes To Complete
           </p>
           <div className="mt-3 flex justify-center">
             <span className="inline-flex items-center rounded-full border border-[#CFE1FF] bg-blue-400 px-4 py-1 text-xs font-semibold text-white sm:text-sm">
