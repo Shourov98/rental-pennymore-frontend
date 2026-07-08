@@ -7,10 +7,10 @@ import { X } from "lucide-react";
 const MAX_MESSAGE_LENGTH = 350;
 
 const SUGGESTION_CHIPS = [
-  "Did you reach out to the client yet?",
-  "Have you scheduled any showings yet?",
-  "Any applications submitted yet?",
-  "Has the deal closed?",
+  "Just checking in — any updates on your search?",
+  "Have you had a chance to review the listings we sent?",
+  "Are the current options still a good fit, or should we adjust?",
+  "Would you like to schedule a showing this week?",
 ] as const;
 
 function MailWithCircleIcon() {
@@ -96,14 +96,15 @@ export default function RequestUpdateDialog({
                   Request Update
                 </h2>
                 <p className="mt-1 text-xs text-gray-500 sm:text-sm">
-                  <span className="font-medium text-gray-900">
-                    {matchedAgentLabel}
-                  </span>{" "}
-                  <span>(Agent)</span> <span>working with</span>{" "}
+                  Send a check-in email to{" "}
                   <span className="font-medium text-gray-900">
                     {renterLabel}
                   </span>{" "}
-                  <span>(Renter)</span>
+                  <span>(Renter)</span> regarding your work with{" "}
+                  <span className="font-medium text-gray-900">
+                    {matchedAgentLabel}
+                  </span>
+                  .
                 </p>
               </div>
             </div>

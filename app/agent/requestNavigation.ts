@@ -20,7 +20,6 @@ export interface FilterableAgentRequestLike {
     } | null;
   } | null;
   scope?: string | null;
-  matchedByAgent?: { agentId?: string; fullName?: string } | null;
   priceRange?: {
     min?: number;
     max?: number;
@@ -285,12 +284,12 @@ export const matchesAgentFilters = (
   if (!raw) return false;
 
   if (showAllMarketReferrals) {
-    // Only show requests that have moved out of "All Market" into
-    // "Upcoming (M)" because the current agent matched them and then
-    // referred them to other agents. Exclude rows matched by other agents.
+    // On the agent dashboard (renter requests): keep Upcoming (M) requests
+    // where the current agent is the registered agent for the renter. The
+    // registered-agent identity is read from any of the referrer-style
+    // fields populated by the backend for this request.
     if (normalizeText(raw.scope ?? "") !== "upcoming (m)") return false;
-    if (!currentAgentId) return false;
-    if (raw.matchedByAgent?.agentId !== currentAgentId) return false;
+    if (!isCurrentAgentRegisteredForRequest(raw, currentAgentId)) return false;
   }
 
   if (filters.borough) {
