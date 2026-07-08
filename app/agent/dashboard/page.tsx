@@ -2081,7 +2081,8 @@ export default function AgentRenterRequestsPage() {
                           <td className="py-3 px-5">
                             <div className="inline-flex flex-col items-start gap-1">
                               {req.scopeLabel === "Upcoming (M)" &&
-                              req.registeredAgentForView?.fullName ? (
+                              req.registeredAgentForView?.fullName &&
+                              !isCurrentAgentsRequest ? (
                                 <>
                                   <span className="self-stretch text-center text-xs font-medium text-blue-600 whitespace-nowrap">
                                     {formatRenterDisplayName(
