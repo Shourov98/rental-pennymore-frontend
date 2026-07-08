@@ -643,6 +643,22 @@ export default function AgentMatchesPage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="flex flex-wrap items-center gap-3">
             <button
+              type="button"
+              disabled
+              className="flex cursor-not-allowed items-center gap-2 whitespace-nowrap rounded-full border border-gray-200 bg-white px-4 py-2 font-medium text-gray-700 opacity-60"
+              title="This page always shows all Upcoming (M) requests"
+            >
+              <img
+                src="/icons/all_market_icon_black.svg"
+                alt=""
+                aria-hidden="true"
+                width={24}
+                height={56}
+                className="h-[24px] w-[56px] object-contain"
+              />
+              All-Market Referrals
+            </button>
+            <button
               onClick={() => setShowOwnReferrals((prev) => !prev)}
               className={`flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-full border px-4 py-2 font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 ${
                 showOwnReferrals
