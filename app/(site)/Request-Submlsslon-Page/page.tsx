@@ -809,10 +809,10 @@ export default function PreMarketListingPage() {
                   processed.
                 </p>
 
-                {/* <div className="space-y-2 text-left">
+                {/* {/* <div className="space-y-2 text-left"> */}
                   <p className="font-semibold text-black">
-                    After signing, return here. If the new window doesn’t open,
-                    {registrationLink ? (
+                    After signing, return here. {/* If the new window doesn’t open, */}
+                    {/* {registrationLink ? ( 
                       <a
                         href={registrationLink}
                         target="_blank"
@@ -825,9 +825,9 @@ export default function PreMarketListingPage() {
                       <span className="inline-flex items-center justify-center text-[15px] font-medium text-slate-500">
                         registration link is unavailable
                       </span>
-                    )}
+                    )} */}
                   </p>
-                </div> */}
+                </div>
 
                 <label className="flex cursor-pointer items-start gap-3 pt-1">
                   <input
