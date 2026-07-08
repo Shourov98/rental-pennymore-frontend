@@ -2080,26 +2080,34 @@ export default function AgentRenterRequestsPage() {
                           )}
                           <td className="py-3 px-5">
                             <div className="inline-flex flex-col items-start gap-1">
-                              <span className="inline-flex w-fit items-center whitespace-nowrap rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
-                                {req.scopeLabel}
-                              </span>
                               {req.scopeLabel === "Upcoming (M)" &&
                               req.registeredAgentForView?.fullName ? (
-                                <span className="self-stretch text-center text-xs font-medium text-blue-600 whitespace-nowrap">
-                                  {formatRenterDisplayName(
-                                    req.registeredAgentForView.fullName,
-                                  )}
-                                </span>
-                              ) : null}
-                              {req.scopeLabel === "Upcoming (M)" &&
-                              req.matchedByAgent?.fullName &&
-                              isCurrentAgentsRequest ? (
-                                <span className="self-stretch text-center text-xs font-medium text-blue-600 whitespace-nowrap">
-                                  {formatRenterDisplayName(
-                                    req.matchedByAgent.fullName,
-                                  )}
-                                </span>
-                              ) : null}
+                                <>
+                                  <span className="self-stretch text-center text-xs font-medium text-blue-600 whitespace-nowrap">
+                                    {formatRenterDisplayName(
+                                      req.registeredAgentForView.fullName,
+                                    )}
+                                  </span>
+                                  <span className="inline-flex w-fit items-center whitespace-nowrap rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+                                    {req.scopeLabel}
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="inline-flex w-fit items-center whitespace-nowrap rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+                                    {req.scopeLabel}
+                                  </span>
+                                  {req.scopeLabel === "Upcoming (M)" &&
+                                  req.matchedByAgent?.fullName &&
+                                  isCurrentAgentsRequest ? (
+                                    <span className="self-stretch text-center text-xs font-medium text-blue-600 whitespace-nowrap">
+                                      {formatRenterDisplayName(
+                                        req.matchedByAgent.fullName,
+                                      )}
+                                    </span>
+                                  ) : null}
+                                </>
+                              )}
                             </div>
                           </td>
                           <td className="py-3 px-5">
