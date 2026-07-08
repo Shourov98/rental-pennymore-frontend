@@ -809,9 +809,10 @@ export default function PreMarketListingPage() {
                   processed.
                 </p>
 
-                {/* {/* <div className="space-y-2 text-left"> */}
+                <div className="space-y-2 text-left">
                   <p className="font-semibold text-black">
-                    After signing, return here. {/* If the new window doesn’t open, */}
+                    After signing, return here.{" "}
+                    {/* If the new window doesn’t open, */}
                     {/* {registrationLink ? ( 
                       <a
                         href={registrationLink}
