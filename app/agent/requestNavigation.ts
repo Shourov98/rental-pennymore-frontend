@@ -20,6 +20,7 @@ export interface FilterableAgentRequestLike {
     } | null;
   } | null;
   scope?: string | null;
+  matchedByAgent?: { agentId?: string; fullName?: string } | null;
   priceRange?: {
     min?: number;
     max?: number;
@@ -284,7 +285,12 @@ export const matchesAgentFilters = (
   if (!raw) return false;
 
   if (showAllMarketReferrals) {
-    if (normalizeText(raw.scope ?? "") !== "all market") return false;
+    // Only show requests that have moved out of "All Market" into
+    // "Upcoming (M)" because the current agent matched them and then
+    // referred them to other agents. Exclude rows matched by other agents.
+    if (normalizeText(raw.scope ?? "") !== "upcoming (m)") return false;
+    if (!currentAgentId) return false;
+    if (raw.matchedByAgent?.agentId !== currentAgentId) return false;
   }
 
   if (filters.borough) {
