@@ -1923,6 +1923,15 @@ export default function AgentRenterRequestsPage() {
                     {filteredRequests.map((req) => {
                       const isCurrentAgentsRequest =
                         isCurrentAgentRegisteredForRequest(req, currentAgentId);
+                      const currentAgentHasMatchedAccess =
+                        !isCurrentAgentsRequest &&
+                        ["free", "paid", "approved"].includes(
+                          String(
+                            req.raw?.grantAccessStatus ??
+                              req.raw?.status ??
+                              "",
+                          ).toLowerCase(),
+                        );
                       const isMatchedByCurrentAgent =
                         Boolean(
                           currentAgentId &&
@@ -1930,6 +1939,10 @@ export default function AgentRenterRequestsPage() {
                             String(req.matchedByAgent.agentId) ===
                               String(currentAgentId),
                         );
+                      const shouldShowRegisteredAgentName =
+                        req.scopeLabel === "Upcoming (M)" &&
+                        currentAgentHasMatchedAccess &&
+                        Boolean(req.registeredAgentForView?.fullName);
                       const shouldShowMatchedAgentName =
                         req.scopeLabel === "Upcoming (M)" &&
                         isCurrentAgentsRequest &&
@@ -2092,9 +2105,7 @@ export default function AgentRenterRequestsPage() {
                           )}
                           <td className="py-3 px-5">
                             <div className="inline-flex flex-col items-start gap-1">
-                              {req.scopeLabel === "Upcoming (M)" &&
-                              req.registeredAgentForView?.fullName &&
-                              !isCurrentAgentsRequest ? (
+                              {shouldShowRegisteredAgentName ? (
                                 <>
                                   <span className="self-stretch text-center text-xs font-medium text-blue-600 whitespace-nowrap">
                                     {formatRenterDisplayName(

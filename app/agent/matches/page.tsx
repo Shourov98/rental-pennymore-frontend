@@ -771,6 +771,14 @@ export default function AgentMatchesPage() {
                     {filteredRequests.map((req) => {
                       const isCurrentAgentsRequest =
                         isCurrentAgentRegisteredForRequest(req, currentAgentId);
+                      const shouldShowRegisteredAgentName =
+                        req.scopeLabel === "Upcoming (M)" &&
+                        !isCurrentAgentsRequest &&
+                        Boolean(req.registeredAgentForView?.fullName);
+                      const shouldShowMatchedAgentName =
+                        req.scopeLabel === "Upcoming (M)" &&
+                        isCurrentAgentsRequest &&
+                        Boolean(req.matchedByAgent?.fullName);
                       const shareConsent = req.raw?.shareConsent;
                       const visibility = req.raw?.visibility;
                       const isArchivedForAgent = Boolean(
@@ -812,9 +820,7 @@ export default function AgentMatchesPage() {
                           </td>
                           <td className="py-3 px-5">
                             <div className="inline-flex flex-col items-start gap-1">
-                              {req.scopeLabel === "Upcoming (M)" &&
-                              req.registeredAgentForView?.fullName &&
-                              !isCurrentAgentsRequest ? (
+                              {shouldShowRegisteredAgentName ? (
                                 <>
                                   <span className="self-stretch text-center text-xs font-medium text-blue-600 whitespace-nowrap">
                                     {formatRenterDisplayName(
@@ -830,12 +836,10 @@ export default function AgentMatchesPage() {
                                   <span className="inline-flex w-fit items-center whitespace-nowrap rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
                                     {req.scopeLabel}
                                   </span>
-                                  {req.scopeLabel === "Upcoming (M)" &&
-                                  req.matchedByAgent?.fullName &&
-                                  isCurrentAgentsRequest ? (
+                                  {shouldShowMatchedAgentName ? (
                                     <span className="self-stretch text-center text-xs font-medium text-blue-600 whitespace-nowrap">
                                       {formatRenterDisplayName(
-                                        req.matchedByAgent.fullName,
+                                        req.matchedByAgent?.fullName,
                                       )}
                                     </span>
                                   ) : null}
