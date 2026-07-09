@@ -80,6 +80,7 @@ const readStoredListState = () => {
     return {
       page: 1,
       showOwnReferrals: false,
+      showAllMarketReferrals: false,
     };
   }
 
@@ -89,21 +90,25 @@ const readStoredListState = () => {
       return {
         page: 1,
         showOwnReferrals: false,
+        showAllMarketReferrals: false,
       };
     }
     const parsed = JSON.parse(stored) as Partial<{
       page: number;
       showOwnReferrals: boolean;
+      showAllMarketReferrals: boolean;
     }>;
     return {
       page:
         typeof parsed.page === "number" && parsed.page > 0 ? parsed.page : 1,
       showOwnReferrals: Boolean(parsed.showOwnReferrals),
+      showAllMarketReferrals: Boolean(parsed.showAllMarketReferrals),
     };
   } catch {
     return {
       page: 1,
       showOwnReferrals: false,
+      showAllMarketReferrals: false,
     };
   }
 };
@@ -119,6 +124,7 @@ export default function AgentMatchesPage() {
   const [filters, setFilters] = useState<FilterType>(defaultFilters);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [showOwnReferrals, setShowOwnReferrals] = useState(false);
+  const [showAllMarketReferrals, setShowAllMarketReferrals] = useState(false);
   const [isStateRestored, setIsStateRestored] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -154,9 +160,11 @@ export default function AgentMatchesPage() {
     const {
       page: storedPage,
       showOwnReferrals: storedShowOwnReferrals,
+      showAllMarketReferrals: storedShowAllMarketReferrals,
     } = readStoredListState();
     setPage(storedPage);
     setShowOwnReferrals(storedShowOwnReferrals);
+    setShowAllMarketReferrals(storedShowAllMarketReferrals);
     setIsStateRestored(true);
   }, []);
 
@@ -169,9 +177,9 @@ export default function AgentMatchesPage() {
     if (typeof window === "undefined" || !isStateRestored) return;
     sessionStorage.setItem(
       LIST_STATE_STORAGE_KEY,
-      JSON.stringify({ page, showOwnReferrals }),
+      JSON.stringify({ page, showOwnReferrals, showAllMarketReferrals }),
     );
-  }, [isStateRestored, page, showOwnReferrals]);
+  }, [isStateRestored, page, showAllMarketReferrals, showOwnReferrals]);
 
   useEffect(() => {
     if (!isStateRestored) return;
@@ -241,14 +249,22 @@ export default function AgentMatchesPage() {
   }, [accessToken, isStateRestored, page]);
 
   const filteredRequests = useMemo(() => {
-    // Renter Matches page: always show only Upcoming (M) requests,
-    // regardless of filter/toggle state. Other filters still apply.
-    return requests
-      .filter((req) => (req.raw?.scope ?? "").trim().toLowerCase() === "upcoming (m)")
-      .filter((req) =>
-        matchesAgentFilters(req.raw, filters, showOwnReferrals, currentAgentId),
-      );
-  }, [currentAgentId, filters, requests, showOwnReferrals]);
+    return requests.filter((req) =>
+      matchesAgentFilters(
+        req.raw,
+        filters,
+        showOwnReferrals,
+        currentAgentId,
+        showAllMarketReferrals,
+      ),
+    );
+  }, [
+    currentAgentId,
+    filters,
+    requests,
+    showAllMarketReferrals,
+    showOwnReferrals,
+  ]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !isStateRestored) return;
@@ -260,6 +276,7 @@ export default function AgentMatchesPage() {
       itemIds: filteredRequests.map((request) => request.id),
       filters,
       showOwnReferrals,
+      showAllMarketReferrals,
     });
   }, [
     filteredRequests,
@@ -268,6 +285,7 @@ export default function AgentMatchesPage() {
     limit,
     page,
     pagination?.totalPages,
+    showAllMarketReferrals,
     showOwnReferrals,
   ]);
 
@@ -643,14 +661,24 @@ export default function AgentMatchesPage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="flex flex-wrap items-center gap-3">
             <button
-              type="button"
-              onClick={(event) => event.preventDefault()}
-              className="flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-full border border-gray-200 bg-white px-4 py-2 font-medium text-gray-700 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-gray-100 hover:shadow-sm"
-              title="This page always shows all Upcoming (M) requests"
-              aria-label="All-Market Referrals (always on for this page)"
+              onClick={() => setShowAllMarketReferrals((prev) => !prev)}
+              className={`flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-full border px-4 py-2 font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 ${
+                showAllMarketReferrals
+                  ? "border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-sm"
+                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm"
+              }`}
+              title={
+                showAllMarketReferrals
+                  ? "Show all matched requests"
+                  : "Show only All-Market referrals"
+              }
             >
               <img
-                src="/icons/all_market_icon_black.svg"
+                src={
+                  showAllMarketReferrals
+                    ? "/icons/all_market_icon_white.svg"
+                    : "/icons/all_market_icon_black.svg"
+                }
                 alt=""
                 aria-hidden="true"
                 width={24}
@@ -973,7 +1001,9 @@ export default function AgentMatchesPage() {
             </div>
           ) : (
             <div className="bg-white rounded-xl shadow-sm p-6 text-gray-600">
-              No matched requests match the current filters on this page.
+              {showAllMarketReferrals
+                ? "No All-Market referrals available right now."
+                : "No matched requests match the current filters on this page."}
             </div>
           )}
 
