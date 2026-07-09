@@ -2113,7 +2113,7 @@ export default function AgentRenterRequestsPage() {
                                   {shouldShowMatchedAgentName ? (
                                     <span className="self-stretch text-center text-xs font-medium text-blue-600 whitespace-nowrap">
                                       {formatRenterDisplayName(
-                                        req.matchedByAgent.fullName,
+                                        req.matchedByAgent?.fullName,
                                       )}
                                     </span>
                                   ) : null}
