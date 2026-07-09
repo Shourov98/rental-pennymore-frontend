@@ -1923,6 +1923,18 @@ export default function AgentRenterRequestsPage() {
                     {filteredRequests.map((req) => {
                       const isCurrentAgentsRequest =
                         isCurrentAgentRegisteredForRequest(req, currentAgentId);
+                      const isMatchedByCurrentAgent =
+                        Boolean(
+                          currentAgentId &&
+                            req.matchedByAgent?.agentId &&
+                            String(req.matchedByAgent.agentId) ===
+                              String(currentAgentId),
+                        );
+                      const shouldShowMatchedAgentName =
+                        req.scopeLabel === "Upcoming (M)" &&
+                        isCurrentAgentsRequest &&
+                        Boolean(req.matchedByAgent?.fullName) &&
+                        !isMatchedByCurrentAgent;
                       const shareConsent = req.raw?.shareConsent;
                       const visibility = req.raw?.visibility;
                       const shouldShowRegistrationDisclosure =
@@ -2098,9 +2110,7 @@ export default function AgentRenterRequestsPage() {
                                   <span className="inline-flex w-fit items-center whitespace-nowrap rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
                                     {req.scopeLabel}
                                   </span>
-                                  {req.scopeLabel === "Upcoming (M)" &&
-                                  req.matchedByAgent?.fullName &&
-                                  isCurrentAgentsRequest ? (
+                                  {shouldShowMatchedAgentName ? (
                                     <span className="self-stretch text-center text-xs font-medium text-blue-600 whitespace-nowrap">
                                       {formatRenterDisplayName(
                                         req.matchedByAgent.fullName,
@@ -2284,9 +2294,7 @@ export default function AgentRenterRequestsPage() {
                                 />
                               </button>
                             ) : null}
-                            {isCurrentAgentsRequest &&
-                            req.scopeLabel === "Upcoming (M)" &&
-                            req.matchedByAgent?.fullName ? (
+                            {shouldShowMatchedAgentName ? (
                               <>
                                 <button
                                   onClick={() => openUnmatchDialog(req)}
