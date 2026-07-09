@@ -2109,7 +2109,7 @@ export default function AgentRenterRequestsPage() {
                                 <>
                                   <span className="self-stretch text-center text-xs font-medium text-blue-600 whitespace-nowrap">
                                     {formatRenterDisplayName(
-                                      req.registeredAgentForView.fullName,
+                                      req.registeredAgentForView?.fullName,
                                     )}
                                   </span>
                                   <span className="inline-flex w-fit items-center whitespace-nowrap rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
