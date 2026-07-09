@@ -249,15 +249,24 @@ export default function AgentMatchesPage() {
   }, [accessToken, isStateRestored, page]);
 
   const filteredRequests = useMemo(() => {
-    return requests.filter((req) =>
-      matchesAgentFilters(
+    return requests.filter((req) => {
+      const matchesBaseFilters = matchesAgentFilters(
         req.raw,
         filters,
         showOwnReferrals,
         currentAgentId,
-        showAllMarketReferrals,
-      ),
-    );
+        false,
+      );
+
+      if (!matchesBaseFilters) return false;
+
+      if (!showAllMarketReferrals) return true;
+
+      return (
+        req.scopeLabel === "Upcoming (M)" &&
+        isCurrentAgentRegisteredForRequest(req, currentAgentId)
+      );
+    });
   }, [
     currentAgentId,
     filters,
