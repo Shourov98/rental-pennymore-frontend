@@ -2209,7 +2209,10 @@ export default function AgentRenterRequestsPage() {
                                   : req.raw?.listingStatus ||
                                     req.raw?.status ||
                                     "Available"
-                                : req.raw?.status || req.status || "unknown";
+                                : req.raw?.listingStatus ||
+                                  req.raw?.status ||
+                                  req.status ||
+                                  "unknown";
                               const statusText =
                                 typeof rawStatus === "string"
                                   ? rawStatus
