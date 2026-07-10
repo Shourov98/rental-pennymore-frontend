@@ -771,6 +771,14 @@ export default function AgentMatchesPage() {
                     {filteredRequests.map((req) => {
                       const isCurrentAgentsRequest =
                         isCurrentAgentRegisteredForRequest(req, currentAgentId);
+                      const currentAgentHasMatchedAccess =
+                        ["free", "paid", "approved", "matched"].includes(
+                          String(
+                            req.raw?.grantAccessStatus ??
+                              req.raw?.status ??
+                              "",
+                          ).toLowerCase(),
+                        );
                       const shouldShowRegisteredAgentName =
                         req.scopeLabel === "Upcoming (M)" &&
                         !isCurrentAgentsRequest &&
@@ -915,15 +923,46 @@ export default function AgentMatchesPage() {
                           <td className="py-3 px-5">{req.priceMaxLabel}</td>
                           <td className="py-3 px-5">{req.bedsBathsLabel}</td>
                           <td className="py-3 px-5">
-                            <span
-                              className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                req.isActive
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-gray-100 text-gray-600"
-                              }`}
-                            >
-                              {req.isActive ? "Matched" : "Inactive"}
-                            </span>
+                            {(() => {
+                              const rawStatus = currentAgentHasMatchedAccess
+                                ? "matched"
+                                : req.raw?.status ||
+                                  req.status ||
+                                  req.raw?.listingStatus ||
+                                  "unknown";
+                              const statusText =
+                                typeof rawStatus === "string"
+                                  ? rawStatus
+                                      .split(/[\s-_]+/)
+                                      .filter(Boolean)
+                                      .map(
+                                        (segment) =>
+                                          segment[0]?.toUpperCase() +
+                                          segment.slice(1),
+                                      )
+                                      .join(" ")
+                                  : String(rawStatus);
+                              const isActiveStatus = /active|available/i.test(
+                                statusText,
+                              );
+                              const isMatchedStatus = /matched/i.test(
+                                statusText,
+                              );
+
+                              return (
+                                <span
+                                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                    isMatchedStatus
+                                      ? "bg-green-100 text-green-700"
+                                      : isActiveStatus
+                                        ? "bg-green-100 text-green-700"
+                                        : "bg-gray-100 text-gray-600"
+                                  }`}
+                                >
+                                  {statusText}
+                                </span>
+                              );
+                            })()}
                           </td>
                           <td className="py-3 px-5">
                             <div className="flex items-center justify-center gap-2">
@@ -993,6 +1032,8 @@ export default function AgentMatchesPage() {
                                     src="/icons/Ask-for-update.png"
                                     alt=""
                                     aria-hidden="true"
+                                    width={20}
+                                    height={20}
                                     className="h-5 w-5 shrink-0 object-contain"
                                   />
                                 </button>

@@ -1924,8 +1924,7 @@ export default function AgentRenterRequestsPage() {
                       const isCurrentAgentsRequest =
                         isCurrentAgentRegisteredForRequest(req, currentAgentId);
                       const currentAgentHasMatchedAccess =
-                        !isCurrentAgentsRequest &&
-                        ["free", "paid", "approved"].includes(
+                        ["free", "paid", "approved", "matched"].includes(
                           String(
                             req.raw?.grantAccessStatus ??
                               req.raw?.status ??
@@ -2203,16 +2202,20 @@ export default function AgentRenterRequestsPage() {
                           <td className="py-3 px-5">{req.bedsBathsLabel}</td>
                           <td className="py-3 px-5">
                             {(() => {
-                              const rawStatus = isMatchResultsMode
-                                ? req.alreadyMatchedByAgent
-                                  ? "matched"
-                                  : req.raw?.listingStatus ||
-                                    req.raw?.status ||
+                              const shouldDisplayMatchedStatus =
+                                currentAgentHasMatchedAccess ||
+                                isMatchedByCurrentAgent;
+                              const rawStatus = shouldDisplayMatchedStatus
+                                ? "matched"
+                                : isMatchResultsMode
+                                  ? req.raw?.status ||
+                                    req.status ||
+                                    req.raw?.listingStatus ||
                                     "Available"
-                                : req.raw?.listingStatus ||
-                                  req.raw?.status ||
-                                  req.status ||
-                                  "unknown";
+                                  : req.raw?.status ||
+                                    req.status ||
+                                    req.raw?.listingStatus ||
+                                    "unknown";
                               const statusText =
                                 typeof rawStatus === "string"
                                   ? rawStatus
@@ -2333,6 +2336,8 @@ export default function AgentRenterRequestsPage() {
                                     src="/icons/Ask-for-update.png"
                                     alt=""
                                     aria-hidden="true"
+                                    width={20}
+                                    height={20}
                                     className="h-5 w-5 shrink-0 object-contain"
                                   />
                                 </button>

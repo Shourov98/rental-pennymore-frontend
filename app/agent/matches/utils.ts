@@ -44,6 +44,8 @@ export interface ApiAgentMatch {
   archiveSource?: string | null;
   archivedAt?: string | null;
   status?: string;
+  listingStatus?: string;
+  grantAccessStatus?: string;
   representation_type?: "owner_representation" | "renter_representation";
   representationSelectedAt?: string | null;
   preferences?: string[];
