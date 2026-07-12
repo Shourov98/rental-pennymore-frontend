@@ -7,10 +7,10 @@ import { X } from "lucide-react";
 const MAX_MESSAGE_LENGTH = 350;
 
 const SUGGESTION_CHIPS = [
-  "Just checking in — any updates on your search?",
-  "Have you had a chance to review the listings we sent?",
-  "Are the current options still a good fit, or should we adjust?",
-  "Would you like to schedule a showing this week?",
+  "Did you reach out to the client yet?",
+  "Have you scheduled any showings yet?",
+  "Any applications submitted yet?",
+  "Has the deal closed?",
 ] as const;
 
 function MailWithCircleIcon() {
@@ -141,7 +141,7 @@ export default function RequestUpdateDialog({
                   }
                 }}
                 disabled={!textBoxActive}
-                placeholder="e.g., Did you reach out to the client yet?"
+                placeholder="Type a personal message…"
                 className={`w-full resize-none rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-base ${
                   textBoxActive
                     ? "bg-white text-gray-800"
