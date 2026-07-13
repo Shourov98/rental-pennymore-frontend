@@ -98,11 +98,11 @@ export default function RequestUpdateDialog({
                 <p className="mt-1 text-xs text-gray-500 sm:text-sm">
                   Send a check-in email to{" "}
                   <span className="font-medium text-gray-900">
-                    {renterLabel}
+                    {matchedAgentLabel}
                   </span>{" "}
                   <span>(Renter)</span> regarding your work with{" "}
                   <span className="font-medium text-gray-900">
-                    {matchedAgentLabel}
+                    {renterLabel}
                   </span>
                   .
                 </p>
