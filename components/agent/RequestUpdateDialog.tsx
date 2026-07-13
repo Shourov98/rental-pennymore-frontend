@@ -100,11 +100,11 @@ export default function RequestUpdateDialog({
                   <span className="font-medium text-gray-900">
                     {matchedAgentLabel}
                   </span>{" "}
-                  <span>(Renter)</span> regarding your work with{" "}
+                  <span>(Agent)</span> regarding your work with{" "}
                   <span className="font-medium text-gray-900">
                     {renterLabel}
                   </span>
-                  .
+                  <span>(Renter)</span>.
                 </p>
               </div>
             </div>
