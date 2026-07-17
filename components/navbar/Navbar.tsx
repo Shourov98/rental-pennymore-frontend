@@ -265,7 +265,7 @@ export default function Navbar() {
                 priority
               />
             </a>
-            <span className="text-[11px] leading-snug inline">
+            <span className="hidden text-[11px] leading-snug lg:inline">
               Operated by – <br />
               <span className="sm:text-[9px]">
                 TUVAL MOR, THE CORCORAN GROUP
@@ -419,6 +419,19 @@ export default function Navbar() {
             <div className="flex flex-col items-start gap-2">
               <a
                 className="flex items-start"
+                href="https://www.corcoran.com"
+                target="blank"
+              >
+                <Image
+                  src="/Corcoran_Logo.png"
+                  alt="Corcoran"
+                  width={120}
+                  height={22}
+                  className="h-auto w-[100px] sm:w-[120px]"
+                />
+              </a>
+              <a
+                className="flex items-start"
                 href="https://www.dos.ny.gov/press/2020/docs/FairHousingNotice_new.pdf"
                 target="blank"
               >
@@ -455,6 +468,19 @@ export default function Navbar() {
               <X size={22} />
             ) : canShowAuthed ? (
               <div className="flex flex-col items-end gap-2">
+                <a
+                  className="flex items-start"
+                  href="https://www.corcoran.com"
+                  target="blank"
+                >
+                  <Image
+                    src="/Corcoran_Logo.png"
+                    alt="Corcoran"
+                    width={120}
+                    height={22}
+                    className="h-auto w-[100px] sm:w-[120px]"
+                  />
+                </a>
                 <Image
                   src="/equal-housing-logo-black.svg"
                   alt="Fair Housing"
