@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { CenteredPageSpinner } from "@/components/ui/centered-page-spinner";
 import type { AppDispatch, RootState } from "@/store/store";
 import { fetchAgentProfile } from "@/store/slices/agentProfileSlice";
+import { selectAgentHasGrantAccess } from "@/store/slices/authSlice";
 import ArchiveRequestDialog, {
   type ArchiveReason,
 } from "@/components/agent/ArchiveRequestDialog";
@@ -779,6 +780,7 @@ export default function AgentRenterRequestsPage() {
   const currentAgentId = useSelector(
     (state: RootState) => state.auth.user?._id,
   );
+  const grantAccessEnabled = useSelector(selectAgentHasGrantAccess);
   const [requests, setRequests] = useState<NormalizedAgentRequest[]>([]);
   const [filters, setFilters] = useState<FilterType>(defaultFilters);
   const [matchSearchFilters, setMatchSearchFilters] =
@@ -1564,6 +1566,7 @@ export default function AgentRenterRequestsPage() {
     representationType: RepresentationType,
   ) => {
     const representationSelectedAt = new Date().toISOString();
+    const isPending = !grantAccessEnabled;
 
     setRequests((prev) => {
       const next = prev.map((request) => {
@@ -1572,29 +1575,34 @@ export default function AgentRenterRequestsPage() {
         if (representationType === "owner_representation") {
           return {
             ...request,
-            ownerRepresentationSelected: true,
+            ownerRepresentationSelected: !isPending,
             representation_type: "owner_representation" as const,
             representationSelectedAt,
             raw: {
               ...request.raw,
-              ownerRepresentationSelected: true,
+              ownerRepresentationSelected: !isPending,
               representation_type: "owner_representation" as const,
               representationSelectedAt,
+              ...(isPending
+                ? { status: "requested", canRequestAccess: false }
+                : {}),
             },
           };
         }
 
         return {
           ...request,
-          alreadyMatchedByAgent: true,
-          status: "matched",
+          alreadyMatchedByAgent: !isPending,
+          status: isPending ? "requested" : "matched",
           representation_type: "renter_representation" as const,
           representationSelectedAt,
           raw: {
             ...request.raw,
-            alreadyMatchedByAgent: true,
-            status: "matched",
-            listingStatus: "matched",
+            alreadyMatchedByAgent: !isPending,
+            status: isPending ? "requested" : "matched",
+            listingStatus: isPending ? "requested" : "matched",
+            grantAccessStatus: isPending ? "pending" : "free",
+            canRequestAccess: isPending ? false : request.raw.canRequestAccess,
             representation_type: "renter_representation" as const,
             representationSelectedAt,
           },
@@ -2234,17 +2242,24 @@ export default function AgentRenterRequestsPage() {
                               const isMatchedStatus = /matched/i.test(
                                 statusText,
                               );
+                              const isPendingStatus = /^(pending|requested)$/i.test(
+                                String(
+                                  req.raw?.grantAccessStatus ?? rawStatus ?? "",
+                                ),
+                              );
                               return (
                                 <span
                                   className={`px-3 py-1 rounded-full text-xs font-semibold ${
                                     isMatchedStatus
                                       ? "bg-green-100 text-green-700"
-                                      : isActiveStatus
-                                        ? "bg-green-100 text-green-700"
-                                        : "bg-gray-100 text-gray-600"
+                                      : isPendingStatus
+                                        ? "bg-amber-100 text-amber-700"
+                                        : isActiveStatus
+                                          ? "bg-green-100 text-green-700"
+                                          : "bg-gray-100 text-gray-600"
                                   }`}
                                 >
-                                  {statusText}
+                                  {isPendingStatus ? "Pending Approval" : statusText}
                                 </span>
                               );
                             })()}

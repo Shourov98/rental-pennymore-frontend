@@ -948,18 +948,25 @@ export default function AgentMatchesPage() {
                               const isMatchedStatus = /matched/i.test(
                                 statusText,
                               );
+                              const isPendingStatus = /^(pending|requested)$/i.test(
+                                String(
+                                  req.raw?.grantAccessStatus ?? rawStatus ?? "",
+                                ),
+                              );
 
                               return (
                                 <span
                                   className={`px-3 py-1 rounded-full text-xs font-semibold ${
                                     isMatchedStatus
                                       ? "bg-green-100 text-green-700"
-                                      : isActiveStatus
-                                        ? "bg-green-100 text-green-700"
-                                        : "bg-gray-100 text-gray-600"
+                                      : isPendingStatus
+                                        ? "bg-amber-100 text-amber-700"
+                                        : isActiveStatus
+                                          ? "bg-green-100 text-green-700"
+                                          : "bg-gray-100 text-gray-600"
                                   }`}
                                 >
-                                  {statusText}
+                                  {isPendingStatus ? "Pending Approval" : statusText}
                                 </span>
                               );
                             })()}

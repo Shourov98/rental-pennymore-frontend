@@ -673,8 +673,7 @@ export default function AgentRenterRequestDetailsPage() {
     request?.registrationDisclosureConfirmed ||
       request?.raw?.registrationDisclosureConfirmed,
   );
-  const shouldShowAddOpportunity =
-    grantAccessEnabled && isRenterRepresentationMatched;
+  const shouldShowAddOpportunity = isRenterRepresentationMatched;
   const canAddAdditionalOpportunity =
     shouldShowAddOpportunity && isRegistrationDisclosureConfirmed;
   const isAccessRequestLocked =
@@ -747,11 +746,7 @@ export default function AgentRenterRequestDetailsPage() {
       };
       if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
-      if (
-        grantAccessEnabled ||
-        isRegisteredAgentForRequest ||
-        representationType === "owner_representation"
-      ) {
+      if (grantAccessEnabled) {
         const response = await fetch(
           `${API_BASE_URL}/pre-market/agent/${requestId}/match`,
           {
