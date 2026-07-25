@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { ArrowLeft, ChevronLeft, ChevronRight, Mail, Phone, User } from "lucide-react";
@@ -273,6 +273,9 @@ export default function AgentRenterRequestDetailsPage() {
   const [selectedRepresentationType, setSelectedRepresentationType] =
     useState<RepresentationType | "">("");
   const [opportunityDetails, setOpportunityDetails] = useState("");
+  const opportunityDetailsTextareaRef = useRef<HTMLTextAreaElement | null>(
+    null,
+  );
   const [navigationTargets, setNavigationTargets] = useState<{
     previousHref: string | null;
     nextHref: string | null;
@@ -360,6 +363,13 @@ export default function AgentRenterRequestDetailsPage() {
 
     return () => controller.abort();
   }, [accessToken, requestId]);
+
+  useEffect(() => {
+    const textarea = opportunityDetailsTextareaRef.current;
+    if (!textarea) return;
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, [opportunityDetails, isRepresentationOpen]);
 
   useEffect(() => {
     if (!requestId) return;
@@ -1441,6 +1451,7 @@ export default function AgentRenterRequestDetailsPage() {
                     </div>
                   ) : null}
                   <textarea
+                    ref={opportunityDetailsTextareaRef}
                     rows={3}
                     maxLength={OPPORTUNITY_DETAILS_MAX_LENGTH}
                     value={opportunityDetails}
@@ -1454,6 +1465,7 @@ export default function AgentRenterRequestDetailsPage() {
                     }
                     placeholder="e.g., 123 W 85th St — Available Thursday at 3pm."
                     aria-invalid={hasRiskyOpportunityDetails}
+                    style={{ minHeight: "5.75rem" }}
                     className={`relative z-10 w-full resize-none rounded-lg border px-3 py-2 pb-7 text-sm leading-5 outline-none transition focus:ring-2 ${
                       hasRiskyOpportunityDetails
                         ? "border-red-300 bg-transparent text-transparent caret-gray-800 focus:border-red-500 focus:ring-red-100"
