@@ -94,6 +94,17 @@ export interface ApiAgentMatch {
     } | null;
   };
   createdAt?: string;
+  // Fields populated by the /pre-market/agent/match-search endpoint
+  alreadyMatchedByAgent?: boolean;
+  matchStarRating?: number;
+  matchMissingFeatures?: Array<{
+    code: string;
+    label: string;
+    description: string;
+    deduction: number;
+  }>;
+  matchPreferenceMatches?: boolean[] | null;
+  matchPriorityBonus?: number;
 }
 
 export interface ApiAgentMatchesResponse {

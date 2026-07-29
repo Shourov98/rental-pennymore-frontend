@@ -34,6 +34,111 @@ const LIST_STATE_STORAGE_KEY = "agent-matches-list-state";
 const defaultFilters: FilterType = getEmptyFilters();
 const NAVIGATION_STORAGE_KEY = "agent-matches-navigation";
 
+const starIconSrc = "/icons/match/star-filled.svg";
+const starEmptyIconSrc = "/icons/match/star-empty.svg";
+const preferenceFilledIconSrc = "/icons/match/preference-filled.svg";
+const preferenceEmptyIconSrc = "/icons/match/preference-empty.svg";
+const matchMissingColumnClass = "min-w-[170px]";
+const matchPreferenceColumnClass = "min-w-[175px]";
+
+const missingFeatureIcons: Record<string, string> = {
+  bedrooms: "/icons/match/bedrooms.png",
+  bathrooms: "/icons/match/bathrooms.png",
+  rent: "/icons/match/rent.png",
+  rentBelowMin: "/icons/match/rent-below-min-normalized.png",
+  location: "/icons/match/location.png",
+  moveDateTotalMiss: "/icons/match/move-date-total-miss.png",
+  moveDateNearMiss: "/icons/match/move-date-near-miss.png",
+  laundryInUnit: "/icons/match/laundry-in-unit.png",
+  privateOutdoorSpace: "/icons/match/private-outdoor-space.png",
+  dishwasher: "/icons/match/dishwasher.png",
+  doorman: "/icons/match/doorman.png",
+  elevator: "/icons/match/elevator.png",
+  laundryInBuilding: "/icons/match/laundry-in-building.png",
+};
+
+const missingFeatureIconVisibilityStyle = {
+  filter: "brightness(0.72) contrast(1.35)",
+};
+
+const formatPriorityTitle = (index: number, preference?: string) => {
+  const priorityLabel = `Priority ${index + 1}`;
+  const preferenceLabel = preference?.trim();
+
+  return preferenceLabel
+    ? `${priorityLabel} / ${preferenceLabel}`
+    : priorityLabel;
+};
+
+const StarSvgIcon = ({
+  filled,
+  half = false,
+  size = 18,
+}: {
+  filled: boolean;
+  half?: boolean;
+  size?: number;
+}) => {
+  if (half) {
+    return (
+      <span
+        className="relative inline-block shrink-0 overflow-hidden"
+        style={{ width: size, height: size }}
+      >
+        <Image
+          src={starEmptyIconSrc}
+          alt=""
+          aria-hidden="true"
+          width={size}
+          height={size}
+          className="absolute inset-0 h-full w-full"
+        />
+        <span className="absolute inset-y-0 left-0 w-1/2 overflow-hidden">
+          <Image
+            src={starIconSrc}
+            alt=""
+            aria-hidden="true"
+            width={size}
+            height={size}
+            className="h-full max-w-none"
+            style={{ width: size, height: size }}
+          />
+        </span>
+      </span>
+    );
+  }
+
+  return (
+    <Image
+      src={filled ? starIconSrc : starEmptyIconSrc}
+      alt=""
+      aria-hidden="true"
+      width={size}
+      height={size}
+      className="shrink-0"
+    />
+  );
+};
+
+const renderStars = (rating?: number) => {
+  const value = rating ?? 0;
+  const full = Math.floor(value);
+  const hasHalf = value % 1 === 0.5;
+  const empty = Math.max(0, 5 - full - (hasHalf ? 1 : 0));
+
+  return (
+    <span className="inline-flex min-w-[110px] items-center gap-0.5 leading-none">
+      {Array.from({ length: full }).map((_, index) => (
+        <StarSvgIcon key={`full-${index}`} filled />
+      ))}
+      {hasHalf ? <StarSvgIcon filled half /> : null}
+      {Array.from({ length: empty }).map((_, index) => (
+        <StarSvgIcon key={`empty-${index}`} filled={false} />
+      ))}
+    </span>
+  );
+};
+
 const isCurrentAgentRegisteredForRequest = (
   request: NormalizedAgentMatch,
   currentAgentId?: string | null,
@@ -179,6 +284,7 @@ export default function AgentMatchesPage() {
     hasNext: false,
     hasPrev: false,
   });
+  const [selectedRequestIds, setSelectedRequestIds] = useState<string[]>([]);
 
   const limit = 10;
 
@@ -363,6 +469,22 @@ export default function AgentMatchesPage() {
   const handleView = (req: NormalizedAgentMatch) => {
     cacheSingleAgentMatch(req);
     router.push(`/agent/matches/${req.id}`);
+  };
+
+  const handleToggleRequestSelection = (requestId: string) => {
+    setSelectedRequestIds((prev) =>
+      prev.includes(requestId)
+        ? prev.filter((id) => id !== requestId)
+        : [...prev, requestId],
+    );
+  };
+
+  const handleToggleSelectAll = () => {
+    const visibleIds = filteredRequests.map((req) => req.id);
+    const allSelected =
+      visibleIds.length > 0 &&
+      visibleIds.every((id) => selectedRequestIds.includes(id));
+    setSelectedRequestIds(allSelected ? [] : visibleIds);
   };
 
   const handleApplyFilters = (nextFilters: FilterType) => {
@@ -842,11 +964,48 @@ export default function AgentMatchesPage() {
           {hasFilteredResults ? (
             <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="min-w-[1240px] w-full text-sm">
+                <table
+                  className={`w-full text-sm ${
+                    isMatchResultsMode ? "min-w-[1880px]" : "min-w-[1240px]"
+                  }`}
+                >
                   <thead className="bg-blue-100 text-gray-800">
                     <tr>
                       <th className="py-3 px-5 text-left">Date</th>
+                      {isMatchResultsMode ? (
+                        <th className="py-3 px-5 text-left">
+                          <label className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={
+                                filteredRequests.length > 0 &&
+                                filteredRequests.every((req) =>
+                                  selectedRequestIds.includes(req.id),
+                                )
+                              }
+                              onChange={handleToggleSelectAll}
+                              className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                              aria-label="Select all visible match results"
+                            />
+                          </label>
+                        </th>
+                      ) : null}
                       <th className="py-3 px-5 text-left">Request</th>
+                      {isMatchResultsMode ? (
+                        <>
+                          <th className="py-3 px-5 text-left">Match Rating</th>
+                          <th
+                            className={`py-3 px-5 text-left ${matchMissingColumnClass}`}
+                          >
+                            What&apos;s Missing
+                          </th>
+                          <th
+                            className={`py-3 px-5 text-left ${matchPreferenceColumnClass}`}
+                          >
+                            Preference Match
+                          </th>
+                        </>
+                      ) : null}
                       <th className="py-3 px-5 text-left">Renter</th>
                       <th className="py-3 px-5 text-left">Scope</th>
                       <th className="py-3 px-5 text-left">Visibility</th>
@@ -912,8 +1071,119 @@ export default function AgentMatchesPage() {
                               {req.dateLabel}
                             </div>
                           </td>
-                          <td className="py-3 px-5 text-gray-900">
-                            {req.requestName}
+                          {isMatchResultsMode ? (
+                            <td className="py-3 px-5">
+                              <input
+                                type="checkbox"
+                                checked={selectedRequestIds.includes(req.id)}
+                                onChange={() =>
+                                  handleToggleRequestSelection(req.id)
+                                }
+                                aria-label={`Select ${req.requestName}`}
+                                className={`h-5 w-5 rounded text-blue-600 focus:ring-blue-500 ${
+                                  req.raw?.alreadyMatchedByAgent
+                                    ? "border-2 border-blue-600"
+                                    : "border border-gray-300"
+                                }`}
+                                style={
+                                  req.raw?.alreadyMatchedByAgent
+                                    ? {
+                                        borderColor: "#2563eb",
+                                        boxShadow: "0 0 0 2px #2563eb",
+                                      }
+                                    : undefined
+                                }
+                              />
+                            </td>
+                          ) : null}
+                          <td className="py-3 px-5">
+                            <div className="text-gray-900">
+                              {req.requestName}
+                            </div>
+                          </td>
+                          {isMatchResultsMode ? (
+                            <>
+                              <td className="py-3 px-5">
+                                {renderStars(req.raw?.matchStarRating)}
+                              </td>
+                              <td
+                                className={`py-3 px-5 ${matchMissingColumnClass}`}
+                              >
+                                {Array.isArray(req.raw?.matchMissingFeatures) &&
+                                req.raw?.matchMissingFeatures.length ? (
+                                  <div className="inline-flex min-w-[112px] shrink-0 flex-nowrap items-center gap-2">
+                                    {req.raw.matchMissingFeatures
+                                      .slice(0, 3)
+                                      .map(
+                                        (feature: {
+                                          code: string;
+                                          label: string;
+                                          description?: string;
+                                        }) => {
+                                          const iconSrc =
+                                            missingFeatureIcons[feature.code];
+                                          if (!iconSrc) return null;
+                                          return (
+                                            <Image
+                                              key={feature.code}
+                                              src={iconSrc}
+                                              alt={feature.label}
+                                              width={34}
+                                              height={34}
+                                              title={feature.description}
+                                              unoptimized
+                                              style={
+                                                missingFeatureIconVisibilityStyle
+                                              }
+                                              className="h-8 w-8 shrink-0 object-contain"
+                                            />
+                                          );
+                                        },
+                                      )}
+                                  </div>
+                                ) : (
+                                  <span className="whitespace-nowrap text-xs font-semibold text-amber-500">
+                                    PERFECT MATCH
+                                  </span>
+                                )}
+                              </td>
+                              <td
+                                className={`py-3 px-5 ${matchPreferenceColumnClass}`}
+                              >
+                                {Array.isArray(req.raw?.matchPreferenceMatches) ? (
+                                  <div className="inline-flex min-w-[106px] shrink-0 flex-nowrap items-center gap-1.5">
+                                    {(req.raw.matchPreferenceMatches as boolean[]).map(
+                                      (matched, index: number) => (
+                                        <Image
+                                          key={index}
+                                          src={
+                                            matched
+                                              ? preferenceFilledIconSrc
+                                              : preferenceEmptyIconSrc
+                                          }
+                                          alt=""
+                                          aria-hidden="true"
+                                          width={20}
+                                          height={20}
+                                          title={formatPriorityTitle(
+                                            index,
+                                            req.preferences?.[index],
+                                          )}
+                                          className="h-5 w-5 shrink-0"
+                                        />
+                                      ),
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span className="text-gray-400">-</span>
+                                )}
+                              </td>
+                            </>
+                          ) : null}
+                          <td className="py-3 px-5">
+                            <div className="font-medium text-gray-900">
+                              {formatRenterDisplayName(req.renterName)}
+                            </div>
                           </td>
                           <td className="py-3 px-5">
                             <div className="font-medium text-gray-900">
