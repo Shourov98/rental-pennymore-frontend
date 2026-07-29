@@ -40,7 +40,29 @@ export const store = configureStore({
     [api.reducerPath]: api.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware()
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredPaths: [
+          "api.subscriptions",
+          "api.internalActions",
+          // RTK Query stores subscribe-sentinel Symbols (e.g. for arg-less
+          // queries like `useGetProfileQuery`) in `originalArgs`. These are
+          // framework-internal and not user data.
+          /^api\.queries\..*\.originalArgs$/,
+          /^api\.mutations\..*\.originalArgs$/,
+          /^api\.provided\..*\.originalArgs$/,
+        ],
+        ignoredActionPaths: [
+          "meta.arg",
+          "payload.timestamp",
+          "meta.baseQueryMeta.request",
+          "meta.baseQueryMeta.response",
+          "meta.request",
+          /^api\/subscriptions\//,
+          /^api\/internalActions\//,
+        ],
+      },
+    })
       .prepend(sessionListener.middleware)
       .concat(api.middleware),
 });

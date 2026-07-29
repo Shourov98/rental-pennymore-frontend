@@ -1236,7 +1236,10 @@ export default function AgentRenterRequestDetailsPage() {
               </div>
             </div>
 
-            <RenterPreferenceView data={renterPreferenceData} />
+            <RenterPreferenceView
+              data={renterPreferenceData}
+              preferencesLayout="topFour"
+            />
 
             <div className="mt-6 flex flex-col gap-4">
               {statusMessage && (

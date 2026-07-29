@@ -22,6 +22,7 @@ import {
   normalizeAgentMatch,
 } from "./utils";
 import {
+  buildMatchSearchPayload,
   getEmptyFilters,
   matchesAgentFilters,
   sanitizeFilters,
@@ -54,6 +55,14 @@ const isCurrentAgentRegisteredForRequest = (
   return registeredAgentIds.includes(String(currentAgentId));
 };
 
+const formatMissingMatchFieldsMessage = (missingFields: string[]) => {
+  const fields = missingFields.map((field, index) =>
+    field === "move-in dates" && index > 0 ? `and ${field}` : field,
+  );
+
+  return `Please enter ${fields.join(", ")} before matching.`;
+};
+
 const formatRenterDisplayName = (fullName?: string | null) => {
   const parts = fullName?.trim().split(/\s+/).filter(Boolean) ?? [];
   if (parts.length === 0) return "Not specified";
@@ -81,6 +90,8 @@ const readStoredListState = () => {
       page: 1,
       showOwnReferrals: false,
       showAllMarketReferrals: false,
+      isMatchResultsMode: false,
+      matchSearchFilters: null,
     };
   }
 
@@ -91,24 +102,37 @@ const readStoredListState = () => {
         page: 1,
         showOwnReferrals: false,
         showAllMarketReferrals: false,
+        isMatchResultsMode: false,
+        matchSearchFilters: null,
       };
     }
     const parsed = JSON.parse(stored) as Partial<{
       page: number;
       showOwnReferrals: boolean;
       showAllMarketReferrals: boolean;
+      isMatchResultsMode: boolean;
+      matchSearchFilters: FilterType | null;
     }>;
+    const restoredMatchSearchFilters = parsed.matchSearchFilters
+      ? sanitizeFilters(parsed.matchSearchFilters)
+      : null;
     return {
       page:
         typeof parsed.page === "number" && parsed.page > 0 ? parsed.page : 1,
       showOwnReferrals: Boolean(parsed.showOwnReferrals),
       showAllMarketReferrals: Boolean(parsed.showAllMarketReferrals),
+      isMatchResultsMode:
+        Boolean(parsed.isMatchResultsMode) &&
+        Boolean(restoredMatchSearchFilters),
+      matchSearchFilters: restoredMatchSearchFilters,
     };
   } catch {
     return {
       page: 1,
       showOwnReferrals: false,
       showAllMarketReferrals: false,
+      isMatchResultsMode: false,
+      matchSearchFilters: null,
     };
   }
 };
@@ -122,6 +146,9 @@ export default function AgentMatchesPage() {
 
   const [requests, setRequests] = useState<NormalizedAgentMatch[]>([]);
   const [filters, setFilters] = useState<FilterType>(defaultFilters);
+  const [matchSearchFilters, setMatchSearchFilters] =
+    useState<FilterType | null>(null);
+  const [isMatchResultsMode, setIsMatchResultsMode] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [showOwnReferrals, setShowOwnReferrals] = useState(false);
   const [showAllMarketReferrals, setShowAllMarketReferrals] = useState(false);
@@ -161,10 +188,14 @@ export default function AgentMatchesPage() {
       page: storedPage,
       showOwnReferrals: storedShowOwnReferrals,
       showAllMarketReferrals: storedShowAllMarketReferrals,
+      isMatchResultsMode: storedIsMatchResultsMode,
+      matchSearchFilters: storedMatchSearchFilters,
     } = readStoredListState();
     setPage(storedPage);
     setShowOwnReferrals(storedShowOwnReferrals);
     setShowAllMarketReferrals(storedShowAllMarketReferrals);
+    setIsMatchResultsMode(storedIsMatchResultsMode);
+    setMatchSearchFilters(storedMatchSearchFilters);
     setIsStateRestored(true);
   }, []);
 
@@ -177,9 +208,22 @@ export default function AgentMatchesPage() {
     if (typeof window === "undefined" || !isStateRestored) return;
     sessionStorage.setItem(
       LIST_STATE_STORAGE_KEY,
-      JSON.stringify({ page, showOwnReferrals, showAllMarketReferrals }),
+      JSON.stringify({
+        page,
+        showOwnReferrals,
+        showAllMarketReferrals,
+        isMatchResultsMode,
+        matchSearchFilters,
+      }),
     );
-  }, [isStateRestored, page, showAllMarketReferrals, showOwnReferrals]);
+  }, [
+    isStateRestored,
+    isMatchResultsMode,
+    matchSearchFilters,
+    page,
+    showAllMarketReferrals,
+    showOwnReferrals,
+  ]);
 
   useEffect(() => {
     if (!isStateRestored) return;
@@ -200,14 +244,26 @@ export default function AgentMatchesPage() {
         };
         if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
-        const response = await fetch(
-          `${API_BASE_URL}/pre-market/agent/all-requests?${params.toString()}`,
-          {
-            method: "GET",
-            headers,
-            signal: controller.signal,
-          },
-        );
+        const response =
+          isMatchResultsMode && matchSearchFilters
+            ? await fetch(`${API_BASE_URL}/pre-market/agent/match-search`, {
+                method: "POST",
+                headers,
+                signal: controller.signal,
+                body: JSON.stringify({
+                  ...buildMatchSearchPayload(matchSearchFilters),
+                  page,
+                  limit,
+                }),
+              })
+            : await fetch(
+                `${API_BASE_URL}/pre-market/agent/all-requests?${params.toString()}`,
+                {
+                  method: "GET",
+                  headers,
+                  signal: controller.signal,
+                },
+              );
 
         const data: ApiAgentMatchesResponse = await response
           .json()
@@ -246,7 +302,13 @@ export default function AgentMatchesPage() {
     fetchRequests();
 
     return () => controller.abort();
-  }, [accessToken, isStateRestored, page]);
+  }, [
+    accessToken,
+    isMatchResultsMode,
+    isStateRestored,
+    matchSearchFilters,
+    page,
+  ]);
 
   const filteredRequests = useMemo(() => {
     return requests.filter((req) => {
@@ -301,6 +363,38 @@ export default function AgentMatchesPage() {
   const handleView = (req: NormalizedAgentMatch) => {
     cacheSingleAgentMatch(req);
     router.push(`/agent/matches/${req.id}`);
+  };
+
+  const handleApplyFilters = (nextFilters: FilterType) => {
+    const missingFields: string[] = [];
+
+    if (!nextFilters.borough) missingFields.push("borough");
+    if (!nextFilters.neighborhoods[0]) missingFields.push("neighborhood");
+    if (nextFilters.bedrooms[0] == null) missingFields.push("bedrooms");
+    if (nextFilters.bathrooms[0] == null) missingFields.push("bathrooms");
+    if (nextFilters.maxPrice == null) missingFields.push("rent");
+    if (!nextFilters.movingDate.earliest || !nextFilters.movingDate.latest) {
+      missingFields.push("move-in dates");
+    }
+
+    if (missingFields.length) {
+      setError(formatMissingMatchFieldsMessage(missingFields));
+      return;
+    }
+
+    setPage(1);
+    setMatchSearchFilters(nextFilters);
+    setIsMatchResultsMode(true);
+    setIsFilterOpen(false);
+  };
+
+  const handleResetMatchFilters = (nextFilters: FilterType) => {
+    setError(null);
+    setPage(1);
+    setFilters(nextFilters);
+    setMatchSearchFilters(null);
+    setIsMatchResultsMode(false);
+    setIsFilterOpen(true);
   };
 
   const handleToggleShare = async (request: NormalizedAgentMatch) => {
@@ -1119,9 +1213,12 @@ export default function AgentMatchesPage() {
       <FilterModal
         isOpen={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}
-        onApply={(f) => setFilters(f)}
-        initialFilters={filters}
+        onApply={handleApplyFilters}
+        onReset={handleResetMatchFilters}
+        initialFilters={matchSearchFilters ?? filters}
         resultCount={filteredRequests.length}
+        variant="matchRequests"
+        isApplying={isLoading}
       />
       {archiveTarget ? (
         <ArchiveRequestDialog

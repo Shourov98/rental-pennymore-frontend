@@ -616,7 +616,10 @@ export default function AgentMatchDetailsPage() {
               </div>
             </div>
 
-            <RenterPreferenceView data={renterPreferenceData} />
+            <RenterPreferenceView
+              data={renterPreferenceData}
+              preferencesLayout="topFour"
+            />
 
             <div className="mt-6 flex items-center justify-center gap-3">
               <button

@@ -1,9 +1,12 @@
 "use client";
 
-import { Calendar, DollarSign, MapPin } from "lucide-react";
+import { Calendar, DollarSign, GripVertical, MapPin } from "lucide-react";
+
+const TOP_FOUR_PREFERENCES_LIMIT = 4;
 
 export default function RenterPreferenceView({
   data,
+  preferencesLayout = "full",
 }: {
   data: {
     borough: string;
@@ -22,6 +25,7 @@ export default function RenterPreferenceView({
     preferences?: string[];
     note?: string;
   };
+  preferencesLayout?: "full" | "topFour";
 }) {
   const bedroomOptions = ["Studio", "1BR", "2BR", "3BR", "4BR+"];
   const bathroomOptions = ["1", "2", "3", "4+"];
@@ -45,6 +49,37 @@ export default function RenterPreferenceView({
     ) : (
       <p className="text-sm text-gray-500">Not specified</p>
     );
+
+  const renderTopFourPreferences = (items: string[]) => {
+    if (!items.length) {
+      return <p className="text-sm text-gray-500">Not specified</p>;
+    }
+
+    const topFour = items.slice(0, TOP_FOUR_PREFERENCES_LIMIT);
+
+    return (
+      <div className="max-w-md space-y-2">
+        {topFour.map((item, idx) => (
+          <div
+            key={`${item}-${idx}`}
+            className="flex items-center gap-3 rounded-lg bg-sky-50 border border-sky-100 px-4 py-2.5"
+          >
+            <GripVertical
+              className="h-4 w-4 text-sky-500 shrink-0"
+              aria-hidden="true"
+            />
+            <span className="w-5 shrink-0 text-sm font-semibold text-gray-800">
+              {idx + 1}.
+            </span>
+            <span className="flex-1 text-sm text-gray-800">{item}</span>
+            <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">
+              Priority #{idx + 1}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   const renderPreferencesList = (items: string[]) => {
     if (!items.length) {
@@ -228,8 +263,14 @@ export default function RenterPreferenceView({
 
       {/* Preferences */}
       <div>
-        <p className="text-sm font-semibold text-gray-900 mb-2">Preferences</p>
-        {renderPreferencesList(data.preferences ?? [])}
+        <p className="text-sm font-semibold text-gray-900 mb-2">
+          {preferencesLayout === "topFour"
+            ? "Top Four Preferences"
+            : "Preferences"}
+        </p>
+        {preferencesLayout === "topFour"
+          ? renderTopFourPreferences(data.preferences ?? [])
+          : renderPreferencesList(data.preferences ?? [])}
       </div>
 
       {/* Note */}
