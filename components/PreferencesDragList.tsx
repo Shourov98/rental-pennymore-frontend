@@ -30,6 +30,7 @@ import { GripVertical } from "lucide-react";
 interface Props {
   onChange: (list: string[]) => void;
   initialList?: string[];
+  topFourOnly?: boolean;
 }
 
 function areListsEqual(first: string[], second: string[]) {
@@ -55,11 +56,16 @@ function normalizePreferencesList(list?: string[]) {
 }
 
 
-export default function PreferencesDragList({ onChange, initialList }: Props) {
+export default function PreferencesDragList({
+  onChange,
+  initialList,
+  topFourOnly = false,
+}: Props) {
   const items = useMemo(
     () => normalizePreferencesList(initialList),
     [initialList],
   );
+  const visibleItems = topFourOnly ? items.slice(0, 4) : items;
   const hasSeededDefaults = useRef(false);
 
   useEffect(() => {
@@ -92,16 +98,22 @@ export default function PreferencesDragList({ onChange, initialList }: Props) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const oldIndex = items.indexOf(active.id as string);
-    const newIndex = items.indexOf(over.id as string);
+    const oldIndex = visibleItems.indexOf(active.id as string);
+    const newIndex = visibleItems.indexOf(over.id as string);
+    if (oldIndex < 0 || newIndex < 0) return;
 
-    const updated = arrayMove(items, oldIndex, newIndex);
+    const updatedVisibleItems = arrayMove(visibleItems, oldIndex, newIndex);
+    const updated = topFourOnly
+      ? [...updatedVisibleItems, ...items.slice(4)]
+      : updatedVisibleItems;
     onChange(updated);
   };
 
-  const midPoint = Math.ceil(items.length / 2);
-  const leftCol = items.slice(0, midPoint);
-  const rightCol = items.slice(midPoint);
+  const midPoint = topFourOnly
+    ? visibleItems.length
+    : Math.ceil(items.length / 2);
+  const leftCol = visibleItems.slice(0, midPoint);
+  const rightCol = topFourOnly ? [] : visibleItems.slice(midPoint);
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5">
@@ -109,7 +121,9 @@ export default function PreferencesDragList({ onChange, initialList }: Props) {
         Rank Importance of Features
       </h3>
       <p className="text-xs mb-4" style={{ color: "#3D4148" }}>
-        {"→"} Drag to reorder and select your top 4 ranked priorities
+        {topFourOnly
+          ? "Drag to reorder your top 4 ranked priorities"
+          : "→ Drag to reorder and select your top 4 ranked priorities"}
       </p>
 
       <DndContext
@@ -117,27 +131,32 @@ export default function PreferencesDragList({ onChange, initialList }: Props) {
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        <SortableContext items={items} strategy={verticalListSortingStrategy}>
+        <SortableContext
+          items={visibleItems}
+          strategy={verticalListSortingStrategy}
+        >
           <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               {leftCol.map((item) => (
                 <SortableItem
                   key={item}
                   id={item}
-                  index={items.indexOf(item)}
+                  index={visibleItems.indexOf(item)}
                 />
               ))}
             </div>
 
-            <div className="space-y-2">
-              {rightCol.map((item) => (
-                <SortableItem
-                  key={item}
-                  id={item}
-                  index={items.indexOf(item)}
-                />
-              ))}
-            </div>
+            {!topFourOnly ? (
+              <div className="space-y-2">
+                {rightCol.map((item) => (
+                  <SortableItem
+                    key={item}
+                    id={item}
+                    index={visibleItems.indexOf(item)}
+                  />
+                ))}
+              </div>
+            ) : null}
           </div>
         </SortableContext>
       </DndContext>

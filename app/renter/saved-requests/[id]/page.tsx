@@ -606,6 +606,7 @@ export default function EditPreMarketListingPage() {
             <PreferencesDragList
               initialList={preferences}
               onChange={setPreferences}
+              topFourOnly
             />
 
             {/* Save Button */}
