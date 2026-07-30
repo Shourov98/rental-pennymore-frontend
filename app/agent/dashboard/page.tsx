@@ -1739,7 +1739,7 @@ export default function AgentRenterRequestsPage() {
   }
 
   return (
-    <section className="bg-gray-50 min-h-screen px-4 lg:px-6 py-6 overflow-y-auto">
+    <section className="bg-gray-50 px-4 lg:px-6 py-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 bg-white p-5 rounded-xl shadow-sm gap-3">
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-gray-900">
@@ -2210,56 +2210,39 @@ export default function AgentRenterRequestsPage() {
                           <td className="py-3 px-5">{req.bedsBathsLabel}</td>
                           <td className="py-3 px-5">
                             {(() => {
-                              const shouldDisplayMatchedStatus =
-                                currentAgentHasMatchedAccess ||
-                                isMatchedByCurrentAgent;
-                              const rawStatus = shouldDisplayMatchedStatus
-                                ? "matched"
-                                : isMatchResultsMode
-                                  ? req.raw?.status ||
-                                    req.status ||
-                                    req.raw?.listingStatus ||
-                                    "Available"
-                                  : req.raw?.status ||
-                                    req.status ||
-                                    req.raw?.listingStatus ||
-                                    "unknown";
+                              const normalizedBackendStatus = req.status
+                                ?.trim()
+                                .toLowerCase();
+                              const backendStatusText =
+                                normalizedBackendStatus === "matched"
+                                  ? "Matched"
+                                  : normalizedBackendStatus === "open"
+                                    ? "Open"
+                                    : null;
+                              const fallbackIsMatchedByAgent =
+                                Boolean(req.alreadyMatchedByAgent) ||
+                                Boolean(
+                                  currentAgentId &&
+                                    req.matchedByAgent?.agentId &&
+                                    String(req.matchedByAgent.agentId) ===
+                                      String(currentAgentId),
+                                );
                               const statusText =
-                                typeof rawStatus === "string"
-                                  ? rawStatus
-                                      .split(/[\s-_]+/)
-                                      .filter(Boolean)
-                                      .map(
-                                        (segment) =>
-                                          segment[0]?.toUpperCase() +
-                                          segment.slice(1),
-                                      )
-                                      .join(" ")
-                                  : String(rawStatus);
-                              const isActiveStatus = /active|available/i.test(
-                                statusText,
-                              );
-                              const isMatchedStatus = /matched/i.test(
-                                statusText,
-                              );
-                              const isPendingStatus = /^(pending|requested)$/i.test(
-                                String(
-                                  req.raw?.grantAccessStatus ?? rawStatus ?? "",
-                                ),
-                              );
+                                backendStatusText ??
+                                (fallbackIsMatchedByAgent
+                                  ? "Matched"
+                                  : "Open");
+                              const isMatchedByAgent =
+                                statusText === "Matched";
                               return (
                                 <span
                                   className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                    isMatchedStatus
+                                    isMatchedByAgent
                                       ? "bg-green-100 text-green-700"
-                                      : isPendingStatus
-                                        ? "bg-amber-100 text-amber-700"
-                                        : isActiveStatus
-                                          ? "bg-green-100 text-green-700"
-                                          : "bg-gray-100 text-gray-600"
+                                      : "bg-gray-100 text-gray-600"
                                   }`}
                                 >
-                                  {isPendingStatus ? "Pending Approval" : statusText}
+                                  {statusText}
                                 </span>
                               );
                             })()}
