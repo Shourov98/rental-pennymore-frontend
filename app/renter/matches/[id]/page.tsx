@@ -395,7 +395,10 @@ export default function RenterMatchDetailsPage() {
                 Request Preferences
               </h2>
             </div>
-            <RenterPreferenceView data={renterPreferenceData} />
+            <RenterPreferenceView
+              data={renterPreferenceData}
+              preferencesLayout="topFour"
+            />
           </div>
 
           {/* Matched Agents Section */}
