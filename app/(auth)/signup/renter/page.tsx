@@ -4,14 +4,14 @@ import SignupForm from "../SignupForm";
 
 export const metadata: Metadata = {
   title: "Sign up | BeforeListed",
-  description: "",
+  description: "Have your agent find upcoming rentals before they list",
   openGraph: {
     title: "BeforeListed",
-    description: "",
+    description: "Have your agent find upcoming rentals before they list",
   },
   twitter: {
     title: "BeforeListed",
-    description: "",
+    description: "Have your agent find upcoming rentals before they list",
   },
 };
 
