@@ -94,23 +94,6 @@ const getConfirmScopeType = (
   return "request";
 };
 
-const renderHighlightedOpportunityDetails = (value: string) => {
-  const pattern = riskyOpportunityDetailsPattern();
-  const parts = value.split(pattern);
-
-  return parts.map((part, index) =>
-    RISKY_OPPORTUNITY_DETAIL_PHRASES.some(
-      (phrase) => phrase.toLowerCase() === part.toLowerCase(),
-    ) ? (
-      <mark key={`${part}-${index}`} className="bg-red-50 text-red-600">
-        {part}
-      </mark>
-    ) : (
-      <span key={`${part}-${index}`}>{part}</span>
-    ),
-  );
-};
-
 const quickSelectOptions: Array<{
   key: QuickSelectThreshold;
   label: string;
@@ -2595,17 +2578,7 @@ export default function AgentRenterRequestsPage() {
                 <p className="mt-1 text-xs leading-5 text-gray-500">
                   {opportunityDetailsHelperText[bulkRepresentationType]}
                 </p>
-                <div className="relative mt-3 rounded-lg bg-white">
-                  {hasRiskyBulkOpportunityDetails ? (
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-0 whitespace-pre-wrap break-words rounded-lg px-3 py-2 pb-7 text-sm leading-5 text-gray-800"
-                    >
-                      {renderHighlightedOpportunityDetails(
-                        bulkOpportunityDetails,
-                      )}
-                    </div>
-                  ) : null}
+                <div className="mt-3">
                   <textarea
                     rows={3}
                     maxLength={OPPORTUNITY_DETAILS_MAX_LENGTH}
@@ -2620,18 +2593,20 @@ export default function AgentRenterRequestsPage() {
                     }
                     placeholder="e.g., 123 W 85th St - Available Thursday at 3pm."
                     aria-invalid={hasRiskyBulkOpportunityDetails}
-                    className={`relative z-10 w-full resize-none rounded-lg border px-3 py-2 pb-7 text-sm leading-5 outline-none transition focus:ring-2 ${
+                    className={`w-full resize-none rounded-lg border px-3 py-2 text-sm leading-5 text-gray-800 outline-none transition focus:ring-2 ${
                       hasRiskyBulkOpportunityDetails
-                        ? "border-red-300 bg-transparent text-transparent caret-gray-800 focus:border-red-500 focus:ring-red-100"
+                        ? "border-red-300 focus:border-red-500 focus:ring-red-100"
                         : "border-gray-200 text-gray-800 focus:border-blue-500 focus:ring-blue-100"
                     }`}
                   />
-                  <span
-                    className={`absolute bottom-2 right-3 z-20 text-xs ${bulkOpportunityDetailsCounterClass}`}
-                  >
-                    {bulkOpportunityDetailsCount} /{" "}
-                    {OPPORTUNITY_DETAILS_MAX_LENGTH}
-                  </span>
+                  <div className="mt-1 flex justify-end">
+                    <span
+                      className={`text-xs ${bulkOpportunityDetailsCounterClass}`}
+                    >
+                      {bulkOpportunityDetailsCount} /{" "}
+                      {OPPORTUNITY_DETAILS_MAX_LENGTH}
+                    </span>
+                  </div>
                 </div>
                 {hasRiskyBulkOpportunityDetails ? (
                   <p className="mt-2 text-xs leading-5 text-red-600">
