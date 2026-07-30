@@ -521,15 +521,44 @@ export default function AgentMatchDetailsPage() {
               "Archived"}
           </span>
         ) : (
-          <span
-            className={`px-3 py-1 rounded-full text-xs font-semibold ${
-              request?.isActive
-                ? "bg-green-100 text-green-700"
-                : "bg-gray-100 text-gray-600"
-            }`}
-          >
-            {request?.isActive ? "Active" : "Inactive"}
-          </span>
+          (() => {
+            const rawStatus = request?.raw?.status || request?.status || "";
+            const normalizedBackendStatus = rawStatus.trim().toLowerCase();
+            const backendStatusText =
+              normalizedBackendStatus === "matched"
+                ? "Matched"
+                : normalizedBackendStatus === "open"
+                  ? "Open"
+                  : null;
+            const normalizedAgentGrantStatus = String(
+              request?.raw?.grantAccessStatus ?? request?.raw?.status ?? "",
+            )
+              .trim()
+              .toLowerCase();
+            const matchedFromGrantStatus =
+              request?.raw?.representation_type !== "owner_representation" &&
+              ["pending", "approved", "free", "paid"].includes(
+                normalizedAgentGrantStatus,
+              );
+            const statusLabel =
+              backendStatusText ??
+              (request?.raw?.alreadyMatchedByAgent || matchedFromGrantStatus
+                ? "Matched"
+                : "Open");
+            const isMatchedByAgent = statusLabel === "Matched";
+
+            return (
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  isMatchedByAgent
+                    ? "bg-green-100 text-green-700"
+                    : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                {statusLabel}
+              </span>
+            );
+          })()
         )}
       </div>
 

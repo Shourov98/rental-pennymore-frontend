@@ -1297,8 +1297,25 @@ export default function AgentMatchesPage() {
                                   : normalizedBackendStatus === "open"
                                     ? "Open"
                                     : null;
+                              const normalizedAgentGrantStatus = String(
+                                req.raw?.grantAccessStatus ??
+                                  req.raw?.status ??
+                                  "",
+                              )
+                                .trim()
+                                .toLowerCase();
+                              const matchedFromGrantStatus =
+                                req.raw?.representation_type !==
+                                  "owner_representation" &&
+                                [
+                                  "pending",
+                                  "approved",
+                                  "free",
+                                  "paid",
+                                ].includes(normalizedAgentGrantStatus);
                               const fallbackIsMatchedByAgent =
                                 Boolean(req.raw?.alreadyMatchedByAgent) ||
+                                matchedFromGrantStatus ||
                                 Boolean(
                                   currentAgentId &&
                                   req.matchedByAgent?.agentId &&

@@ -1035,15 +1035,33 @@ export default function AgentRenterRequestDetailsPage() {
               </span>
             );
           }
-          const normalizedStatus = rawStatus.toLowerCase();
+          const normalizedBackendStatus = rawStatus.trim().toLowerCase();
+          const backendStatusText =
+            normalizedBackendStatus === "matched"
+              ? "Matched"
+              : normalizedBackendStatus === "open"
+                ? "Open"
+                : null;
+          const normalizedAgentGrantStatus = String(
+            request?.raw?.grantAccessStatus ?? request?.raw?.status ?? "",
+          )
+            .trim()
+            .toLowerCase();
+          const matchedFromGrantStatus =
+            request?.raw?.representation_type !== "owner_representation" &&
+            ["pending", "approved", "free", "paid"].includes(
+              normalizedAgentGrantStatus,
+            );
           const statusLabel =
-            rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1);
+            backendStatusText ??
+            (request?.alreadyMatchedByAgent || matchedFromGrantStatus
+              ? "Matched"
+              : "Open");
+          const isMatchedByAgent = statusLabel === "Matched";
           const statusClasses =
-            normalizedStatus === "approved"
+            isMatchedByAgent
               ? "bg-green-100 text-green-700"
-              : normalizedStatus === "pending"
-                ? "bg-orange-100 text-orange-700"
-                : "bg-gray-100 text-gray-600";
+              : "bg-gray-100 text-gray-600";
 
           return (
             <span
