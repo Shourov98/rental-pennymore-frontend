@@ -931,6 +931,9 @@ export default function AgentRenterRequestsPage() {
           limit: String(limit),
         });
         appendFilterParams(params, filters);
+        if (showAllMarketReferrals) {
+          params.set("allMarketReferrals", "true");
+        }
 
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
@@ -1005,6 +1008,7 @@ export default function AgentRenterRequestsPage() {
     isStateRestored,
     matchSearchFilters,
     page,
+    showAllMarketReferrals,
   ]);
 
   const filteredRequests = useMemo(() => {
@@ -1016,7 +1020,7 @@ export default function AgentRenterRequestsPage() {
         filters,
         showOwnReferrals,
         currentAgentId,
-        showAllMarketReferrals,
+        false,
       ),
     );
   }, [
@@ -1024,7 +1028,6 @@ export default function AgentRenterRequestsPage() {
     filters,
     isMatchResultsMode,
     requests,
-    showAllMarketReferrals,
     showOwnReferrals,
   ]);
 
@@ -1764,7 +1767,10 @@ export default function AgentRenterRequestsPage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="flex flex-wrap items-center gap-3">
             <button
-              onClick={() => setShowAllMarketReferrals((prev) => !prev)}
+              onClick={() => {
+                setPage(1);
+                setShowAllMarketReferrals((prev) => !prev);
+              }}
               className={`flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-full border px-4 py-2 font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 ${
                 showAllMarketReferrals
                   ? "border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-sm"

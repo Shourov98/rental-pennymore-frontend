@@ -41,6 +41,21 @@ const preferenceEmptyIconSrc = "/icons/match/preference-empty.svg";
 const matchMissingColumnClass = "min-w-[170px]";
 const matchPreferenceColumnClass = "min-w-[175px]";
 
+const bedroomQueryLabels: Record<number, string> = {
+  0: "Studio",
+  1: "1BR",
+  2: "2BR",
+  3: "3BR",
+  4: "4BR+",
+};
+
+const bathroomQueryLabels: Record<number, string> = {
+  1: "1",
+  2: "2",
+  3: "3",
+  4: "4+",
+};
+
 const missingFeatureIcons: Record<string, string> = {
   bedrooms: "/icons/match/bedrooms.png",
   bathrooms: "/icons/match/bathrooms.png",
@@ -137,6 +152,45 @@ const renderStars = (rating?: number) => {
       ))}
     </span>
   );
+};
+
+const appendCsvParam = (
+  params: URLSearchParams,
+  key: string,
+  values: string[],
+) => {
+  const activeValues = values.filter(Boolean);
+  if (activeValues.length) params.set(key, activeValues.join(","));
+};
+
+const appendFilterParams = (params: URLSearchParams, filters: FilterType) => {
+  if (filters.borough) params.set("borough", filters.borough);
+  appendCsvParam(
+    params,
+    "bedrooms",
+    filters.bedrooms.flatMap((value) =>
+      bedroomQueryLabels[value] ? [bedroomQueryLabels[value]] : [],
+    ),
+  );
+  appendCsvParam(
+    params,
+    "bathrooms",
+    filters.bathrooms.flatMap((value) =>
+      bathroomQueryLabels[value] ? [bathroomQueryLabels[value]] : [],
+    ),
+  );
+  if (filters.maxPrice != null) params.set("rent", String(filters.maxPrice));
+  if (filters.movingDate.earliest) {
+    params.set("movingDateEarliest", filters.movingDate.earliest);
+  }
+  if (filters.movingDate.latest) {
+    params.set("movingDateLatest", filters.movingDate.latest);
+  }
+  appendCsvParam(params, "unitFeatures", filters.unitFeatures);
+  appendCsvParam(params, "buildingFeatures", filters.buildingFeatures);
+  appendCsvParam(params, "petPolicy", filters.petPolicy);
+  appendCsvParam(params, "guarantorRequired", filters.guarantorRequired);
+  appendCsvParam(params, "availableFeatures", filters.availableFeatures);
 };
 
 const isCurrentAgentRegisteredForRequest = (
@@ -344,6 +398,10 @@ export default function AgentMatchesPage() {
           page: String(page),
           limit: String(limit),
         });
+        appendFilterParams(params, filters);
+        if (showAllMarketReferrals) {
+          params.set("allMarketReferrals", "true");
+        }
 
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
@@ -410,36 +468,28 @@ export default function AgentMatchesPage() {
     return () => controller.abort();
   }, [
     accessToken,
+    filters,
     isMatchResultsMode,
     isStateRestored,
     matchSearchFilters,
     page,
+    showAllMarketReferrals,
   ]);
 
   const filteredRequests = useMemo(() => {
-    return requests.filter((req) => {
-      const matchesBaseFilters = matchesAgentFilters(
+    return requests.filter((req) =>
+      matchesAgentFilters(
         req.raw,
         filters,
         showOwnReferrals,
         currentAgentId,
         false,
-      );
-
-      if (!matchesBaseFilters) return false;
-
-      if (!showAllMarketReferrals) return true;
-
-      return (
-        req.scopeLabel === "Upcoming (M)" &&
-        isCurrentAgentRegisteredForRequest(req, currentAgentId)
-      );
-    });
+      ),
+    );
   }, [
     currentAgentId,
     filters,
     requests,
-    showAllMarketReferrals,
     showOwnReferrals,
   ]);
 
@@ -886,7 +936,10 @@ export default function AgentMatchesPage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="flex flex-wrap items-center gap-3">
             <button
-              onClick={() => setShowAllMarketReferrals((prev) => !prev)}
+              onClick={() => {
+                setPage(1);
+                setShowAllMarketReferrals((prev) => !prev);
+              }}
               className={`flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-full border px-4 py-2 font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 ${
                 showAllMarketReferrals
                   ? "border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-sm"
