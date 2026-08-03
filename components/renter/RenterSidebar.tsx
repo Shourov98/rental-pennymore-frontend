@@ -9,6 +9,7 @@ import {
   SearchCheck,
   User,
   LogOut,
+  Gift,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -57,6 +58,11 @@ export default function AgentSidebar({ open }: { open?: boolean }) {
           name: "Matches",
           icon: <SearchCheck />,
           href: "/renter/matches",
+        },
+        {
+          name: "Moving Discounts",
+          icon: <Gift />,
+          href: "/renter/moving-discounts",
         },
       ],
     },

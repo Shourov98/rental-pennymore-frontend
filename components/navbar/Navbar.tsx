@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { X, ChevronDown, User, ClipboardList, Menu } from "lucide-react";
+import { X, ChevronDown, User, ClipboardList, Menu, Gift } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { clearServerAuthSession } from "@/lib/authSession";
 import {
@@ -103,6 +103,11 @@ export default function Navbar() {
                   label: "Requests",
                   icon: <ClipboardList size={18} />,
                   path: "/renter/saved-requests",
+                },
+                {
+                  label: "Moving Discounts",
+                  icon: <Gift size={18} />,
+                  path: "/renter/moving-discounts",
                 },
               ]
             : []),
