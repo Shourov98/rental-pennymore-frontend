@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import useEmblaCarousel from "embla-carousel-react";
 import { useSelector } from "react-redux";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -52,6 +53,109 @@ interface ItemsEnvelope {
 
 const ALL_CATEGORIES_ID = "__all__";
 const DEFAULT_PAGE_SIZE = 10;
+
+interface CategoryChipsProps {
+  categories: ApiCategory[];
+  selectedCategoryId: string;
+  onSelect: (id: string) => void;
+}
+
+function CategoryChips({
+  categories,
+  selectedCategoryId,
+  onSelect,
+}: CategoryChipsProps) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    align: "start",
+    containScroll: "trimSnaps",
+    dragFree: true,
+  });
+
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
+
+  const updateScrollState = useCallback(() => {
+    if (!emblaApi) return;
+    setCanScrollPrev(emblaApi.canScrollPrev());
+    setCanScrollNext(emblaApi.canScrollNext());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    updateScrollState();
+    emblaApi.on("select", updateScrollState);
+    emblaApi.on("reInit", updateScrollState);
+    emblaApi.on("scroll", updateScrollState);
+  }, [emblaApi, updateScrollState]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    // Scroll selected chip into view after data loads
+    const selectedIndex = [
+      { _id: ALL_CATEGORIES_ID },
+      ...categories,
+    ].findIndex((c) => c._id === selectedCategoryId);
+    if (selectedIndex >= 0) {
+      emblaApi.scrollTo(selectedIndex, true);
+    }
+  }, [emblaApi, selectedCategoryId, categories]);
+
+  const chips: { id: string; label: string }[] = useMemo(
+    () => [
+      { id: ALL_CATEGORIES_ID, label: "All categories" },
+      ...categories.map((c) => ({ id: c._id, label: c.title })),
+    ],
+    [categories],
+  );
+
+  return (
+    <div className="relative">
+      <div className="overflow-hidden" ref={emblaRef}>
+        <div className="flex gap-2 px-1 py-1">
+          {chips.map((chip) => {
+            const isSelected = selectedCategoryId === chip.id;
+            return (
+              <button
+                key={chip.id}
+                type="button"
+                onClick={() => onSelect(chip.id)}
+                className={`flex-[0_0_auto] whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium border transition ${
+                  isSelected
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100"
+                }`}
+              >
+                {chip.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {canScrollPrev ? (
+        <button
+          type="button"
+          onClick={() => emblaApi?.scrollPrev()}
+          aria-label="Scroll categories left"
+          className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 h-8 w-8 items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm text-gray-700 hover:bg-gray-100"
+        >
+          <ChevronLeft size={16} />
+        </button>
+      ) : null}
+
+      {canScrollNext ? (
+        <button
+          type="button"
+          onClick={() => emblaApi?.scrollNext()}
+          aria-label="Scroll categories right"
+          className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 h-8 w-8 items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm text-gray-700 hover:bg-gray-100"
+        >
+          <ChevronRight size={16} />
+        </button>
+      ) : null}
+    </div>
+  );
+}
 
 export default function RenterMovingDiscountsPage() {
   const accessToken = useSelector(
@@ -241,9 +345,28 @@ export default function RenterMovingDiscountsPage() {
         </div>
       ) : null}
 
+      {/* ===== Mobile & tablet categories carousel ===== */}
+      <div className="lg:hidden bg-white rounded-2xl border border-gray-200 shadow-sm p-3">
+        {isCategoriesLoading ? (
+          <p className="text-sm text-gray-500 px-2 py-2">
+            Loading categories...
+          </p>
+        ) : categories.length === 0 ? (
+          <p className="text-sm text-gray-500 px-2 py-2">
+            No categories available.
+          </p>
+        ) : (
+          <CategoryChips
+            categories={categories}
+            selectedCategoryId={selectedCategoryId}
+            onSelect={handleCategoryClick}
+          />
+        )}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
-        {/* ===== Categories list ===== */}
-        <aside className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 self-start">
+        {/* ===== Desktop categories sidebar ===== */}
+        <aside className="hidden lg:block bg-white rounded-2xl border border-gray-200 shadow-sm p-4 self-start">
           <h2 className="text-xs font-bold tracking-wider text-gray-500 uppercase mb-3">
             Categories
           </h2>
@@ -315,7 +438,45 @@ export default function RenterMovingDiscountsPage() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              {/* Mobile / tablet: card layout */}
+              <ul className="lg:hidden divide-y divide-gray-100">
+                {items.map((item) => (
+                  <li key={item._id} className="p-4 space-y-2.5">
+                    <div className="flex items-start justify-between gap-3">
+                      <h3 className="font-bold text-gray-900 text-lg">
+                        {item.companyName}
+                      </h3>
+                      <a
+                        href={item.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="shrink-0 inline-flex items-center px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
+                      >
+                        Get Deal
+                      </a>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">
+                        Discount
+                      </p>
+                      <p className="text-sm text-gray-900 font-medium mt-1">
+                        {item.discount}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">
+                        Description
+                      </p>
+                      <p className="text-sm text-gray-800 mt-1 leading-relaxed">
+                        {item.description}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+
+              {/* Desktop: table layout */}
+              <div className="hidden lg:block overflow-x-auto">
                 <table className="min-w-[760px] w-full text-sm">
                   <thead>
                     <tr className="bg-blue-50 text-gray-800">
