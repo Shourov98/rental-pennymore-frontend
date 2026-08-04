@@ -44,10 +44,18 @@ export default function Navbar() {
     return cleanedEmail.split(" ")[0];
   };
 
-  const canShowAuthed = canResolveSession && isAuthed;
-  const canShowSignedOut = canResolveSession && !isAuthed;
   const authName = auth.user?.fullName ?? auth.renter?.fullName ?? null;
   const authEmail = auth.user?.email ?? auth.renter?.email ?? null;
+  const role = canResolveSession && isAuthed ? auth.role || auth.user?.role : "";
+
+  // Admins should use the dedicated dashboard app, not this one. If an admin
+  // session ever sneaks in (e.g. shared backend cookie), treat the user as
+  // signed-out here so they get a clear "Sign in" link instead of a broken
+  // dashboard menu.
+  const isAdminSession = canResolveSession && role === "Admin";
+  const effectiveAuthed = canResolveSession && isAuthed && !isAdminSession;
+  const canShowAuthed = effectiveAuthed;
+  const canShowSignedOut = canResolveSession && (!isAuthed || isAdminSession);
   const displayName = canShowAuthed ? getFirstName(authName, authEmail) : "";
   const avatarUrl = canShowAuthed
     ? (auth.user?.profileImage ?? auth.user?.profileImageUrl ?? null)
@@ -59,9 +67,12 @@ export default function Navbar() {
       ? `${avatarUrl}${avatarUrl.includes("?") ? "&" : "?"}v=${encodeURIComponent(avatarVersionKey)}`
       : avatarUrl;
 
-  const role = canShowAuthed ? auth.role || auth.user?.role : "";
   const menuBasePath =
-    role === "Agent" ? "/agent" : role === "Renter" ? "/renter" : "";
+    role === "Agent"
+      ? "/agent"
+      : role === "Renter" && !isAdminSession
+        ? "/renter"
+        : "";
 
   const navItems = [
     { name: "Home", id: "#" },

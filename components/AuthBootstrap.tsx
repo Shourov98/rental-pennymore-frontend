@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { clearServerAuthSession } from "@/lib/authSession";
 import { useLazyGetProfileQuery, useRefreshTokenMutation } from "@/store/api";
 import {
+  adminSessionDetected,
   agentLoginSuccess,
   logout,
   selectAuth,
@@ -65,6 +66,11 @@ export default function AuthBootstrap() {
       isVerifyingSession.current = true;
       const profile = await getProfile().unwrap();
       if (profile) {
+        if ("role" in profile && profile.role === "Admin") {
+          await clearServerAuthSession(auth.accessToken);
+          dispatch(adminSessionDetected());
+          return;
+        }
         dispatch(setAuthFromProfile(profile));
       }
     } catch (error) {
@@ -165,6 +171,11 @@ export default function AuthBootstrap() {
 
         const profile = await getProfile().unwrap();
         if (profile) {
+          if ("role" in profile && profile.role === "Admin") {
+            await clearServerAuthSession(auth.accessToken);
+            dispatch(adminSessionDetected());
+            return;
+          }
           dispatch(setAuthFromProfile(profile));
         } else {
           dispatch(logout());

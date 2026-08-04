@@ -2,7 +2,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 
-type Role = "Agent" | "Renter";
+type Role = "Agent" | "Renter" | "Admin";
 
 export interface UserBase {
   _id: string;
@@ -44,7 +44,7 @@ export interface AgentProfileUser {
   email: string;
   phoneNumber: string;
   fullName: string;
-  role: "Agent" | string;
+  role: Role | string;
   accountStatus: "active" | "pending" | "suspended" | string;
   totalReferrals?: number;
   emailVerified?: boolean;
@@ -118,6 +118,7 @@ export interface AuthState {
   referrerTitle: string | null;
   referrerBrokerageName: string | null;
   sessionReady: boolean;
+  adminSessionDetected: boolean;
   status: "idle" | "loading" | "authenticated" | "error";
   error: string | null;
 }
@@ -140,6 +141,7 @@ const initialState: AuthState = {
   sessionReady: false,
   status: "idle",
   error: null,
+  adminSessionDetected: false,
 };
 
 export type AgentLoginPayload = {
@@ -266,6 +268,14 @@ const authSlice = createSlice({
       Object.assign(state, initialState);
       state.sessionReady = true;
     },
+    adminSessionDetected(state) {
+      // An admin's session is invalid in this app — admins should use the
+      // dashboard app instead. Mark the rejection so the UI can show guidance,
+      // then fully clear auth state.
+      Object.assign(state, initialState);
+      state.sessionReady = true;
+      state.adminSessionDetected = true;
+    },
     updateUser(state, action: PayloadAction<Partial<UserBase>>) {
       if (state.user) {
         state.user = { ...state.user, ...action.payload };
@@ -314,6 +324,7 @@ export const {
   refreshSuccess,
   authFailure,
   logout,
+  adminSessionDetected,
   updateUser,
   setAgentProfile,
   updateRenter,
@@ -328,6 +339,8 @@ export const selectUser = (state: RootState) => state.auth.user;
 export const selectRenter = (state: RootState) => state.auth.renter;
 export const selectAccessToken = (state: RootState) => state.auth.accessToken;
 export const selectSessionReady = (state: RootState) => state.auth.sessionReady;
+export const selectAdminSessionDetected = (state: RootState) =>
+  state.auth.adminSessionDetected;
 export const selectIsAuthed = (state: RootState) =>
   state.auth.status === "authenticated" &&
   !!state.auth.accessToken &&

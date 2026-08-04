@@ -9,6 +9,7 @@ import {
   agentLoginSuccess,
   authFailure,
   authStart,
+  adminSessionDetected,
   selectIsAuthed,
   selectSessionReady,
   renterLoginSuccess,
@@ -150,6 +151,17 @@ function SigninPageContent() {
   ) => {
     const payload = data?.data;
     const role = payload?.user?.role;
+
+    if (role === "Admin") {
+      // Admins should sign in via the dedicated dashboard, not here. Treat
+      // this as an unauthorized login — same path as any other bad credentials.
+      dispatch(adminSessionDetected());
+      setStatusMessage({
+        type: "error",
+        message: "Invalid email or password.",
+      });
+      return;
+    }
 
     if (role === "Renter" && payload?.user) {
       const tokens = (
