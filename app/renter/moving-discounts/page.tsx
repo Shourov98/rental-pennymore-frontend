@@ -66,6 +66,11 @@ const sanitizeDisclaimerHtml = (raw: string): string => {
   if (!raw) return "";
   if (typeof window === "undefined") return raw;
 
+  // Plain text (no HTML tags) — pass through as-is
+  if (!/<[a-z][^>]*>/i.test(raw)) {
+    return raw;
+  }
+
   let body: HTMLElement | null = null;
   try {
     const parser = new DOMParser();
@@ -87,6 +92,12 @@ const sanitizeDisclaimerHtml = (raw: string): string => {
     if (node.nodeType === Node.ELEMENT_NODE) {
       const element = node as HTMLElement;
       const tagName = element.tagName.toLowerCase();
+
+      // Skip the root body element — sanitize its children only
+      if (tagName === "body") {
+        [...element.childNodes].forEach(sanitizeNode);
+        return;
+      }
 
       if (!DISCLAIMER_ALLOWED_TAGS.has(tagName)) {
         const parent = element.parentNode;
@@ -309,17 +320,18 @@ export default function RenterMovingDiscountsPage() {
 
     const loadDisclaimer = async () => {
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/moving-discounts/settings`,
-          {
-            method: "GET",
-            headers: buildHeaders(),
-            signal: controller.signal,
-          },
-        );
+        const url = `${API_BASE_URL}/moving-discounts/settings`;
+        const response = await fetch(url, {
+          method: "GET",
+          headers: buildHeaders(),
+          signal: controller.signal,
+        });
 
         if (!response.ok) {
           // Settings are optional; ignore if not yet created
+          if (!controller.signal.aborted) {
+            setIsDisclaimerLoading(false);
+          }
           return;
         }
 
@@ -328,12 +340,17 @@ export default function RenterMovingDiscountsPage() {
           .catch(() => ({} as ApiResponse<{ disclaimer?: string }>));
 
         if (!controller.signal.aborted) {
-          setDisclaimer(data?.data?.disclaimer ?? "");
+          const value = data?.data?.disclaimer ?? "";
+          setDisclaimer(value);
+          setIsDisclaimerLoading(false);
         }
       } catch (err) {
         if (controller.signal.aborted) return;
-        // Silently ignore — disclaimer is optional content
-      } finally {
+        // Surface in console so we can debug, but don't break the page
+        if (typeof window !== "undefined") {
+          // eslint-disable-next-line no-console
+          console.warn("Failed to load moving-discounts disclaimer", err);
+        }
         if (!controller.signal.aborted) {
           setIsDisclaimerLoading(false);
         }
@@ -422,6 +439,13 @@ export default function RenterMovingDiscountsPage() {
   };
 
   // ───────── render ─────────
+
+  const sanitizedDisclaimer = useMemo(
+    () => sanitizeDisclaimerHtml(disclaimer),
+    [disclaimer],
+  );
+  const hasDisclaimer =
+    !isDisclaimerLoading && sanitizedDisclaimer.trim().length > 0;
 
   const totalPages = pagination?.totalPages ?? 0;
   const currentPage = pagination?.page ?? page;
@@ -514,161 +538,184 @@ export default function RenterMovingDiscountsPage() {
           )}
         </aside>
 
-        {/* ===== Items table ===== */}
-        <section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-            <h2 className="text-sm md:text-base font-bold tracking-wide text-gray-800 uppercase">
-              {selectedCategory
-                ? selectedCategory.title
-                : "All categories"}
-            </h2>
-            {pagination ? (
-              <p className="text-xs text-gray-500 mt-1">
-                {pagination.total}{" "}
-                {pagination.total === 1 ? "result" : "results"}
-              </p>
-            ) : null}
-          </div>
-
-          {isItemsLoading ? (
-            <div className="px-6 py-12">
-              <CenteredPageSpinner />
+        {/* ===== Items table + footer area (table card sits tight against disclaimer/pagination) ===== */}
+        <div>
+          {/* ===== Items table ===== */}
+          <section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+              <h2 className="text-sm md:text-base font-bold tracking-wide text-gray-800 uppercase">
+                {selectedCategory
+                  ? selectedCategory.title
+                  : "All categories"}
+              </h2>
+              {pagination ? (
+                <p className="text-xs text-gray-500 mt-1">
+                  {pagination.total}{" "}
+                  {pagination.total === 1 ? "result" : "results"}
+                </p>
+              ) : null}
             </div>
-          ) : items.length === 0 ? (
-            <div className="px-6 py-12 text-center text-gray-500 text-sm">
-              No items in this category yet.
-            </div>
-          ) : (
-            <>
-              {/* Mobile / tablet: card layout */}
-              <ul className="lg:hidden divide-y divide-gray-100">
-                {items.map((item) => (
-                  <li key={item._id} className="p-4 space-y-2.5">
-                    <div className="flex items-start justify-between gap-3">
-                      <h3 className="font-bold text-gray-900 text-lg">
-                        {item.companyName}
-                      </h3>
-                      <a
-                        href={item.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="shrink-0 inline-flex items-center px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
-                      >
-                        Get Deal
-                      </a>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">
-                        Discount
-                      </p>
-                      <p className="text-sm text-gray-900 font-medium mt-1">
-                        {item.discount}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">
-                        Description
-                      </p>
-                      <p className="text-sm text-gray-800 mt-1 leading-relaxed">
-                        {item.description}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
 
-              {/* Desktop: table layout */}
-              <div className="hidden lg:block overflow-x-auto">
-                <table className="min-w-[760px] w-full text-sm">
-                  <thead>
-                    <tr className="bg-blue-50 text-gray-800">
-                      <th className="py-3 px-5 text-left font-semibold whitespace-nowrap">
-                        Company name
-                      </th>
-                      <th className="py-3 px-5 text-left font-semibold">
-                        Discount
-                      </th>
-                      <th className="py-3 px-5 text-left font-semibold">
-                        Description
-                      </th>
-                      <th className="py-3 px-5 text-left font-semibold whitespace-nowrap">
-                        Link
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.map((item) => (
-                      <tr key={item._id} className="border-t border-gray-100">
-                        <td className="py-4 px-5 font-semibold text-gray-900 align-top whitespace-nowrap">
-                          {item.companyName}
-                        </td>
-                        <td className="py-4 px-5 text-gray-700 align-top">
-                          {item.discount}
-                        </td>
-                        <td className="py-4 px-5 text-gray-600 align-top">
-                          {item.description}
-                        </td>
-                        <td className="py-4 px-5 align-top">
-                          <a
-                            href={item.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-700 hover:underline font-semibold"
-                          >
-                            Get Deal
-                          </a>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            {isItemsLoading ? (
+              <div className="px-6 py-12">
+                <CenteredPageSpinner />
               </div>
+            ) : items.length === 0 ? (
+              <div className="px-6 py-12 text-center text-gray-500 text-sm">
+                No items in this category yet.
+              </div>
+            ) : (
+              <>
+                {/* Mobile / tablet: card layout */}
+                <ul className="lg:hidden divide-y divide-gray-100">
+                  {items.map((item) => (
+                    <li key={item._id} className="p-4 space-y-2.5">
+                      <div className="flex items-start justify-between gap-3">
+                        <h3 className="font-bold text-gray-900 text-lg">
+                          {item.companyName}
+                        </h3>
+                        <a
+                          href={item.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0 inline-flex items-center px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
+                        >
+                          Get Deal
+                        </a>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">
+                          Discount
+                        </p>
+                        <p className="text-sm text-gray-900 font-medium mt-1">
+                          {item.discount}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">
+                          Description
+                        </p>
+                        <p className="text-sm text-gray-800 mt-1 leading-relaxed">
+                          {item.description}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
 
+                {/* Desktop: table layout */}
+                <div className="hidden lg:block overflow-x-auto">
+                  <table className="min-w-[760px] w-full text-sm">
+                    <thead>
+                      <tr className="bg-blue-50 text-gray-800">
+                        <th className="py-3 px-5 text-left font-semibold whitespace-nowrap">
+                          Company name
+                        </th>
+                        <th className="py-3 px-5 text-left font-semibold">
+                          Discount
+                        </th>
+                        <th className="py-3 px-5 text-left font-semibold">
+                          Description
+                        </th>
+                        <th className="py-3 px-5 text-left font-semibold whitespace-nowrap">
+                          Link
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {items.map((item) => (
+                        <tr key={item._id} className="border-t border-gray-100">
+                          <td className="py-4 px-5 font-semibold text-gray-900 align-top whitespace-nowrap">
+                            {item.companyName}
+                          </td>
+                          <td className="py-4 px-5 text-gray-700 align-top">
+                            {item.discount}
+                          </td>
+                          <td className="py-4 px-5 text-gray-600 align-top">
+                            {item.description}
+                          </td>
+                          <td className="py-4 px-5 align-top">
+                            <a
+                              href={item.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-700 hover:underline font-semibold"
+                            >
+                              Get Deal
+                            </a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+          </section>
+
+          {/* ===== Footer under the table: pagination info + disclaimer (tight, no big gap) ===== */}
+          {showPagination || hasDisclaimer ? (
+            <div className="mt-3 space-y-2">
               {showPagination ? (
-                <div className="flex items-center justify-between px-6 py-3 border-t border-gray-100 bg-gray-50">
-                  <button
-                    type="button"
-                    onClick={handlePrev}
-                    disabled={currentPage <= 1}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    <ChevronLeft size={16} />
-                    Prev
-                  </button>
-                  <p className="text-sm text-gray-600">
-                    Page <span className="font-semibold">{currentPage}</span> of{" "}
-                    <span className="font-semibold">{totalPages}</span>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-1">
+                  <p className="text-xs text-gray-500">
+                    Showing{" "}
+                    <span className="font-semibold text-gray-700">
+                      {items.length}
+                    </span>{" "}
+                    {items.length === 1 ? "item" : "items"} · Total items{" "}
+                    <span className="font-semibold text-gray-700">
+                      {pagination!.total}
+                    </span>{" "}
+                    · Page{" "}
+                    <span className="font-semibold text-gray-700">
+                      {currentPage}
+                    </span>{" "}
+                    of{" "}
+                    <span className="font-semibold text-gray-700">
+                      {totalPages}
+                    </span>
                   </p>
-                  <button
-                    type="button"
-                    onClick={handleNext}
-                    disabled={currentPage >= totalPages}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    Next
-                    <ChevronRight size={16} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handlePrev}
+                      disabled={currentPage <= 1}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft size={14} />
+                      Prev
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleNext}
+                      disabled={currentPage >= totalPages}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Next
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
                 </div>
               ) : null}
-            </>
-          )}
-        </section>
-      </div>
 
-      {/* Disclaimer */}
-      {!isDisclaimerLoading && disclaimer.trim() ? (
-        <section className="bg-white rounded-2xl border border-gray-200 shadow-sm px-4 py-3">
-          <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1">
-            Disclaimer
-          </p>
-          <div
-            className="text-xs text-gray-600 leading-relaxed [&_strong]:font-bold [&_p]:my-0.5"
-            dangerouslySetInnerHTML={{
-              __html: sanitizeDisclaimerHtml(disclaimer),
-            }}
-          />
-        </section>
-      ) : null}
+              {hasDisclaimer ? (
+                <div className="flex items-start gap-3 px-1">
+                  <p className="shrink-0 text-[10px] uppercase tracking-wider text-gray-400 font-semibold pt-0.5">
+                    Disclaimer
+                  </p>
+                  <div
+                    className="text-xs text-gray-600 leading-relaxed [&_strong]:font-bold [&_p]:my-0.5"
+                    dangerouslySetInnerHTML={{
+                      __html: sanitizeDisclaimerHtml(disclaimer),
+                    }}
+                  />
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }

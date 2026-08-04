@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { MapPin, DollarSign, Calendar, Bell } from "lucide-react";
+import { MapPin, DollarSign, Calendar, Bell, AlertTriangle } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import dynamic from "next/dynamic";
@@ -12,6 +12,10 @@ import {
   defaultPreferencesList,
   setLocations as setPreferenceLocations,
 } from "@/store/slices/preferenceSlice";
+import {
+  selectReferrer,
+  selectReferrerName,
+} from "@/store/slices/authSlice";
 
 const PreferencesDragList = dynamic(
   () => import("@/components/PreferencesDragList"),
@@ -57,6 +61,9 @@ interface ApiRequest {
   guarantorRequired?: Record<string, boolean>;
   preferences?: string[];
   notes?: string;
+  shareConsent?: boolean;
+  scope?: "Upcoming" | "All Market";
+  visibility?: "PRIVATE" | "SHARED";
 }
 
 export default function EditPreMarketListingPage() {
@@ -67,6 +74,10 @@ export default function EditPreMarketListingPage() {
   const preferenceLocations = useSelector(
     (state: RootState) => state.preferences.locations,
   );
+  const referrerName = useSelector(selectReferrerName);
+  const referrer = useSelector(selectReferrer);
+  const user = useSelector((state: RootState) => state.auth.user);
+  const renter = useSelector((state: RootState) => state.auth.renter);
 
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
@@ -98,6 +109,40 @@ export default function EditPreMarketListingPage() {
   const [locations, setLocations] = useState<
     { borough?: string; neighborhoods?: string[] }[]
   >([]);
+
+  // Agreement gate (Required to Complete Submission)
+  const [isAgreementChecked, setIsAgreementChecked] = useState(false);
+  const [agreementWarning, setAgreementWarning] = useState<string | null>(null);
+
+  const renterName = renter?.fullName || user?.fullName || "Unknown renter";
+  const renterEmail = renter?.email || user?.email || "";
+  const renterPhone = renter?.phoneNumber || user?.phone || "";
+
+  const registrationLink = useMemo(() => {
+    const activationLink = referrer?.activationLink?.trim() || "";
+    if (!activationLink) return "";
+    try {
+      const url = new URL(activationLink);
+      if (!url.searchParams.has("env")) {
+        url.searchParams.set("env", "na1");
+      }
+      if (renterName) url.searchParams.set("renter_name", renterName);
+      if (renterEmail) url.searchParams.set("renter_email", renterEmail);
+      if (renterPhone) url.searchParams.set("renter_phone", renterPhone);
+      if (referrerName) url.searchParams.set("agent_name", referrerName);
+      return url.toString();
+    } catch {
+      return "";
+    }
+  }, [referrer?.activationLink, renterName, renterEmail, renterPhone, referrerName]);
+
+  // Share + Subject Market Scope
+  const [shareConsent, setShareConsent] = useState(false);
+  const [shareConsentLocked, setShareConsentLocked] = useState(false);
+  const [scope, setScope] = useState<"Upcoming" | "All Market">("Upcoming");
+  const [visibility, setVisibility] = useState<"PRIVATE" | "SHARED">(
+    "PRIVATE",
+  );
 
   useEffect(() => {
     setLocations(preferenceLocations);
@@ -184,6 +229,12 @@ export default function EditPreMarketListingPage() {
         );
         setSelectedPets(mapFeatures("pet", req.petPolicy));
         setSelectedGuarantor(mapFeatures("guarantor", req.guarantorRequired));
+
+        // Share + Market Scope hydration
+        setShareConsent(Boolean(req.shareConsent));
+        setShareConsentLocked(Boolean(req.shareConsent));
+        setScope(req.scope ?? "Upcoming");
+        setVisibility(req.visibility ?? "PRIVATE");
       } catch (err) {
         if (controller.signal.aborted) return;
         const message =
@@ -237,9 +288,28 @@ export default function EditPreMarketListingPage() {
     e.preventDefault();
     if (!requestId) return;
 
+    if (!isAgreementChecked) {
+      setAgreementWarning(
+        "Please confirm that the Corcoran Client Registration and agency disclosure have been signed.",
+      );
+      return;
+    }
+
+    let registrationWindow: Window | null = null;
+
     try {
       setIsSaving(true);
       setError(null);
+      setAgreementWarning(null);
+
+      // Open a new tab up-front to the registration link (mirrors create page)
+      registrationWindow =
+        registrationLink && typeof window !== "undefined"
+          ? window.open("about:blank", "_blank")
+          : null;
+      if (registrationWindow) {
+        registrationWindow.opener = null;
+      }
 
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
@@ -285,6 +355,9 @@ export default function EditPreMarketListingPage() {
           ),
         },
         preferences,
+        shareConsent,
+        scope,
+        visibility,
       };
 
       const response = await fetch(`${API_BASE_URL}/pre-market/${requestId}`, {
@@ -301,8 +374,24 @@ export default function EditPreMarketListingPage() {
         );
       }
 
+      // On success, send the user to the Corcoran Client Registration in the
+      // pre-opened window (mirrors the create page flow).
+      if (registrationWindow && registrationLink) {
+        registrationWindow.location.href = registrationLink;
+      } else if (registrationLink && typeof window !== "undefined") {
+        window.open(registrationLink, "_blank", "noopener,noreferrer");
+      }
+
       setIsSuccessModalOpen(true);
     } catch (err) {
+      // If the save fails, close the pre-opened blank window to avoid leaving a stray tab
+      if (registrationWindow) {
+        try {
+          registrationWindow.close();
+        } catch {
+          /* noop */
+        }
+      }
       const message =
         err instanceof Error
           ? err.message
@@ -607,6 +696,201 @@ export default function EditPreMarketListingPage() {
               initialList={preferences}
               onChange={setPreferences}
             />
+
+            {/* Subject Market Scope + Share */}
+            <div className="border-t border-gray-300 pt-4 space-y-3">
+              {/* Subject Market Scope — only visible when scope is "All Market" (Option 1).
+                  Selecting Option 2 hides the entire portion (heading, description,
+                  radios, footer line). The Share section below stays visible. */}
+              {scope === "All Market" ? (
+                <div>
+                  <p className="text-[13px] font-semibold leading-snug text-black sm:text-sm md:text-[15px]">
+                    In order to match your request, which market scope should
+                    the agent focus on?
+                  </p>
+                  <p className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7 mt-2">
+                    Your agent can guide you, research and arrange viewings,
+                    filter out bad listings, represent your interests, and help
+                    with offers and your application package - all to improve
+                    your chances in a competitive market.
+                  </p>
+
+                  <div className="space-y-4 text-gray-800 mt-3">
+                    <label className="flex items-start gap-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="marketScope"
+                        checked={scope === "All Market"}
+                        onChange={() => {
+                          // already selected; no-op
+                        }}
+                        className="h-6 w-6 shrink-0 accent-gray-600"
+                      />
+                      <span className="space-y-1">
+                        <span className="block text-[13px] font-semibold leading-snug text-gray-600 sm:text-sm md:text-[15px]">
+                          Rentals Publicly Advertised + BeforeListed
+                        </span>
+                        <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
+                          A rental specialist agent will assist you with the
+                          full rental market, and you will also be notified if
+                          an upcoming rental that matches your request is
+                          found.
+                        </span>
+                      </span>
+                    </label>
+
+                    <label className="flex items-start gap-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="marketScope"
+                        checked={false}
+                        onChange={() => {
+                          // Option 1 → Option 2: hide the entire market scope portion.
+                          setScope("Upcoming");
+                        }}
+                        className="h-6 w-6 shrink-0 accent-gray-600"
+                      />
+                      <span className="space-y-1">
+                        <span className="block text-[13px] font-semibold leading-snug text-gray-600 sm:text-sm md:text-[15px]">
+                          Rentals Not Publicly Advertised Only (BeforeListed)
+                        </span>
+                        <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
+                          We will only notify you if an upcoming rental that
+                          matches your request is found.
+                        </span>
+                      </span>
+                    </label>
+
+                    <p className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
+                      Either option works best when &quot;Share your
+                      search&quot; is enabled below.
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Share checkbox — always visible regardless of market scope */}
+              <div className="border-t pt-4 text-gray-600 space-y-3">
+                <div className="space-y-3">
+                  <p className="text-[13px] font-semibold leading-snug text-black sm:text-sm md:text-[15px]">
+                    Share your search to improve matching chances (optional -
+                    highly recommended)
+                  </p>
+                  <p className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
+                    To receive assistance beyond one agent, you may choose to
+                    allow your request, including your first name and last
+                    initial, to be shared with other licensed New York real
+                    estate agents who could assist in identifying potential
+                    rental opportunities that may not yet be publicly
+                    advertised.
+                  </p>
+                  <label className="flex items-start gap-1 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={shareConsent}
+                      onChange={(e) => {
+                        const next = e.target.checked;
+                        // Locked once enabled
+                        if (shareConsentLocked && !next) {
+                          if (typeof window !== "undefined") {
+                            window.alert(
+                              "This request has already been shared with your permission. To stop sharing, delete this request and create a new one without enabling Share.",
+                            );
+                          }
+                          return;
+                        }
+                        setShareConsent(next);
+                        if (next) setShareConsentLocked(true);
+                      }}
+                      className="mt-1 h-5 w-5 accent-gray-600"
+                    />
+                    <span className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
+                      By checking this box, I consent to my request being
+                      shared with other licensed New York real estate agents
+                      and to being contacted by such agents.
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Required to Complete Submission — Client Registration / Agency Disclosure */}
+            <div className="rounded-2xl border border-[#e8d2a6] bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] sm:p-5">
+              <div className="rounded-xl bg-gradient-to-r from-[#fff1b8] via-[#ffe7a3] to-[#ffe08a] px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="h-6 w-6 shrink-0 text-[#9a6700]" />
+                  <div>
+                    <p className="text-lg font-semibold leading-tight text-black sm:text-[20px]">
+                      Required to Complete Submission
+                    </p>
+                    <p className="text-[13px] font-semibold leading-snug text-[#3f3f46] sm:text-sm md:text-[15px]">
+                      Client Registration (Required) and Agency Disclosure
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-5 px-1 text-[13px] leading-relaxed text-[#3f3f46] sm:text-sm md:text-[15px] md:leading-7">
+                <p>
+                  To allow your agent,{" "}
+                  <span className="font-semibold">
+                    {referrerName || "Tuval Mor"}
+                  </span>
+                  , to reach out on your behalf, the Corcoran Client
+                  Registration needs to be signed (if not already completed) .{" "}
+                  <br /> This registration is non-exclusive, the broker fee may
+                  be negotiated, and no broker fee is due unless you choose to
+                  move forward with a rental presented by the agent.
+                </p>
+
+                <p>
+                  You may still search independently, contact owners, or work
+                  with another agent for apartments not presented to you by{" "}
+                  {referrerName || "Tuval Mor"} or any disclosed assisting
+                  agents.
+                </p>
+
+                <p className="text-[15px] font-semibold">
+                  The Corcoran Client Registration will open in a new window
+                  after you click &ldquo;Save Changes.&rdquo; <br />
+                  Requests submitted without completing this step will not be
+                  processed.
+                </p>
+
+                <div className="space-y-2 text-left">
+                  <p className="font-semibold text-black">
+                    After signing, return here.
+                  </p>
+                </div>
+
+                <label className="flex cursor-pointer items-start gap-3 pt-1">
+                  <input
+                    type="checkbox"
+                    checked={isAgreementChecked}
+                    onChange={(e) => {
+                      if (e.target.checked && !renterPhone) {
+                        setAgreementWarning(
+                          "Please add your phone number in your profile to continue.",
+                        );
+                        return;
+                      }
+                      setAgreementWarning(null);
+                      setIsAgreementChecked(e.target.checked);
+                    }}
+                    className="mt-1 h-5 w-5 shrink-0 rounded border-gray-300 accent-gray-600"
+                  />
+                  <span className="text-[13px] leading-relaxed text-[#3f3f46] sm:text-sm md:text-[15px] md:leading-7">
+                    By checking this box, I understand that my request will not
+                    be processed until I complete and sign the Corcoran Client
+                    Registration (required) and agency disclosure.
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {agreementWarning && (
+              <p className="text-sm text-red-600">{agreementWarning}</p>
+            )}
 
             {/* Save Button */}
             <div className="flex justify-end">
