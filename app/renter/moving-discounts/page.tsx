@@ -54,6 +54,64 @@ interface ItemsEnvelope {
 const ALL_CATEGORIES_ID = "__all__";
 const DEFAULT_PAGE_SIZE = 10;
 
+const DISCLAIMER_ALLOWED_TAGS = new Set([
+  "b",
+  "strong",
+  "br",
+  "p",
+  "div",
+]);
+
+const sanitizeDisclaimerHtml = (raw: string): string => {
+  if (!raw) return "";
+  if (typeof window === "undefined") return raw;
+
+  let body: HTMLElement | null = null;
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(raw, "text/html");
+    body = (doc.body as HTMLElement) ?? null;
+    if (!body || !body.firstChild) {
+      return (body?.textContent ?? raw).trim();
+    }
+  } catch {
+    return raw;
+  }
+  if (!body) return raw;
+
+  const sanitizeNode = (node: Node) => {
+    if (node.nodeType === Node.COMMENT_NODE) {
+      node.parentNode?.removeChild(node);
+      return;
+    }
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const element = node as HTMLElement;
+      const tagName = element.tagName.toLowerCase();
+
+      if (!DISCLAIMER_ALLOWED_TAGS.has(tagName)) {
+        const parent = element.parentNode;
+        if (parent) {
+          while (element.firstChild) {
+            parent.insertBefore(element.firstChild, element);
+          }
+          parent.removeChild(element);
+        } else {
+          element.remove();
+        }
+        return;
+      }
+
+      [...element.attributes].forEach((attr) =>
+        element.removeAttribute(attr.name),
+      );
+    }
+    [...node.childNodes].forEach(sanitizeNode);
+  };
+
+  sanitizeNode(body);
+  return (body.innerHTML ?? "").replace(/<p>\s*<\/p>/gi, "").replace(/<div>\s*<\/div>/gi, "");
+};
+
 interface CategoryChipsProps {
   categories: ApiCategory[];
   selectedCategoryId: string;
@@ -165,12 +223,14 @@ export default function RenterMovingDiscountsPage() {
   const [categories, setCategories] = useState<ApiCategory[]>([]);
   const [items, setItems] = useState<ApiItem[]>([]);
   const [pagination, setPagination] = useState<ApiPagination | null>(null);
+  const [disclaimer, setDisclaimer] = useState<string>("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>(
     ALL_CATEGORIES_ID,
   );
   const [page, setPage] = useState(1);
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
   const [isItemsLoading, setIsItemsLoading] = useState(true);
+  const [isDisclaimerLoading, setIsDisclaimerLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const selectedCategory = useMemo(
@@ -239,6 +299,48 @@ export default function RenterMovingDiscountsPage() {
     };
 
     loadCategories();
+    return () => controller.abort();
+  }, [buildHeaders]);
+
+  // ───────── Load disclaimer on mount ─────────
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const loadDisclaimer = async () => {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/moving-discounts/settings`,
+          {
+            method: "GET",
+            headers: buildHeaders(),
+            signal: controller.signal,
+          },
+        );
+
+        if (!response.ok) {
+          // Settings are optional; ignore if not yet created
+          return;
+        }
+
+        const data: ApiResponse<{ disclaimer?: string }> = await response
+          .json()
+          .catch(() => ({} as ApiResponse<{ disclaimer?: string }>));
+
+        if (!controller.signal.aborted) {
+          setDisclaimer(data?.data?.disclaimer ?? "");
+        }
+      } catch (err) {
+        if (controller.signal.aborted) return;
+        // Silently ignore — disclaimer is optional content
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsDisclaimerLoading(false);
+        }
+      }
+    };
+
+    loadDisclaimer();
     return () => controller.abort();
   }, [buildHeaders]);
 
@@ -552,6 +654,21 @@ export default function RenterMovingDiscountsPage() {
           )}
         </section>
       </div>
+
+      {/* Disclaimer */}
+      {!isDisclaimerLoading && disclaimer.trim() ? (
+        <section className="bg-white rounded-2xl border border-gray-200 shadow-sm px-4 py-3">
+          <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1">
+            Disclaimer
+          </p>
+          <div
+            className="text-xs text-gray-600 leading-relaxed [&_strong]:font-bold [&_p]:my-0.5"
+            dangerouslySetInnerHTML={{
+              __html: sanitizeDisclaimerHtml(disclaimer),
+            }}
+          />
+        </section>
+      ) : null}
     </div>
   );
 }
