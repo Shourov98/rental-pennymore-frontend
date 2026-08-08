@@ -23,6 +23,8 @@ const PreferencesDragList = dynamic(
 );
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const MARKET_SCOPE_SWITCH_LOCKED_MESSAGE =
+  "A rental specialist is already assigned. For any issues, contact support@beforelisted.com.";
 
 type FeatureGroup = "unit" | "building" | "pet" | "guarantor";
 
@@ -64,6 +66,8 @@ interface ApiRequest {
   shareConsent?: boolean;
   scope?: "Upcoming" | "All Market";
   visibility?: "PRIVATE" | "SHARED";
+  marketScopeSwitchLocked?: boolean;
+  marketScopeSwitchLockedReason?: string;
 }
 
 export default function EditPreMarketListingPage() {
@@ -143,6 +147,9 @@ export default function EditPreMarketListingPage() {
   const [visibility, setVisibility] = useState<"PRIVATE" | "SHARED">(
     "PRIVATE",
   );
+  const [marketScopeSwitchLocked, setMarketScopeSwitchLocked] = useState(false);
+  const [marketScopeSwitchLockedReason, setMarketScopeSwitchLockedReason] =
+    useState(MARKET_SCOPE_SWITCH_LOCKED_MESSAGE);
 
   useEffect(() => {
     setLocations(preferenceLocations);
@@ -235,6 +242,11 @@ export default function EditPreMarketListingPage() {
         setShareConsentLocked(Boolean(req.shareConsent));
         setScope(req.scope ?? "Upcoming");
         setVisibility(req.visibility ?? "PRIVATE");
+        setMarketScopeSwitchLocked(Boolean(req.marketScopeSwitchLocked));
+        setMarketScopeSwitchLockedReason(
+          req.marketScopeSwitchLockedReason ||
+            MARKET_SCOPE_SWITCH_LOCKED_MESSAGE,
+        );
       } catch (err) {
         if (controller.signal.aborted) return;
         const message =
@@ -396,6 +408,13 @@ export default function EditPreMarketListingPage() {
         err instanceof Error
           ? err.message
           : "We couldn't save your changes right now. Please try again.";
+      if (
+        message === MARKET_SCOPE_SWITCH_LOCKED_MESSAGE &&
+        typeof window !== "undefined"
+      ) {
+        window.alert(message);
+        setScope("All Market");
+      }
       setError(message);
     } finally {
       setIsSaving(false);
@@ -699,75 +718,66 @@ export default function EditPreMarketListingPage() {
 
             {/* Subject Market Scope + Share */}
             <div className="border-t border-gray-300 pt-4 space-y-3">
-              {/* Subject Market Scope — only visible when scope is "All Market" (Option 1).
-                  Selecting Option 2 hides the entire portion (heading, description,
-                  radios, footer line). The Share section below stays visible. */}
-              {scope === "All Market" ? (
-                <div>
-                  <p className="text-[13px] font-semibold leading-snug text-black sm:text-sm md:text-[15px]">
-                    In order to match your request, which market scope should
-                    the agent focus on?
-                  </p>
-                  <p className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7 mt-2">
-                    Your agent can guide you, research and arrange viewings,
-                    filter out bad listings, represent your interests, and help
-                    with offers and your application package - all to improve
-                    your chances in a competitive market.
-                  </p>
+              <div>
+                <p className="text-[13px] font-semibold leading-snug text-black sm:text-sm md:text-[15px]">
+                  Subject Market Scope
+                </p>
 
-                  <div className="space-y-4 text-gray-800 mt-3">
-                    <label className="flex items-start gap-1 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="marketScope"
-                        checked={scope === "All Market"}
-                        onChange={() => {
-                          // already selected; no-op
-                        }}
-                        className="h-6 w-6 shrink-0 accent-gray-600"
-                      />
-                      <span className="space-y-1">
-                        <span className="block text-[13px] font-semibold leading-snug text-gray-600 sm:text-sm md:text-[15px]">
-                          Rentals Publicly Advertised + BeforeListed
-                        </span>
-                        <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
-                          A rental specialist agent will assist you with the
-                          full rental market, and you will also be notified if
-                          an upcoming rental that matches your request is
-                          found.
-                        </span>
+                <div className="space-y-4 text-gray-800 mt-3">
+                  <label className="flex items-start gap-1 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="marketScope"
+                      checked={scope === "All Market"}
+                      onChange={() => {
+                        setScope("All Market");
+                        setVisibility("PRIVATE");
+                      }}
+                      className="h-6 w-6 shrink-0 accent-gray-600"
+                    />
+                    <span className="space-y-1">
+                      <span className="block text-[13px] font-semibold leading-snug text-gray-600 sm:text-sm md:text-[15px]">
+                        Rentals Publicly Advertised + BeforeListed
                       </span>
-                    </label>
-
-                    <label className="flex items-start gap-1 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="marketScope"
-                        checked={false}
-                        onChange={() => {
-                          // Option 1 → Option 2: hide the entire market scope portion.
-                          setScope("Upcoming");
-                        }}
-                        className="h-6 w-6 shrink-0 accent-gray-600"
-                      />
-                      <span className="space-y-1">
-                        <span className="block text-[13px] font-semibold leading-snug text-gray-600 sm:text-sm md:text-[15px]">
-                          Rentals Not Publicly Advertised Only (BeforeListed)
-                        </span>
-                        <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
-                          We will only notify you if an upcoming rental that
-                          matches your request is found.
-                        </span>
+                      <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
+                        A rental specialist agent will assist you with the full
+                        rental market, and you will also be notified if an
+                        upcoming rental that matches your request is found.
                       </span>
-                    </label>
+                    </span>
+                  </label>
 
-                    <p className="text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
-                      Either option works best when &quot;Share your
-                      search&quot; is enabled below.
-                    </p>
-                  </div>
+                  <label className="flex items-start gap-1 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="marketScope"
+                      checked={scope === "Upcoming"}
+                      onChange={() => {
+                        if (marketScopeSwitchLocked) {
+                          if (typeof window !== "undefined") {
+                            window.alert(marketScopeSwitchLockedReason);
+                          }
+                          setScope("All Market");
+                          return;
+                        }
+
+                        setScope("Upcoming");
+                        setVisibility("PRIVATE");
+                      }}
+                      className="h-6 w-6 shrink-0 accent-gray-600"
+                    />
+                    <span className="space-y-1">
+                      <span className="block text-[13px] font-semibold leading-snug text-gray-600 sm:text-sm md:text-[15px]">
+                        Rentals Not Publicly Advertised Only (BeforeListed)
+                      </span>
+                      <span className="block text-[13px] leading-relaxed text-gray-600 sm:text-sm md:text-[15px] md:leading-7">
+                        We will only notify you if an upcoming rental that
+                        matches your request is found.
+                      </span>
+                    </span>
+                  </label>
                 </div>
-              ) : null}
+              </div>
 
               {/* Share checkbox — always visible regardless of market scope */}
               <div className="border-t pt-4 text-gray-600 space-y-3">
