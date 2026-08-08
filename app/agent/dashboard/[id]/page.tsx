@@ -4,7 +4,14 @@ import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { ArrowLeft, ChevronLeft, ChevronRight, Mail, Phone, User } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Mail,
+  Phone,
+  User,
+} from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   CardElement,
@@ -36,10 +43,9 @@ const NAVIGATION_STORAGE_KEY = "agent-dashboard-navigation";
 const ARCHIVE_NAVIGATION_STORAGE_KEY = "agent-archived-navigation";
 const NAVIGATION_LIMIT_FALLBACK = 10;
 type RepresentationType = "owner_representation" | "renter_representation";
-type OwnerRepresentationRegisteredAgent =
-  NonNullable<
-    NormalizedAgentRequest["raw"]["ownerRepresentationRegisteredAgent"]
-  >;
+type OwnerRepresentationRegisteredAgent = NonNullable<
+  NormalizedAgentRequest["raw"]["ownerRepresentationRegisteredAgent"]
+>;
 const OPPORTUNITY_DETAILS_MAX_LENGTH = 350;
 const RISKY_OPPORTUNITY_DETAIL_PHRASES = [
   "I have a listing",
@@ -253,8 +259,9 @@ export default function AgentRenterRequestDetailsPage() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isConfirmChecked, setIsConfirmChecked] = useState(false);
   const [isRepresentationOpen, setIsRepresentationOpen] = useState(false);
-  const [selectedRepresentationType, setSelectedRepresentationType] =
-    useState<RepresentationType | "">("");
+  const [selectedRepresentationType, setSelectedRepresentationType] = useState<
+    RepresentationType | ""
+  >("");
   const [opportunityDetails, setOpportunityDetails] = useState("");
   const opportunityDetailsTextareaRef = useRef<HTMLTextAreaElement | null>(
     null,
@@ -303,18 +310,16 @@ export default function AgentRenterRequestDetailsPage() {
           },
         );
 
-        const data = await response
-          .json()
-          .catch(
-            () =>
-              ({}) as {
-                success?: boolean;
-                message?: string;
-                data?: {
-                  registeredAgentInfo?: NormalizedAgentRequest["raw"]["ownerRepresentationRegisteredAgent"];
-                };
-              },
-          );
+        const data = await response.json().catch(
+          () =>
+            ({}) as {
+              success?: boolean;
+              message?: string;
+              data?: {
+                registeredAgentInfo?: NormalizedAgentRequest["raw"]["ownerRepresentationRegisteredAgent"];
+              };
+            },
+        );
 
         if (!response.ok || data?.success === false) {
           throw new Error(
@@ -368,7 +373,7 @@ export default function AgentRenterRequestDetailsPage() {
         storedState?.itemIds?.some((itemId) => itemId === requestId) ?? false;
       const storedMatchSearchFilters =
         !isArchiveContext && useStoredContext
-          ? storedState?.matchSearchFilters ?? null
+          ? (storedState?.matchSearchFilters ?? null)
           : null;
       const useStoredMatchContext =
         Boolean(storedState?.isMatchResultsMode) &&
@@ -404,22 +409,23 @@ export default function AgentRenterRequestDetailsPage() {
           const endpoint = isArchiveContext
             ? "/pre-market/agent/archived-requests"
             : "/pre-market/all";
-          const response = useStoredMatchContext && storedMatchSearchFilters
-            ? await fetch(`${API_BASE_URL}/pre-market/agent/match-search`, {
-                method: "POST",
-                headers,
-                signal: controller.signal,
-                body: JSON.stringify({
-                  ...buildMatchSearchPayload(storedMatchSearchFilters),
-                  page: pageToFetch,
-                  limit: pageLimit,
-                }),
-              })
-            : await fetch(`${API_BASE_URL}${endpoint}?${params.toString()}`, {
-                method: "GET",
-                headers,
-                signal: controller.signal,
-              });
+          const response =
+            useStoredMatchContext && storedMatchSearchFilters
+              ? await fetch(`${API_BASE_URL}/pre-market/agent/match-search`, {
+                  method: "POST",
+                  headers,
+                  signal: controller.signal,
+                  body: JSON.stringify({
+                    ...buildMatchSearchPayload(storedMatchSearchFilters),
+                    page: pageToFetch,
+                    limit: pageLimit,
+                  }),
+                })
+              : await fetch(`${API_BASE_URL}${endpoint}?${params.toString()}`, {
+                  method: "GET",
+                  headers,
+                  signal: controller.signal,
+                });
 
           const data: ApiAgentRequestsResponse = await response
             .json()
@@ -436,10 +442,9 @@ export default function AgentRenterRequestDetailsPage() {
           cacheAgentRequests(normalized);
           totalPages = Math.max(1, data.pagination?.totalPages ?? totalPages);
 
-          const visibleRequests =
-            useStoredMatchContext
-              ? normalized
-              : !isArchiveContext && useStoredContext && storedState
+          const visibleRequests = useStoredMatchContext
+            ? normalized
+            : !isArchiveContext && useStoredContext && storedState
               ? normalized.filter((item) =>
                   matchesAgentFilters(
                     item.raw,
@@ -492,7 +497,13 @@ export default function AgentRenterRequestDetailsPage() {
     resolveNavigation();
 
     return () => controller.abort();
-  }, [accessToken, currentUserId, isArchiveContext, isMatchResultsContext, requestId]);
+  }, [
+    accessToken,
+    currentUserId,
+    isArchiveContext,
+    isMatchResultsContext,
+    requestId,
+  ]);
 
   const {
     movingDateRange,
@@ -644,12 +655,13 @@ export default function AgentRenterRequestDetailsPage() {
   }, [currentUserId, renterInfo, request]);
   const ownerRepresentationRegisteredAgent =
     request?.raw?.ownerRepresentationRegisteredAgent;
-  const isRegisteredAgentForRequest =
-    isCurrentAgentRegisteredForRequest(request?.raw, currentUserId ?? null);
-  const ownerRepresentationMatches =
-    isRegisteredAgentForRequest
-      ? request?.raw?.ownerRepresentationMatches ?? []
-      : [];
+  const isRegisteredAgentForRequest = isCurrentAgentRegisteredForRequest(
+    request?.raw,
+    currentUserId ?? null,
+  );
+  const ownerRepresentationMatches = isRegisteredAgentForRequest
+    ? (request?.raw?.ownerRepresentationMatches ?? [])
+    : [];
   const canRequestAccess =
     request?.raw?.canRequestAccess &&
     (request?.raw?.status === "Available" || "available");
@@ -664,7 +676,7 @@ export default function AgentRenterRequestDetailsPage() {
     request?.raw?.representation_type !== "owner_representation";
   const isRegistrationDisclosureConfirmed = Boolean(
     request?.registrationDisclosureConfirmed ||
-      request?.raw?.registrationDisclosureConfirmed,
+    request?.raw?.registrationDisclosureConfirmed,
   );
   const shouldShowAddOpportunity = isRenterRepresentationMatched;
   const canAddAdditionalOpportunity =
@@ -824,8 +836,8 @@ export default function AgentRenterRequestDetailsPage() {
             (additionalOpportunity
               ? "Additional opportunity sent."
               : representationType === "owner_representation"
-              ? "Owner representation selection saved."
-              : "Match request created."),
+                ? "Owner representation selection saved."
+                : "Match request created."),
         });
       } else {
         const response = await fetch(
@@ -956,7 +968,9 @@ export default function AgentRenterRequestDetailsPage() {
     router.push(targetHref);
   };
 
-  const backHref = isArchiveContext ? "/agent/archived-requests" : "/agent/dashboard";
+  const backHref = isArchiveContext
+    ? "/agent/archived-requests"
+    : "/agent/dashboard";
   const backLabel = isArchiveContext
     ? "Archived Requests"
     : isMatchResultsContext
@@ -987,10 +1001,7 @@ export default function AgentRenterRequestDetailsPage() {
             onClick={handleBack}
             className="w-4 h-4 text-gray-600 cursor-pointer"
           />
-          <span
-            onClick={handleBack}
-            className="cursor-pointer"
-          >
+          <span onClick={handleBack} className="cursor-pointer">
             {backLabel}
           </span>
           <span>›</span>
@@ -1041,10 +1052,9 @@ export default function AgentRenterRequestDetailsPage() {
               ? "Matched"
               : "Open");
           const isMatchedByAgent = statusLabel === "Matched";
-          const statusClasses =
-            isMatchedByAgent
-              ? "bg-green-100 text-green-700"
-              : "bg-gray-100 text-gray-600";
+          const statusClasses = isMatchedByAgent
+            ? "bg-green-100 text-green-700"
+            : "bg-gray-100 text-gray-600";
 
           return (
             <span
@@ -1281,10 +1291,10 @@ export default function AgentRenterRequestDetailsPage() {
                     ? shouldShowAddOpportunity
                       ? "Add Opportunity"
                       : isListingMatched
-                      ? "Already Matched"
-                      : isSubmitting
-                        ? "Matching..."
-                        : "Match Request"
+                        ? "Already Matched"
+                        : isSubmitting
+                          ? "Matching..."
+                          : "Match Request"
                     : !canRequestAccess
                       ? "Request Sent"
                       : isSubmitting
@@ -1312,7 +1322,9 @@ export default function AgentRenterRequestDetailsPage() {
                     onClick={() =>
                       navigateToAdjacentRequest(navigationTargets.nextHref)
                     }
-                    disabled={!navigationTargets.nextHref || isResolvingNavigation}
+                    disabled={
+                      !navigationTargets.nextHref || isResolvingNavigation
+                    }
                     className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 md:min-w-36"
                     aria-label="Next request"
                   >
@@ -1415,7 +1427,9 @@ export default function AgentRenterRequestDetailsPage() {
                   type="radio"
                   name="representation-type"
                   value="owner_representation"
-                  checked={selectedRepresentationType === "owner_representation"}
+                  checked={
+                    selectedRepresentationType === "owner_representation"
+                  }
                   onChange={() =>
                     setSelectedRepresentationType("owner_representation")
                   }
@@ -1428,7 +1442,9 @@ export default function AgentRenterRequestDetailsPage() {
                   type="radio"
                   name="representation-type"
                   value="renter_representation"
-                  checked={selectedRepresentationType === "renter_representation"}
+                  checked={
+                    selectedRepresentationType === "renter_representation"
+                  }
                   onChange={() =>
                     setSelectedRepresentationType("renter_representation")
                   }
@@ -1459,7 +1475,9 @@ export default function AgentRenterRequestDetailsPage() {
                         ),
                       )
                     }
-                    placeholder="e.g., 123 W 85th St — Available Thursday at 3pm."
+                    placeholder={`e.g. I found an upcoming rental that may work for you: E 87th St between First 
+& Second Ave, large beautiful 1BR, $3,600, Sep 1 start, great light, elevator, 
+laundry in building. Video available. Reply all if interested.`}
                     aria-invalid={hasRiskyOpportunityDetails}
                     style={{ minHeight: "5.75rem" }}
                     className={`w-full resize-none rounded-lg border px-3 py-2 text-sm leading-5 text-gray-800 outline-none transition focus:ring-2 ${
@@ -1469,7 +1487,9 @@ export default function AgentRenterRequestDetailsPage() {
                     }`}
                   />
                   <div className="mt-1 flex justify-end">
-                    <span className={`text-xs ${opportunityDetailsCounterClass}`}>
+                    <span
+                      className={`text-xs ${opportunityDetailsCounterClass}`}
+                    >
                       {opportunityDetailsCount} /{" "}
                       {OPPORTUNITY_DETAILS_MAX_LENGTH}
                     </span>
@@ -1497,7 +1517,10 @@ export default function AgentRenterRequestDetailsPage() {
               <button
                 type="button"
                 onClick={() => {
-                  if (!selectedRepresentationType || hasRiskyOpportunityDetails) {
+                  if (
+                    !selectedRepresentationType ||
+                    hasRiskyOpportunityDetails
+                  ) {
                     return;
                   }
 
@@ -1550,40 +1573,40 @@ export default function AgentRenterRequestDetailsPage() {
               </div>
             ) : (
               <>
-            <p className="text-sm text-gray-700 mb-3">
-              By proceeding, you confirm that:
-            </p>
-            <ul className="text-sm text-gray-700 space-y-2 mb-4 list-disc pl-5">
-              <li>
-                You will verify the renter&rsquo;s Corcoran agency disclosures
-                and client registration prior to taking any action on the
-                renter&rsquo;s behalf.
-              </li>
-              <li>
-                Any information about the apartment being presented to this
-                renter arose from tenant-initiated outreach or follow-up
-                inquiries made in response to renter requests.
-              </li>
-              <li>
-                You have not been retained by the owner to procure a tenant or
-                market this apartment.
-              </li>
-              <li>
-                To the best of your knowledge, this apartment was not publicly
-                advertised on StreetEasy, Zillow, or the REBNY Listing Service
-                (RLS) at the time of this match.
-              </li>
-              <li>
-                If you are the agent identified in the renter’s disclosure, you
-                may pursue this opportunity on the renter’s behalf.
-              </li>
-              <li>
-                If you are not identified in the renter’s disclosure, you will
-                not take steps on the renter’s behalf until you are properly
-                identified through an additional agency disclosure signed by the
-                renter.
-              </li>
-            </ul>
+                <p className="text-sm text-gray-700 mb-3">
+                  By proceeding, you confirm that:
+                </p>
+                <ul className="text-sm text-gray-700 space-y-2 mb-4 list-disc pl-5">
+                  <li>
+                    You will verify the renter&rsquo;s Corcoran agency
+                    disclosures and client registration prior to taking any
+                    action on the renter&rsquo;s behalf.
+                  </li>
+                  <li>
+                    Any information about the apartment being presented to this
+                    renter arose from tenant-initiated outreach or follow-up
+                    inquiries made in response to renter requests.
+                  </li>
+                  <li>
+                    You have not been retained by the owner to procure a tenant
+                    or market this apartment.
+                  </li>
+                  <li>
+                    To the best of your knowledge, this apartment was not
+                    publicly advertised on StreetEasy, Zillow, or the REBNY
+                    Listing Service (RLS) at the time of this match.
+                  </li>
+                  <li>
+                    If you are the agent identified in the renter’s disclosure,
+                    you may pursue this opportunity on the renter’s behalf.
+                  </li>
+                  <li>
+                    If you are not identified in the renter’s disclosure, you
+                    will not take steps on the renter’s behalf until you are
+                    properly identified through an additional agency disclosure
+                    signed by the renter.
+                  </li>
+                </ul>
               </>
             )}
             <label className="flex items-start gap-2 text-sm text-gray-700 mb-6">
@@ -1619,7 +1642,9 @@ export default function AgentRenterRequestDetailsPage() {
                   );
                 }}
                 disabled={
-                  !isConfirmChecked || hasRiskyOpportunityDetails || isSubmitting
+                  !isConfirmChecked ||
+                  hasRiskyOpportunityDetails ||
+                  isSubmitting
                 }
                 className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
               >

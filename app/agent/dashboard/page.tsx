@@ -1023,13 +1023,7 @@ export default function AgentRenterRequestsPage() {
         false,
       ),
     );
-  }, [
-    currentAgentId,
-    filters,
-    isMatchResultsMode,
-    requests,
-    showOwnReferrals,
-  ]);
+  }, [currentAgentId, filters, isMatchResultsMode, requests, showOwnReferrals]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !isStateRestored) return;
@@ -1920,21 +1914,22 @@ export default function AgentRenterRequestsPage() {
                     {filteredRequests.map((req) => {
                       const isCurrentAgentsRequest =
                         isCurrentAgentRegisteredForRequest(req, currentAgentId);
-                      const currentAgentHasMatchedAccess =
-                        ["free", "paid", "approved", "matched"].includes(
-                          String(
-                            req.raw?.grantAccessStatus ??
-                              req.raw?.status ??
-                              "",
-                          ).toLowerCase(),
-                        );
-                      const isMatchedByCurrentAgent =
-                        Boolean(
-                          currentAgentId &&
-                            req.matchedByAgent?.agentId &&
-                            String(req.matchedByAgent.agentId) ===
-                              String(currentAgentId),
-                        );
+                      const currentAgentHasMatchedAccess = [
+                        "free",
+                        "paid",
+                        "approved",
+                        "matched",
+                      ].includes(
+                        String(
+                          req.raw?.grantAccessStatus ?? req.raw?.status ?? "",
+                        ).toLowerCase(),
+                      );
+                      const isMatchedByCurrentAgent = Boolean(
+                        currentAgentId &&
+                        req.matchedByAgent?.agentId &&
+                        String(req.matchedByAgent.agentId) ===
+                          String(currentAgentId),
+                      );
                       const shouldShowRegisteredAgentName =
                         req.scopeLabel === "Upcoming (M)" &&
                         currentAgentHasMatchedAccess &&
@@ -2229,17 +2224,14 @@ export default function AgentRenterRequestsPage() {
                                 matchedFromGrantStatus ||
                                 Boolean(
                                   currentAgentId &&
-                                    req.matchedByAgent?.agentId &&
-                                    String(req.matchedByAgent.agentId) ===
-                                      String(currentAgentId),
+                                  req.matchedByAgent?.agentId &&
+                                  String(req.matchedByAgent.agentId) ===
+                                    String(currentAgentId),
                                 );
                               const statusText =
                                 backendStatusText ??
-                                (fallbackIsMatchedByAgent
-                                  ? "Matched"
-                                  : "Open");
-                              const isMatchedByAgent =
-                                statusText === "Matched";
+                                (fallbackIsMatchedByAgent ? "Matched" : "Open");
+                              const isMatchedByAgent = statusText === "Matched";
                               return (
                                 <span
                                   className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -2597,7 +2589,9 @@ export default function AgentRenterRequestsPage() {
                         ),
                       )
                     }
-                    placeholder="e.g., 123 W 85th St - Available Thursday at 3pm."
+                    placeholder={`e.g. I found an upcoming rental that may work for you: E 87th St between First 
+& Second Ave, large beautiful 1BR, $3,600, Sep 1 start, great light, elevator, 
+laundry in building. Video available. Reply all if interested.`}
                     aria-invalid={hasRiskyBulkOpportunityDetails}
                     className={`w-full resize-none rounded-lg border px-3 py-2 text-sm leading-5 text-gray-800 outline-none transition focus:ring-2 ${
                       hasRiskyBulkOpportunityDetails
