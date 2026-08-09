@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSelector } from "react-redux";
 import Image from "next/image";
@@ -30,6 +30,35 @@ import {
 const NAVIGATION_STORAGE_KEY = "agent-matches-navigation";
 const ARCHIVE_NAVIGATION_STORAGE_KEY = "agent-archived-navigation";
 const NAVIGATION_LIMIT_FALLBACK = 10;
+const OPPORTUNITY_DETAILS_MAX_LENGTH = 350;
+const RISKY_OPPORTUNITY_DETAIL_PHRASES = [
+  "I have a listing",
+  "I have",
+  "exclusive",
+  "my owner",
+  "my landlord",
+  "my building",
+  "private listing",
+  "only through me",
+  "off-market listing",
+  "guaranteed",
+  "no one else has access",
+];
+const OPPORTUNITY_DETAILS_RISKY_WORDING_MESSAGE =
+  "Please revise this wording to use neutral, factual language. The message should not suggest that you represent the owner unless that has been properly selected and disclosed.";
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+const riskyOpportunityDetailsPattern = () =>
+  new RegExp(
+    `(${RISKY_OPPORTUNITY_DETAIL_PHRASES.map(escapeRegExp).join("|")})`,
+    "gi",
+  );
+
+const hasRiskyOpportunityDetailsWording = (value: string) =>
+  riskyOpportunityDetailsPattern().test(value);
 
 const unitFeatureLabels: Record<string, string> = {
   laundryInUnit: "Laundry in unit",
@@ -85,6 +114,17 @@ export default function AgentMatchDetailsPage() {
   const [request, setRequest] = useState<NormalizedAgentMatch | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmittingOpportunity, setIsSubmittingOpportunity] =
+    useState(false);
+  const [statusMessage, setStatusMessage] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+  const [isOpportunityOpen, setIsOpportunityOpen] = useState(false);
+  const [opportunityDetails, setOpportunityDetails] = useState("");
+  const opportunityDetailsTextareaRef = useRef<HTMLTextAreaElement | null>(
+    null,
+  );
   const [navigationTargets, setNavigationTargets] = useState<{
     previousHref: string | null;
     nextHref: string | null;
@@ -168,6 +208,13 @@ export default function AgentMatchDetailsPage() {
 
     return () => controller.abort();
   }, [accessToken, requestId]);
+
+  useEffect(() => {
+    const textarea = opportunityDetailsTextareaRef.current;
+    if (!textarea) return;
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, [opportunityDetails, isOpportunityOpen]);
 
   useEffect(() => {
     if (!requestId) return;
@@ -493,6 +540,105 @@ export default function AgentMatchDetailsPage() {
 
   const backHref = isArchiveContext ? "/agent/archived-requests" : "/agent/matches";
   const backLabel = isArchiveContext ? "Archived Requests" : "Matched Requests";
+  const normalizedGrantStatus = String(
+    request?.raw?.grantAccessStatus ?? request?.raw?.status ?? request?.status ?? "",
+  )
+    .trim()
+    .toLowerCase();
+  const normalizedListingStatus = String(
+    request?.raw?.listingStatus ?? request?.raw?.status ?? request?.status ?? "",
+  )
+    .trim()
+    .toLowerCase();
+  const isRenterRepresentationMatch =
+    request?.representation_type !== "owner_representation" &&
+    request?.raw?.representation_type !== "owner_representation";
+  const canAddOpportunity =
+    Boolean(requestId) &&
+    Boolean(request) &&
+    !request?.isArchivedForAgent &&
+    !request?.raw?.isArchivedForAgent &&
+    isRenterRepresentationMatch &&
+    (["free", "paid"].includes(normalizedGrantStatus) ||
+      normalizedListingStatus === "matched" ||
+      request?.raw?.alreadyMatchedByAgent === true);
+  const opportunityDetailsCount = opportunityDetails.length;
+  const opportunityDetailsCounterClass =
+    opportunityDetailsCount >= OPPORTUNITY_DETAILS_MAX_LENGTH
+      ? "text-red-600"
+      : opportunityDetailsCount >= 280
+        ? "text-orange-400"
+        : "text-[#999999]";
+  const hasRiskyOpportunityDetails =
+    hasRiskyOpportunityDetailsWording(opportunityDetails);
+
+  const handleSendAdditionalOpportunity = async () => {
+    if (!requestId || !canAddOpportunity || isSubmittingOpportunity) return;
+
+    const normalizedOpportunityDetails = opportunityDetails
+      .trim()
+      .slice(0, OPPORTUNITY_DETAILS_MAX_LENGTH);
+
+    if (hasRiskyOpportunityDetailsWording(normalizedOpportunityDetails)) {
+      setStatusMessage({
+        type: "error",
+        message: OPPORTUNITY_DETAILS_RISKY_WORDING_MESSAGE,
+      });
+      return;
+    }
+
+    setIsSubmittingOpportunity(true);
+    setStatusMessage(null);
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(
+        `${API_BASE_URL}/pre-market/agent/${requestId}/match`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            representation_type: "renter_representation",
+            additionalOpportunity: true,
+            ...(normalizedOpportunityDetails
+              ? { opportunityDetails: normalizedOpportunityDetails }
+              : {}),
+          }),
+        },
+      );
+      const data = await response
+        .json()
+        .catch(() => ({}) as { success?: boolean; message?: string });
+
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message ||
+            "We couldn't send this opportunity right now. Please try again.",
+        );
+      }
+
+      setIsOpportunityOpen(false);
+      setOpportunityDetails("");
+      setStatusMessage({
+        type: "success",
+        message: data?.message || "Additional opportunity sent.",
+      });
+    } catch (err) {
+      setStatusMessage({
+        type: "error",
+        message:
+          err instanceof Error
+            ? err.message
+            : "We couldn't send this opportunity right now. Please try again.",
+      });
+    } finally {
+      setIsSubmittingOpportunity(false);
+    }
+  };
 
   return (
     <section className="flex-1 bg-gray-50 min-h-screen px-4 md:px-8 py-6 overflow-y-auto">
@@ -650,6 +796,34 @@ export default function AgentMatchDetailsPage() {
               preferencesLayout="topFour"
             />
 
+            <div className="mt-6 flex flex-col gap-4">
+              {statusMessage && (
+                <p
+                  className={`text-sm ${
+                    statusMessage.type === "error"
+                      ? "text-red-600"
+                      : "text-green-600"
+                  }`}
+                >
+                  {statusMessage.message}
+                </p>
+              )}
+              {canAddOpportunity && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStatusMessage(null);
+                    setOpportunityDetails("");
+                    setIsOpportunityOpen(true);
+                  }}
+                  disabled={isSubmittingOpportunity}
+                  className="w-fit rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isSubmittingOpportunity ? "Sending..." : "Add Opportunity"}
+                </button>
+              )}
+            </div>
+
             <div className="mt-6 flex items-center justify-center gap-3">
               <button
                 type="button"
@@ -676,6 +850,87 @@ export default function AgentMatchDetailsPage() {
             </div>
           </div>
         </>
+      )}
+
+      {isOpportunityOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-5 flex items-center gap-3">
+              <Image
+                src="/Logo_1.svg"
+                alt="BeforeListed"
+                width={180}
+                height={52}
+                className="h-auto w-[160px] sm:w-[180px]"
+                priority
+              />
+            </div>
+            <h2 className="mb-5 text-xl font-semibold text-gray-900">
+              Add Opportunity Details
+            </h2>
+            <p className="mt-1 text-xs leading-5 text-gray-500">
+              Included in the email to the renter and visible to the registered
+              agent. Kindly use neutral, factual details only (apartment
+              features, address, cross streets, viewing times, next steps).
+            </p>
+            <div className="mt-3">
+              <textarea
+                ref={opportunityDetailsTextareaRef}
+                rows={3}
+                maxLength={OPPORTUNITY_DETAILS_MAX_LENGTH}
+                value={opportunityDetails}
+                onChange={(event) =>
+                  setOpportunityDetails(
+                    event.target.value.slice(
+                      0,
+                      OPPORTUNITY_DETAILS_MAX_LENGTH,
+                    ),
+                  )
+                }
+                placeholder={`e.g. I found an upcoming rental that may work for you: E 87th St between First
+& Second Ave, large beautiful 1BR, $3,600, Sep 1 start, great light, elevator,
+laundry in building. Video available. Reply all if interested.`}
+                aria-invalid={hasRiskyOpportunityDetails}
+                style={{ minHeight: "5.75rem" }}
+                className={`w-full resize-none rounded-lg border px-3 py-2 text-sm leading-5 text-gray-800 outline-none transition focus:ring-2 ${
+                  hasRiskyOpportunityDetails
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-100"
+                    : "border-gray-200 text-gray-800 focus:border-blue-500 focus:ring-blue-100"
+                }`}
+              />
+              <div className="mt-1 flex justify-end">
+                <span className={`text-xs ${opportunityDetailsCounterClass}`}>
+                  {opportunityDetailsCount} / {OPPORTUNITY_DETAILS_MAX_LENGTH}
+                </span>
+              </div>
+            </div>
+            {hasRiskyOpportunityDetails ? (
+              <p className="mt-2 text-xs leading-5 text-red-600">
+                {OPPORTUNITY_DETAILS_RISKY_WORDING_MESSAGE}
+              </p>
+            ) : null}
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpportunityOpen(false);
+                  setOpportunityDetails("");
+                }}
+                className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSendAdditionalOpportunity}
+                disabled={hasRiskyOpportunityDetails || isSubmittingOpportunity}
+                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSubmittingOpportunity ? "Sending..." : "Confirm & Send"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </section>
   );

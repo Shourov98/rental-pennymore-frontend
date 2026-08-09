@@ -670,17 +670,16 @@ export default function AgentRenterRequestDetailsPage() {
   const grantAccessEnabled = hasGrantAccess === true;
   const grantAccessStatus = request?.raw?.grantAccessStatus?.toLowerCase();
   const isRenterRepresentationMatched =
-    isListingMatched &&
+    (isListingMatched ||
+      request?.alreadyMatchedByAgent === true ||
+      request?.raw?.alreadyMatchedByAgent === true ||
+      request?.status?.toLowerCase() === "matched" ||
+      request?.raw?.status?.toLowerCase() === "matched") &&
     (grantAccessStatus === "free" || grantAccessStatus === "paid") &&
     request?.representation_type !== "owner_representation" &&
     request?.raw?.representation_type !== "owner_representation";
-  const isRegistrationDisclosureConfirmed = Boolean(
-    request?.registrationDisclosureConfirmed ||
-    request?.raw?.registrationDisclosureConfirmed,
-  );
   const shouldShowAddOpportunity = isRenterRepresentationMatched;
-  const canAddAdditionalOpportunity =
-    shouldShowAddOpportunity && isRegistrationDisclosureConfirmed;
+  const canAddAdditionalOpportunity = shouldShowAddOpportunity;
   const isAccessRequestLocked =
     request?.raw?.shareConsent === false && !isRegisteredAgentForRequest;
   const confirmRequestScope =
@@ -1276,7 +1275,11 @@ export default function AgentRenterRequestDetailsPage() {
                     ) {
                       return;
                     }
-                    setSelectedRepresentationType("");
+                    setSelectedRepresentationType(
+                      canAddAdditionalOpportunity
+                        ? "renter_representation"
+                        : "",
+                    );
                     setOpportunityDetails("");
                     setIsRepresentationOpen(true);
                   }}
