@@ -37,6 +37,7 @@ import {
   sanitizeFilters,
   writeStoredAgentListState,
 } from "../requestNavigation";
+import { isUpcomingScope } from "@/lib/scope";
 
 const FILTERS_STORAGE_KEY = "agent-dashboard-filters";
 const LIST_STATE_STORAGE_KEY = "agent-dashboard-list-state";
@@ -1410,13 +1411,25 @@ export default function AgentRenterRequestsPage() {
     const selectedIds = new Set(selectedRequestIds);
     return requests.filter((request) => selectedIds.has(request.id));
   }, [requests, selectedRequestIds]);
+  // For Upcoming / Upcoming (M) requests the match button must stay
+  // active even when the agent previously matched — the same agent may
+  // know of multiple owners / upcoming opportunities that could help the
+  // request. So we exclude those rows from the "already matched" gating
+  // that flips the bulk action label to "Add Opportunity" / "Match / Add
+  // Opportunity".
+  const isRequestUpcomingLike = (request: { raw?: { scope?: string }, scopeLabel?: string }) =>
+    isUpcomingScope(request.raw?.scope) || isUpcomingScope(request.scopeLabel);
   const selectedHasAlreadyMatchedRequests = selectedRequests.some(
-    (request) => request.alreadyMatchedByAgent,
+    (request) =>
+      request.alreadyMatchedByAgent && !isRequestUpcomingLike(request),
   );
   const selectedAllRequestsAlreadyMatched =
     selectedRequestCount > 0 &&
     selectedRequests.length === selectedRequestCount &&
-    selectedRequests.every((request) => request.alreadyMatchedByAgent);
+    selectedRequests.every(
+      (request) =>
+        request.alreadyMatchedByAgent && !isRequestUpcomingLike(request),
+    );
   const bulkActionIdleLabel = selectedHasAlreadyMatchedRequests
     ? selectedAllRequestsAlreadyMatched
       ? "Add Opportunity"
@@ -2210,7 +2223,15 @@ export default function AgentRenterRequestsPage() {
                               )
                                 .trim()
                                 .toLowerCase();
+                              // For Upcoming / Upcoming (M) requests the row
+                              // should keep showing "Open" even when the agent
+                              // has previously matched — those requests remain
+                              // matchable (additional opportunities are
+                              // possible). The fallback is suppressed for
+                              // upcoming-like scopes.
+                              const rowIsUpcomingLike = isRequestUpcomingLike(req);
                               const matchedFromGrantStatus =
+                                !rowIsUpcomingLike &&
                                 req.raw?.representation_type !==
                                   "owner_representation" &&
                                 [
@@ -2220,14 +2241,15 @@ export default function AgentRenterRequestsPage() {
                                   "paid",
                                 ].includes(normalizedAgentGrantStatus);
                               const fallbackIsMatchedByAgent =
-                                Boolean(req.alreadyMatchedByAgent) ||
-                                matchedFromGrantStatus ||
-                                Boolean(
-                                  currentAgentId &&
-                                  req.matchedByAgent?.agentId &&
-                                  String(req.matchedByAgent.agentId) ===
-                                    String(currentAgentId),
-                                );
+                                !rowIsUpcomingLike &&
+                                (Boolean(req.alreadyMatchedByAgent) ||
+                                  matchedFromGrantStatus ||
+                                  Boolean(
+                                    currentAgentId &&
+                                    req.matchedByAgent?.agentId &&
+                                    String(req.matchedByAgent.agentId) ===
+                                      String(currentAgentId),
+                                  ));
                               const statusText =
                                 backendStatusText ??
                                 (fallbackIsMatchedByAgent ? "Matched" : "Open");

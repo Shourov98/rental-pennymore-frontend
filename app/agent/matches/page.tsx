@@ -28,6 +28,7 @@ import {
   sanitizeFilters,
   writeStoredAgentListState,
 } from "../requestNavigation";
+import { isUpcomingScope } from "@/lib/scope";
 
 const FILTERS_STORAGE_KEY = "agent-matches-filters";
 const LIST_STATE_STORAGE_KEY = "agent-matches-list-state";
@@ -1357,7 +1358,16 @@ export default function AgentMatchesPage() {
                               )
                                 .trim()
                                 .toLowerCase();
+                              // Upcoming / Upcoming (M) requests stay
+                              // matchable even after the agent previously
+                              // matched. Suppress the "Matched" badge so the
+                              // agent doesn't see a stale "Already Matched"
+                              // signal.
+                              const rowIsUpcomingLike = isUpcomingScope(
+                                req.raw?.scope ?? req.scopeLabel,
+                              );
                               const matchedFromGrantStatus =
+                                !rowIsUpcomingLike &&
                                 req.raw?.representation_type !==
                                   "owner_representation" &&
                                 [
@@ -1367,14 +1377,15 @@ export default function AgentMatchesPage() {
                                   "paid",
                                 ].includes(normalizedAgentGrantStatus);
                               const fallbackIsMatchedByAgent =
-                                Boolean(req.raw?.alreadyMatchedByAgent) ||
-                                matchedFromGrantStatus ||
-                                Boolean(
-                                  currentAgentId &&
-                                  req.matchedByAgent?.agentId &&
-                                  String(req.matchedByAgent.agentId) ===
-                                    String(currentAgentId),
-                                );
+                                !rowIsUpcomingLike &&
+                                (Boolean(req.raw?.alreadyMatchedByAgent) ||
+                                  matchedFromGrantStatus ||
+                                  Boolean(
+                                    currentAgentId &&
+                                    req.matchedByAgent?.agentId &&
+                                    String(req.matchedByAgent.agentId) ===
+                                      String(currentAgentId),
+                                  ));
                               const statusText =
                                 backendStatusText ??
                                 (fallbackIsMatchedByAgent

@@ -31,6 +31,7 @@ import {
 } from "../utils";
 import { selectAgentHasGrantAccess } from "@/store/slices/authSlice";
 import { fetchAgentProfile } from "@/store/slices/agentProfileSlice";
+import { isUpcomingScope } from "@/lib/scope";
 import {
   buildMatchSearchPayload,
   getAgentRequestHref,
@@ -666,10 +667,14 @@ export default function AgentRenterRequestDetailsPage() {
     request?.raw?.canRequestAccess &&
     (request?.raw?.status === "Available" || "available");
   const listingStatus = request?.raw?.listingStatus || "";
+  const isUpcomingRequest = isUpcomingScope(
+    request?.raw?.scope ?? request?.scopeLabel,
+  );
   const isListingMatched = listingStatus.toLowerCase() === "matched";
   const grantAccessEnabled = hasGrantAccess === true;
   const grantAccessStatus = request?.raw?.grantAccessStatus?.toLowerCase();
   const isRenterRepresentationMatched =
+    !isUpcomingRequest &&
     (isListingMatched ||
       request?.alreadyMatchedByAgent === true ||
       request?.raw?.alreadyMatchedByAgent === true ||
@@ -699,7 +704,7 @@ export default function AgentRenterRequestDetailsPage() {
   const paymentCurrency = request?.raw?.payment?.currency || "USD";
 
   const isDisabled = grantAccessEnabled
-    ? isListingMatched && !canAddAdditionalOpportunity
+    ? isListingMatched && !canAddAdditionalOpportunity && !isUpcomingRequest
     : canRequestAccess === false || isSubmitting
       ? true
       : false;

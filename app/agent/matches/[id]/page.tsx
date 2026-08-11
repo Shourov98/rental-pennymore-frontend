@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import RenterPreferenceView from "@/components/RenterPreferenceView";
 import { RootState } from "@/store/store";
+import { isUpcomingScope } from "@/lib/scope";
 import {
   API_BASE_URL,
   ApiAgentMatchesResponse,
@@ -550,15 +551,22 @@ export default function AgentMatchDetailsPage() {
   )
     .trim()
     .toLowerCase();
+  const isUpcomingMatch = isUpcomingScope(
+    request?.raw?.scope ?? request?.scopeLabel,
+  );
   const isRenterRepresentationMatch =
     request?.representation_type !== "owner_representation" &&
     request?.raw?.representation_type !== "owner_representation";
+  // For Upcoming / Upcoming (M) requests, owner-representation matches may
+  // also add additional opportunities (the same agent can match several
+  // owners against the same upcoming request). All Market keeps the
+  // original restriction (renter-rep only).
   const canAddOpportunity =
     Boolean(requestId) &&
     Boolean(request) &&
     !request?.isArchivedForAgent &&
     !request?.raw?.isArchivedForAgent &&
-    isRenterRepresentationMatch &&
+    (isRenterRepresentationMatch || isUpcomingMatch) &&
     (["free", "paid"].includes(normalizedGrantStatus) ||
       normalizedListingStatus === "matched" ||
       request?.raw?.alreadyMatchedByAgent === true);
