@@ -711,7 +711,7 @@ export default function AgentRenterRequestDetailsPage() {
 
   // {grantAccessEnabled
   //                 ? isListingMatched
-  //                   ? "Already Matched"
+  //                   ? "Match Again"
   //                   : isSubmitting
   //                   ? "Matching..."
   //                   : "Match Request"
@@ -1299,7 +1299,7 @@ export default function AgentRenterRequestDetailsPage() {
                     ? shouldShowAddOpportunity
                       ? "Add Opportunity"
                       : isListingMatched
-                        ? "Already Matched"
+                        ? "Match Again"
                         : isSubmitting
                           ? "Matching..."
                           : "Match Request"
