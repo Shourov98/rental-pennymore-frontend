@@ -1647,8 +1647,11 @@ export default function AgentRenterRequestsPage() {
       };
       if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
       const shouldSendAdditionalOpportunity =
-        representationType === "renter_representation" &&
-        selectedHasAlreadyMatchedRequests;
+        representationType === "renter_representation"
+          ? selectedHasAlreadyMatchedRequests
+          : representationType === "owner_representation" &&
+            selectedHasAlreadyMatchedRequests &&
+            selectedRequests.every((request) => isRequestUpcomingLike(request));
 
       const response = await fetch(
         `${API_BASE_URL}/pre-market/agent/match-checked`,

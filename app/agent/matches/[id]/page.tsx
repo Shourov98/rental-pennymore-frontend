@@ -123,6 +123,9 @@ export default function AgentMatchDetailsPage() {
   } | null>(null);
   const [isOpportunityOpen, setIsOpportunityOpen] = useState(false);
   const [opportunityDetails, setOpportunityDetails] = useState("");
+  const [addOpportunityKind, setAddOpportunityKind] = useState<
+    "renter" | "owner"
+  >("renter");
   const opportunityDetailsTextareaRef = useRef<HTMLTextAreaElement | null>(
     null,
   );
@@ -554,22 +557,22 @@ export default function AgentMatchDetailsPage() {
   const isUpcomingMatch = isUpcomingScope(
     request?.raw?.scope ?? request?.scopeLabel,
   );
-  const isRenterRepresentationMatch =
-    request?.representation_type !== "owner_representation" &&
-    request?.raw?.representation_type !== "owner_representation";
-  // For Upcoming / Upcoming (M) requests, owner-representation matches may
-  // also add additional opportunities (the same agent can match several
-  // owners against the same upcoming request). All Market keeps the
-  // original restriction (renter-rep only).
-  const canAddOpportunity =
+  const isOwnerRepresentationMatch =
+    request?.representation_type === "owner_representation" ||
+    request?.raw?.representation_type === "owner_representation";
+  const canAddOpportunityBase =
     Boolean(requestId) &&
     Boolean(request) &&
     !request?.isArchivedForAgent &&
     !request?.raw?.isArchivedForAgent &&
-    (isRenterRepresentationMatch || isUpcomingMatch) &&
     (["free", "paid"].includes(normalizedGrantStatus) ||
       normalizedListingStatus === "matched" ||
       request?.raw?.alreadyMatchedByAgent === true);
+  // Owner-rep add-op is restricted to Upcoming / Upcoming (M); the backend
+  // scope gate enforces it for renter-rep on All Market.
+  const canAddOpportunityRenter = canAddOpportunityBase && !isOwnerRepresentationMatch;
+  const canAddOpportunityOwner =
+    canAddOpportunityBase && isOwnerRepresentationMatch && isUpcomingMatch;
   const opportunityDetailsCount = opportunityDetails.length;
   const opportunityDetailsCounterClass =
     opportunityDetailsCount >= OPPORTUNITY_DETAILS_MAX_LENGTH
@@ -581,7 +584,14 @@ export default function AgentMatchDetailsPage() {
     hasRiskyOpportunityDetailsWording(opportunityDetails);
 
   const handleSendAdditionalOpportunity = async () => {
-    if (!requestId || !canAddOpportunity || isSubmittingOpportunity) return;
+    const isOwnerAdd = addOpportunityKind === "owner";
+    if (
+      !requestId
+      || (isOwnerAdd ? !canAddOpportunityOwner : !canAddOpportunityRenter)
+      || isSubmittingOpportunity
+    ) {
+      return;
+    }
 
     const normalizedOpportunityDetails = opportunityDetails
       .trim()
@@ -610,7 +620,9 @@ export default function AgentMatchDetailsPage() {
           method: "POST",
           headers,
           body: JSON.stringify({
-            representation_type: "renter_representation",
+            representation_type: isOwnerAdd
+              ? "owner_representation"
+              : "renter_representation",
             additionalOpportunity: true,
             ...(normalizedOpportunityDetails
               ? { opportunityDetails: normalizedOpportunityDetails }
@@ -816,12 +828,30 @@ export default function AgentMatchDetailsPage() {
                   {statusMessage.message}
                 </p>
               )}
-              {canAddOpportunity && (
+              {canAddOpportunityOwner && (
                 <button
                   type="button"
                   onClick={() => {
                     setStatusMessage(null);
                     setOpportunityDetails("");
+                    setAddOpportunityKind("owner");
+                    setIsOpportunityOpen(true);
+                  }}
+                  disabled={isSubmittingOpportunity}
+                  className="w-fit rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isSubmittingOpportunity
+                    ? "Sending..."
+                    : "Add Owner Opportunity"}
+                </button>
+              )}
+              {canAddOpportunityRenter && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStatusMessage(null);
+                    setOpportunityDetails("");
+                    setAddOpportunityKind("renter");
                     setIsOpportunityOpen(true);
                   }}
                   disabled={isSubmittingOpportunity}

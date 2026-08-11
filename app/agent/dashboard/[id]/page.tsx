@@ -685,6 +685,11 @@ export default function AgentRenterRequestDetailsPage() {
     request?.raw?.representation_type !== "owner_representation";
   const shouldShowAddOpportunity = isRenterRepresentationMatched;
   const canAddAdditionalOpportunity = shouldShowAddOpportunity;
+  const isOwnerRepresentationMatch =
+    request?.representation_type === "owner_representation" ||
+    request?.raw?.representation_type === "owner_representation";
+  const canAddOwnerOpportunity =
+    isOwnerRepresentationMatch && isUpcomingRequest && isListingMatched;
   const isAccessRequestLocked =
     request?.raw?.shareConsent === false && !isRegisteredAgentForRequest;
   const confirmRequestScope =
@@ -704,7 +709,10 @@ export default function AgentRenterRequestDetailsPage() {
   const paymentCurrency = request?.raw?.payment?.currency || "USD";
 
   const isDisabled = grantAccessEnabled
-    ? isListingMatched && !canAddAdditionalOpportunity && !isUpcomingRequest
+    ? isListingMatched
+      && !canAddAdditionalOpportunity
+      && !canAddOwnerOpportunity
+      && !isUpcomingRequest
     : canRequestAccess === false || isSubmitting
       ? true
       : false;
@@ -1280,11 +1288,13 @@ export default function AgentRenterRequestDetailsPage() {
                     ) {
                       return;
                     }
-                    setSelectedRepresentationType(
-                      canAddAdditionalOpportunity
-                        ? "renter_representation"
-                        : "",
-                    );
+                    if (canAddOwnerOpportunity) {
+                      setSelectedRepresentationType("owner_representation");
+                    } else if (canAddAdditionalOpportunity) {
+                      setSelectedRepresentationType("renter_representation");
+                    } else {
+                      setSelectedRepresentationType("");
+                    }
                     setOpportunityDetails("");
                     setIsRepresentationOpen(true);
                   }}
@@ -1296,13 +1306,15 @@ export default function AgentRenterRequestDetailsPage() {
                   }`}
                 >
                   {grantAccessEnabled
-                    ? shouldShowAddOpportunity
-                      ? "Add Opportunity"
-                      : isListingMatched
-                        ? "Match Again"
-                        : isSubmitting
-                          ? "Matching..."
-                          : "Match Request"
+                    ? canAddOwnerOpportunity
+                      ? "Add Owner Opportunity"
+                      : shouldShowAddOpportunity
+                        ? "Add Opportunity"
+                        : isListingMatched
+                          ? "Match Again"
+                          : isSubmitting
+                            ? "Matching..."
+                            : "Match Request"
                     : !canRequestAccess
                       ? "Request Sent"
                       : isSubmitting
@@ -1537,6 +1549,7 @@ laundry in building. Video available. Reply all if interested.`}
                     handleMatchRequest(
                       "owner_representation",
                       opportunityDetails,
+                      canAddOwnerOpportunity,
                     );
                     return;
                   }
