@@ -842,7 +842,7 @@ export default function AgentMatchDetailsPage() {
                 >
                   {isSubmittingOpportunity
                     ? "Sending..."
-                    : "Add Owner Opportunity"}
+                    : "Add Opportunity"}
                 </button>
               )}
               {canAddOpportunityRenter && (

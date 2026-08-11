@@ -1307,7 +1307,7 @@ export default function AgentRenterRequestDetailsPage() {
                 >
                   {grantAccessEnabled
                     ? canAddOwnerOpportunity
-                      ? "Add Owner Opportunity"
+                      ? "Add Opportunity"
                       : shouldShowAddOpportunity
                         ? "Add Opportunity"
                         : isListingMatched
