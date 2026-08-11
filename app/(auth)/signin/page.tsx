@@ -10,6 +10,7 @@ import {
   authFailure,
   authStart,
   adminSessionDetected,
+  selectAuth,
   selectIsAuthed,
   selectSessionReady,
   renterLoginSuccess,
@@ -53,6 +54,7 @@ function SigninPageContent() {
   const dispatch = useDispatch<AppDispatch>();
   const isAuthed = useSelector(selectIsAuthed);
   const sessionReady = useSelector(selectSessionReady);
+  const auth = useSelector(selectAuth);
   const [hasMounted, setHasMounted] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -99,11 +101,70 @@ function SigninPageContent() {
     [searchParams],
   );
 
+  const resolveRoleBasedDestination = useCallback(
+    async (role: string | undefined): Promise<string> => {
+      if (role === "Agent") return "/agent/dashboard";
+
+      if (role !== "Renter") return "/";
+
+      // Renters land on /renter/saved-requests when they have at least one
+      // pre-market request; otherwise on the marketing homepage so they can
+      // learn about the product and submit their first request.
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/pre-market/my-requests?limit=1`,
+          { method: "GET", credentials: "include" },
+        );
+        if (!response.ok) return "/";
+        const body = (await response
+          .json()
+          .catch(() => null)) as {
+          data?: unknown[];
+          pagination?: { total?: number };
+        } | null;
+        const list = Array.isArray(body?.data) ? body.data : [];
+        const total =
+          typeof body?.pagination?.total === "number"
+            ? body.pagination.total
+            : list.length;
+        return total > 0 ? "/renter/saved-requests" : "/";
+      } catch {
+        // If the availability check fails for any reason, fall back to the
+        // marketing homepage rather than blocking the login flow.
+        return "/";
+      }
+    },
+    [],
+  );
+
   useEffect(() => {
     if (!sessionReady || !isAuthed) return;
-    const destination = getRedirectDestination();
-    router.replace(destination);
-  }, [getRedirectDestination, isAuthed, router, sessionReady]);
+    let cancelled = false;
+    void (async () => {
+      const explicit = getRedirectDestination();
+      // getRedirectDestination returns "/" when no ?redirect= is set;
+      // anything other than "/" means the caller asked for a specific
+      // destination and we honor it as-is.
+      if (explicit !== "/") {
+        router.replace(explicit);
+        return;
+      }
+      const authRole = auth?.role ?? auth?.user?.role ?? null;
+      const destination = await resolveRoleBasedDestination(authRole ?? undefined);
+      if (!cancelled) router.replace(destination);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    auth?.role,
+    auth?.user?.role,
+    getRedirectDestination,
+    isAuthed,
+    resolveRoleBasedDestination,
+    router,
+    sessionReady,
+  ]);
 
   useEffect(() => {
     const nextSaved = referralFromUrl
@@ -126,7 +187,7 @@ function SigninPageContent() {
     return `/signup/agent?ref=${encodeURIComponent(referralCode)}`;
   })();
 
-  const completeLogin = (
+  const completeLogin = async (
     data: {
       message?: string;
       data?: {
@@ -210,7 +271,10 @@ function SigninPageContent() {
       dispatch(fetchAgentProfile());
     }
 
-    const destination = getRedirectDestination(forcedDestination);
+    const explicitDestination = getRedirectDestination(forcedDestination);
+    const destination = explicitDestination === "/"
+      ? await resolveRoleBasedDestination(role)
+      : explicitDestination;
     setStatusMessage({
       type: "success",
       message: data.message || "Login successful.",
@@ -308,7 +372,7 @@ function SigninPageContent() {
     }
 
     setDefaultReferralAgent(null);
-    completeLogin(data, forcedDestination);
+    await completeLogin(data, forcedDestination);
     return true;
   };
 
