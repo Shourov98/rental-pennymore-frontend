@@ -73,6 +73,13 @@ const opportunityDetailsHelperText: Record<RepresentationType, string> = {
     "Included in the email to the registered agent. Kindly use neutral, factual details only (apartment features, address, cross streets, viewing times, next steps).",
 };
 
+const opportunityDetailsPlaceholder: Record<RepresentationType, string> = {
+  renter_representation: `e.g. I found an upcoming rental that may work for you: E 87th St between First
+& Second Ave, large beautiful 1BR, $3,600, Sep 1 start, great light, elevator,
+laundry in building. Video available. Reply all if interested.`,
+  owner_representation: `e.g. I have an exclusive coming up that can fit your client. Large one bedroom, West 72nd Street between Broadway and Amsterdam Avenue, dishwasher, high ceilings, $3,800, September 1 start date, elevator and laundry building. Reach out for showing times.`,
+};
+
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -2614,9 +2621,11 @@ export default function AgentRenterRequestsPage() {
                         ),
                       )
                     }
-                    placeholder={`e.g. I found an upcoming rental that may work for you: E 87th St between First 
-& Second Ave, large beautiful 1BR, $3,600, Sep 1 start, great light, elevator, 
-laundry in building. Video available. Reply all if interested.`}
+                    placeholder={
+                      bulkRepresentationType
+                        ? opportunityDetailsPlaceholder[bulkRepresentationType]
+                        : opportunityDetailsPlaceholder.renter_representation
+                    }
                     aria-invalid={hasRiskyBulkOpportunityDetails}
                     className={`w-full resize-none rounded-lg border px-3 py-2 text-sm leading-5 text-gray-800 outline-none transition focus:ring-2 ${
                       hasRiskyBulkOpportunityDetails
