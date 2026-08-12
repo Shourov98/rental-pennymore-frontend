@@ -460,7 +460,7 @@ export default function RenterMovingDiscountsPage() {
           Moving Discounts
         </h1>
         <p className="text-gray-500 mt-2">
-          Discount codes to save on your move, use them anytime
+          Your BeforeListed perks: discount codes to save on your move, use anytime
         </p>
       </div>
 
@@ -700,16 +700,15 @@ export default function RenterMovingDiscountsPage() {
               ) : null}
 
               {hasDisclaimer ? (
-                <div className="flex items-start gap-3 px-1">
-                  <p className="shrink-0 text-[10px] uppercase tracking-wider text-gray-400 font-semibold pt-0.5">
-                    Disclaimer
+                <div className="px-1">
+                  <p className="text-xs text-gray-600 leading-relaxed [&_strong]:font-bold [&_p]:my-0.5">
+                    <span className="text-gray-500">Please note</span>{" "}
+                    <span
+                      dangerouslySetInnerHTML={{
+                        __html: sanitizeDisclaimerHtml(disclaimer),
+                      }}
+                    />
                   </p>
-                  <div
-                    className="text-xs text-gray-600 leading-relaxed [&_strong]:font-bold [&_p]:my-0.5"
-                    dangerouslySetInnerHTML={{
-                      __html: sanitizeDisclaimerHtml(disclaimer),
-                    }}
-                  />
                 </div>
               ) : null}
             </div>
