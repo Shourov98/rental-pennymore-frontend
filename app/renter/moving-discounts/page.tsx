@@ -249,6 +249,16 @@ export default function RenterMovingDiscountsPage() {
     [categories, selectedCategoryId],
   );
 
+  // Map of categoryId → category title, used to render the Category column
+  // on the items table without making a second lookup per row.
+  const categoryTitleById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const category of categories) {
+      map.set(category._id, category.title);
+    }
+    return map;
+  }, [categories]);
+
   const buildHeaders = useCallback((): Record<string, string> => {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -585,6 +595,14 @@ export default function RenterMovingDiscountsPage() {
                       </div>
                       <div>
                         <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">
+                          Category
+                        </p>
+                        <p className="text-sm text-gray-800 mt-1">
+                          {categoryTitleById.get(item.categoryId) ?? "—"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">
                           Discount
                         </p>
                         <p className="text-sm text-gray-900 font-medium mt-1">
@@ -611,6 +629,9 @@ export default function RenterMovingDiscountsPage() {
                         <th className="py-3 px-5 text-left font-semibold whitespace-nowrap">
                           Company name
                         </th>
+                        <th className="py-3 px-5 text-left font-semibold whitespace-nowrap">
+                          Category
+                        </th>
                         <th className="py-3 px-5 text-left font-semibold">
                           Discount
                         </th>
@@ -627,6 +648,9 @@ export default function RenterMovingDiscountsPage() {
                         <tr key={item._id} className="border-t border-gray-100">
                           <td className="py-4 px-5 font-semibold text-gray-900 align-top whitespace-nowrap">
                             {item.companyName}
+                          </td>
+                          <td className="py-4 px-5 text-gray-700 align-top whitespace-nowrap">
+                            {categoryTitleById.get(item.categoryId) ?? "—"}
                           </td>
                           <td className="py-4 px-5 text-gray-700 align-top">
                             {item.discount}
