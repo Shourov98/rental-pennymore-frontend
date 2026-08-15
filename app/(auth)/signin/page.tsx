@@ -19,6 +19,10 @@ import { fetchAgentProfile } from "@/store/slices/agentProfileSlice";
 import type { AppDispatch } from "@/store/store";
 import Link from "next/link";
 import { getSavedReferralCode, saveReferralCode } from "@/lib/referralCode";
+import {
+  RENTER_DASHBOARD_PATH,
+  renterHasActiveRequest,
+} from "@/lib/renterRedirect";
 import { Spinner } from "@/components/ui/spinner";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -108,31 +112,11 @@ function SigninPageContent() {
       if (role !== "Renter") return "/";
 
       // Renters land on /renter/saved-requests when they have at least one
-      // pre-market request; otherwise on the marketing homepage so they can
-      // learn about the product and submit their first request.
-      try {
-        const response = await fetch(
-          `${API_BASE_URL}/pre-market/my-requests?limit=1`,
-          { method: "GET", credentials: "include" },
-        );
-        if (!response.ok) return "/";
-        const body = (await response
-          .json()
-          .catch(() => null)) as {
-          data?: unknown[];
-          pagination?: { total?: number };
-        } | null;
-        const list = Array.isArray(body?.data) ? body.data : [];
-        const total =
-          typeof body?.pagination?.total === "number"
-            ? body.pagination.total
-            : list.length;
-        return total > 0 ? "/renter/saved-requests" : "/";
-      } catch {
-        // If the availability check fails for any reason, fall back to the
-        // marketing homepage rather than blocking the login flow.
-        return "/";
-      }
+      // currently-active pre-market request; otherwise on the marketing
+      // homepage so they can learn about the product and submit their first
+      // request.
+      const hasActiveRequest = await renterHasActiveRequest();
+      return hasActiveRequest ? RENTER_DASHBOARD_PATH : "/";
     },
     [],
   );
