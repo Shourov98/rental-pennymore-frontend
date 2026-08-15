@@ -1586,6 +1586,11 @@ export default function AgentRenterRequestsPage() {
               ...(isPending
                 ? { status: "requested", canRequestAccess: false }
                 : {}),
+              // Keep the visible scope as "All Market" — an owner-rep match
+              // does NOT flip the request to Upcoming (M).
+              ...(request.raw.scope === "All Market"
+                ? { visibility: "SHARED" }
+                : {}),
             },
           };
         }

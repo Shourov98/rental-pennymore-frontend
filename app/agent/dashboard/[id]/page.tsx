@@ -832,8 +832,12 @@ export default function AgentRenterRequestDetailsPage() {
                     ? {
                         ownerRepresentationSelected: true,
                         ownerRepresentationRegisteredAgent:
+                          matchPayload?.ownerRepresentationRegisteredAgent ??
                           matchPayload?.registeredAgentInfo ??
                           prev.raw.ownerRepresentationRegisteredAgent,
+                        ownerRepresentationMatches:
+                          matchPayload?.ownerRepresentationMatches ??
+                          prev.raw.ownerRepresentationMatches,
                         representation_type: representationType,
                         representationSelectedAt,
                       }
@@ -876,7 +880,19 @@ export default function AgentRenterRequestDetailsPage() {
 
         const data = await response
           .json()
-          .catch(() => ({}) as { success?: boolean; message?: string });
+          .catch(
+            () =>
+              ({}) as {
+                success?: boolean;
+                message?: string;
+                data?: {
+                  ownerRepresentationMatches?: unknown;
+                  ownerRepresentationRegisteredAgent?: unknown;
+                };
+                ownerRepresentationMatches?: unknown;
+                ownerRepresentationRegisteredAgent?: unknown;
+              },
+          );
 
         if (!response.ok || data?.success === false) {
           const errorMessage =
@@ -884,16 +900,33 @@ export default function AgentRenterRequestDetailsPage() {
           throw new Error(errorMessage);
         }
 
+        const matchPayload = data?.data ?? data;
+
         setRequest((prev) =>
           prev
             ? {
                 ...prev,
+                ownerRepresentationSelected:
+                  representationType === "owner_representation"
+                    ? true
+                    : prev.ownerRepresentationSelected,
                 raw: {
                   ...prev.raw,
                   canRequestAccess: false,
                   status: "requested",
                   representation_type: representationType,
                   representationSelectedAt: new Date().toISOString(),
+                  ...(representationType === "owner_representation"
+                    ? {
+                        ownerRepresentationSelected: true,
+                        ownerRepresentationRegisteredAgent:
+                          matchPayload?.ownerRepresentationRegisteredAgent ??
+                          prev.raw.ownerRepresentationRegisteredAgent,
+                        ownerRepresentationMatches:
+                          matchPayload?.ownerRepresentationMatches ??
+                          prev.raw.ownerRepresentationMatches,
+                      }
+                    : {}),
                 },
                 representation_type: representationType,
                 representationSelectedAt: new Date().toISOString(),
