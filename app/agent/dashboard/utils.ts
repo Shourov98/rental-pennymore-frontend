@@ -3,6 +3,7 @@ import {
   formatBedroomRange,
   formatBedsBathsRange,
 } from "@/lib/bedBathFormat";
+import { isUpcomingScope } from "@/lib/scope";
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -15,6 +16,18 @@ export interface ApiAgentRequest {
   renterName?: string;
   referralAgentId?: string;
   referrerId?: string;
+  /**
+   * Per-request gate that controls the day-10 search-expansion reminder
+   * (Template #32). Mirrors `searchActivity.allMarketOfferEnabled` from
+   * the backend, with `true` as the default for newer documents.
+   *
+   * The registered agent for the renter can uncheck this from the "All
+   * Market Offer" column in the agent dashboard; doing so flips scope to
+   * "All Market" and locks the checkbox permanently.
+   */
+  allMarketOfferEnabled?: boolean;
+  allMarketOfferToggledAt?: string | null;
+  allMarketOfferToggledByAgentId?: string | null;
   movingDateRange?: {
     earliest?: string;
     latest?: string;
@@ -148,6 +161,11 @@ export interface ApiAgentRequest {
   }>;
   matchPreferenceMatches?: boolean[] | null;
   matchPriorityBonus?: number;
+  searchActivity?: {
+    allMarketOfferEnabled?: boolean;
+    allMarketOfferToggledAt?: string | null;
+    allMarketOfferToggledByAgentId?: string | null;
+  };
 }
 
 export interface ApiAgentRequestsResponse {
@@ -218,6 +236,26 @@ export interface NormalizedAgentRequest {
   }>;
   matchPreferenceMatches?: boolean[] | null;
   matchPriorityBonus?: number;
+  /**
+   * Whether the request scope is still in the "Upcoming" state. Once the
+   * request moves to "All Market" or "Upcoming (M)" the All Market Offer
+   * gate is permanently disabled and `allMarketOfferEnabled` will be
+   * `false`.
+   */
+  isScopeUpcomingLike?: boolean;
+  /**
+   * The "All Market Offer" gate value for the request. Defaults to `true`
+   * (the request is currently eligible to receive the day-10 follow-up
+   * email). When `false`, the day-10 sweep will skip the request.
+   */
+  allMarketOfferEnabled?: boolean;
+  /**
+   * The userId of the agent who most recently toggled the gate, if any.
+   * Combined with the current viewer agent id, this lets the dashboard
+   * show the checkbox as read-only for any viewer other than the
+   * registered agent.
+   */
+  allMarketOfferRegisteredAgentId?: string | null;
 }
 
 const formatCurrency = (value?: number) => {
@@ -377,8 +415,40 @@ export const normalizeAgentRequest = (
     matchMissingFeatures: req.matchMissingFeatures ?? [],
     matchPreferenceMatches: req.matchPreferenceMatches ?? null,
     matchPriorityBonus: req.matchPriorityBonus,
+    // "All Market Offer" gate: defaults to enabled for any request that
+    // does not explicitly carry `false`. Older documents (created before
+    // the field existed) read with `undefined` → `true`.
+    isScopeUpcomingLike: isUpcomingScope(req.scope),
+    allMarketOfferEnabled:
+      req.allMarketOfferEnabled ??
+      req.searchActivity?.allMarketOfferEnabled ??
+      true,
+    allMarketOfferRegisteredAgentId: extractRegisteredAgentId(req),
   };
 };
+
+/**
+ * Returns the canonical userId of the agent the request was registered to
+ * when the renter created it. Mirrors the backend's
+ * `resolveRegisteredAgentIdForRequest` lookup so the dashboard can lock the
+ * All Market Offer toggle for non-registered viewers without round-tripping
+ * the API.
+ */
+function extractRegisteredAgentId(req: ApiAgentRequest): string | null {
+  const candidates = [
+    req.referralAgentId,
+    req.referrerId,
+    req.referralInfo?.referrer?.id,
+    req.referralInfo?.referrer?.referrerId,
+    req.renterInfo?.referralInfo?.referrerId,
+    req.renterInfo?.referralInfo?.referredByAdmin?.referredBy,
+    req.searchActivity?.allMarketOfferToggledByAgentId,
+  ];
+  for (const value of candidates) {
+    if (value) return String(value);
+  }
+  return null;
+}
 
 const CACHE_KEY = "agent-dashboard-requests";
 

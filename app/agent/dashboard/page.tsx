@@ -788,6 +788,9 @@ export default function AgentRenterRequestsPage() {
     mutatingRegistrationDisclosureId,
     setMutatingRegistrationDisclosureId,
   ] = useState<string | null>(null);
+  const [mutatingAllMarketOfferId, setMutatingAllMarketOfferId] = useState<
+    string | null
+  >(null);
   const [archiveTarget, setArchiveTarget] =
     useState<NormalizedAgentRequest | null>(null);
   const [archiveReason, setArchiveReason] = useState<ArchiveReason | "">("");
@@ -1127,6 +1130,111 @@ export default function AgentRenterRequestsPage() {
       setError(message);
     } finally {
       setMutatingShareId(null);
+    }
+  };
+
+  /**
+   * Toggles the "All Market Offer" gate for a single request. Only the
+   * registered agent for the renter can call this. Setting `enabled: false`
+   * is a one-way trip — the backend flips scope to "All Market" and locks
+   * the gate permanently for that request.
+   */
+  const handleToggleAllMarketOffer = async (
+    request: NormalizedAgentRequest,
+    enabled: boolean,
+  ) => {
+    const localId = request.id;
+    const apiRequestId = request.raw?._id;
+    if (!apiRequestId) return;
+
+    setError(null);
+    setMutatingAllMarketOfferId(localId);
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const response = await fetch(
+        `${API_BASE_URL}/pre-market/${apiRequestId}/all-market-offer`,
+        {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify({ enabled }),
+        },
+      );
+
+      const data = (await response.json().catch(() => ({}))) as {
+        success?: boolean;
+        message?: string;
+        data?: {
+          scope?: string;
+          searchActivity?: { allMarketOfferEnabled?: boolean };
+        };
+      };
+
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message ||
+            "We couldn't update the All Market Offer gate right now. Please try again.",
+        );
+      }
+
+      setRequests((prev) => {
+        const next = prev.map((req) => {
+          if (req.id !== localId) return req;
+
+          const nextEnabled =
+            data?.data?.searchActivity?.allMarketOfferEnabled ?? enabled;
+          const nextScope = data?.data?.scope ?? req.raw?.scope ?? req.scopeLabel;
+          const nextRawScopeLabel =
+            typeof nextScope === "string" ? nextScope : req.scopeLabel;
+          const isNowAllMarket =
+            typeof nextScope === "string" && nextScope.trim() === "All Market";
+          const isNowUpcomingM =
+            typeof nextScope === "string" &&
+            nextScope.trim().startsWith("Upcoming");
+
+          return {
+            ...req,
+            allMarketOfferEnabled: nextEnabled,
+            // After unchecking the box the backend flips scope to All
+            // Market so the day-10 reminder sweep never re-fires. Mirror
+            // that here so the row reflects the new state without waiting
+            // for a full refetch.
+            scopeLabel: nextRawScopeLabel,
+            isScopeUpcomingLike:
+              nextScope === "Upcoming" || nextScope === "Upcoming (M)",
+            raw: {
+              ...req.raw,
+              scope: nextScope,
+              allMarketOfferEnabled: nextEnabled,
+              searchActivity: {
+                ...req.raw?.searchActivity,
+                allMarketOfferEnabled: nextEnabled,
+              },
+            },
+            // Once the request leaves Upcoming the column must lock
+            // permanently. `isLockedForViewer` is computed by the row
+            // helper, so we just record the intent via the raw scope
+            // string — the helper re-reads it on render.
+            ...(isNowAllMarket || isNowUpcomingM
+              ? {}
+              : {}),
+          };
+        });
+        cacheAgentRequests(next);
+        return next;
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "We couldn't update the All Market Offer gate right now. Please try again.";
+      setError(message);
+    } finally {
+      setMutatingAllMarketOfferId(null);
     }
   };
 
@@ -1929,6 +2037,9 @@ export default function AgentRenterRequestsPage() {
                         <th className="py-3 px-5 text-left">Borough</th>
                         <th className="py-3 px-5 text-left">Price (Max)</th>
                         <th className="py-3 px-5 text-left">Beds / Baths</th>
+                        <th className="py-3 px-5 text-left">
+                          All Market Offer
+                        </th>
                         <th className="py-3 px-5 text-left">Status</th>
                         <th className="py-3 px-5 text-center">
                           Registration / Disclosure
@@ -2131,15 +2242,11 @@ export default function AgentRenterRequestsPage() {
                                       req.registeredAgentForView?.fullName,
                                     )}
                                   </span>
-                                  <span className="inline-flex w-fit items-center whitespace-nowrap rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
-                                    {req.scopeLabel}
-                                  </span>
+                                  <ScopePill label={req.scopeLabel} />
                                 </>
                               ) : (
                                 <>
-                                  <span className="inline-flex w-fit items-center whitespace-nowrap rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
-                                    {req.scopeLabel}
-                                  </span>
+                                  <ScopePill label={req.scopeLabel} />
                                   {shouldShowMatchedAgentName ? (
                                     <span className="self-stretch text-center text-xs font-medium text-blue-600 whitespace-nowrap">
                                       {formatRenterDisplayName(
@@ -2220,6 +2327,84 @@ export default function AgentRenterRequestsPage() {
                           </td>
                           <td className="py-3 px-5">{req.priceMaxLabel}</td>
                           <td className="py-3 px-5">{req.bedsBathsLabel}</td>
+                          <td className="py-3 px-5">
+                            {(() => {
+                              const isCurrentAgentRegistered =
+                                isCurrentAgentRegisteredForRequest(
+                                  req,
+                                  currentAgentId,
+                                );
+                              const isUpcomingLike = Boolean(
+                                req.isScopeUpcomingLike,
+                              );
+                              const gateValue =
+                                req.allMarketOfferEnabled !== false;
+                              const isLocked =
+                                !isUpcomingLike ||
+                                !isCurrentAgentRegistered ||
+                                gateValue === false;
+                              const lockedReason = !isCurrentAgentRegistered
+                                ? "Only the registered agent can change this setting"
+                                : !isUpcomingLike
+                                  ? "Locked once the request leaves Upcoming scope"
+                                  : !gateValue
+                                    ? "Day-10 follow-up email disabled for this request"
+                                    : "";
+                              const isMutating =
+                                mutatingAllMarketOfferId === req.id;
+                              return (
+                                <div
+                                  className="inline-flex items-center gap-2"
+                                  data-testid={`all-market-offer-cell-${req.id}`}
+                                >
+                                  <label
+                                    className={`inline-flex items-center gap-2 ${
+                                      isLocked || isMutating
+                                        ? "cursor-not-allowed opacity-60"
+                                        : "cursor-pointer"
+                                    }`}
+                                    title={lockedReason || "Toggle the day-10 follow-up email"}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={gateValue}
+                                      disabled={isLocked || isMutating}
+                                      onChange={(event) => {
+                                        if (isLocked || isMutating) return;
+                                        const nextEnabled =
+                                          event.target.checked;
+                                        if (!nextEnabled) {
+                                          const confirmed = window.confirm(
+                                            "Disable the day-10 follow-up email and move this request to All Market scope? This action cannot be undone.",
+                                          );
+                                          if (!confirmed) return;
+                                        }
+                                        void handleToggleAllMarketOffer(
+                                          req,
+                                          nextEnabled,
+                                        );
+                                      }}
+                                      className={`h-5 w-5 rounded text-blue-600 focus:ring-blue-500 ${
+                                        isLocked
+                                          ? "border-gray-300 bg-gray-100 cursor-not-allowed"
+                                          : "border-gray-300"
+                                      }`}
+                                      aria-label={`Toggle All Market Offer for ${req.requestName}`}
+                                    />
+                                    <span
+                                      className={`text-xs font-medium ${
+                                        isLocked
+                                          ? "text-gray-400"
+                                          : "text-gray-700"
+                                      }`}
+                                    >
+                                      {gateValue ? "On" : "Off"}
+                                    </span>
+                                  </label>
+                                </div>
+                              );
+                            })()}
+                          </td>
                           <td className="py-3 px-5">
                             {(() => {
                               const normalizedBackendStatus = req.status
@@ -2882,3 +3067,31 @@ export default function AgentRenterRequestsPage() {
     </section>
   );
 }
+
+/**
+ * Renders a small colored pill that summarizes a request's scope.
+ *
+ * Color rules:
+ *   - "Upcoming (M)" → blue pill (because the matched-agent view is active)
+ *   - "Upcoming"     → light-blue pill
+ *   - "All Market"   → grey pill (request has been opted out of the day-10
+ *                      follow-up via the All Market Offer toggle)
+ *   - anything else  → grey pill
+ */
+const ScopePill = ({ label }: { label?: string }) => {
+  const normalized = (label ?? "").trim();
+  const isUpcomingM = normalized === "Upcoming (M)";
+  const isUpcoming = normalized === "Upcoming";
+  const classes = isUpcomingM
+    ? "border-blue-300 bg-blue-100 text-blue-800"
+    : isUpcoming
+      ? "border-blue-200 bg-blue-50 text-blue-700"
+      : "border-gray-300 bg-gray-100 text-gray-700";
+  return (
+    <span
+      className={`inline-flex w-fit items-center whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-semibold ${classes}`}
+    >
+      {normalized || "Not specified"}
+    </span>
+  );
+};
