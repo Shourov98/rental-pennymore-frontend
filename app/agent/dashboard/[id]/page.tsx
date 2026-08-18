@@ -1396,31 +1396,6 @@ export default function AgentRenterRequestDetailsPage() {
                 <div aria-hidden="true" />
               </div>
 
-              {ownerRepresentationMatches.length > 0 && (
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold text-blue-700 mb-3">
-                    Matched Owner Agents:
-                  </h3>
-                  <div className="space-y-1 text-sm">
-                    {ownerRepresentationMatches.map((agent, index) => (
-                      <p
-                        key={`inline-${agent.agentId || agent.email || index}`}
-                        className={
-                          agent.isViewed ? "text-gray-500" : "text-gray-900"
-                        }
-                      >
-                        <span className="font-semibold">{index + 1}. </span>
-                        <span className="font-semibold">
-                          {agent.fullName || "Matched Agent"}
-                        </span>
-                        <span> | email: {agent.email || "N/A"}</span>
-                        <span> | number: {agent.phoneNumber || "N/A"}</span>
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {ownerRepresentationRegisteredAgent && (
                 <div className="border-t border-gray-100 pt-4">
                   <h3 className="mb-3 text-base font-semibold text-[#0A093D]">
