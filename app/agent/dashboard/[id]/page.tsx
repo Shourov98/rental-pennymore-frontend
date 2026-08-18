@@ -1351,7 +1351,7 @@ export default function AgentRenterRequestDetailsPage() {
                       : shouldShowAddOpportunity
                         ? "Add Opportunity"
                         : isListingMatched
-                          ? "Match Again"
+                          ? "Add Opportunity"
                           : isSubmitting
                             ? "Matching..."
                             : "Match Request"
