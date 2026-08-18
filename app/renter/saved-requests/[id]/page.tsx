@@ -20,7 +20,7 @@ const PreferencesDragList = dynamic(
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const MARKET_SCOPE_SWITCH_LOCKED_MESSAGE =
-  "A rental specialist is already assigned. For any issues, contact support@beforelisted.com.";
+  "A rental specialist is already assigned. To switch to upcoming only, you can notify your registered agent, delete the request and start again, or contact support@beforelisted.com.";
 
 type FeatureGroup = "unit" | "building" | "pet" | "guarantor";
 
