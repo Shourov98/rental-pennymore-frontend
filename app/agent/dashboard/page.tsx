@@ -801,6 +801,12 @@ export default function AgentRenterRequestsPage() {
     useState<NormalizedAgentRequest | null>(null);
   const [isRequestUpdating, setIsRequestUpdating] = useState(false);
   const [isUnmatching, setIsUnmatching] = useState(false);
+  // Bumped after mutations like unmatch/archive so the list-fetch effect
+  // re-runs and replaces the local cache with the server's fresh state.
+  // Without this, an unmatch on an "Upcoming (M)" request would locally
+  // filter the request out and the agent would need a hard refresh to
+  // see it again as plain "All Market".
+  const [refetchKey, setRefetchKey] = useState(0);
   const [selectedRequestIds, setSelectedRequestIds] = useState<string[]>([]);
   const [quickSelect, setQuickSelect] = useState<QuickSelectThreshold>("none");
   const [isMatchingChecked, setIsMatchingChecked] = useState(false);
@@ -1019,6 +1025,7 @@ export default function AgentRenterRequestsPage() {
     isStateRestored,
     matchSearchFilters,
     page,
+    refetchKey,
     showAllMarketReferrals,
   ]);
 
@@ -1490,11 +1497,14 @@ export default function AgentRenterRequestsPage() {
         throw new Error(data?.message || "We couldn't unmatch this request.");
       }
 
-      setRequests((prev) => {
-        const next = prev.filter((req) => req.id !== unmatchTarget.id);
-        cacheAgentRequests(next);
-        return next;
-      });
+      // On a successful unmatch, do NOT locally filter the request out of the
+      // list. An "Upcoming (M)" request would otherwise disappear from the
+      // agent's view (the client's matched-scope filter hides it once the
+      // grant is gone) and only come back after a hard refresh. Instead,
+      // bump refetchKey so the list-fetch effect re-runs and replaces the
+      // local cache with the server's fresh state — the request stays
+      // visible, just under its "All Market" label.
+      setRefetchKey((key) => key + 1);
       setUnmatchTarget(null);
     } catch (err) {
       const message =
