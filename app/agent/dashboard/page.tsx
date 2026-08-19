@@ -2088,6 +2088,10 @@ export default function AgentRenterRequestsPage() {
                         isCurrentAgentsRequest &&
                         Boolean(req.matchedByAgent?.fullName) &&
                         !isMatchedByCurrentAgent;
+                      const canUnmatchRequest =
+                        isCurrentAgentsRequest &&
+                        Boolean(req.matchedByAgent?.agentId) &&
+                        !isMatchedByCurrentAgent;
                       const shareConsent = req.raw?.shareConsent;
                       const visibility = req.raw?.visibility;
                       const shouldShowRegistrationDisclosure =
@@ -2539,22 +2543,24 @@ export default function AgentRenterRequestsPage() {
                                 />
                               </button>
                             ) : null}
+                            {canUnmatchRequest ? (
+                              <button
+                                onClick={() => openUnmatchDialog(req)}
+                                title="Unmatch request"
+                                aria-label={`Unmatch ${req.requestName}`}
+                                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-100 transition hover:bg-red-50"
+                              >
+                                <Image
+                                  src="/icons/Unmatch.png"
+                                  alt=""
+                                  aria-hidden="true"
+                                  width={20}
+                                  height={20}
+                                  className="h-5 w-5 shrink-0 object-contain"
+                                />
+                              </button>
+                            ) : null}
                             {shouldShowMatchedAgentName ? (
-                              <>
-                                <button
-                                  onClick={() => openUnmatchDialog(req)}
-                                  title="Unmatch request"
-                                  className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-100 transition hover:bg-red-50"
-                                >
-                                  <Image
-                                    src="/icons/Unmatch.png"
-                                    alt=""
-                                    aria-hidden="true"
-                                    width={20}
-                                    height={20}
-                                    className="h-5 w-5 shrink-0 object-contain"
-                                  />
-                                </button>
                                 <button
                                   onClick={() => openRequestUpdateDialog(req)}
                                   title="Request update"
@@ -2569,7 +2575,6 @@ export default function AgentRenterRequestsPage() {
                                     className="h-5 w-5 shrink-0 object-contain"
                                   />
                                 </button>
-                              </>
                             ) : null}
                             <button
                               onClick={() => handleView(req)}
