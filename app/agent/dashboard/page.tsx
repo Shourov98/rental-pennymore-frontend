@@ -18,6 +18,7 @@ import { selectAgentHasGrantAccess } from "@/store/slices/authSlice";
 import ArchiveRequestDialog, {
   type ArchiveReason,
 } from "@/components/agent/ArchiveRequestDialog";
+import OpportunityDetailsTextarea from "@/components/agent/OpportunityDetailsTextarea";
 import RequestUpdateDialog from "@/components/agent/RequestUpdateDialog";
 import UnmatchRequestDialog from "@/components/agent/UnmatchRequestDialog";
 import FilterModal, { type FilterType } from "@/components/modals/FilterModals";
@@ -2784,9 +2785,10 @@ export default function AgentRenterRequestsPage() {
                   name="bulk-representation-type"
                   value="owner_representation"
                   checked={bulkRepresentationType === "owner_representation"}
-                  onChange={() =>
-                    setBulkRepresentationType("owner_representation")
-                  }
+                  onChange={() => {
+                    setBulkRepresentationType("owner_representation");
+                    setBulkOpportunityDetails("");
+                  }}
                   className="h-4 w-4 text-blue-600"
                 />
                 <span>I intend to represent the owner</span>
@@ -2797,9 +2799,10 @@ export default function AgentRenterRequestsPage() {
                   name="bulk-representation-type"
                   value="renter_representation"
                   checked={bulkRepresentationType === "renter_representation"}
-                  onChange={() =>
-                    setBulkRepresentationType("renter_representation")
-                  }
+                  onChange={() => {
+                    setBulkRepresentationType("renter_representation");
+                    setBulkOpportunityDetails("");
+                  }}
                   className="h-4 w-4 text-blue-600"
                 />
                 <span>I intend to represent the renter</span>
@@ -2814,25 +2817,19 @@ export default function AgentRenterRequestsPage() {
                   {opportunityDetailsHelperText[bulkRepresentationType]}
                 </p>
                 <div className="mt-3">
-                  <textarea
-                    rows={3}
-                    maxLength={OPPORTUNITY_DETAILS_MAX_LENGTH}
+                  <OpportunityDetailsTextarea
+                    key={bulkRepresentationType}
+                    representationType={bulkRepresentationType}
                     value={bulkOpportunityDetails}
-                    onChange={(event) =>
-                      setBulkOpportunityDetails(
-                        event.target.value.slice(
-                          0,
-                          OPPORTUNITY_DETAILS_MAX_LENGTH,
-                        ),
-                      )
-                    }
+                    onChange={setBulkOpportunityDetails}
+                    maxLength={OPPORTUNITY_DETAILS_MAX_LENGTH}
                     placeholder={
                       bulkRepresentationType
                         ? opportunityDetailsPlaceholder[bulkRepresentationType]
                         : opportunityDetailsPlaceholder.renter_representation
                     }
-                    aria-invalid={hasRiskyBulkOpportunityDetails}
-                    className={`w-full resize-none rounded-lg border px-3 py-2 text-sm leading-5 text-gray-800 outline-none transition focus:ring-2 ${
+                    ariaInvalid={hasRiskyBulkOpportunityDetails}
+                    className={`resize-none rounded-lg border px-3 py-2 text-sm leading-5 text-gray-800 outline-none transition focus:ring-2 ${
                       hasRiskyBulkOpportunityDetails
                         ? "border-red-300 focus:border-red-500 focus:ring-red-100"
                         : "border-gray-200 text-gray-800 focus:border-blue-500 focus:ring-blue-100"

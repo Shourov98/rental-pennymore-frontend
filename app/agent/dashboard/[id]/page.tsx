@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -20,6 +20,7 @@ import {
   useStripe,
 } from "@stripe/react-stripe-js";
 import RenterPreferenceView from "@/components/RenterPreferenceView";
+import OpportunityDetailsTextarea from "@/components/agent/OpportunityDetailsTextarea";
 import type { AppDispatch, RootState } from "@/store/store";
 import {
   API_BASE_URL,
@@ -271,9 +272,6 @@ export default function AgentRenterRequestDetailsPage() {
     RepresentationType | ""
   >("");
   const [opportunityDetails, setOpportunityDetails] = useState("");
-  const opportunityDetailsTextareaRef = useRef<HTMLTextAreaElement | null>(
-    null,
-  );
   const [navigationTargets, setNavigationTargets] = useState<{
     previousHref: string | null;
     nextHref: string | null;
@@ -359,13 +357,6 @@ export default function AgentRenterRequestDetailsPage() {
 
     return () => controller.abort();
   }, [accessToken, requestId]);
-
-  useEffect(() => {
-    const textarea = opportunityDetailsTextareaRef.current;
-    if (!textarea) return;
-    textarea.style.height = "auto";
-    textarea.style.height = `${textarea.scrollHeight}px`;
-  }, [opportunityDetails, isRepresentationOpen]);
 
   useEffect(() => {
     if (!requestId) return;
@@ -1490,9 +1481,10 @@ export default function AgentRenterRequestDetailsPage() {
                   checked={
                     selectedRepresentationType === "owner_representation"
                   }
-                  onChange={() =>
-                    setSelectedRepresentationType("owner_representation")
-                  }
+                  onChange={() => {
+                    setSelectedRepresentationType("owner_representation");
+                    setOpportunityDetails("");
+                  }}
                   className="h-4 w-4 text-blue-600"
                 />
                 <span>I intend to represent the owner</span>
@@ -1505,9 +1497,10 @@ export default function AgentRenterRequestDetailsPage() {
                   checked={
                     selectedRepresentationType === "renter_representation"
                   }
-                  onChange={() =>
-                    setSelectedRepresentationType("renter_representation")
-                  }
+                  onChange={() => {
+                    setSelectedRepresentationType("renter_representation");
+                    setOpportunityDetails("");
+                  }}
                   className="h-4 w-4 text-blue-600"
                 />
                 <span>I intend to represent the renter</span>
@@ -1522,27 +1515,20 @@ export default function AgentRenterRequestDetailsPage() {
                   {opportunityDetailsHelperText[selectedRepresentationType]}
                 </p>
                 <div className="mt-3">
-                  <textarea
-                    ref={opportunityDetailsTextareaRef}
-                    rows={3}
-                    maxLength={OPPORTUNITY_DETAILS_MAX_LENGTH}
+                  <OpportunityDetailsTextarea
+                    key={selectedRepresentationType}
+                    representationType={selectedRepresentationType}
                     value={opportunityDetails}
-                    onChange={(event) =>
-                      setOpportunityDetails(
-                        event.target.value.slice(
-                          0,
-                          OPPORTUNITY_DETAILS_MAX_LENGTH,
-                        ),
-                      )
-                    }
+                    onChange={setOpportunityDetails}
+                    maxLength={OPPORTUNITY_DETAILS_MAX_LENGTH}
                     placeholder={
                       selectedRepresentationType
                         ? opportunityDetailsPlaceholder[selectedRepresentationType]
                         : opportunityDetailsPlaceholder.renter_representation
                     }
-                    aria-invalid={hasRiskyOpportunityDetails}
+                    ariaInvalid={hasRiskyOpportunityDetails}
                     style={{ minHeight: "5.75rem" }}
-                    className={`w-full resize-none rounded-lg border px-3 py-2 text-sm leading-5 text-gray-800 outline-none transition focus:ring-2 ${
+                    className={`resize-none rounded-lg border px-3 py-2 text-sm leading-5 text-gray-800 outline-none transition focus:ring-2 ${
                       hasRiskyOpportunityDetails
                         ? "border-red-300 focus:border-red-500 focus:ring-red-100"
                         : "border-gray-200 text-gray-800 focus:border-blue-500 focus:ring-blue-100"
