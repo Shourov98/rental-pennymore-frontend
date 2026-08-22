@@ -1226,7 +1226,7 @@ export default function AgentRenterRequestDetailsPage() {
                 {request.bathroomsLabel}
               </p>
             </div>
-            {isRegisteredAgentForRequest && isUpcomingRequest
+            {isRegisteredAgentForRequest && isUpcomingRequest && !isRenterRepresentationMatched && !isListingMatched
               ? (() => {
                 const gateValue = request.allMarketOfferEnabled !== false;
                 return (
