@@ -669,6 +669,11 @@ export default function AgentRenterRequestDetailsPage() {
   const isUpcomingRequest = isUpcomingScope(
     request?.raw?.scope ?? request?.scopeLabel,
   );
+  // Strict scope check: only the literal "Upcoming" scope enables the
+  // day-10 follow-up toggle. "Upcoming (M)" and "All Market" must be
+  // locked per the spec.
+  const isStrictUpcomingRequest
+    = (request?.raw?.scope?.trim() ?? request?.scopeLabel?.trim()) === "Upcoming";
   const isListingMatched = listingStatus.toLowerCase() === "matched";
   const grantAccessEnabled = hasGrantAccess === true;
   const grantAccessStatus = request?.raw?.grantAccessStatus?.toLowerCase();
@@ -1045,7 +1050,7 @@ export default function AgentRenterRequestDetailsPage() {
    */
   const handleToggleAllMarketOffer = async (nextEnabled: boolean) => {
     const apiRequestId = request?.raw?._id;
-    if (!apiRequestId || !isRegisteredAgentForRequest || !isUpcomingRequest) {
+    if (!apiRequestId || !isRegisteredAgentForRequest || !isStrictUpcomingRequest) {
       return;
     }
     setError(null);
@@ -1226,7 +1231,7 @@ export default function AgentRenterRequestDetailsPage() {
                 {request.bathroomsLabel}
               </p>
             </div>
-            {isRegisteredAgentForRequest && isUpcomingRequest && !isRenterRepresentationMatched && !isListingMatched
+            {isRegisteredAgentForRequest && isStrictUpcomingRequest
               ? (() => {
                 const gateValue = request.allMarketOfferEnabled !== false;
                 return (

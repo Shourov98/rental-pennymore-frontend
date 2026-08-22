@@ -2349,18 +2349,21 @@ export default function AgentRenterRequestsPage() {
                                   req,
                                   currentAgentId,
                                 );
-                              const isUpcomingLike = Boolean(
-                                req.isScopeUpcomingLike,
-                              );
+                              // Strict scope check: only "Upcoming" enables
+                              // the toggle. "Upcoming (M)" and "All Market"
+                              // are explicitly locked per the spec.
+                              const rawScope =
+                                req.raw?.scope?.trim() ?? req.scopeLabel?.trim();
+                              const isStrictUpcoming = rawScope === "Upcoming";
                               const gateValue =
                                 req.allMarketOfferEnabled !== false;
                               const isLocked =
-                                !isUpcomingLike ||
+                                !isStrictUpcoming ||
                                 !isCurrentAgentRegistered ||
                                 gateValue === false;
                               const lockedReason = !isCurrentAgentRegistered
                                 ? "Only the registered agent can change this setting"
-                                : !isUpcomingLike
+                                : !isStrictUpcoming
                                   ? "Locked once the request leaves Upcoming scope"
                                   : !gateValue
                                     ? "Day-10 follow-up email disabled for this request"
