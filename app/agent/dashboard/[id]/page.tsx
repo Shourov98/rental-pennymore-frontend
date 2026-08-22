@@ -280,6 +280,7 @@ export default function AgentRenterRequestDetailsPage() {
     nextHref: null,
   });
   const [isResolvingNavigation, setIsResolvingNavigation] = useState(false);
+  const [mutatingAllMarketOffer, setMutatingAllMarketOffer] = useState(false);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -1036,6 +1037,81 @@ export default function AgentRenterRequestDetailsPage() {
   const hasRiskyOpportunityDetails =
     hasRiskyOpportunityDetailsWording(opportunityDetails);
 
+  /**
+   * Toggles the "All Market Offer" gate for this request from the detail
+   * page. Only meaningful for the registered agent on an active Upcoming
+   * request. Setting `enabled: false` is a one-way trip — the backend flips
+   * scope to "All Market" and locks the gate permanently for that request.
+   */
+  const handleToggleAllMarketOffer = async (nextEnabled: boolean) => {
+    const apiRequestId = request?.raw?._id;
+    if (!apiRequestId || !isRegisteredAgentForRequest || !isUpcomingRequest) {
+      return;
+    }
+    setError(null);
+    setMutatingAllMarketOffer(true);
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+      const response = await fetch(
+        `${API_BASE_URL}/pre-market/${apiRequestId}/all-market-offer`,
+        {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify({ enabled: nextEnabled }),
+        },
+      );
+      const data = (await response.json().catch(() => ({}))) as {
+        success?: boolean;
+        message?: string;
+        data?: {
+          scope?: string;
+          searchActivity?: { allMarketOfferEnabled?: boolean };
+        };
+      };
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message
+            || "We couldn't update the All Market Offer gate right now. Please try again.",
+        );
+      }
+      // Update local request state so the toggle + cards reflect the new
+      // server state immediately without a full refetch.
+      setRequest((prev) => {
+        if (!prev) return prev;
+        const nextScope = data?.data?.scope ?? prev.raw?.scope ?? prev.scopeLabel;
+        const nextEnabledValue =
+          data?.data?.searchActivity?.allMarketOfferEnabled ?? nextEnabled;
+        return {
+          ...prev,
+          allMarketOfferEnabled: nextEnabledValue,
+          scopeLabel: typeof nextScope === "string" ? nextScope : prev.scopeLabel,
+          isScopeUpcomingLike:
+            nextScope === "Upcoming" || nextScope === "Upcoming (M)",
+          raw: {
+            ...prev.raw,
+            scope: nextScope,
+            allMarketOfferEnabled: nextEnabledValue,
+            searchActivity: {
+              ...prev.raw?.searchActivity,
+              allMarketOfferEnabled: nextEnabledValue,
+            },
+          },
+        };
+      });
+    } catch (err) {
+      const message
+        = err instanceof Error
+          ? err.message
+          : "We couldn't update the All Market Offer gate right now. Please try again.";
+      setError(message);
+    } finally {
+      setMutatingAllMarketOffer(false);
+    }
+  };
+
   return (
     <section className="flex-1 bg-gray-50 h-full min-h-0 px-4 md:px-8 py-6 overflow-y-auto">
       <div className="bg-white rounded-xl shadow-sm p-5 flex flex-wrap justify-between items-center mb-6">
@@ -1124,7 +1200,7 @@ export default function AgentRenterRequestDetailsPage() {
       ) : (
         <>
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4 mb-6">
             <div className="bg-white rounded-xl shadow-sm p-4">
               <p className="text-xs text-gray-500">Price Range</p>
               <p className="text-base font-semibold text-[#0A093D]">
@@ -1150,6 +1226,56 @@ export default function AgentRenterRequestDetailsPage() {
                 {request.bathroomsLabel}
               </p>
             </div>
+            {isRegisteredAgentForRequest && isUpcomingRequest
+              ? (() => {
+                const gateValue = request.allMarketOfferEnabled !== false;
+                return (
+                  <div className="bg-white rounded-xl shadow-sm p-4">
+                    <p className="text-xs text-gray-500 leading-tight">
+                      Offer full-market agent help
+                      <br />
+                      <span className="text-[11px] text-gray-400">
+                        (day-10 follow-up email)
+                      </span>
+                    </p>
+                    <label
+                      className={`mt-2 inline-flex items-center gap-2 ${
+                        mutatingAllMarketOffer
+                          ? "cursor-not-allowed opacity-60"
+                          : "cursor-pointer"
+                      }`}
+                      title="Toggle the day-10 follow-up email"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={gateValue}
+                        disabled={mutatingAllMarketOffer}
+                        onChange={(event) => {
+                          if (mutatingAllMarketOffer) return;
+                          const nextEnabled = event.target.checked;
+                          if (!nextEnabled) {
+                            const confirmed = window.confirm(
+                              "Disable the day-10 follow-up email and move this request to All Market scope? This action cannot be undone.",
+                            );
+                            if (!confirmed) return;
+                          }
+                          void handleToggleAllMarketOffer(nextEnabled);
+                        }}
+                        className={`h-5 w-5 rounded text-blue-600 focus:ring-blue-500 border-gray-300 ${
+                          mutatingAllMarketOffer
+                            ? "cursor-not-allowed"
+                            : ""
+                        }`}
+                        aria-label="Toggle All Market Offer"
+                      />
+                      <span className="text-xs font-medium text-gray-700">
+                        {gateValue ? "On" : "Off"}
+                      </span>
+                    </label>
+                  </div>
+                );
+              })()
+              : null}
           </div>
 
           {showPaymentCard && (
