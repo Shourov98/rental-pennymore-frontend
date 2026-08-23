@@ -2349,25 +2349,22 @@ export default function AgentRenterRequestsPage() {
                                   req,
                                   currentAgentId,
                                 );
-                              // Strict scope check: only "Upcoming" enables
-                              // the toggle. "Upcoming (M)" and "All Market"
-                              // are explicitly locked per the spec.
-                              const rawScope =
-                                req.raw?.scope?.trim() ?? req.scopeLabel?.trim();
-                              const isStrictUpcoming = rawScope === "Upcoming";
                               const gateValue =
                                 req.allMarketOfferEnabled !== false;
-                              const isLocked =
-                                !isStrictUpcoming ||
-                                !isCurrentAgentRegistered ||
-                                gateValue === false;
+                              // Lock the toggle for Upcoming (M) — matched
+                              // requests where the scope has effectively
+                              // shifted. Upcoming and All Market remain
+                              // interactive.
+                              const rawScope =
+                                req.raw?.scope?.trim() ?? req.scopeLabel?.trim();
+                              const isUpcomingM = rawScope === "Upcoming (M)";
+                              const isLocked
+                                = !isCurrentAgentRegistered || isUpcomingM;
                               const lockedReason = !isCurrentAgentRegistered
                                 ? "Only the registered agent can change this setting"
-                                : !isStrictUpcoming
-                                  ? "Locked once the request leaves Upcoming scope"
-                                  : !gateValue
-                                    ? "Day-10 follow-up email disabled for this request"
-                                    : "";
+                                : isUpcomingM
+                                  ? "Locked once the request becomes Upcoming (M)"
+                                  : "Toggle the day-10 follow-up email";
                               const isMutating =
                                 mutatingAllMarketOfferId === req.id;
                               return (

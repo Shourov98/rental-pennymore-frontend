@@ -669,11 +669,6 @@ export default function AgentRenterRequestDetailsPage() {
   const isUpcomingRequest = isUpcomingScope(
     request?.raw?.scope ?? request?.scopeLabel,
   );
-  // Strict scope check: only the literal "Upcoming" scope enables the
-  // day-10 follow-up toggle. "Upcoming (M)" and "All Market" must be
-  // locked per the spec.
-  const isStrictUpcomingRequest
-    = (request?.raw?.scope?.trim() ?? request?.scopeLabel?.trim()) === "Upcoming";
   const isListingMatched = listingStatus.toLowerCase() === "matched";
   const grantAccessEnabled = hasGrantAccess === true;
   const grantAccessStatus = request?.raw?.grantAccessStatus?.toLowerCase();
@@ -1050,7 +1045,12 @@ export default function AgentRenterRequestDetailsPage() {
    */
   const handleToggleAllMarketOffer = async (nextEnabled: boolean) => {
     const apiRequestId = request?.raw?._id;
-    if (!apiRequestId || !isRegisteredAgentForRequest || !isStrictUpcomingRequest) {
+    if (!apiRequestId || !isRegisteredAgentForRequest) {
+      return;
+    }
+    const rawScope
+      = request?.raw?.scope?.trim() ?? request?.scopeLabel?.trim();
+    if (rawScope === "Upcoming (M)") {
       return;
     }
     setError(null);
@@ -1231,9 +1231,16 @@ export default function AgentRenterRequestDetailsPage() {
                 {request.bathroomsLabel}
               </p>
             </div>
-            {isRegisteredAgentForRequest && isStrictUpcomingRequest
+            {isRegisteredAgentForRequest
               ? (() => {
                 const gateValue = request.allMarketOfferEnabled !== false;
+                const rawScope
+                  = request?.raw?.scope?.trim() ?? request?.scopeLabel?.trim();
+                const isUpcomingM = rawScope === "Upcoming (M)";
+                const isLocked = isUpcomingM || mutatingAllMarketOffer;
+                const lockedReason = isUpcomingM
+                  ? "Locked once the request becomes Upcoming (M)"
+                  : "Toggle the day-10 follow-up email";
                 return (
                   <div className="bg-white rounded-xl shadow-sm p-4">
                     <p className="text-xs text-gray-500 leading-tight">
@@ -1245,30 +1252,34 @@ export default function AgentRenterRequestDetailsPage() {
                     </p>
                     <label
                       className={`mt-2 inline-flex items-center gap-2 ${
-                        mutatingAllMarketOffer
+                        isLocked
                           ? "cursor-not-allowed opacity-60"
                           : "cursor-pointer"
                       }`}
-                      title="Toggle the day-10 follow-up email"
+                      title={lockedReason}
                     >
                       <input
                         type="checkbox"
                         checked={gateValue}
-                        disabled={mutatingAllMarketOffer}
+                        disabled={isLocked}
                         onChange={(event) => {
-                          if (mutatingAllMarketOffer) return;
+                          if (isLocked) return;
                           void handleToggleAllMarketOffer(
                             event.target.checked,
                           );
                         }}
-                        className={`h-5 w-5 rounded text-blue-600 focus:ring-blue-500 border-gray-300 ${
-                          mutatingAllMarketOffer
-                            ? "cursor-not-allowed"
-                            : ""
+                        className={`h-5 w-5 rounded text-blue-600 focus:ring-blue-500 ${
+                          isLocked
+                            ? "border-gray-300 bg-gray-100 cursor-not-allowed"
+                            : "border-gray-300"
                         }`}
                         aria-label="Toggle All Market Offer"
                       />
-                      <span className="text-xs font-medium text-gray-700">
+                      <span
+                        className={`text-xs font-medium ${
+                          isLocked ? "text-gray-400" : "text-gray-700"
+                        }`}
+                      >
                         {gateValue ? "On" : "Off"}
                       </span>
                     </label>
