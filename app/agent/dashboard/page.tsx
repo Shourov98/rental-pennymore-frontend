@@ -1178,7 +1178,10 @@ export default function AgentRenterRequestsPage() {
         message?: string;
         data?: {
           scope?: string;
-          searchActivity?: { allMarketOfferEnabled?: boolean };
+          searchActivity?: {
+            allMarketOfferEnabled?: boolean;
+            upcomingSearchExpansionReminderSentAt?: string | null;
+          };
         };
       };
 
@@ -2351,19 +2354,21 @@ export default function AgentRenterRequestsPage() {
                                 );
                               const gateValue =
                                 req.allMarketOfferEnabled !== false;
-                              // Lock the toggle for Upcoming (M) — matched
-                              // requests where the scope has effectively
-                              // shifted. Upcoming and All Market remain
-                              // interactive.
-                              const rawScope =
-                                req.raw?.scope?.trim() ?? req.scopeLabel?.trim();
-                              const isUpcomingM = rawScope === "Upcoming (M)";
+                              // The gate is purely a tracking signal for the
+                              // day-10 follow-up email. Lock it once the
+                              // email has been sent (either by the sweep or
+                              // manually by the agent) — the scope label is
+                              // unrelated to this checkbox.
+                              const reminderSentAt =
+                                req.raw?.searchActivity
+                                  ?.upcomingSearchExpansionReminderSentAt;
+                              const isEmailSent = Boolean(reminderSentAt);
                               const isLocked
-                                = !isCurrentAgentRegistered || isUpcomingM;
+                                = !isCurrentAgentRegistered || isEmailSent;
                               const lockedReason = !isCurrentAgentRegistered
                                 ? "Only the registered agent can change this setting"
-                                : isUpcomingM
-                                  ? "Locked once the request becomes Upcoming (M)"
+                                : isEmailSent
+                                  ? "The day-10 follow-up email has already been sent"
                                   : "Toggle the day-10 follow-up email";
                               const isMutating =
                                 mutatingAllMarketOfferId === req.id;

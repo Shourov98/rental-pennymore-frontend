@@ -165,6 +165,14 @@ export interface ApiAgentRequest {
     allMarketOfferEnabled?: boolean;
     allMarketOfferToggledAt?: string | null;
     allMarketOfferToggledByAgentId?: string | null;
+    /**
+     * When the day-10 follow-up email (Template #32) was sent for this
+     * request, if ever. Used by the dashboard to lock the "All Market
+     * Offer" checkbox once the email has gone out. Mirrors
+     * `searchActivity.upcomingSearchExpansionReminderSentAt` on the
+     * backend.
+     */
+    upcomingSearchExpansionReminderSentAt?: string | null;
   };
 }
 
@@ -237,10 +245,9 @@ export interface NormalizedAgentRequest {
   matchPreferenceMatches?: boolean[] | null;
   matchPriorityBonus?: number;
   /**
-   * Whether the request scope is still in the "Upcoming" state. Once the
-   * request moves to "All Market" or "Upcoming (M)" the All Market Offer
-   * gate is permanently disabled and `allMarketOfferEnabled` will be
-   * `false`.
+   * Whether the request scope is still in the "Upcoming" state. The All
+   * Market Offer gate is independent of this flag — it locks based on
+   * whether the day-10 follow-up email has been sent, not on scope.
    */
   isScopeUpcomingLike?: boolean;
   /**

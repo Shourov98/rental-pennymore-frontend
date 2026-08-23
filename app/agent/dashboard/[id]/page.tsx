@@ -1073,7 +1073,10 @@ export default function AgentRenterRequestDetailsPage() {
         message?: string;
         data?: {
           scope?: string;
-          searchActivity?: { allMarketOfferEnabled?: boolean };
+          searchActivity?: {
+            allMarketOfferEnabled?: boolean;
+            upcomingSearchExpansionReminderSentAt?: string | null;
+          };
         };
       };
       if (!response.ok || data?.success === false) {
@@ -1234,12 +1237,13 @@ export default function AgentRenterRequestDetailsPage() {
             {isRegisteredAgentForRequest
               ? (() => {
                 const gateValue = request.allMarketOfferEnabled !== false;
-                const rawScope
-                  = request?.raw?.scope?.trim() ?? request?.scopeLabel?.trim();
-                const isUpcomingM = rawScope === "Upcoming (M)";
-                const isLocked = isUpcomingM || mutatingAllMarketOffer;
-                const lockedReason = isUpcomingM
-                  ? "Locked once the request becomes Upcoming (M)"
+                const reminderSentAt =
+                  request?.raw?.searchActivity
+                    ?.upcomingSearchExpansionReminderSentAt;
+                const isEmailSent = Boolean(reminderSentAt);
+                const isLocked = isEmailSent || mutatingAllMarketOffer;
+                const lockedReason = isEmailSent
+                  ? "The day-10 follow-up email has already been sent"
                   : "Toggle the day-10 follow-up email";
                 return (
                   <div className="bg-white rounded-xl shadow-sm p-4">
