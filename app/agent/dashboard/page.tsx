@@ -2389,17 +2389,9 @@ export default function AgentRenterRequestsPage() {
                                       disabled={isLocked || isMutating}
                                       onChange={(event) => {
                                         if (isLocked || isMutating) return;
-                                        const nextEnabled =
-                                          event.target.checked;
-                                        if (!nextEnabled) {
-                                          const confirmed = window.confirm(
-                                            "Disable the day-10 follow-up email and move this request to All Market scope? This action cannot be undone.",
-                                          );
-                                          if (!confirmed) return;
-                                        }
                                         void handleToggleAllMarketOffer(
                                           req,
-                                          nextEnabled,
+                                          event.target.checked,
                                         );
                                       }}
                                       className={`h-5 w-5 rounded text-blue-600 focus:ring-blue-500 ${
