@@ -1239,7 +1239,6 @@ export default function AgentRenterRequestDetailsPage() {
                 const gateValue = request.allMarketOfferEnabled !== false;
                 const rawScope
                   = request?.raw?.scope?.trim() ?? request?.scopeLabel?.trim();
-                const isUpcoming = rawScope === "Upcoming";
                 const isUpcomingM = rawScope === "Upcoming (M)";
                 const isAllMarket = rawScope === "All Market";
                 const reminderSentAt =
@@ -1251,15 +1250,16 @@ export default function AgentRenterRequestDetailsPage() {
                 //  - All Market: always locked (off)
                 //  - Upcoming + email already sent: locked
                 //  - Upcoming before email: interactive (on/off)
+                // Match status does not affect the lock.
                 const isLocked = isUpcomingM
                   || isAllMarket
-                  || (isUpcoming && isEmailSent)
+                  || isEmailSent
                   || mutatingAllMarketOffer;
                 const lockedReason = isUpcomingM
                   ? "Locked once the request becomes Upcoming (M)"
                   : isAllMarket
                     ? "Locked once the request becomes All Market"
-                    : isUpcoming && isEmailSent
+                    : isEmailSent
                       ? "The day-10 follow-up email has already been sent"
                       : "Toggle the day-10 follow-up email";
                 const isDisabled = isLocked;
