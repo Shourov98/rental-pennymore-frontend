@@ -1263,6 +1263,11 @@ export default function AgentRenterRequestDetailsPage() {
                       ? "The day-10 follow-up email has already been sent"
                       : "Toggle the day-10 follow-up email";
                 const isDisabled = isLocked;
+                // Force display position to "Off" for Upcoming (M) and
+                // All Market. Upcoming + email-sent keeps the actual
+                // gateValue so the agent sees their toggled state.
+                const displayGate
+                  = (isUpcomingM || isAllMarket) ? false : gateValue;
                 return (
                   <div className="bg-white rounded-xl shadow-sm p-4">
                     <p className="text-xs text-gray-500 leading-tight">
@@ -1285,25 +1290,25 @@ export default function AgentRenterRequestDetailsPage() {
                     >
                       <span
                         className={`text-xs font-medium ${
-                          gateValue ? "text-gray-400" : "text-gray-700"
+                          displayGate ? "text-gray-400" : "text-gray-700"
                         }`}
                       >
                         Off
                       </span>
                       <span
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-                          gateValue ? "bg-blue-400" : "bg-gray-300"
+                          displayGate ? "bg-blue-400" : "bg-gray-300"
                         }`}
                       >
                         <span
                           className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
-                            gateValue ? "translate-x-5" : "translate-x-1"
+                            displayGate ? "translate-x-5" : "translate-x-1"
                           }`}
                         />
                       </span>
                       <span
                         className={`text-xs font-medium ${
-                          gateValue ? "text-emerald-700" : "text-gray-400"
+                          displayGate ? "text-emerald-700" : "text-gray-400"
                         }`}
                       >
                         On

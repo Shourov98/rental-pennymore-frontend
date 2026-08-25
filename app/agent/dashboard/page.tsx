@@ -2385,6 +2385,14 @@ export default function AgentRenterRequestsPage() {
                               const isMutating =
                                 mutatingAllMarketOfferId === req.id;
                               const isDisabled = isLocked || isMutating;
+                              // Force display position to "Off" for scopes
+                              // that have shifted away from plain Upcoming
+                              // (Upcoming M / All Market) — the gate is
+                              // irrelevant for those scopes. Upcoming +
+                              // email-sent keeps the actual gateValue so
+                              // the agent sees the state they toggled.
+                              const displayGate
+                                = (isUpcomingM || isAllMarket) ? false : gateValue;
                               return (
                                 <div
                                   className="inline-flex items-center gap-2"
@@ -2396,7 +2404,7 @@ export default function AgentRenterRequestsPage() {
                                       if (isDisabled) return;
                                       void handleToggleAllMarketOffer(
                                         req,
-                                        !gateValue,
+                                        !displayGate,
                                       );
                                     }}
                                     disabled={isDisabled}
@@ -2406,25 +2414,25 @@ export default function AgentRenterRequestsPage() {
                                   >
                                     <span
                                       className={`text-xs font-medium ${
-                                        gateValue ? "text-gray-400" : "text-gray-700"
+                                        displayGate ? "text-gray-400" : "text-gray-700"
                                       }`}
                                     >
                                       Off
                                     </span>
                                     <span
                                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-                                        gateValue ? "bg-blue-400" : "bg-gray-300"
+                                        displayGate ? "bg-blue-400" : "bg-gray-300"
                                       }`}
                                     >
                                       <span
                                         className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
-                                          gateValue ? "translate-x-5" : "translate-x-1"
+                                          displayGate ? "translate-x-5" : "translate-x-1"
                                         }`}
                                       />
                                     </span>
                                     <span
                                       className={`text-xs font-medium ${
-                                        gateValue ? "text-emerald-700" : "text-gray-400"
+                                        displayGate ? "text-emerald-700" : "text-gray-400"
                                       }`}
                                     >
                                       On
