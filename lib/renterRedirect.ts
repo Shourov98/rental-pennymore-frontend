@@ -34,3 +34,12 @@ export const renterHasActiveRequest = async (): Promise<boolean> => {
 };
 
 export const RENTER_DASHBOARD_PATH = "/renter/saved-requests";
+
+/**
+ * Post-login landing path for agents. Agents always land here after
+ * authentication — there is no equivalent of the renter "no active
+ * request → homepage" fallback, because the agent dashboard is the
+ * natural home regardless of whether the agent currently has any
+ * matches, conversations, or requests.
+ */
+export const AGENT_DASHBOARD_PATH = "/agent/dashboard";

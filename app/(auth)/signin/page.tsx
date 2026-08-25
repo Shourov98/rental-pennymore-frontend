@@ -20,6 +20,7 @@ import type { AppDispatch } from "@/store/store";
 import Link from "next/link";
 import { getSavedReferralCode, saveReferralCode } from "@/lib/referralCode";
 import {
+  AGENT_DASHBOARD_PATH,
   RENTER_DASHBOARD_PATH,
   renterHasActiveRequest,
 } from "@/lib/renterRedirect";
@@ -107,7 +108,7 @@ function SigninPageContent() {
 
   const resolveRoleBasedDestination = useCallback(
     async (role: string | undefined): Promise<string> => {
-      if (role === "Agent") return "/agent/dashboard";
+      if (role === "Agent") return AGENT_DASHBOARD_PATH;
 
       if (role !== "Renter") return "/";
 
