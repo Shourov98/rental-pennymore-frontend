@@ -2354,22 +2354,34 @@ export default function AgentRenterRequestsPage() {
                                 );
                               const gateValue =
                                 req.allMarketOfferEnabled !== false;
-                              // The gate is purely a tracking signal for the
-                              // day-10 follow-up email. Lock it once the
-                              // email has been sent (either by the sweep or
-                              // manually by the agent) — the scope label is
-                              // unrelated to this checkbox.
+                              const rawScope =
+                                req.raw?.scope?.trim() ?? req.scopeLabel?.trim();
+                              const isUpcoming = rawScope === "Upcoming";
+                              const isUpcomingM = rawScope === "Upcoming (M)";
+                              const isAllMarket = rawScope === "All Market";
                               const reminderSentAt =
                                 req.raw?.searchActivity
                                   ?.upcomingSearchExpansionReminderSentAt;
                               const isEmailSent = Boolean(reminderSentAt);
-                              const isLocked
-                                = !isCurrentAgentRegistered || isEmailSent;
+                              // Lock rules per the spec:
+                              //  - Upcoming (M): always locked (off)
+                              //  - All Market: always locked (off)
+                              //  - Upcoming + email already sent: locked
+                              //  - Upcoming before email: interactive (on/off)
+                              const isLocked =
+                                !isCurrentAgentRegistered
+                                || isUpcomingM
+                                || isAllMarket
+                                || (isUpcoming && isEmailSent);
                               const lockedReason = !isCurrentAgentRegistered
                                 ? "Only the registered agent can change this setting"
-                                : isEmailSent
-                                  ? "The day-10 follow-up email has already been sent"
-                                  : "Toggle the day-10 follow-up email";
+                                : isUpcomingM
+                                  ? "Locked once the request becomes Upcoming (M)"
+                                  : isAllMarket
+                                    ? "Locked once the request becomes All Market"
+                                    : isUpcoming && isEmailSent
+                                      ? "The day-10 follow-up email has already been sent"
+                                      : "Toggle the day-10 follow-up email";
                               const isMutating =
                                 mutatingAllMarketOfferId === req.id;
                               return (
@@ -2378,7 +2390,7 @@ export default function AgentRenterRequestsPage() {
                                   data-testid={`all-market-offer-cell-${req.id}`}
                                 >
                                   <label
-                                    className={`inline-flex items-center gap-2 ${
+                                    className={`all-market-switch ${
                                       isLocked || isMutating
                                         ? "cursor-not-allowed opacity-60"
                                         : "cursor-pointer"
@@ -2396,23 +2408,19 @@ export default function AgentRenterRequestsPage() {
                                           event.target.checked,
                                         );
                                       }}
-                                      className={`h-5 w-5 rounded text-blue-600 focus:ring-blue-500 ${
-                                        isLocked
-                                          ? "border-gray-300 bg-gray-100 cursor-not-allowed"
-                                          : "border-gray-300"
-                                      }`}
                                       aria-label={`Toggle All Market Offer for ${req.requestName}`}
                                     />
-                                    <span
-                                      className={`text-xs font-medium ${
-                                        isLocked
-                                          ? "text-gray-400"
-                                          : "text-gray-700"
-                                      }`}
-                                    >
-                                      {gateValue ? "On" : "Off"}
-                                    </span>
+                                    <span className="slider" />
                                   </label>
+                                  <span
+                                    className={`text-xs font-medium ${
+                                      isLocked
+                                        ? "text-gray-400"
+                                        : "text-gray-700"
+                                    }`}
+                                  >
+                                    {gateValue ? "On" : "Off"}
+                                  </span>
                                 </div>
                               );
                             })()}

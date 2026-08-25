@@ -1237,14 +1237,31 @@ export default function AgentRenterRequestDetailsPage() {
             {isRegisteredAgentForRequest
               ? (() => {
                 const gateValue = request.allMarketOfferEnabled !== false;
+                const rawScope
+                  = request?.raw?.scope?.trim() ?? request?.scopeLabel?.trim();
+                const isUpcoming = rawScope === "Upcoming";
+                const isUpcomingM = rawScope === "Upcoming (M)";
+                const isAllMarket = rawScope === "All Market";
                 const reminderSentAt =
                   request?.raw?.searchActivity
                     ?.upcomingSearchExpansionReminderSentAt;
                 const isEmailSent = Boolean(reminderSentAt);
-                const isLocked = isEmailSent || mutatingAllMarketOffer;
-                const lockedReason = isEmailSent
-                  ? "The day-10 follow-up email has already been sent"
-                  : "Toggle the day-10 follow-up email";
+                // Lock rules per the spec:
+                //  - Upcoming (M): always locked (off)
+                //  - All Market: always locked (off)
+                //  - Upcoming + email already sent: locked
+                //  - Upcoming before email: interactive (on/off)
+                const isLocked = isUpcomingM
+                  || isAllMarket
+                  || (isUpcoming && isEmailSent)
+                  || mutatingAllMarketOffer;
+                const lockedReason = isUpcomingM
+                  ? "Locked once the request becomes Upcoming (M)"
+                  : isAllMarket
+                    ? "Locked once the request becomes All Market"
+                    : isUpcoming && isEmailSent
+                      ? "The day-10 follow-up email has already been sent"
+                      : "Toggle the day-10 follow-up email";
                 return (
                   <div className="bg-white rounded-xl shadow-sm p-4">
                     <p className="text-xs text-gray-500 leading-tight">
@@ -1255,7 +1272,7 @@ export default function AgentRenterRequestDetailsPage() {
                       </span>
                     </p>
                     <label
-                      className={`mt-2 inline-flex items-center gap-2 ${
+                      className={`mt-2 all-market-switch ${
                         isLocked
                           ? "cursor-not-allowed opacity-60"
                           : "cursor-pointer"
@@ -1272,21 +1289,17 @@ export default function AgentRenterRequestDetailsPage() {
                             event.target.checked,
                           );
                         }}
-                        className={`h-5 w-5 rounded text-blue-600 focus:ring-blue-500 ${
-                          isLocked
-                            ? "border-gray-300 bg-gray-100 cursor-not-allowed"
-                            : "border-gray-300"
-                        }`}
                         aria-label="Toggle All Market Offer"
                       />
-                      <span
-                        className={`text-xs font-medium ${
-                          isLocked ? "text-gray-400" : "text-gray-700"
-                        }`}
-                      >
-                        {gateValue ? "On" : "Off"}
-                      </span>
+                      <span className="slider" />
                     </label>
+                    <span
+                      className={`mt-1 inline-block text-xs font-medium ${
+                        isLocked ? "text-gray-400" : "text-gray-700"
+                      }`}
+                    >
+                      {gateValue ? "On" : "Off"}
+                    </span>
                   </div>
                 );
               })()
