@@ -2384,43 +2384,58 @@ export default function AgentRenterRequestsPage() {
                                       : "Toggle the day-10 follow-up email";
                               const isMutating =
                                 mutatingAllMarketOfferId === req.id;
+                              const isDisabled = isLocked || isMutating;
                               return (
                                 <div
                                   className="inline-flex items-center gap-2"
                                   data-testid={`all-market-offer-cell-${req.id}`}
                                 >
-                                  <label
-                                    className={`all-market-switch ${
-                                      isLocked || isMutating
-                                        ? "cursor-not-allowed opacity-60"
-                                        : "cursor-pointer"
-                                    }`}
-                                    title={lockedReason || "Toggle the day-10 follow-up email"}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (isDisabled) return;
+                                      void handleToggleAllMarketOffer(
+                                        req,
+                                        !gateValue,
+                                      );
+                                    }}
+                                    disabled={isDisabled}
+                                    className="inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                                    aria-label={`Toggle All Market Offer for ${req.requestName}`}
+                                    title={lockedReason}
                                   >
-                                    <input
-                                      type="checkbox"
-                                      checked={gateValue}
-                                      disabled={isLocked || isMutating}
-                                      onChange={(event) => {
-                                        if (isLocked || isMutating) return;
-                                        void handleToggleAllMarketOffer(
-                                          req,
-                                          event.target.checked,
-                                        );
-                                      }}
-                                      aria-label={`Toggle All Market Offer for ${req.requestName}`}
+                                    <span
+                                      className={`text-xs font-medium ${
+                                        gateValue ? "text-gray-400" : "text-gray-700"
+                                      }`}
+                                    >
+                                      Off
+                                    </span>
+                                    <span
+                                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                                        gateValue ? "bg-blue-400" : "bg-gray-300"
+                                      }`}
+                                    >
+                                      <span
+                                        className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                                          gateValue ? "translate-x-5" : "translate-x-1"
+                                        }`}
+                                      />
+                                    </span>
+                                    <span
+                                      className={`text-xs font-medium ${
+                                        gateValue ? "text-emerald-700" : "text-gray-400"
+                                      }`}
+                                    >
+                                      On
+                                    </span>
+                                  </button>
+                                  {isLocked ? (
+                                    <Lock
+                                      className="h-4 w-4 text-gray-500"
+                                      aria-hidden="true"
                                     />
-                                    <span className="slider" />
-                                  </label>
-                                  <span
-                                    className={`text-xs font-medium ${
-                                      isLocked
-                                        ? "text-gray-400"
-                                        : "text-gray-700"
-                                    }`}
-                                  >
-                                    {gateValue ? "On" : "Off"}
-                                  </span>
+                                  ) : null}
                                 </div>
                               );
                             })()}

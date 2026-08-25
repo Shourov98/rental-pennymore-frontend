@@ -1050,7 +1050,7 @@ export default function AgentRenterRequestDetailsPage() {
     }
     const rawScope
       = request?.raw?.scope?.trim() ?? request?.scopeLabel?.trim();
-    if (rawScope === "Upcoming (M)") {
+    if (rawScope === "Upcoming (M)" || rawScope === "All Market") {
       return;
     }
     setError(null);
@@ -1262,6 +1262,7 @@ export default function AgentRenterRequestDetailsPage() {
                     : isUpcoming && isEmailSent
                       ? "The day-10 follow-up email has already been sent"
                       : "Toggle the day-10 follow-up email";
+                const isDisabled = isLocked;
                 return (
                   <div className="bg-white rounded-xl shadow-sm p-4">
                     <p className="text-xs text-gray-500 leading-tight">
@@ -1271,35 +1272,43 @@ export default function AgentRenterRequestDetailsPage() {
                         (day-10 follow-up email)
                       </span>
                     </p>
-                    <label
-                      className={`mt-2 all-market-switch ${
-                        isLocked
-                          ? "cursor-not-allowed opacity-60"
-                          : "cursor-pointer"
-                      }`}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isDisabled) return;
+                        void handleToggleAllMarketOffer(!gateValue);
+                      }}
+                      disabled={isDisabled}
+                      className="mt-2 inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                      aria-label="Toggle All Market Offer"
                       title={lockedReason}
                     >
-                      <input
-                        type="checkbox"
-                        checked={gateValue}
-                        disabled={isLocked}
-                        onChange={(event) => {
-                          if (isLocked) return;
-                          void handleToggleAllMarketOffer(
-                            event.target.checked,
-                          );
-                        }}
-                        aria-label="Toggle All Market Offer"
-                      />
-                      <span className="slider" />
-                    </label>
-                    <span
-                      className={`mt-1 inline-block text-xs font-medium ${
-                        isLocked ? "text-gray-400" : "text-gray-700"
-                      }`}
-                    >
-                      {gateValue ? "On" : "Off"}
-                    </span>
+                      <span
+                        className={`text-xs font-medium ${
+                          gateValue ? "text-gray-400" : "text-gray-700"
+                        }`}
+                      >
+                        Off
+                      </span>
+                      <span
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                          gateValue ? "bg-blue-400" : "bg-gray-300"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                            gateValue ? "translate-x-5" : "translate-x-1"
+                          }`}
+                        />
+                      </span>
+                      <span
+                        className={`text-xs font-medium ${
+                          gateValue ? "text-emerald-700" : "text-gray-400"
+                        }`}
+                      >
+                        On
+                      </span>
+                    </button>
                   </div>
                 );
               })()
