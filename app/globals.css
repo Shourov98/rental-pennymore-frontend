@@ -110,8 +110,8 @@ body {
 .all-market-switch {
   position: relative;
   display: inline-block;
-  width: 3.5em;
-  height: 2em;
+  width: 1.4em;
+  height: 0.8em;
   font-size: 17px;
   vertical-align: middle;
 }
@@ -137,12 +137,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 2em;
-  width: 2em;
+  height: 0.8em;
+  width: 0.8em;
   inset: 0;
   background-color: white;
   border-radius: 50px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -155,7 +155,7 @@ body {
 }
 
 .all-market-switch input:checked + .slider::before {
-  transform: translateX(1.6em);
+  transform: translateX(0.6em);
 }
 
 .all-market-switch input:disabled + .slider {
