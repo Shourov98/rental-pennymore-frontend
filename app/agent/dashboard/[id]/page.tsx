@@ -1255,13 +1255,6 @@ export default function AgentRenterRequestDetailsPage() {
                   || isAllMarket
                   || isEmailSent
                   || mutatingAllMarketOffer;
-                const lockedReason = isUpcomingM
-                  ? "Locked once the request becomes Upcoming (M)"
-                  : isAllMarket
-                    ? "Locked once the request becomes All Market"
-                    : isEmailSent
-                      ? "The day-10 follow-up email has already been sent"
-                      : "Toggle the day-10 follow-up email";
                 const isDisabled = isLocked;
                 // Force display position to "Off" for Upcoming (M) and
                 // All Market. Upcoming + email-sent keeps the actual
@@ -1286,7 +1279,6 @@ export default function AgentRenterRequestDetailsPage() {
                       disabled={isDisabled}
                       className="mt-2 inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                       aria-label="Toggle All Market Offer"
-                      title={lockedReason}
                     >
                       <span
                         className={`text-xs font-medium ${

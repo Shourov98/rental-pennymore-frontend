@@ -2360,15 +2360,6 @@ export default function AgentRenterRequestsPage() {
                                 || isUpcomingM
                                 || isAllMarket
                                 || isEmailSent;
-                              const lockedReason = !isCurrentAgentRegistered
-                                ? "Only the registered agent can change this setting"
-                                : isUpcomingM
-                                  ? "Locked once the request becomes Upcoming (M)"
-                                  : isAllMarket
-                                    ? "Locked once the request becomes All Market"
-                                    : isEmailSent
-                                      ? "The day-10 follow-up email has already been sent"
-                                      : "Toggle the day-10 follow-up email";
                               const isMutating =
                                 mutatingAllMarketOfferId === req.id;
                               const isDisabled = isLocked || isMutating;
@@ -2397,7 +2388,6 @@ export default function AgentRenterRequestsPage() {
                                     disabled={isDisabled}
                                     className="inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                                     aria-label={`Toggle All Market Offer for ${req.requestName}`}
-                                    title={lockedReason}
                                   >
                                     <span
                                       className={`text-xs font-medium ${
