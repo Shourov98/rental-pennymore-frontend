@@ -853,10 +853,7 @@ export default function AgentMatchesPage() {
     }
   };
 
-  const handleUnmatchConfirm = async (options: {
-    sendEmailNotice: boolean;
-    personalMessage: string | undefined;
-  }) => {
+  const handleUnmatchConfirm = async () => {
     if (!unmatchTarget) return;
 
     const apiRequestId = unmatchTarget.raw?._id;
@@ -879,7 +876,7 @@ export default function AgentMatchesPage() {
         {
           method: "POST",
           headers,
-          body: JSON.stringify(options),
+          body: JSON.stringify({ sendEmailNotice: false }),
         },
       );
       const data = await response

@@ -1,10 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
 import { X } from "lucide-react";
-
-const MAX_MESSAGE_LENGTH = 350;
 
 function XCircleIcon() {
   return (
@@ -27,10 +24,7 @@ export type UnmatchRequestDialogProps = {
   matchedAgentFullName?: string | null;
   renterFullName?: string | null;
   isSubmitting: boolean;
-  onConfirm: (options: {
-    sendEmailNotice: boolean;
-    personalMessage: string | undefined;
-  }) => void;
+  onConfirm: () => void;
   onCancel: () => void;
 };
 
@@ -49,21 +43,8 @@ export default function UnmatchRequestDialog({
   onConfirm,
   onCancel,
 }: UnmatchRequestDialogProps) {
-  const [sendEmailNotice, setSendEmailNotice] = useState(false);
-  const [includePersonal, setIncludePersonal] = useState(false);
-  const [message, setMessage] = useState("");
-
-  const textBoxActive = includePersonal;
   const matchedAgentLabel = formatFirstNameLastInitial(matchedAgentFullName);
   const renterLabel = formatFirstNameLastInitial(renterFullName);
-
-  const handleConfirm = () => {
-    const trimmed = message.trim();
-    onConfirm({
-      sendEmailNotice,
-      personalMessage: trimmed.length > 0 ? trimmed : undefined,
-    });
-  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/45 p-3 sm:p-4">
@@ -114,65 +95,6 @@ export default function UnmatchRequestDialog({
               Once unmatched, this request returns to All-Market status. You can
               reshare it to pair with a new agent.
             </p>
-            <p className="mt-3 text-sm text-gray-700 sm:text-base">
-              <span className="font-medium text-gray-900">
-                {matchedAgentLabel}
-              </span>{" "}
-              will be excluded from visibility.
-            </p>
-
-            <div className="mt-6 space-y-4">
-              <label className="flex cursor-pointer items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={sendEmailNotice}
-                  onChange={(e) => setSendEmailNotice(e.target.checked)}
-                  className="h-5 w-5 border-gray-400 text-blue-600 focus:ring-blue-500 sm:h-6 sm:w-6"
-                />
-                <span className="text-sm text-gray-700 sm:text-base">
-                  Send an email notice to {matchedAgentLabel}.
-                </span>
-              </label>
-
-              <label className="flex cursor-pointer items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={includePersonal}
-                  onChange={(e) => {
-                    const next = e.target.checked;
-                    setIncludePersonal(next);
-                    if (!next) setMessage("");
-                  }}
-                  className="h-5 w-5 border-gray-400 text-blue-600 focus:ring-blue-500 sm:h-6 sm:w-6"
-                />
-                <span className="text-sm text-gray-700 sm:text-base">
-                  Include a personal message
-                </span>
-              </label>
-            </div>
-
-            <div className="mt-5">
-              <textarea
-                value={message}
-                onChange={(e) => {
-                  if (e.target.value.length <= MAX_MESSAGE_LENGTH) {
-                    setMessage(e.target.value);
-                  }
-                }}
-                disabled={!textBoxActive}
-                placeholder="e.g., Client decided they want to work with a different agent."
-                className={`w-full resize-none rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-base ${
-                  textBoxActive
-                    ? "bg-white text-gray-800"
-                    : "bg-gray-50 text-gray-400"
-                }`}
-                rows={4}
-                maxLength={MAX_MESSAGE_LENGTH}
-              />
-              <div className="mt-1 text-right text-xs text-gray-500">
-                {message.length} / {MAX_MESSAGE_LENGTH}
-              </div>
-            </div>
           </div>
 
           <div className="flex flex-col gap-3 border-t border-gray-200 px-5 py-4 sm:flex-row sm:justify-end sm:gap-5 sm:px-8 sm:py-5">
@@ -186,7 +108,7 @@ export default function UnmatchRequestDialog({
             </button>
             <button
               type="button"
-              onClick={handleConfirm}
+              onClick={onConfirm}
               disabled={isSubmitting}
               className="w-full cursor-pointer rounded bg-blue-600 px-6 py-3 text-base font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400 sm:w-auto sm:min-w-[220px] sm:px-14 sm:text-lg"
             >
