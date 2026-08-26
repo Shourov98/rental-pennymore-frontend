@@ -1107,8 +1107,8 @@ export default function AgentMatchesPage() {
                         isCurrentAgentsRequest &&
                         Boolean(req.matchedByAgent?.fullName);
                       const canUnmatchRequest =
-                        isCurrentAgentsRequest &&
-                        Boolean(req.matchedByAgent?.agentId);
+                        req.scopeLabel === "Upcoming (M)" &&
+                        isCurrentAgentsRequest;
                       const shareConsent = req.raw?.shareConsent;
                       const visibility = req.raw?.visibility;
                       const isArchivedForAgent = Boolean(

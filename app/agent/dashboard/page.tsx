@@ -2093,9 +2093,8 @@ export default function AgentRenterRequestsPage() {
                         Boolean(req.matchedByAgent?.fullName) &&
                         !isMatchedByCurrentAgent;
                       const canUnmatchRequest =
-                        isCurrentAgentsRequest &&
-                        Boolean(req.matchedByAgent?.agentId) &&
-                        !isMatchedByCurrentAgent;
+                        req.scopeLabel === "Upcoming (M)" &&
+                        isCurrentAgentsRequest;
                       const shareConsent = req.raw?.shareConsent;
                       const visibility = req.raw?.visibility;
                       const shouldShowRegistrationDisclosure =
