@@ -1201,19 +1201,14 @@ export default function AgentRenterRequestsPage() {
           const nextScope = data?.data?.scope ?? req.raw?.scope ?? req.scopeLabel;
           const nextRawScopeLabel =
             typeof nextScope === "string" ? nextScope : req.scopeLabel;
-          const isNowAllMarket =
-            typeof nextScope === "string" && nextScope.trim() === "All Market";
-          const isNowUpcomingM =
-            typeof nextScope === "string" &&
-            nextScope.trim().startsWith("Upcoming");
 
           return {
             ...req,
             allMarketOfferEnabled: nextEnabled,
-            // After unchecking the box the backend flips scope to All
-            // Market so the day-10 reminder sweep never re-fires. Mirror
-            // that here so the row reflects the new state without waiting
-            // for a full refetch.
+            // Backend keeps scope as `Upcoming` on a manual Off-flip and
+            // only mutates the All Market Offer gate + history fields.
+            // We mirror whatever scope came back so the row reflects
+            // the new state without waiting for a full refetch.
             scopeLabel: nextRawScopeLabel,
             isScopeUpcomingLike:
               nextScope === "Upcoming" || nextScope === "Upcoming (M)",
@@ -1226,13 +1221,6 @@ export default function AgentRenterRequestsPage() {
                 allMarketOfferEnabled: nextEnabled,
               },
             },
-            // Once the request leaves Upcoming the column must lock
-            // permanently. `isLockedForViewer` is computed by the row
-            // helper, so we just record the intent via the raw scope
-            // string — the helper re-reads it on render.
-            ...(isNowAllMarket || isNowUpcomingM
-              ? {}
-              : {}),
           };
         });
         cacheAgentRequests(next);
