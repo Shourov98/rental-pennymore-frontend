@@ -32,7 +32,6 @@ export default function Navbar() {
   const hasSession = canResolveSession && isAuthed;
   const isBrucherView =
     pathname === "/brucher" || (pathname === "/" && !hasSession);
-  const hideNavItems = pathname === "/about" || isBrucherView;
 
   const getFirstName = (fullName?: string | null, email?: string | null) => {
     const safeFullName = fullName?.trim();
@@ -54,6 +53,12 @@ export default function Navbar() {
   // dashboard menu.
   const isAdminSession = canResolveSession && role === "Admin";
   const effectiveAuthed = canResolveSession && isAuthed && !isAdminSession;
+  const isLegalPage =
+    pathname === "/privacy-policy" || pathname === "/terms-conditions";
+  const hideNavItems =
+    pathname === "/about" ||
+    isBrucherView ||
+    (isLegalPage && !effectiveAuthed);
   const canShowAuthed = effectiveAuthed;
   const canShowSignedOut = canResolveSession && (!isAuthed || isAdminSession);
   const displayName = canShowAuthed ? getFirstName(authName, authEmail) : "";
