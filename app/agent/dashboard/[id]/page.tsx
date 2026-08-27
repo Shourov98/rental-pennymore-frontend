@@ -1278,7 +1278,7 @@ export default function AgentRenterRequestDetailsPage() {
                       ? true
                       : gateValue;
                 return (
-                  <div className="bg-white rounded-xl shadow-sm p-4">
+                  <div className="group relative bg-white rounded-xl shadow-sm p-4 hover:z-50 focus-within:z-50">
                     <p className="text-xs text-gray-500 leading-tight">
                       Offer full-market agent help
                       <br />
@@ -1295,7 +1295,7 @@ export default function AgentRenterRequestDetailsPage() {
                       disabled={isDisabled}
                       className="mt-2 inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                       aria-label="Toggle All Market Offer"
-                      title={lockedReason}
+                      aria-describedby="all-market-offer-tooltip"
                     >
                       <span
                         className={`text-xs font-medium ${
@@ -1323,6 +1323,13 @@ export default function AgentRenterRequestDetailsPage() {
                         On
                       </span>
                     </button>
+                    <div
+                      id="all-market-offer-tooltip"
+                      role="tooltip"
+                      className="pointer-events-none invisible absolute right-2 top-full z-50 mt-2 max-w-[260px] rounded-md bg-gray-900 px-3 py-2 text-xs leading-4 text-white opacity-0 shadow-lg transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
+                    >
+                      {lockedReason}
+                    </div>
                   </div>
                 );
               })()
