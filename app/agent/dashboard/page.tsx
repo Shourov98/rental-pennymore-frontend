@@ -2040,9 +2040,11 @@ export default function AgentRenterRequestsPage() {
                         <th className="py-3 px-5 text-left">Borough</th>
                         <th className="py-3 px-5 text-left">Price (Max)</th>
                         <th className="py-3 px-5 text-left">Beds / Baths</th>
+                        {/* All Market Offer column intentionally hidden.
                         <th className="py-3 px-5 text-left">
                           All Market Offer
                         </th>
+                        */}
                         <th className="py-3 px-5 text-left">Status</th>
                         <th className="py-3 px-5 text-center">
                           Registration / Disclosure
@@ -2333,6 +2335,7 @@ export default function AgentRenterRequestsPage() {
                           </td>
                           <td className="py-3 px-5">{req.priceMaxLabel}</td>
                           <td className="py-3 px-5">{req.bedsBathsLabel}</td>
+                          {/* All Market Offer column intentionally hidden.
                           <td className="py-3 px-5">
                             {(() => {
                               const isCurrentAgentRegistered =
@@ -2428,6 +2431,7 @@ export default function AgentRenterRequestsPage() {
                               );
                             })()}
                           </td>
+                          */}
                           <td className="py-3 px-5">
                             {(() => {
                               const normalizedBackendStatus = req.status
