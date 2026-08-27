@@ -1143,9 +1143,9 @@ export default function AgentRenterRequestsPage() {
 
   /**
    * Toggles the "All Market Offer" gate for a single request. Only the
-   * registered agent for the renter can call this. Setting `enabled: false`
-   * is a one-way trip — the backend flips scope to "All Market" and locks
-   * the gate permanently for that request.
+   * registered agent for the renter can call this. Before day 10 both states
+   * are interactive. On/after day 10, turning it On sends the follow-up email
+   * and permanently locks it On without changing scope.
    */
   const handleToggleAllMarketOffer = async (
     request: NormalizedAgentRequest,
@@ -1198,6 +1198,11 @@ export default function AgentRenterRequestsPage() {
 
           const nextEnabled =
             data?.data?.searchActivity?.allMarketOfferEnabled ?? enabled;
+          const nextReminderSentAt =
+            data?.data?.searchActivity
+              ?.upcomingSearchExpansionReminderSentAt ??
+            req.raw?.searchActivity?.upcomingSearchExpansionReminderSentAt ??
+            null;
           const nextScope = data?.data?.scope ?? req.raw?.scope ?? req.scopeLabel;
           const nextRawScopeLabel =
             typeof nextScope === "string" ? nextScope : req.scopeLabel;
@@ -1205,10 +1210,8 @@ export default function AgentRenterRequestsPage() {
           return {
             ...req,
             allMarketOfferEnabled: nextEnabled,
-            // Backend keeps scope as `Upcoming` on a manual Off-flip and
-            // only mutates the All Market Offer gate + history fields.
-            // We mirror whatever scope came back so the row reflects
-            // the new state without waiting for a full refetch.
+            // This setting never mutates scope; mirror the returned gate and
+            // email-lock fields without waiting for a full refetch.
             scopeLabel: nextRawScopeLabel,
             isScopeUpcomingLike:
               nextScope === "Upcoming" || nextScope === "Upcoming (M)",
@@ -1219,6 +1222,7 @@ export default function AgentRenterRequestsPage() {
               searchActivity: {
                 ...req.raw?.searchActivity,
                 allMarketOfferEnabled: nextEnabled,
+                upcomingSearchExpansionReminderSentAt: nextReminderSentAt,
               },
             },
           };
@@ -2349,7 +2353,8 @@ export default function AgentRenterRequestsPage() {
                               // Lock rules per the spec:
                               //  - Upcoming (M): always locked (off)
                               //  - All Market: always locked (off)
-                              //  - Upcoming + email already sent: locked
+                              //  - Upcoming + email already sent: locked in
+                              //    the persisted On position
                               //  - Upcoming before email: interactive (on/off)
                               // Match status does not affect the lock.
                               const isLocked =
@@ -2360,14 +2365,15 @@ export default function AgentRenterRequestsPage() {
                               const isMutating =
                                 mutatingAllMarketOfferId === req.id;
                               const isDisabled = isLocked || isMutating;
-                              // Force display position to "Off" for scopes
-                              // that have shifted away from plain Upcoming
-                              // (Upcoming M / All Market) — the gate is
-                              // irrelevant for those scopes. Upcoming +
-                              // email-sent keeps the actual gateValue so
-                              // the agent sees the state they toggled.
-                              const displayGate
-                                = (isUpcomingM || isAllMarket) ? false : gateValue;
+                              // Force Off only for scopes that have shifted
+                              // away from plain Upcoming. An emailed Upcoming
+                              // request remains visibly On and locked.
+                              const displayGate =
+                                isUpcomingM || isAllMarket
+                                  ? false
+                                  : isEmailSent
+                                    ? true
+                                    : gateValue;
                               return (
                                 <div
                                   className="inline-flex items-center gap-2"
@@ -3088,8 +3094,7 @@ export default function AgentRenterRequestsPage() {
  * Color rules:
  *   - "Upcoming (M)" → blue pill (because the matched-agent view is active)
  *   - "Upcoming"     → light-blue pill
- *   - "All Market"   → grey pill (request has been opted out of the day-10
- *                      follow-up via the All Market Offer toggle)
+ *   - "All Market"   → grey pill
  *   - anything else  → grey pill
  */
 const ScopePill = ({ label }: { label?: string }) => {

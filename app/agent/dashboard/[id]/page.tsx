@@ -1040,8 +1040,8 @@ export default function AgentRenterRequestDetailsPage() {
   /**
    * Toggles the "All Market Offer" gate for this request from the detail
    * page. Only meaningful for the registered agent on an active Upcoming
-   * request. Setting `enabled: false` is a one-way trip — the backend flips
-   * scope to "All Market" and locks the gate permanently for that request.
+   * request. Before day 10 both states are interactive. On/after day 10,
+   * turning it On sends the follow-up email and permanently locks it On.
    */
   const handleToggleAllMarketOffer = async (nextEnabled: boolean) => {
     const apiRequestId = request?.raw?._id;
@@ -1092,6 +1092,11 @@ export default function AgentRenterRequestDetailsPage() {
         const nextScope = data?.data?.scope ?? prev.raw?.scope ?? prev.scopeLabel;
         const nextEnabledValue =
           data?.data?.searchActivity?.allMarketOfferEnabled ?? nextEnabled;
+        const nextReminderSentAt =
+          data?.data?.searchActivity
+            ?.upcomingSearchExpansionReminderSentAt ??
+          prev.raw?.searchActivity?.upcomingSearchExpansionReminderSentAt ??
+          null;
         return {
           ...prev,
           allMarketOfferEnabled: nextEnabledValue,
@@ -1105,6 +1110,7 @@ export default function AgentRenterRequestDetailsPage() {
             searchActivity: {
               ...prev.raw?.searchActivity,
               allMarketOfferEnabled: nextEnabledValue,
+              upcomingSearchExpansionReminderSentAt: nextReminderSentAt,
             },
           },
         };
@@ -1248,7 +1254,7 @@ export default function AgentRenterRequestDetailsPage() {
                 // Lock rules per the spec:
                 //  - Upcoming (M): always locked (off)
                 //  - All Market: always locked (off)
-                //  - Upcoming + email already sent: locked
+                //  - Upcoming + email already sent: locked On
                 //  - Upcoming before email: interactive (on/off)
                 // Match status does not affect the lock.
                 const isLocked = isUpcomingM
@@ -1256,11 +1262,14 @@ export default function AgentRenterRequestDetailsPage() {
                   || isEmailSent
                   || mutatingAllMarketOffer;
                 const isDisabled = isLocked;
-                // Force display position to "Off" for Upcoming (M) and
-                // All Market. Upcoming + email-sent keeps the actual
-                // gateValue so the agent sees their toggled state.
-                const displayGate
-                  = (isUpcomingM || isAllMarket) ? false : gateValue;
+                // Force Off for Upcoming (M) and All Market. An emailed
+                // Upcoming request keeps the persisted On value and locks.
+                const displayGate =
+                  isUpcomingM || isAllMarket
+                    ? false
+                    : isEmailSent
+                      ? true
+                      : gateValue;
                 return (
                   <div className="bg-white rounded-xl shadow-sm p-4">
                     <p className="text-xs text-gray-500 leading-tight">

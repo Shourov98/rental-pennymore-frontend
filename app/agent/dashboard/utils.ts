@@ -21,9 +21,8 @@ export interface ApiAgentRequest {
    * (Template #32). Mirrors `searchActivity.allMarketOfferEnabled` from
    * the backend, with `true` as the default for newer documents.
    *
-   * The registered agent for the renter can uncheck this from the "All
-   * Market Offer" column in the agent dashboard; doing so flips scope to
-   * "All Market" and locks the checkbox permanently.
+   * Before day 10 the registered agent can freely toggle it. On/after day 10,
+   * On triggers the follow-up email and permanently locks the setting On.
    */
   allMarketOfferEnabled?: boolean;
   allMarketOfferToggledAt?: string | null;
@@ -251,7 +250,7 @@ export interface NormalizedAgentRequest {
    */
   isScopeUpcomingLike?: boolean;
   /**
-   * The "All Market Offer" gate value for the request. Defaults to `true`
+   * The "All Market Offer" value for the request. Defaults to `true`
    * (the request is currently eligible to receive the day-10 follow-up
    * email). When `false`, the day-10 sweep will skip the request.
    */
