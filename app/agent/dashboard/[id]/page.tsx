@@ -86,9 +86,7 @@ const opportunityDetailsHelperText: Record<RepresentationType, string> = {
 };
 
 const opportunityDetailsPlaceholder: Record<RepresentationType, string> = {
-  renter_representation: `e.g. I found an upcoming rental that may work for you: E 87th St between First
-& Second Ave, large beautiful 1BR, $3,600, Sep 1 start, great light, elevator,
-laundry in building. Video available. Reply all if interested.`,
+  renter_representation: `e.g. I found an upcoming rental that may work for you: E 87th St between First & Second Ave, large beautiful 1BR, $3,600, Sep 1 start, great light, elevator, laundry in building. Video available. Reply all if interested.`,
   owner_representation: `e.g. I have an exclusive coming up that can fit your client. Large one bedroom, West 72nd Street between Broadway and Amsterdam Avenue, dishwasher, high ceilings, $3,800, September 1 start date, elevator and laundry building. Reach out for showing times.`,
 };
 
@@ -708,10 +706,10 @@ export default function AgentRenterRequestDetailsPage() {
   const paymentCurrency = request?.raw?.payment?.currency || "USD";
 
   const isDisabled = grantAccessEnabled
-    ? isListingMatched
-      && !canAddAdditionalOpportunity
-      && !canAddOwnerOpportunity
-      && !isUpcomingRequest
+    ? isListingMatched &&
+      !canAddAdditionalOpportunity &&
+      !canAddOwnerOpportunity &&
+      !isUpcomingRequest
     : canRequestAccess === false || isSubmitting
       ? true
       : false;
@@ -870,21 +868,19 @@ export default function AgentRenterRequestDetailsPage() {
           },
         );
 
-        const data = await response
-          .json()
-          .catch(
-            () =>
-              ({}) as {
-                success?: boolean;
-                message?: string;
-                data?: {
-                  ownerRepresentationMatches?: unknown;
-                  ownerRepresentationRegisteredAgent?: unknown;
-                };
+        const data = await response.json().catch(
+          () =>
+            ({}) as {
+              success?: boolean;
+              message?: string;
+              data?: {
                 ownerRepresentationMatches?: unknown;
                 ownerRepresentationRegisteredAgent?: unknown;
-              },
-          );
+              };
+              ownerRepresentationMatches?: unknown;
+              ownerRepresentationRegisteredAgent?: unknown;
+            },
+        );
 
         if (!response.ok || data?.success === false) {
           const errorMessage =
@@ -1048,8 +1044,7 @@ export default function AgentRenterRequestDetailsPage() {
     if (!apiRequestId || !isRegisteredAgentForRequest) {
       return;
     }
-    const rawScope
-      = request?.raw?.scope?.trim() ?? request?.scopeLabel?.trim();
+    const rawScope = request?.raw?.scope?.trim() ?? request?.scopeLabel?.trim();
     if (rawScope === "Upcoming (M)" || rawScope === "All Market") {
       return;
     }
@@ -1081,26 +1076,27 @@ export default function AgentRenterRequestDetailsPage() {
       };
       if (!response.ok || data?.success === false) {
         throw new Error(
-          data?.message
-            || "We couldn't update the All Market Offer gate right now. Please try again.",
+          data?.message ||
+            "We couldn't update the All Market Offer gate right now. Please try again.",
         );
       }
       // Update local request state so the toggle + cards reflect the new
       // server state immediately without a full refetch.
       setRequest((prev) => {
         if (!prev) return prev;
-        const nextScope = data?.data?.scope ?? prev.raw?.scope ?? prev.scopeLabel;
+        const nextScope =
+          data?.data?.scope ?? prev.raw?.scope ?? prev.scopeLabel;
         const nextEnabledValue =
           data?.data?.searchActivity?.allMarketOfferEnabled ?? nextEnabled;
         const nextReminderSentAt =
-          data?.data?.searchActivity
-            ?.upcomingSearchExpansionReminderSentAt ??
+          data?.data?.searchActivity?.upcomingSearchExpansionReminderSentAt ??
           prev.raw?.searchActivity?.upcomingSearchExpansionReminderSentAt ??
           null;
         return {
           ...prev,
           allMarketOfferEnabled: nextEnabledValue,
-          scopeLabel: typeof nextScope === "string" ? nextScope : prev.scopeLabel,
+          scopeLabel:
+            typeof nextScope === "string" ? nextScope : prev.scopeLabel,
           isScopeUpcomingLike:
             nextScope === "Upcoming" || nextScope === "Upcoming (M)",
           raw: {
@@ -1116,8 +1112,8 @@ export default function AgentRenterRequestDetailsPage() {
         };
       });
     } catch (err) {
-      const message
-        = err instanceof Error
+      const message =
+        err instanceof Error
           ? err.message
           : "We couldn't update the All Market Offer gate right now. Please try again.";
       setError(message);
@@ -1242,97 +1238,98 @@ export default function AgentRenterRequestDetailsPage() {
             </div>
             {isRegisteredAgentForRequest
               ? (() => {
-                const gateValue = request.allMarketOfferEnabled !== false;
-                const rawScope
-                  = request?.raw?.scope?.trim() ?? request?.scopeLabel?.trim();
-                const isUpcomingM = rawScope === "Upcoming (M)";
-                const isAllMarket = rawScope === "All Market";
-                const reminderSentAt =
-                  request?.raw?.searchActivity
-                    ?.upcomingSearchExpansionReminderSentAt;
-                const isEmailSent = Boolean(reminderSentAt);
-                // Lock rules per the spec:
-                //  - Upcoming (M): always locked (off)
-                //  - All Market: always locked (off)
-                //  - Upcoming + email already sent: locked On
-                //  - Upcoming before email: interactive (on/off)
-                // Match status does not affect the lock.
-                const isLocked = isUpcomingM
-                  || isAllMarket
-                  || isEmailSent
-                  || mutatingAllMarketOffer;
-                const lockedReason = isUpcomingM
-                  ? "Locked once the request becomes Upcoming (M)"
-                  : isAllMarket
-                    ? "Locked once the request becomes All Market"
-                    : isEmailSent
-                      ? "The day-10 follow-up email has already been sent"
-                      : "Toggle the day-10 follow-up email";
-                const isDisabled = isLocked;
-                // Force Off for Upcoming (M) and All Market. An emailed
-                // Upcoming request keeps the persisted On value and locks.
-                const displayGate =
-                  isUpcomingM || isAllMarket
-                    ? false
-                    : isEmailSent
-                      ? true
-                      : gateValue;
-                return (
-                  <div className="group relative bg-white rounded-xl shadow-sm p-4 hover:z-50 focus-within:z-50">
-                    <p className="text-xs text-gray-500 leading-tight">
-                      Offer full-market agent help
-                      <br />
-                      <span className="text-[11px] text-gray-400">
-                        (day-10 follow-up email)
-                      </span>
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (isDisabled) return;
-                        void handleToggleAllMarketOffer(!gateValue);
-                      }}
-                      disabled={isDisabled}
-                      className="mt-2 inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                      aria-label="Toggle All Market Offer"
-                      aria-describedby="all-market-offer-tooltip"
-                    >
-                      <span
-                        className={`text-xs font-medium ${
-                          displayGate ? "text-gray-400" : "text-gray-700"
-                        }`}
-                      >
-                        Off
-                      </span>
-                      <span
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-                          displayGate ? "bg-blue-400" : "bg-gray-300"
-                        }`}
+                  const gateValue = request.allMarketOfferEnabled !== false;
+                  const rawScope =
+                    request?.raw?.scope?.trim() ?? request?.scopeLabel?.trim();
+                  const isUpcomingM = rawScope === "Upcoming (M)";
+                  const isAllMarket = rawScope === "All Market";
+                  const reminderSentAt =
+                    request?.raw?.searchActivity
+                      ?.upcomingSearchExpansionReminderSentAt;
+                  const isEmailSent = Boolean(reminderSentAt);
+                  // Lock rules per the spec:
+                  //  - Upcoming (M): always locked (off)
+                  //  - All Market: always locked (off)
+                  //  - Upcoming + email already sent: locked On
+                  //  - Upcoming before email: interactive (on/off)
+                  // Match status does not affect the lock.
+                  const isLocked =
+                    isUpcomingM ||
+                    isAllMarket ||
+                    isEmailSent ||
+                    mutatingAllMarketOffer;
+                  const lockedReason = isUpcomingM
+                    ? "Locked once the request becomes Upcoming (M)"
+                    : isAllMarket
+                      ? "Locked once the request becomes All Market"
+                      : isEmailSent
+                        ? "The day-10 follow-up email has already been sent"
+                        : "Toggle the day-10 follow-up email";
+                  const isDisabled = isLocked;
+                  // Force Off for Upcoming (M) and All Market. An emailed
+                  // Upcoming request keeps the persisted On value and locks.
+                  const displayGate =
+                    isUpcomingM || isAllMarket
+                      ? false
+                      : isEmailSent
+                        ? true
+                        : gateValue;
+                  return (
+                    <div className="group relative bg-white rounded-xl shadow-sm p-4 hover:z-50 focus-within:z-50">
+                      <p className="text-xs text-gray-500 leading-tight">
+                        Offer full-market agent help
+                        <br />
+                        <span className="text-[11px] text-gray-400">
+                          (day-10 follow-up email)
+                        </span>
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (isDisabled) return;
+                          void handleToggleAllMarketOffer(!gateValue);
+                        }}
+                        disabled={isDisabled}
+                        className="mt-2 inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                        aria-label="Toggle All Market Offer"
+                        aria-describedby="all-market-offer-tooltip"
                       >
                         <span
-                          className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
-                            displayGate ? "translate-x-5" : "translate-x-1"
+                          className={`text-xs font-medium ${
+                            displayGate ? "text-gray-400" : "text-gray-700"
                           }`}
-                        />
-                      </span>
-                      <span
-                        className={`text-xs font-medium ${
-                          displayGate ? "text-emerald-700" : "text-gray-400"
-                        }`}
+                        >
+                          Off
+                        </span>
+                        <span
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                            displayGate ? "bg-blue-400" : "bg-gray-300"
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                              displayGate ? "translate-x-5" : "translate-x-1"
+                            }`}
+                          />
+                        </span>
+                        <span
+                          className={`text-xs font-medium ${
+                            displayGate ? "text-emerald-700" : "text-gray-400"
+                          }`}
+                        >
+                          On
+                        </span>
+                      </button>
+                      <div
+                        id="all-market-offer-tooltip"
+                        role="tooltip"
+                        className="pointer-events-none invisible absolute right-2 top-full z-50 mt-2 max-w-[260px] rounded-md bg-gray-900 px-3 py-2 text-xs leading-4 text-white opacity-0 shadow-lg transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
                       >
-                        On
-                      </span>
-                    </button>
-                    <div
-                      id="all-market-offer-tooltip"
-                      role="tooltip"
-                      className="pointer-events-none invisible absolute right-2 top-full z-50 mt-2 max-w-[260px] rounded-md bg-gray-900 px-3 py-2 text-xs leading-4 text-white opacity-0 shadow-lg transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
-                    >
-                      {lockedReason}
+                        {lockedReason}
+                      </div>
                     </div>
-                  </div>
-                );
-              })()
+                  );
+                })()
               : null}
           </div>
 
@@ -1707,7 +1704,9 @@ export default function AgentRenterRequestDetailsPage() {
                     maxLength={OPPORTUNITY_DETAILS_MAX_LENGTH}
                     placeholder={
                       selectedRepresentationType
-                        ? opportunityDetailsPlaceholder[selectedRepresentationType]
+                        ? opportunityDetailsPlaceholder[
+                            selectedRepresentationType
+                          ]
                         : opportunityDetailsPlaceholder.renter_representation
                     }
                     ariaInvalid={hasRiskyOpportunityDetails}

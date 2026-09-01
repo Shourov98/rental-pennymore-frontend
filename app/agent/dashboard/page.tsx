@@ -76,8 +76,7 @@ const opportunityDetailsHelperText: Record<RepresentationType, string> = {
 
 const opportunityDetailsPlaceholder: Record<RepresentationType, string> = {
   renter_representation: `e.g. I found an upcoming rental that may work for you: E 87th St between First
-& Second Ave, large beautiful 1BR, $3,600, Sep 1 start, great light, elevator,
-laundry in building. Video available. Reply all if interested.`,
+& Second Ave, large beautiful 1BR, $3,600, Sep 1 start, great light, elevator, laundry in building. Video available. Reply all if interested.`,
   owner_representation: `e.g. I have an exclusive coming up that can fit your client. Large one bedroom, West 72nd Street between Broadway and Amsterdam Avenue, dishwasher, high ceilings, $3,800, September 1 start date, elevator and laundry building. Reach out for showing times.`,
 };
 
@@ -1199,11 +1198,11 @@ export default function AgentRenterRequestsPage() {
           const nextEnabled =
             data?.data?.searchActivity?.allMarketOfferEnabled ?? enabled;
           const nextReminderSentAt =
-            data?.data?.searchActivity
-              ?.upcomingSearchExpansionReminderSentAt ??
+            data?.data?.searchActivity?.upcomingSearchExpansionReminderSentAt ??
             req.raw?.searchActivity?.upcomingSearchExpansionReminderSentAt ??
             null;
-          const nextScope = data?.data?.scope ?? req.raw?.scope ?? req.scopeLabel;
+          const nextScope =
+            data?.data?.scope ?? req.raw?.scope ?? req.scopeLabel;
           const nextRawScopeLabel =
             typeof nextScope === "string" ? nextScope : req.scopeLabel;
 
@@ -1535,7 +1534,10 @@ export default function AgentRenterRequestsPage() {
   // request. So we exclude those rows from the "already matched" gating
   // that flips the bulk action label to "Add Opportunity" / "Match / Add
   // Opportunity".
-  const isRequestUpcomingLike = (request: { raw?: { scope?: string }, scopeLabel?: string }) =>
+  const isRequestUpcomingLike = (request: {
+    raw?: { scope?: string };
+    scopeLabel?: string;
+  }) =>
     isUpcomingScope(request.raw?.scope) || isUpcomingScope(request.scopeLabel);
   const selectedHasAlreadyMatchedRequests = selectedRequests.some(
     (request) =>
@@ -2456,7 +2458,8 @@ export default function AgentRenterRequestsPage() {
                               // matchable (additional opportunities are
                               // possible). The fallback is suppressed for
                               // upcoming-like scopes.
-                              const rowIsUpcomingLike = isRequestUpcomingLike(req);
+                              const rowIsUpcomingLike =
+                                isRequestUpcomingLike(req);
                               const matchedFromGrantStatus =
                                 !rowIsUpcomingLike &&
                                 req.raw?.representation_type !==
@@ -2574,20 +2577,20 @@ export default function AgentRenterRequestsPage() {
                               </button>
                             ) : null}
                             {shouldShowMatchedAgentName ? (
-                                <button
-                                  onClick={() => openRequestUpdateDialog(req)}
-                                  title="Request update"
-                                  className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-100 transition hover:bg-blue-50"
-                                >
-                                  <Image
-                                    src="/icons/Ask-for-update.png"
-                                    alt=""
-                                    aria-hidden="true"
-                                    width={20}
-                                    height={20}
-                                    className="h-5 w-5 shrink-0 object-contain"
-                                  />
-                                </button>
+                              <button
+                                onClick={() => openRequestUpdateDialog(req)}
+                                title="Request update"
+                                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-100 transition hover:bg-blue-50"
+                              >
+                                <Image
+                                  src="/icons/Ask-for-update.png"
+                                  alt=""
+                                  aria-hidden="true"
+                                  width={20}
+                                  height={20}
+                                  className="h-5 w-5 shrink-0 object-contain"
+                                />
+                              </button>
                             ) : null}
                             <button
                               onClick={() => handleView(req)}
