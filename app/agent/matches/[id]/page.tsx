@@ -123,8 +123,7 @@ export default function AgentMatchDetailsPage() {
   const [request, setRequest] = useState<NormalizedAgentMatch | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isSubmittingOpportunity, setIsSubmittingOpportunity] =
-    useState(false);
+  const [isSubmittingOpportunity, setIsSubmittingOpportunity] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{
     type: "success" | "error";
     message: string;
@@ -236,17 +235,21 @@ export default function AgentMatchDetailsPage() {
 
       const currentIndex = storedState.itemIds.indexOf(requestId);
       const localPreviousId =
-        currentIndex >= 0 ? storedState.itemIds[currentIndex - 1] ?? null : null;
+        currentIndex >= 0
+          ? (storedState.itemIds[currentIndex - 1] ?? null)
+          : null;
       const localNextId =
-        currentIndex >= 0 ? storedState.itemIds[currentIndex + 1] ?? null : null;
+        currentIndex >= 0
+          ? (storedState.itemIds[currentIndex + 1] ?? null)
+          : null;
 
       if (localPreviousId && localNextId) {
         setNavigationTargets({
           previousHref: isArchiveContext
-            ? storedState.itemHrefs?.[localPreviousId] ?? null
+            ? (storedState.itemHrefs?.[localPreviousId] ?? null)
             : `/agent/matches/${localPreviousId}`,
           nextHref: isArchiveContext
-            ? storedState.itemHrefs?.[localNextId] ?? null
+            ? (storedState.itemHrefs?.[localNextId] ?? null)
             : `/agent/matches/${localNextId}`,
         });
         return;
@@ -259,7 +262,9 @@ export default function AgentMatchDetailsPage() {
 
       const findAdjacentHref = async (direction: "previous" | "next") => {
         let targetPage =
-          direction === "previous" ? storedState.page - 1 : storedState.page + 1;
+          direction === "previous"
+            ? storedState.page - 1
+            : storedState.page + 1;
 
         while (
           targetPage >= 1 &&
@@ -330,14 +335,14 @@ export default function AgentMatchDetailsPage() {
           localPreviousId
             ? Promise.resolve(
                 isArchiveContext
-                  ? storedState.itemHrefs?.[localPreviousId] ?? null
+                  ? (storedState.itemHrefs?.[localPreviousId] ?? null)
                   : `/agent/matches/${localPreviousId}`,
               )
             : findAdjacentHref("previous"),
           localNextId
             ? Promise.resolve(
                 isArchiveContext
-                  ? storedState.itemHrefs?.[localNextId] ?? null
+                  ? (storedState.itemHrefs?.[localNextId] ?? null)
                   : `/agent/matches/${localNextId}`,
               )
             : findAdjacentHref("next"),
@@ -351,12 +356,12 @@ export default function AgentMatchDetailsPage() {
           setNavigationTargets({
             previousHref: localPreviousId
               ? isArchiveContext
-                ? storedState.itemHrefs?.[localPreviousId] ?? null
+                ? (storedState.itemHrefs?.[localPreviousId] ?? null)
                 : `/agent/matches/${localPreviousId}`
               : null,
             nextHref: localNextId
               ? isArchiveContext
-                ? storedState.itemHrefs?.[localNextId] ?? null
+                ? (storedState.itemHrefs?.[localNextId] ?? null)
                 : `/agent/matches/${localNextId}`
               : null,
           });
@@ -540,15 +545,23 @@ export default function AgentMatchDetailsPage() {
     router.push(targetHref);
   };
 
-  const backHref = isArchiveContext ? "/agent/archived-requests" : "/agent/matches";
+  const backHref = isArchiveContext
+    ? "/agent/archived-requests"
+    : "/agent/matches";
   const backLabel = isArchiveContext ? "Archived Requests" : "Matched Requests";
   const normalizedGrantStatus = String(
-    request?.raw?.grantAccessStatus ?? request?.raw?.status ?? request?.status ?? "",
+    request?.raw?.grantAccessStatus ??
+      request?.raw?.status ??
+      request?.status ??
+      "",
   )
     .trim()
     .toLowerCase();
   const normalizedListingStatus = String(
-    request?.raw?.listingStatus ?? request?.raw?.status ?? request?.status ?? "",
+    request?.raw?.listingStatus ??
+      request?.raw?.status ??
+      request?.status ??
+      "",
   )
     .trim()
     .toLowerCase();
@@ -568,7 +581,8 @@ export default function AgentMatchDetailsPage() {
       request?.raw?.alreadyMatchedByAgent === true);
   // Owner-rep add-op is restricted to Upcoming / Upcoming (M); the backend
   // scope gate enforces it for renter-rep on All Market.
-  const canAddOpportunityRenter = canAddOpportunityBase && !isOwnerRepresentationMatch;
+  const canAddOpportunityRenter =
+    canAddOpportunityBase && !isOwnerRepresentationMatch;
   const canAddOpportunityOwner =
     canAddOpportunityBase && isOwnerRepresentationMatch && isUpcomingMatch;
   const opportunityDetailsCount = opportunityDetails.length;
@@ -584,9 +598,9 @@ export default function AgentMatchDetailsPage() {
   const handleSendAdditionalOpportunity = async () => {
     const isOwnerAdd = addOpportunityKind === "owner";
     if (
-      !requestId
-      || (isOwnerAdd ? !canAddOpportunityOwner : !canAddOpportunityRenter)
-      || isSubmittingOpportunity
+      !requestId ||
+      (isOwnerAdd ? !canAddOpportunityOwner : !canAddOpportunityRenter) ||
+      isSubmittingOpportunity
     ) {
       return;
     }
@@ -838,9 +852,7 @@ export default function AgentMatchDetailsPage() {
                   disabled={isSubmittingOpportunity}
                   className="w-fit rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {isSubmittingOpportunity
-                    ? "Sending..."
-                    : "Add Opportunity"}
+                  {isSubmittingOpportunity ? "Sending..." : "Add Opportunity"}
                 </button>
               )}
               {canAddOpportunityRenter && (
@@ -866,7 +878,9 @@ export default function AgentMatchDetailsPage() {
                 onClick={() =>
                   navigateToAdjacentRequest(navigationTargets.previousHref)
                 }
-                disabled={!navigationTargets.previousHref || isResolvingNavigation}
+                disabled={
+                  !navigationTargets.previousHref || isResolvingNavigation
+                }
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 md:min-w-36"
                 aria-label="Previous request"
               >
@@ -875,7 +889,9 @@ export default function AgentMatchDetailsPage() {
               </button>
               <button
                 type="button"
-                onClick={() => navigateToAdjacentRequest(navigationTargets.nextHref)}
+                onClick={() =>
+                  navigateToAdjacentRequest(navigationTargets.nextHref)
+                }
                 disabled={!navigationTargets.nextHref || isResolvingNavigation}
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 md:min-w-36"
                 aria-label="Next request"
