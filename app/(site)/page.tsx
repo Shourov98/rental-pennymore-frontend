@@ -43,7 +43,7 @@ export default function HomePage() {
     ? (auth.agentProfile?.brokerageName ?? "The Corcoran Group")
     : referrerBrokerageName || "The Corcoran Group";
 
-  // Renters who already have at least one active pre-market request
+  // Renters who already have at least one saved pre-market request
   // should be sent straight to their dashboard ("My Requests") instead of
   // landing on the marketing homepage. Renters without an active request
   // (and non-renters) continue to see the public homepage as before.

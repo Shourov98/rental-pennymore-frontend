@@ -118,7 +118,7 @@ function SigninPageContent() {
       if (role !== "Renter") return "/";
 
       // Renters land on /renter/saved-requests when they have at least one
-      // currently-active pre-market request; otherwise on the marketing
+      // saved request in any stage; otherwise on the marketing
       // homepage so they can learn about the product and submit their first
       // request.
       const hasActiveRequest = await renterHasActiveRequest(token);
@@ -206,6 +206,7 @@ function SigninPageContent() {
   ) => {
     const payload = data?.data;
     const role = payload?.user?.role;
+    let renterAccessToken: string | undefined;
 
     if (role === "Admin") {
       // Admins should sign in via the dedicated dashboard, not here. Treat
@@ -230,6 +231,7 @@ function SigninPageContent() {
               }
             : undefined
       ) as Parameters<typeof renterLoginSuccess>[0]["tokens"];
+      renterAccessToken = tokens?.accessToken;
       dispatch(
         renterLoginSuccess({
           user: payload.user as Parameters<
@@ -267,7 +269,7 @@ function SigninPageContent() {
 
     const explicitDestination = getRedirectDestination(forcedDestination);
     const destination = explicitDestination === "/"
-      ? await resolveRoleBasedDestination(role, tokens?.accessToken)
+      ? await resolveRoleBasedDestination(role, renterAccessToken)
       : explicitDestination;
     setStatusMessage({
       type: "success",
