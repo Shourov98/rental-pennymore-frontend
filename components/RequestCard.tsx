@@ -66,7 +66,7 @@ export default function RequestCard({
   return (
     <div className="w-full max-w-[660px] rounded-xl border border-[#E6EBF2] bg-white px-4 py-5 shadow-[0_1px_2px_rgba(16,24,40,0.06)]">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="min-w-0 flex-1 md:max-w-[215px]">
+        <div className="min-w-0 flex-1">
           <div className="mb-3 flex items-center justify-between gap-3">
             <h3 className="text-[14px] font-semibold text-[#121A2C]">
               {requestName}
