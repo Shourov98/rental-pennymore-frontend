@@ -11,6 +11,7 @@ import {
   authStart,
   adminSessionDetected,
   selectAuth,
+  selectAccessToken,
   selectIsAuthed,
   selectSessionReady,
   renterLoginSuccess,
@@ -60,6 +61,7 @@ function SigninPageContent() {
   const isAuthed = useSelector(selectIsAuthed);
   const sessionReady = useSelector(selectSessionReady);
   const auth = useSelector(selectAuth);
+  const accessToken = useSelector(selectAccessToken);
   const [hasMounted, setHasMounted] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -107,7 +109,10 @@ function SigninPageContent() {
   );
 
   const resolveRoleBasedDestination = useCallback(
-    async (role: string | undefined): Promise<string> => {
+    async (
+      role: string | undefined,
+      token?: string | null,
+    ): Promise<string> => {
       if (role === "Agent") return AGENT_DASHBOARD_PATH;
 
       if (role !== "Renter") return "/";
@@ -116,7 +121,7 @@ function SigninPageContent() {
       // currently-active pre-market request; otherwise on the marketing
       // homepage so they can learn about the product and submit their first
       // request.
-      const hasActiveRequest = await renterHasActiveRequest();
+      const hasActiveRequest = await renterHasActiveRequest(token);
       return hasActiveRequest ? RENTER_DASHBOARD_PATH : "/";
     },
     [],
@@ -135,7 +140,10 @@ function SigninPageContent() {
         return;
       }
       const authRole = auth?.role ?? auth?.user?.role ?? null;
-      const destination = await resolveRoleBasedDestination(authRole ?? undefined);
+      const destination = await resolveRoleBasedDestination(
+        authRole ?? undefined,
+        accessToken,
+      );
       if (!cancelled) router.replace(destination);
     })();
     return () => {
@@ -144,6 +152,7 @@ function SigninPageContent() {
   }, [
     auth?.role,
     auth?.user?.role,
+    accessToken,
     getRedirectDestination,
     isAuthed,
     resolveRoleBasedDestination,
@@ -258,7 +267,7 @@ function SigninPageContent() {
 
     const explicitDestination = getRedirectDestination(forcedDestination);
     const destination = explicitDestination === "/"
-      ? await resolveRoleBasedDestination(role)
+      ? await resolveRoleBasedDestination(role, tokens?.accessToken)
       : explicitDestination;
     setStatusMessage({
       type: "success",

@@ -11,6 +11,7 @@ import {
 } from "@/lib/renterRedirect";
 import {
   selectAuth,
+  selectAccessToken,
   selectIsAuthed,
   selectReferrerBrokerageName,
   selectReferrerName,
@@ -26,6 +27,7 @@ export default function HomePage() {
   const router = useRouter();
   const isAuthed = useSelector(selectIsAuthed);
   const auth = useSelector(selectAuth);
+  const accessToken = useSelector(selectAccessToken);
   const referrerName = useSelector(selectReferrerName);
   const referrerBrokerageName = useSelector(selectReferrerBrokerageName);
   const sessionReady = useSelector(selectSessionReady);
@@ -50,7 +52,7 @@ export default function HomePage() {
     if (!sessionReady || !isAuthed || !isRenter) return;
     let cancelled = false;
     void (async () => {
-      const hasActiveRequest = await renterHasActiveRequest();
+      const hasActiveRequest = await renterHasActiveRequest(accessToken);
       if (cancelled) return;
       if (hasActiveRequest) {
         setRedirectingToDashboard(true);
@@ -60,7 +62,7 @@ export default function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, [isAuthed, isRenter, router, sessionReady]);
+  }, [accessToken, isAuthed, isRenter, router, sessionReady]);
 
   if (!sessionReady) return null;
   if (!isAuthed) return <BrucherLanding />;

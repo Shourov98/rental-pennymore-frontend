@@ -11,7 +11,9 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
  * back to the marketing homepage rather than getting stuck on a login
  * redirect.
  */
-export const renterHasActiveRequest = async (): Promise<boolean> => {
+export const renterHasActiveRequest = async (
+  accessToken?: string | null,
+): Promise<boolean> => {
   if (!API_BASE_URL) return false;
 
   try {
@@ -21,6 +23,9 @@ export const renterHasActiveRequest = async (): Promise<boolean> => {
         method: "GET",
         credentials: "include",
         cache: "no-store",
+        headers: accessToken
+          ? { authorization: `Bearer ${accessToken}` }
+          : undefined,
       },
     );
     if (!response.ok) return false;
