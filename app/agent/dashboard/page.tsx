@@ -990,11 +990,19 @@ export default function AgentRenterRequestsPage() {
         }
 
         const normalized = (data.data ?? []).map(normalizeAgentRequest);
-        setRequests(normalized);
+        // API `scope` is always the live request scope.  Only the Matches
+        // view uses the agent-specific snapshot/presentation label.
+        const displayedRequests = isMatchResultsMode
+          ? normalized.map((request) => ({
+              ...request,
+              scopeLabel: request.matchScopeLabel ?? request.scopeLabel,
+            }))
+          : normalized;
+        setRequests(displayedRequests);
         setPagination(data.pagination);
         setSelectedRequestIds([]);
         setQuickSelect("none");
-        cacheAgentRequests(normalized);
+        cacheAgentRequests(displayedRequests);
       } catch (err) {
         if (controller.signal.aborted) return;
         const message =

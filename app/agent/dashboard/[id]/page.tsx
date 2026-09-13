@@ -288,6 +288,13 @@ export default function AgentRenterRequestDetailsPage() {
   useEffect(() => {
     if (!requestId) return;
     const controller = new AbortController();
+    const applyScopeForView = (item: NormalizedAgentRequest) =>
+      isMatchResultsContext
+        ? {
+            ...item,
+            scopeLabel: item.matchScopeLabel ?? item.scopeLabel,
+          }
+        : item;
 
     const fetchRequest = async () => {
       setIsLoading(true);
@@ -298,7 +305,7 @@ export default function AgentRenterRequestDetailsPage() {
           (item) => item.id === requestId,
         );
         if (cached) {
-          setRequest(cached);
+          setRequest(applyScopeForView(cached));
         }
 
         const headers: Record<string, string> = {
@@ -333,7 +340,9 @@ export default function AgentRenterRequestDetailsPage() {
           );
         }
 
-        const found = data?.data ? normalizeAgentRequest(data.data) : null;
+        const found = data?.data
+          ? applyScopeForView(normalizeAgentRequest(data.data))
+          : null;
         if (!found) {
           throw new Error("We couldn't find this request.");
         }
@@ -355,7 +364,7 @@ export default function AgentRenterRequestDetailsPage() {
     fetchRequest();
 
     return () => controller.abort();
-  }, [accessToken, requestId]);
+  }, [accessToken, isMatchResultsContext, requestId]);
 
   useEffect(() => {
     if (!requestId) return;

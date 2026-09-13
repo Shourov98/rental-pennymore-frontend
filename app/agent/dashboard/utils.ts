@@ -47,6 +47,10 @@ export interface ApiAgentRequest {
   guarantorRequired?: Record<string, boolean>;
   shareConsent?: boolean;
   scope?: string;
+  /** The scope when the current agent matched this request, if applicable. */
+  scopeAtMatch?: "Upcoming" | "All Market" | null;
+  /** Agent-specific scope label for the Renter Matches view only. */
+  matchScope?: string | null;
   visibility?: string;
   matchedByAgent?: {
     agentId?: string;
@@ -202,6 +206,8 @@ export interface NormalizedAgentRequest {
   bathroomsLabel: string;
   bedsBathsLabel: string;
   scopeLabel: string;
+  /** Agent-specific label used only when the request is rendered in Matches. */
+  matchScopeLabel?: string;
   visibilityLabel: string;
   isPrivateVisibility: boolean;
   matchedByAgent?: {
@@ -375,6 +381,7 @@ export const normalizeAgentRequest = (
     bathroomsLabel: formatBathroomRange(req.bathrooms),
     bedsBathsLabel: formatBedsBathsRange(req.bedrooms, req.bathrooms),
     scopeLabel: formatScope(req.scope),
+    matchScopeLabel: req.matchScope ? formatScope(req.matchScope) : undefined,
     visibilityLabel,
     isPrivateVisibility,
     matchedByAgent: req.matchedByAgent ?? null,
