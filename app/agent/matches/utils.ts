@@ -35,6 +35,10 @@ export interface ApiAgentMatch {
   guarantorRequired?: Record<string, boolean>;
   shareConsent?: boolean;
   scope?: string;
+  /** Immutable snapshot captured when this agent matched the request. */
+  scopeAtMatch?: "Upcoming" | "All Market" | null;
+  /** Agent-specific display scope supplied for the Matched Requests view. */
+  matchScope?: string | null;
   visibility?: string;
   registrationDisclosureConfirmed?: boolean;
   registrationDisclosureConfirmedAt?: string | null;
@@ -237,7 +241,9 @@ export const normalizeAgentMatch = (
     bedroomsLabel: formatBedroomRange(req.bedrooms),
     bathroomsLabel: formatBathroomRange(req.bathrooms),
     bedsBathsLabel: formatBedsBathsRange(req.bedrooms, req.bathrooms),
-    scopeLabel: formatScope(req.scope),
+    // The API's `scope` is the request's live state. This page is the
+    // matched-record view, so it intentionally renders the match snapshot.
+    scopeLabel: formatScope(req.matchScope ?? req.scopeAtMatch ?? req.scope),
     visibilityLabel,
     isPrivateVisibility,
     registrationDisclosureConfirmed: Boolean(
