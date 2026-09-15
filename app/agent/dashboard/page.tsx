@@ -1150,8 +1150,8 @@ export default function AgentRenterRequestsPage() {
 
   /**
    * Toggles the "All Market Offer" gate for a single request. Only the
-   * registered agent for the renter can call this. Before day 10 both states
-   * are interactive. On/after day 10, turning it On sends the follow-up email
+   * registered agent for the renter can call this. Before day 7 both states
+   * are interactive. On/after day 7, turning it On sends the follow-up email
    * and permanently locks it On without changing scope.
    */
   const handleToggleAllMarketOffer = async (

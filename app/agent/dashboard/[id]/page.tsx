@@ -1045,7 +1045,7 @@ export default function AgentRenterRequestDetailsPage() {
   /**
    * Toggles the "All Market Offer" gate for this request from the detail
    * page. Only meaningful for the registered agent on an active Upcoming
-   * request. Before day 10 both states are interactive. On/after day 10,
+   * request. Before day 7 both states are interactive. On/after day 7,
    * turning it On sends the follow-up email and permanently locks it On.
    */
   const handleToggleAllMarketOffer = async (nextEnabled: boolean) => {
@@ -1272,8 +1272,8 @@ export default function AgentRenterRequestDetailsPage() {
                     : isAllMarket
                       ? "Locked once the request becomes All Market"
                       : isEmailSent
-                        ? "The day-10 follow-up email has already been sent"
-                        : "Toggle the day-10 follow-up email";
+                        ? "The day-7 follow-up email has already been sent"
+                        : "Toggle the day-7 follow-up email";
                   const isDisabled = isLocked;
                   // Force Off for Upcoming (M) and All Market. An emailed
                   // Upcoming request keeps the persisted On value and locks.
@@ -1289,7 +1289,7 @@ export default function AgentRenterRequestDetailsPage() {
                         Offer full-market agent help
                         <br />
                         <span className="text-[11px] text-gray-400">
-                          (day-10 follow-up email)
+                          (day-7 follow-up email)
                         </span>
                       </p>
                       <button

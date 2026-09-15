@@ -17,11 +17,11 @@ export interface ApiAgentRequest {
   referralAgentId?: string;
   referrerId?: string;
   /**
-   * Per-request gate that controls the day-10 search-expansion reminder
+   * Per-request gate that controls the day-7 search-expansion reminder
    * (Template #32). Mirrors `searchActivity.allMarketOfferEnabled` from
    * the backend, with `true` as the default for newer documents.
    *
-   * Before day 10 the registered agent can freely toggle it. On/after day 10,
+   * Before day 7 the registered agent can freely toggle it. On/after day 7,
    * On triggers the follow-up email and permanently locks the setting On.
    */
   allMarketOfferEnabled?: boolean;
@@ -169,7 +169,7 @@ export interface ApiAgentRequest {
     allMarketOfferToggledAt?: string | null;
     allMarketOfferToggledByAgentId?: string | null;
     /**
-     * When the day-10 follow-up email (Template #32) was sent for this
+     * When the day-7 follow-up email (Template #32) was sent for this
      * request, if ever. Used by the dashboard to lock the "All Market
      * Offer" checkbox once the email has gone out. Mirrors
      * `searchActivity.upcomingSearchExpansionReminderSentAt` on the
@@ -252,13 +252,13 @@ export interface NormalizedAgentRequest {
   /**
    * Whether the request scope is still in the "Upcoming" state. The All
    * Market Offer gate is independent of this flag — it locks based on
-   * whether the day-10 follow-up email has been sent, not on scope.
+   * whether the day-7 follow-up email has been sent, not on scope.
    */
   isScopeUpcomingLike?: boolean;
   /**
    * The "All Market Offer" value for the request. Defaults to `true`
-   * (the request is currently eligible to receive the day-10 follow-up
-   * email). When `false`, the day-10 sweep will skip the request.
+   * (the request is currently eligible to receive the day-7 follow-up
+   * email). When `false`, the day-7 sweep will skip the request.
    */
   allMarketOfferEnabled?: boolean;
   /**
