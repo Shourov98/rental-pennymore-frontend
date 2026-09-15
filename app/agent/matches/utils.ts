@@ -37,6 +37,10 @@ export interface ApiAgentMatch {
   scope?: string;
   /** Immutable snapshot captured when this agent matched the request. */
   scopeAtMatch?: "Upcoming" | "All Market" | null;
+  matchedRenterUpdatedAt?: string | null;
+  searchActivity?: {
+    lastRenterUpdatedAt?: string | null;
+  } | null;
   /** Agent-specific display scope supplied for the Matched Requests view. */
   matchScope?: string | null;
   visibility?: string;

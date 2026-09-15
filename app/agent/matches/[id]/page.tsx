@@ -585,6 +585,16 @@ export default function AgentMatchDetailsPage() {
     canAddOpportunityBase && !isOwnerRepresentationMatch;
   const canAddOpportunityOwner =
     canAddOpportunityBase && isOwnerRepresentationMatch && isUpcomingMatch;
+  const hasRequestChangedSinceLastMatch = (() => {
+    const renterUpdatedAt = request?.raw?.searchActivity?.lastRenterUpdatedAt;
+    const matchedRenterUpdatedAt = request?.raw?.matchedRenterUpdatedAt;
+    if (!renterUpdatedAt || !matchedRenterUpdatedAt) return false;
+
+    return (
+      new Date(renterUpdatedAt).getTime() >
+      new Date(matchedRenterUpdatedAt).getTime()
+    );
+  })();
   const opportunityDetailsCount = opportunityDetails.length;
   const opportunityDetailsCounterClass =
     opportunityDetailsCount >= OPPORTUNITY_DETAILS_MAX_LENGTH
@@ -635,7 +645,7 @@ export default function AgentMatchDetailsPage() {
             representation_type: isOwnerAdd
               ? "owner_representation"
               : "renter_representation",
-            additionalOpportunity: true,
+            additionalOpportunity: !hasRequestChangedSinceLastMatch,
             ...(normalizedOpportunityDetails
               ? { opportunityDetails: normalizedOpportunityDetails }
               : {}),
@@ -650,6 +660,23 @@ export default function AgentMatchDetailsPage() {
         throw new Error(
           data?.message ||
             "We couldn't send this opportunity right now. Please try again.",
+        );
+      }
+
+      if (!isOwnerAdd && hasRequestChangedSinceLastMatch) {
+        setRequest((prev) =>
+          prev
+            ? {
+                ...prev,
+                raw: {
+                  ...prev.raw,
+                  matchedRenterUpdatedAt:
+                    prev.raw.searchActivity?.lastRenterUpdatedAt ??
+                    prev.raw.matchedRenterUpdatedAt ??
+                    null,
+                },
+              }
+            : prev,
         );
       }
 
@@ -852,7 +879,9 @@ export default function AgentMatchDetailsPage() {
                   disabled={isSubmittingOpportunity}
                   className="w-fit rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {isSubmittingOpportunity ? "Sending..." : "Add Opportunity"}
+                  {isSubmittingOpportunity
+                    ? "Sending..."
+                    : "Add Opportunity"}
                 </button>
               )}
               {canAddOpportunityRenter && (
@@ -867,7 +896,11 @@ export default function AgentMatchDetailsPage() {
                   disabled={isSubmittingOpportunity}
                   className="w-fit rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {isSubmittingOpportunity ? "Sending..." : "Add Opportunity"}
+                  {isSubmittingOpportunity
+                    ? "Sending..."
+                    : hasRequestChangedSinceLastMatch
+                      ? "Match Again"
+                      : "Add Opportunity"}
                 </button>
               )}
             </div>

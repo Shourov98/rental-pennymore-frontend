@@ -49,6 +49,7 @@ export interface ApiAgentRequest {
   scope?: string;
   /** The scope when the current agent matched this request, if applicable. */
   scopeAtMatch?: "Upcoming" | "All Market" | null;
+  matchedRenterUpdatedAt?: string | null;
   /** Agent-specific scope label for the Renter Matches view only. */
   matchScope?: string | null;
   visibility?: string;
@@ -165,6 +166,7 @@ export interface ApiAgentRequest {
   matchPreferenceMatches?: boolean[] | null;
   matchPriorityBonus?: number;
   searchActivity?: {
+    lastRenterUpdatedAt?: string | null;
     allMarketOfferEnabled?: boolean;
     allMarketOfferToggledAt?: string | null;
     allMarketOfferToggledByAgentId?: string | null;

@@ -691,6 +691,16 @@ export default function AgentRenterRequestDetailsPage() {
     request?.raw?.representation_type !== "owner_representation";
   const shouldShowAddOpportunity = isRenterRepresentationMatched;
   const canAddAdditionalOpportunity = shouldShowAddOpportunity;
+  const hasRequestChangedSinceLastMatch = (() => {
+    const renterUpdatedAt = request?.raw?.searchActivity?.lastRenterUpdatedAt;
+    const matchedRenterUpdatedAt = request?.raw?.matchedRenterUpdatedAt;
+    if (!renterUpdatedAt || !matchedRenterUpdatedAt) return false;
+
+    return (
+      new Date(renterUpdatedAt).getTime() >
+      new Date(matchedRenterUpdatedAt).getTime()
+    );
+  })();
   const isOwnerRepresentationMatch =
     request?.representation_type === "owner_representation" ||
     request?.raw?.representation_type === "owner_representation";
@@ -846,6 +856,15 @@ export default function AgentRenterRequestDetailsPage() {
                         grantAccessStatus: "free",
                         representation_type: representationType,
                         representationSelectedAt,
+                        ...(additionalOpportunity
+                          ? {}
+                          : {
+                              matchedRenterUpdatedAt:
+                                matchPayload?.matchedRenterUpdatedAt ??
+                                prev.raw.searchActivity?.lastRenterUpdatedAt ??
+                                prev.raw.matchedRenterUpdatedAt ??
+                                null,
+                            }),
                       }),
                 },
               }
@@ -1530,7 +1549,9 @@ export default function AgentRenterRequestDetailsPage() {
                     ? canAddOwnerOpportunity
                       ? "Add Opportunity"
                       : shouldShowAddOpportunity
-                        ? "Add Opportunity"
+                        ? hasRequestChangedSinceLastMatch
+                          ? "Match Again"
+                          : "Add Opportunity"
                         : isListingMatched
                           ? "Add Opportunity"
                           : isSubmitting
@@ -1879,7 +1900,7 @@ export default function AgentRenterRequestDetailsPage() {
                   handleMatchRequest(
                     "renter_representation",
                     opportunityDetails,
-                    canAddAdditionalOpportunity,
+                    canAddAdditionalOpportunity && !hasRequestChangedSinceLastMatch,
                   );
                 }}
                 disabled={
