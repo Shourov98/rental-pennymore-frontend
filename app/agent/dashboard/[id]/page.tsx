@@ -1273,37 +1273,27 @@ export default function AgentRenterRequestDetailsPage() {
                     request?.raw?.scope?.trim() ?? request?.scopeLabel?.trim();
                   const isUpcomingM = rawScope === "Upcoming (M)";
                   const isAllMarket = rawScope === "All Market";
-                  const reminderSentAt =
-                    request?.raw?.searchActivity
-                      ?.upcomingSearchExpansionReminderSentAt;
-                  const isEmailSent = Boolean(reminderSentAt);
                   // Lock rules per the spec:
                   //  - Upcoming (M): always locked (off)
                   //  - All Market: always locked (off)
-                  //  - Upcoming + email already sent: locked On
-                  //  - Upcoming before email: interactive (on/off)
+                  //  - An email sent at day 7 never locks this toggle.
                   // Match status does not affect the lock.
                   const isLocked =
                     isUpcomingM ||
                     isAllMarket ||
-                    isEmailSent ||
                     mutatingAllMarketOffer;
                   const lockedReason = isUpcomingM
                     ? "Locked once the request becomes Upcoming (M)"
                     : isAllMarket
                       ? "Locked once the request becomes All Market"
-                      : isEmailSent
-                        ? "Locked: the day-7 follow-up email has already been sent."
-                        : "Updating the All Market Offer setting.";
+                      : "Updating the All Market Offer setting.";
                   const isDisabled = isLocked;
-                  // Force Off for Upcoming (M) and All Market. An emailed
-                  // Upcoming request keeps the persisted On value and locks.
+                  // Force Off only for scopes that have shifted away from
+                  // plain Upcoming. A day-7 email does not alter the toggle.
                   const displayGate =
                     isUpcomingM || isAllMarket
                       ? false
-                      : isEmailSent
-                        ? true
-                        : gateValue;
+                      : gateValue;
                   return (
                     <div
                       className="group relative bg-white rounded-xl shadow-sm p-4 hover:z-50 focus-within:z-50"
