@@ -21,8 +21,9 @@ export interface ApiAgentRequest {
    * (Template #32). Mirrors `searchActivity.allMarketOfferEnabled` from
    * the backend, with `true` as the default for newer documents.
    *
-   * Before day 7 the registered agent can freely toggle it. On/after day 7,
-   * On triggers the follow-up email and permanently locks the setting On.
+   * Before day 7, On → Off can send up to four emails. The day-7 automatic
+   * email is sent only when none were sent manually. The setting stays
+   * interactive after an email.
    */
   allMarketOfferEnabled?: boolean;
   allMarketOfferToggledAt?: string | null;
@@ -172,8 +173,8 @@ export interface ApiAgentRequest {
     allMarketOfferToggledByAgentId?: string | null;
     /**
      * When the day-7 follow-up email (Template #32) was sent for this
-     * request, if ever. Used by the dashboard to lock the "All Market
-     * Offer" checkbox once the email has gone out. Mirrors
+     * request, if ever. It prevents another automatic email, but does not
+     * lock the "All Market Offer" checkbox. Mirrors
      * `searchActivity.upcomingSearchExpansionReminderSentAt` on the
      * backend.
      */
