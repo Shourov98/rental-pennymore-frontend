@@ -990,19 +990,13 @@ export default function AgentRenterRequestsPage() {
         }
 
         const normalized = (data.data ?? []).map(normalizeAgentRequest);
-        // API `scope` is always the live request scope.  Only the Matches
-        // view uses the agent-specific snapshot/presentation label.
-        const displayedRequests = isMatchResultsMode
-          ? normalized.map((request) => ({
-              ...request,
-              scopeLabel: request.matchScopeLabel ?? request.scopeLabel,
-            }))
-          : normalized;
-        setRequests(displayedRequests);
+        // The API's `scope` is the live request scope. Find Matches must
+        // render that value, rather than the historical scope at match.
+        setRequests(normalized);
         setPagination(data.pagination);
         setSelectedRequestIds([]);
         setQuickSelect("none");
-        cacheAgentRequests(displayedRequests);
+        cacheAgentRequests(normalized);
       } catch (err) {
         if (controller.signal.aborted) return;
         const message =
@@ -2084,17 +2078,23 @@ export default function AgentRenterRequestsPage() {
                         String(req.matchedByAgent.agentId) ===
                           String(currentAgentId),
                       );
+                      // Keep match-context behavior (names and unmatch) tied
+                      // to the immutable match presentation. The Scope column
+                      // itself remains the request's current scope.
+                      const isUpcomingMatchedContext =
+                        (req.raw?.matchScope ?? req.scopeLabel) ===
+                        "Upcoming (M)";
                       const shouldShowRegisteredAgentName =
-                        req.scopeLabel === "Upcoming (M)" &&
+                        isUpcomingMatchedContext &&
                         currentAgentHasMatchedAccess &&
                         Boolean(req.registeredAgentForView?.fullName);
                       const shouldShowMatchedAgentName =
-                        req.scopeLabel === "Upcoming (M)" &&
+                        isUpcomingMatchedContext &&
                         isCurrentAgentsRequest &&
                         Boolean(req.matchedByAgent?.fullName) &&
                         !isMatchedByCurrentAgent;
                       const canUnmatchRequest =
-                        req.scopeLabel === "Upcoming (M)" &&
+                        isUpcomingMatchedContext &&
                         isCurrentAgentsRequest;
                       const shareConsent = req.raw?.shareConsent;
                       const visibility = req.raw?.visibility;

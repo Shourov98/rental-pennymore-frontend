@@ -290,13 +290,10 @@ export default function AgentRenterRequestDetailsPage() {
   useEffect(() => {
     if (!requestId) return;
     const controller = new AbortController();
-    const applyScopeForView = (item: NormalizedAgentRequest) =>
-      isMatchResultsContext
-        ? {
-            ...item,
-            scopeLabel: item.matchScopeLabel ?? item.scopeLabel,
-          }
-        : item;
+    // A detail page opened from Find Matches must retain the request's live
+    // scope, just like the results table. Match history is available
+    // separately as `matchScopeLabel` for the views that need it.
+    const applyScopeForView = (item: NormalizedAgentRequest) => item;
 
     const fetchRequest = async () => {
       setIsLoading(true);
