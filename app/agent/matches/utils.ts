@@ -228,7 +228,8 @@ const formatVisibility = (
 };
 
 export const normalizeAgentMatch = (
-  req: ApiAgentMatch
+  req: ApiAgentMatch,
+  options: { useCurrentScope?: boolean } = {},
 ): NormalizedAgentMatch => {
   const { visibilityLabel, isPrivateVisibility } = formatVisibility(
     req.visibility,
@@ -245,9 +246,13 @@ export const normalizeAgentMatch = (
     bedroomsLabel: formatBedroomRange(req.bedrooms),
     bathroomsLabel: formatBathroomRange(req.bathrooms),
     bedsBathsLabel: formatBedsBathsRange(req.bedrooms, req.bathrooms),
-    // The API's `scope` is the request's live state. This page is the
-    // matched-record view, so it intentionally renders the match snapshot.
-    scopeLabel: formatScope(req.matchScope ?? req.scopeAtMatch ?? req.scope),
+    // Find Matches is a live-search view, so it must show the request's
+    // current scope. The ordinary Renter Matches view keeps match history.
+    scopeLabel: formatScope(
+      options.useCurrentScope
+        ? req.scope
+        : req.matchScope ?? req.scopeAtMatch ?? req.scope,
+    ),
     visibilityLabel,
     isPrivateVisibility,
     registrationDisclosureConfirmed: Boolean(

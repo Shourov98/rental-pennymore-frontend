@@ -190,7 +190,9 @@ export default function AgentMatchDetailsPage() {
           );
         }
 
-        const normalizedList = (data.data ?? []).map(normalizeAgentMatch);
+        const normalizedList = (data.data ?? []).map((item) =>
+          normalizeAgentMatch(item),
+        );
         cacheAgentMatches(normalizedList);
 
         const found = normalizedList.find((item) => item.id === requestId);
@@ -299,7 +301,9 @@ export default function AgentMatchDetailsPage() {
             );
           }
 
-          const normalized = (data.data ?? []).map(normalizeAgentMatch);
+          const normalized = (data.data ?? []).map((item) =>
+            normalizeAgentMatch(item),
+          );
           cacheAgentMatches(normalized);
           const filtered = isArchiveContext
             ? normalized

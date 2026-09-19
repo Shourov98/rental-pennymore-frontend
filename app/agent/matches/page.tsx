@@ -447,16 +447,14 @@ export default function AgentMatchesPage() {
           );
         }
 
-        const normalized = (data.data ?? []).map(normalizeAgentMatch);
-        // Defense in depth: Find Matches is limited to Upcoming and
-        // Upcoming (M). The API enforces the same rule, but never render an
-        // All Market row if a stale cache or older API deployment returns it.
-        const displayedRequests = isMatchResultsMode
-          ? normalized.filter((request) => request.scopeLabel !== "All Market")
-          : normalized;
-        setRequests(displayedRequests);
+        const normalized = (data.data ?? []).map((request) =>
+          normalizeAgentMatch(request, {
+            useCurrentScope: isMatchResultsMode,
+          }),
+        );
+        setRequests(normalized);
         setPagination(data.pagination);
-        cacheAgentMatches(displayedRequests);
+        cacheAgentMatches(normalized);
       } catch (err) {
         if (controller.signal.aborted) return;
         const message =
