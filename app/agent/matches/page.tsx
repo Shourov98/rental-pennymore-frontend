@@ -530,7 +530,9 @@ export default function AgentMatchesPage() {
 
   const handleView = (req: NormalizedAgentMatch) => {
     cacheSingleAgentMatch(req);
-    router.push(`/agent/matches/${req.id}`);
+    router.push(
+      `/agent/matches/${req.id}${isMatchResultsMode ? "?from=matches" : ""}`,
+    );
   };
 
   const handleToggleRequestSelection = (requestId: string) => {
@@ -1099,16 +1101,22 @@ export default function AgentMatchesPage() {
                           req.raw?.grantAccessStatus ?? req.raw?.status ?? "",
                         ).toLowerCase(),
                       );
+                      // Names and unmatch controls depend on the saved match
+                      // context. The Scope column in Find Matches intentionally
+                      // shows the current request scope instead.
+                      const isUpcomingMatchedContext =
+                        (req.raw?.matchScope ?? req.scopeLabel) ===
+                        "Upcoming (M)";
                       const shouldShowRegisteredAgentName =
-                        req.scopeLabel === "Upcoming (M)" &&
+                        isUpcomingMatchedContext &&
                         !isCurrentAgentsRequest &&
                         Boolean(req.registeredAgentForView?.fullName);
                       const shouldShowMatchedAgentName =
-                        req.scopeLabel === "Upcoming (M)" &&
+                        isUpcomingMatchedContext &&
                         isCurrentAgentsRequest &&
                         Boolean(req.matchedByAgent?.fullName);
                       const canUnmatchRequest =
-                        req.scopeLabel === "Upcoming (M)" &&
+                        isUpcomingMatchedContext &&
                         isCurrentAgentsRequest;
                       const shareConsent = req.raw?.shareConsent;
                       const visibility = req.raw?.visibility;

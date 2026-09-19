@@ -119,6 +119,7 @@ export default function AgentMatchDetailsPage() {
 
   const requestId = params?.id as string | undefined;
   const isArchiveContext = searchParams.get("from") === "archive";
+  const isMatchResultsContext = searchParams.get("from") === "matches";
 
   const [request, setRequest] = useState<NormalizedAgentMatch | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -155,7 +156,11 @@ export default function AgentMatchDetailsPage() {
           (item) => item.id === requestId,
         );
         if (cached) {
-          setRequest(cached);
+          setRequest(
+            normalizeAgentMatch(cached.raw, {
+              useCurrentScope: isMatchResultsContext,
+            }),
+          );
           setIsLoading(false);
           return;
         }
@@ -191,7 +196,9 @@ export default function AgentMatchDetailsPage() {
         }
 
         const normalizedList = (data.data ?? []).map((item) =>
-          normalizeAgentMatch(item),
+          normalizeAgentMatch(item, {
+            useCurrentScope: isMatchResultsContext,
+          }),
         );
         cacheAgentMatches(normalizedList);
 
@@ -217,7 +224,7 @@ export default function AgentMatchDetailsPage() {
     fetchRequest();
 
     return () => controller.abort();
-  }, [accessToken, requestId]);
+  }, [accessToken, isMatchResultsContext, requestId]);
 
   useEffect(() => {
     if (!requestId) return;
@@ -249,10 +256,14 @@ export default function AgentMatchDetailsPage() {
         setNavigationTargets({
           previousHref: isArchiveContext
             ? (storedState.itemHrefs?.[localPreviousId] ?? null)
-            : `/agent/matches/${localPreviousId}`,
+            : `/agent/matches/${localPreviousId}${
+                isMatchResultsContext ? "?from=matches" : ""
+              }`,
           nextHref: isArchiveContext
             ? (storedState.itemHrefs?.[localNextId] ?? null)
-            : `/agent/matches/${localNextId}`,
+            : `/agent/matches/${localNextId}${
+                isMatchResultsContext ? "?from=matches" : ""
+              }`,
         });
         return;
       }
@@ -302,7 +313,9 @@ export default function AgentMatchDetailsPage() {
           }
 
           const normalized = (data.data ?? []).map((item) =>
-            normalizeAgentMatch(item),
+            normalizeAgentMatch(item, {
+              useCurrentScope: isMatchResultsContext,
+            }),
           );
           cacheAgentMatches(normalized);
           const filtered = isArchiveContext
@@ -324,7 +337,9 @@ export default function AgentMatchDetailsPage() {
             if (!target) return null;
             return isArchiveContext
               ? getAgentRequestHref(target.raw, target.id, currentAgentId)
-              : `/agent/matches/${target.id}`;
+              : `/agent/matches/${target.id}${
+                  isMatchResultsContext ? "?from=matches" : ""
+                }`;
           }
 
           targetPage += direction === "previous" ? -1 : 1;
@@ -340,14 +355,18 @@ export default function AgentMatchDetailsPage() {
             ? Promise.resolve(
                 isArchiveContext
                   ? (storedState.itemHrefs?.[localPreviousId] ?? null)
-                  : `/agent/matches/${localPreviousId}`,
+                  : `/agent/matches/${localPreviousId}${
+                      isMatchResultsContext ? "?from=matches" : ""
+                    }`,
               )
             : findAdjacentHref("previous"),
           localNextId
             ? Promise.resolve(
                 isArchiveContext
                   ? (storedState.itemHrefs?.[localNextId] ?? null)
-                  : `/agent/matches/${localNextId}`,
+                  : `/agent/matches/${localNextId}${
+                      isMatchResultsContext ? "?from=matches" : ""
+                    }`,
               )
             : findAdjacentHref("next"),
         ]);
@@ -361,12 +380,16 @@ export default function AgentMatchDetailsPage() {
             previousHref: localPreviousId
               ? isArchiveContext
                 ? (storedState.itemHrefs?.[localPreviousId] ?? null)
-                : `/agent/matches/${localPreviousId}`
+                : `/agent/matches/${localPreviousId}${
+                    isMatchResultsContext ? "?from=matches" : ""
+                  }`
               : null,
             nextHref: localNextId
               ? isArchiveContext
                 ? (storedState.itemHrefs?.[localNextId] ?? null)
-                : `/agent/matches/${localNextId}`
+                : `/agent/matches/${localNextId}${
+                    isMatchResultsContext ? "?from=matches" : ""
+                  }`
               : null,
           });
         }
@@ -380,7 +403,13 @@ export default function AgentMatchDetailsPage() {
     resolveNavigation();
 
     return () => controller.abort();
-  }, [accessToken, currentAgentId, isArchiveContext, requestId]);
+  }, [
+    accessToken,
+    currentAgentId,
+    isArchiveContext,
+    isMatchResultsContext,
+    requestId,
+  ]);
 
   const {
     movingDateRange,
