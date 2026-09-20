@@ -8,7 +8,6 @@ import {
   ChevronDown,
   DollarSign,
   MapPin,
-  Sparkles,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -553,13 +552,9 @@ export default function PreMarketListingPage() {
             <p className="text-sm text-red-600">{fieldErrors.locations}</p>
           )}
 
-          {!isAdminReferral ? (
+          {false && !isAdminReferral ? (
             <div
-              className={`mb-5 overflow-hidden rounded-2xl border p-4 transition-all duration-300 sm:p-5 ${
-                buyerSpecialistNeeded
-                  ? "border-blue-200 bg-gradient-to-br from-blue-50 to-white shadow-sm"
-                  : "border-gray-200 bg-white hover:border-blue-200 hover:shadow-sm"
-              }`}
+              className="hidden"
             >
               <button
                 type="button"
@@ -587,7 +582,6 @@ export default function PreMarketListingPage() {
                 </span>
                 <span className="min-w-0">
                   <span className="flex items-center gap-2 font-semibold text-gray-800">
-                    <Sparkles className="h-4 w-4 text-blue-600" />
                     Interested in upcoming sales?
                   </span>
                   <span className="mt-1 block text-sm leading-5 text-gray-600">
@@ -749,6 +743,17 @@ export default function PreMarketListingPage() {
               </div>
             </div>
           </div>
+
+          {/* Buyer-interest control is intentionally placed after guarantors. */}
+          {!isAdminReferral ? (
+            <div className="mb-5 overflow-hidden rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-white p-4 shadow-sm transition-all duration-300 sm:p-5">
+              <button type="button" role="checkbox" aria-checked={buyerSpecialistNeeded} onClick={() => setBuyerSpecialistNeeded((checked) => { if (checked) setPurchaseTimeline(""); return !checked; })} className="flex w-full items-start gap-3 text-left">
+                <span className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-all duration-200 ${buyerSpecialistNeeded ? "border-blue-600 bg-blue-600 shadow-sm" : "border-gray-300 bg-white"}`}><Check className={`h-4 w-4 text-white transition-all duration-200 ${buyerSpecialistNeeded ? "scale-100 opacity-100" : "scale-50 opacity-0"}`} strokeWidth={3} /></span>
+                <span><span className="font-semibold text-gray-800">Interested in upcoming sales?</span><span className="mt-1 block text-sm text-gray-600">I would like to know more about upcoming sales service.</span><span className="mt-1 block text-xs text-gray-500">Separate service — an agent will be in touch.</span></span>
+              </button>
+              {buyerSpecialistNeeded ? <div className="mt-4"><label className="mb-2 block text-sm font-semibold text-gray-700">Purchase timeline</label><div className="relative"><select value={purchaseTimeline} onChange={(event) => setPurchaseTimeline(event.target.value)} className="w-full appearance-none rounded-xl border border-blue-200 bg-white px-4 py-3 pr-11 text-sm font-medium text-gray-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"><option value="">Select a timeline</option>{purchaseTimelineOptions.map((option) => <option key={option} value={option}>{option}</option>)}</select><ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-blue-600" /></div></div> : null}
+            </div>
+          ) : null}
 
           {/* Guarantor */}
           <div className="mb-6">
