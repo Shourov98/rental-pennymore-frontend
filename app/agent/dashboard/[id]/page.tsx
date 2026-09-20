@@ -1745,15 +1745,6 @@ export default function AgentRenterRequestDetailsPage() {
                 <span>I intend to represent the renter</span>
               </label>
             </div>
-            {selectedRepresentationType === "renter_representation" ? (
-              <label className="mt-4 block text-sm font-semibold text-gray-800">
-                Broker Fee
-                <select value={brokerFee} onChange={(event) => setBrokerFee(event.target.value)} className="mt-2 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-normal text-gray-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
-                  <option value="">Select Broker Fee</option>
-                  {BROKER_FEE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
-                </select>
-              </label>
-            ) : null}
             {selectedRepresentationType ? (
               <div className="mt-5">
                 <h3 className="text-sm font-semibold text-gray-900">
@@ -1799,6 +1790,15 @@ export default function AgentRenterRequestDetailsPage() {
                   </p>
                 ) : null}
               </div>
+            ) : null}
+            {selectedRepresentationType === "renter_representation" ? (
+              <label className="mt-4 block text-sm font-semibold text-gray-800">
+                Broker Fee
+                <select value={brokerFee} onChange={(event) => setBrokerFee(event.target.value)} className="mt-2 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-normal text-gray-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
+                  <option value="">Select Broker Fee</option>
+                  {BROKER_FEE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+                </select>
+              </label>
             ) : null}
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
