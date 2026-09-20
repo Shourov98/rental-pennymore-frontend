@@ -781,21 +781,22 @@ export default function PreMarketListingPage() {
 
           {!isAdminReferral ? (
             <div className="mb-6 text-sm text-gray-700">
-              <button
-                type="button"
-                role="checkbox"
-                aria-checked={buyerSpecialistNeeded}
-                onClick={() => setBuyerSpecialistNeeded((checked) => {
-                  if (checked) setPurchaseTimeline("");
-                  return !checked;
-                })}
-                className="flex items-start gap-2 text-left"
-              >
-                <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition ${buyerSpecialistNeeded ? "border-blue-600 bg-blue-600" : "border-gray-400 bg-white"}`}>
-                  <Check className={`h-3 w-3 text-white transition ${buyerSpecialistNeeded ? "opacity-100" : "opacity-0"}`} strokeWidth={3} />
-                </span>
+              <p className="mb-2 text-sm font-semibold text-gray-700">
+                Check if you might also be open to buying
+              </p>
+              <label className="flex cursor-pointer items-start gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={buyerSpecialistNeeded}
+                  onChange={(event) => {
+                    const checked = event.target.checked;
+                    setBuyerSpecialistNeeded(checked);
+                    if (!checked) setPurchaseTimeline("");
+                  }}
+                  className="mt-0.5 h-4 w-4 cursor-pointer accent-blue-600"
+                />
                 <span>I would like to know more about upcoming sales service.<br /><span className="text-xs">[separate service, agent will be in touch]</span></span>
-              </button>
+              </label>
               {buyerSpecialistNeeded ? (
                 <div className="relative mt-3 w-full max-w-xs">
                   <select value={purchaseTimeline} onChange={(event) => setPurchaseTimeline(event.target.value)} className="w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 pr-9 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
