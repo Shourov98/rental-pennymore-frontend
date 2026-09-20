@@ -80,6 +80,8 @@ const opportunityDetailsPlaceholder: Record<RepresentationType, string> = {
   owner_representation: `e.g. I have an exclusive coming up that can fit your client. Large one bedroom, West 72nd Street between Broadway and Amsterdam Avenue, dishwasher, high ceilings, $3,800, September 1 start date, elevator and laundry building. Reach out for showing times.`,
 };
 
+const BROKER_FEE_OPTIONS = ["One Month Rent", "9% Annual Rent", "10% Annual Rent", "11% Annual Rent", "12% Annual Rent", "13% Annual Rent", "14% Annual Rent", "15% Annual Rent", "Talk to Renter First"] as const;
+
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -817,6 +819,7 @@ export default function AgentRenterRequestsPage() {
     RepresentationType | ""
   >("");
   const [bulkOpportunityDetails, setBulkOpportunityDetails] = useState("");
+  const [bulkBrokerFee, setBulkBrokerFee] = useState("");
   const [isBulkConfirmChecked, setIsBulkConfirmChecked] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(false);
   const [isMatchDemoMode, setIsMatchDemoMode] = useState(false);
@@ -1673,6 +1676,7 @@ export default function AgentRenterRequestsPage() {
     setIsBulkConfirmOpen(false);
     setBulkRepresentationType("");
     setBulkOpportunityDetails("");
+    setBulkBrokerFee("");
     setIsBulkConfirmChecked(false);
   };
 
@@ -1738,6 +1742,7 @@ export default function AgentRenterRequestsPage() {
     setError(null);
     setBulkRepresentationType("");
     setBulkOpportunityDetails("");
+    setBulkBrokerFee("");
     setIsBulkConfirmChecked(false);
     setIsBulkRepresentationOpen(true);
   };
@@ -1796,6 +1801,9 @@ export default function AgentRenterRequestsPage() {
               : {}),
             ...(normalizedOpportunityDetails
               ? { opportunityDetails: normalizedOpportunityDetails }
+              : {}),
+            ...(representationType === "renter_representation" && bulkBrokerFee
+              ? { brokerFee: bulkBrokerFee }
               : {}),
           }),
         },
@@ -2811,6 +2819,7 @@ export default function AgentRenterRequestsPage() {
                   onChange={() => {
                     setBulkRepresentationType("owner_representation");
                     setBulkOpportunityDetails("");
+                    setBulkBrokerFee("");
                   }}
                   className="h-4 w-4 text-blue-600"
                 />
@@ -2831,6 +2840,15 @@ export default function AgentRenterRequestsPage() {
                 <span>I intend to represent the renter</span>
               </label>
             </div>
+            {bulkRepresentationType === "renter_representation" ? (
+              <label className="mt-4 block text-sm font-semibold text-gray-800">
+                Broker Fee
+                <select value={bulkBrokerFee} onChange={(event) => setBulkBrokerFee(event.target.value)} className="mt-2 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-normal text-gray-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
+                  <option value="">Select Broker Fee</option>
+                  {BROKER_FEE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+                </select>
+              </label>
+            ) : null}
             {bulkRepresentationType ? (
               <div className="mt-5">
                 <h3 className="text-sm font-semibold text-gray-900">

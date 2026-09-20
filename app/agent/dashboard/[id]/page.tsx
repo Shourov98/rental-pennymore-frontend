@@ -90,6 +90,8 @@ const opportunityDetailsPlaceholder: Record<RepresentationType, string> = {
   owner_representation: `e.g. I have an exclusive coming up that can fit your client. Large one bedroom, West 72nd Street between Broadway and Amsterdam Avenue, dishwasher, high ceilings, $3,800, September 1 start date, elevator and laundry building. Reach out for showing times.`,
 };
 
+const BROKER_FEE_OPTIONS = ["One Month Rent", "9% Annual Rent", "10% Annual Rent", "11% Annual Rent", "12% Annual Rent", "13% Annual Rent", "14% Annual Rent", "15% Annual Rent", "Talk to Renter First"] as const;
+
 const unitFeatureLabels: Record<string, string> = {
   laundryInUnit: "Laundry in unit",
   privateOutdoorSpace: "Private outdoor space",
@@ -270,6 +272,7 @@ export default function AgentRenterRequestDetailsPage() {
     RepresentationType | ""
   >("");
   const [opportunityDetails, setOpportunityDetails] = useState("");
+  const [brokerFee, setBrokerFee] = useState("");
   const [navigationTargets, setNavigationTargets] = useState<{
     previousHref: string | null;
     nextHref: string | null;
@@ -757,6 +760,7 @@ export default function AgentRenterRequestDetailsPage() {
     representationType: RepresentationType = "renter_representation",
     details: string = "",
     additionalOpportunity: boolean = false,
+    selectedBrokerFee: string = "",
   ) => {
     if (!requestId || isDisabled || isSubmitting) return;
     setStatusMessage(null);
@@ -787,8 +791,11 @@ export default function AgentRenterRequestDetailsPage() {
             body: JSON.stringify({
               representation_type: representationType,
               ...(additionalOpportunity ? { additionalOpportunity: true } : {}),
-              ...(normalizedOpportunityDetails
-                ? { opportunityDetails: normalizedOpportunityDetails }
+                ...(normalizedOpportunityDetails
+                  ? { opportunityDetails: normalizedOpportunityDetails }
+                  : {}),
+              ...(representationType === "renter_representation" && selectedBrokerFee
+                ? { brokerFee: selectedBrokerFee }
                 : {}),
             }),
           },
@@ -890,6 +897,9 @@ export default function AgentRenterRequestDetailsPage() {
               representation_type: representationType,
               ...(normalizedOpportunityDetails
                 ? { opportunityDetails: normalizedOpportunityDetails }
+                : {}),
+              ...(representationType === "renter_representation" && selectedBrokerFee
+                ? { brokerFee: selectedBrokerFee }
                 : {}),
             }),
           },
@@ -1712,6 +1722,7 @@ export default function AgentRenterRequestDetailsPage() {
                   onChange={() => {
                     setSelectedRepresentationType("owner_representation");
                     setOpportunityDetails("");
+                    setBrokerFee("");
                   }}
                   className="h-4 w-4 text-blue-600"
                 />
@@ -1734,6 +1745,15 @@ export default function AgentRenterRequestDetailsPage() {
                 <span>I intend to represent the renter</span>
               </label>
             </div>
+            {selectedRepresentationType === "renter_representation" ? (
+              <label className="mt-4 block text-sm font-semibold text-gray-800">
+                Broker Fee
+                <select value={brokerFee} onChange={(event) => setBrokerFee(event.target.value)} className="mt-2 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-normal text-gray-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
+                  <option value="">Select Broker Fee</option>
+                  {BROKER_FEE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+                </select>
+              </label>
+            ) : null}
             {selectedRepresentationType ? (
               <div className="mt-5">
                 <h3 className="text-sm font-semibold text-gray-900">
@@ -1787,6 +1807,7 @@ export default function AgentRenterRequestDetailsPage() {
                   setIsRepresentationOpen(false);
                   setSelectedRepresentationType("");
                   setOpportunityDetails("");
+                  setBrokerFee("");
                 }}
                 className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
               >
@@ -1918,6 +1939,7 @@ export default function AgentRenterRequestDetailsPage() {
                     "renter_representation",
                     opportunityDetails,
                     canAddAdditionalOpportunity && !hasRequestChangedSinceLastMatch,
+                    brokerFee,
                   );
                 }}
                 disabled={
