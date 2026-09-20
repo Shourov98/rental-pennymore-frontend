@@ -745,7 +745,7 @@ export default function PreMarketListingPage() {
           </div>
 
           {/* Buyer-interest control is intentionally placed after guarantors. */}
-          {!isAdminReferral ? (
+          {false && !isAdminReferral ? (
             <div className="mb-5 overflow-hidden rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-white p-4 shadow-sm transition-all duration-300 sm:p-5">
               <button type="button" role="checkbox" aria-checked={buyerSpecialistNeeded} onClick={() => setBuyerSpecialistNeeded((checked) => { if (checked) setPurchaseTimeline(""); return !checked; })} className="flex w-full items-start gap-3 text-left">
                 <span className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-all duration-200 ${buyerSpecialistNeeded ? "border-blue-600 bg-blue-600 shadow-sm" : "border-gray-300 bg-white"}`}><Check className={`h-4 w-4 text-white transition-all duration-200 ${buyerSpecialistNeeded ? "scale-100 opacity-100" : "scale-50 opacity-0"}`} strokeWidth={3} /></span>
@@ -778,6 +778,35 @@ export default function PreMarketListingPage() {
               ))}
             </div>
           </div>
+
+          {!isAdminReferral ? (
+            <div className="mb-6 text-sm text-gray-700">
+              <button
+                type="button"
+                role="checkbox"
+                aria-checked={buyerSpecialistNeeded}
+                onClick={() => setBuyerSpecialistNeeded((checked) => {
+                  if (checked) setPurchaseTimeline("");
+                  return !checked;
+                })}
+                className="flex items-start gap-2 text-left"
+              >
+                <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition ${buyerSpecialistNeeded ? "border-blue-600 bg-blue-600" : "border-gray-400 bg-white"}`}>
+                  <Check className={`h-3 w-3 text-white transition ${buyerSpecialistNeeded ? "opacity-100" : "opacity-0"}`} strokeWidth={3} />
+                </span>
+                <span>I would like to know more about upcoming sales service.<br /><span className="text-xs">[separate service, agent will be in touch]</span></span>
+              </button>
+              {buyerSpecialistNeeded ? (
+                <div className="relative mt-3 w-full max-w-xs">
+                  <select value={purchaseTimeline} onChange={(event) => setPurchaseTimeline(event.target.value)} className="w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 pr-9 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                    <option value="">Select a timeline</option>
+                    {purchaseTimelineOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
           {/* Preferences Drag List */}
           <div className="mb-6">
