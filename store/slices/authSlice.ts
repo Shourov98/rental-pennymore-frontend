@@ -32,7 +32,7 @@ export interface RenterProfile {
   email: string;
   fullName: string;
   phoneNumber: string;
-  registrationType: "normal" | "social";
+  registrationType: "normal" | "social" | "agent_referral" | "admin_referral";
   petFriendly: boolean;
   emailSubscriptionEnabled?: boolean;
   createdAt: string;

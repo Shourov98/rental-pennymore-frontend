@@ -62,6 +62,8 @@ export default function PreMarketListingPage() {
     "" | "Upcoming" | "All Market"
   >("");
   const [agreementWarning, setAgreementWarning] = useState<string | null>(null);
+  const [buyerSpecialistNeeded, setBuyerSpecialistNeeded] = useState(false);
+  const [purchaseTimeline, setPurchaseTimeline] = useState("");
   const referrerName = useSelector(selectReferrerName);
   const referrer = useSelector(selectReferrer);
 
@@ -89,6 +91,26 @@ export default function PreMarketListingPage() {
   const renterName = renter?.fullName || user?.fullName || "Unknown renter";
   const renterEmail = renter?.email || user?.email || "";
   const renterPhone = renter?.phoneNumber || user?.phone || "";
+  const isAdminReferral = renter?.registrationType === "admin_referral";
+
+  useEffect(() => {
+    if (!accessToken || isAdminReferral) return;
+    const controller = new AbortController();
+    fetch(`${API_BASE_URL}/renter/profile`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      signal: controller.signal,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const questionnaire = data?.data?.questionnaire;
+        if (!questionnaire) return;
+        const checked = questionnaire.buyerSpecialistNeeded === true;
+        setBuyerSpecialistNeeded(checked);
+        setPurchaseTimeline(checked ? questionnaire.purchaseTimeline || "" : "");
+      })
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, [accessToken, isAdminReferral]);
 
   const registrationLink = useMemo(() => {
     const activationLink = referrer?.activationLink?.trim() || "";
@@ -278,6 +300,22 @@ export default function PreMarketListingPage() {
         headers.Authorization = `Bearer ${accessToken}`;
       }
 
+      if (!isAdminReferral) {
+        const profileResponse = await fetch(`${API_BASE_URL}/renter/profile`, {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({
+            questionnaire: {
+              buyerSpecialistNeeded,
+              purchaseTimeline: buyerSpecialistNeeded ? purchaseTimeline : "",
+            },
+          }),
+        });
+        if (!profileResponse.ok) {
+          throw new Error("We couldn't save your purchase-interest preferences.");
+        }
+      }
+
       const response = await fetch(`${API_BASE_URL}/pre-market/create`, {
         method: "POST",
         headers,
@@ -342,6 +380,7 @@ export default function PreMarketListingPage() {
   const buildingOptions = ["Doorman", "Elevator", "Laundry in Building"];
   const petOptions = ["Cats allowed", "Dogs allowed"];
   const guarantorOptions = ["Personal guarantor", "Third party guarantor"];
+  const purchaseTimelineOptions = ["0–3 months", "3–6 months", "6–12 months", "12+ months", "Not sure"];
 
   return (
     <section className="w-full min-h-screen bg-gray-50 px-3 py-6 sm:px-6 sm:py-8 md:px-10 md:py-10">
@@ -510,6 +549,21 @@ export default function PreMarketListingPage() {
           {fieldErrors.locations && (
             <p className="text-sm text-red-600">{fieldErrors.locations}</p>
           )}
+
+          {!isAdminReferral ? (
+            <div className="mb-4">
+              <label className="flex cursor-pointer items-start gap-2 text-sm text-gray-700">
+                <input type="checkbox" checked={buyerSpecialistNeeded} onChange={(event) => { const checked = event.target.checked; setBuyerSpecialistNeeded(checked); if (!checked) setPurchaseTimeline(""); }} className="mt-0.5 h-4 w-4" />
+                <span>I would like to know more about upcoming sales service. <span className="block text-xs text-gray-500">(separate service, agent will be in touch)</span></span>
+              </label>
+              {buyerSpecialistNeeded ? (
+                <select value={purchaseTimeline} onChange={(event) => setPurchaseTimeline(event.target.value)} className="mt-3 rounded border border-gray-300 bg-white px-3 py-2 text-sm">
+                  <option value="">Select a timeline</option>
+                  {purchaseTimelineOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                </select>
+              ) : null}
+            </div>
+          ) : null}
 
           {/* Bedrooms */}
           <div className="mb-4">

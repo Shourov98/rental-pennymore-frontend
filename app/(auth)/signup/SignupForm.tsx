@@ -12,6 +12,13 @@ const INACTIVE_REGISTRATION_LINK_CODE = "REGISTRATION_LINK_INACTIVE";
 const RENTER_PASSWORD_MIN_LENGTH = 8;
 const RENTER_PASSWORD_TOO_SHORT_MESSAGE =
   "Password must be at least 8 characters.";
+const PURCHASE_TIMELINE_OPTIONS = [
+  "0–3 months",
+  "3–6 months",
+  "6–12 months",
+  "12+ months",
+  "Not sure",
+] as const;
 
 type SignupRole = "renter" | "agent";
 type ReferralDisplay = {
@@ -68,6 +75,8 @@ export default function SignupForm({ role }: { role: SignupRole }) {
     null,
   );
   const [agree, setAgree] = useState(false);
+  const [buyerSpecialistNeeded, setBuyerSpecialistNeeded] = useState(false);
+  const [purchaseTimeline, setPurchaseTimeline] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{
@@ -272,11 +281,18 @@ export default function SignupForm({ role }: { role: SignupRole }) {
         fullName: string;
         phoneNumber: string;
         referralCode?: string;
+        questionnaire: { buyerSpecialistNeeded: boolean; purchaseTimeline?: string };
       } = {
         email,
         password: formData.password,
         fullName: formData.fullName.trim(),
         phoneNumber: formData.phoneNumber.trim(),
+        questionnaire: {
+          buyerSpecialistNeeded,
+          ...(buyerSpecialistNeeded && purchaseTimeline
+            ? { purchaseTimeline }
+            : {}),
+        },
       };
 
       const referralCode = formData.referralCode.trim();
@@ -434,6 +450,33 @@ export default function SignupForm({ role }: { role: SignupRole }) {
             setFormData((prev) => ({ ...prev, fullName: value }))
           }
         />
+
+        {isRenter ? (
+          <div className="space-y-3 rounded-xl border border-border-secondary bg-surface-secondary p-4">
+            <label className="flex cursor-pointer items-start gap-3 text-sm text-text-secondary">
+              <input
+                type="checkbox"
+                checked={buyerSpecialistNeeded}
+                onChange={(event) => {
+                  const checked = event.target.checked;
+                  setBuyerSpecialistNeeded(checked);
+                  if (!checked) setPurchaseTimeline("");
+                }}
+                className="mt-0.5 h-4 w-4 accent-action"
+              />
+              <span>I would like to know more about upcoming sales service.</span>
+            </label>
+            {buyerSpecialistNeeded ? (
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-text-tertiary">Purchase Timeline</label>
+                <select value={purchaseTimeline} onChange={(event) => setPurchaseTimeline(event.target.value)} className="w-full rounded-lg border border-border-secondary bg-white px-3 py-2 text-sm text-text-secondary">
+                  <option value="">Select a timeline</option>
+                  {PURCHASE_TIMELINE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+                </select>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         <InputField
           icon="/icons/lucide/phone.svg"
