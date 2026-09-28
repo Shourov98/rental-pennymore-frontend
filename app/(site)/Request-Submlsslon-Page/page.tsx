@@ -49,15 +49,12 @@ export default function PreMarketListingPage() {
   const dispatch = useDispatch();
   const earliestDateRef = useRef<HTMLInputElement>(null);
   const latestDateRef = useRef<HTMLInputElement>(null);
-  const buyerInterestRef = useRef<HTMLDivElement>(null);
-  const purchaseTimelineRef = useRef<HTMLSelectElement>(null);
 
   // Modal state (local UI)
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [description, setDescription] = useState("");
   const [isAgreementChecked, setIsAgreementChecked] = useState(false);
@@ -188,7 +185,6 @@ export default function PreMarketListingPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage(null);
-    setFormError(null);
 
     const nextFieldErrors: Record<string, string> = {};
 
@@ -244,21 +240,32 @@ export default function PreMarketListingPage() {
 
     if (Object.keys(nextFieldErrors).length > 0) {
       setFieldErrors(nextFieldErrors);
-      const buyerTimelineError = nextFieldErrors.purchaseTimeline;
-      const hasOtherErrors = Object.keys(nextFieldErrors).some(
-        (field) => field !== "purchaseTimeline",
+      const validationOrder = [
+        "movingDate",
+        "priceRange",
+        "locations",
+        "bedrooms",
+        "bathrooms",
+        "purchaseTimeline",
+        "scope",
+        "agreement",
+      ];
+      const firstInvalidField = validationOrder.find(
+        (field) => nextFieldErrors[field],
       );
-      setFormError(
-        hasOtherErrors ? "Please fill out the required fields before submitting." : null,
-      );
-      if (buyerTimelineError) {
-        window.alert(buyerTimelineError);
+
+      if (firstInvalidField) {
         window.setTimeout(() => {
-          buyerInterestRef.current?.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-          });
-          purchaseTimelineRef.current?.focus();
+          const section = document.querySelector<HTMLElement>(
+            `[data-validation-field="${firstInvalidField}"]`,
+          );
+          section?.scrollIntoView({ behavior: "smooth", block: "center" });
+          const focusTarget =
+            section?.querySelector<HTMLElement>("[data-validation-focus]") ??
+            section?.querySelector<HTMLElement>(
+              "input:not([type='hidden']), select, button:not([disabled])",
+            );
+          focusTarget?.focus({ preventScroll: true });
         }, 0);
       }
       return;
@@ -429,7 +436,10 @@ export default function PreMarketListingPage() {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+          <div
+            data-validation-field="movingDate"
+            className="flex flex-col sm:flex-row gap-3 mb-4"
+          >
             {/* Earliest */}
             <div className="w-full sm:w-1/2">
               <label className="text-xs text-gray-600">Earliest</label>
@@ -441,6 +451,7 @@ export default function PreMarketListingPage() {
                 <input
                   type="date"
                   ref={earliestDateRef}
+                  data-validation-focus
                   value={movingDate.earliest}
                   min={earliestMinDate}
                   onChange={(e) =>
@@ -493,7 +504,10 @@ export default function PreMarketListingPage() {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+          <div
+            data-validation-field="priceRange"
+            className="flex flex-col sm:flex-row gap-3 mb-4"
+          >
             {/* Min Price */}
             <div className="w-full sm:w-1/2">
               <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
@@ -523,6 +537,7 @@ export default function PreMarketListingPage() {
                 <input
                   type="number"
                   value={priceRange.max === 0 ? "" : priceRange.max}
+                  data-validation-focus
                   step={25}
                   onChange={(e) =>
                     dispatch(
@@ -543,7 +558,7 @@ export default function PreMarketListingPage() {
           )}
 
           {/* Location */}
-          <div className="flex flex-col mb-4">
+          <div data-validation-field="locations" className="flex flex-col mb-4">
             <label className="text-sm font-semibold text-gray-700 mb-1">
               Location
             </label>
@@ -554,6 +569,15 @@ export default function PreMarketListingPage() {
 
             <div
               onClick={() => setIsLocationModalOpen(true)}
+              data-validation-focus
+              role="button"
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  setIsLocationModalOpen(true);
+                }
+              }}
               className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 cursor-pointer hover:border-blue-500 transition"
             >
               <MapPin size={16} className="text-blue-600 mr-2 shrink-0" />
@@ -624,6 +648,7 @@ export default function PreMarketListingPage() {
                   <div className="relative">
                     <select
                       value={purchaseTimeline}
+                      data-validation-focus
                       onChange={(event) => setPurchaseTimeline(event.target.value)}
                       className="w-full appearance-none rounded-xl border border-blue-200 bg-white px-4 py-3 pr-11 text-sm font-medium text-gray-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                     >
@@ -640,7 +665,7 @@ export default function PreMarketListingPage() {
           ) : null}
 
           {/* Bedrooms */}
-          <div className="mb-4">
+          <div data-validation-field="bedrooms" className="mb-4">
             <p className="text-sm font-semibold text-gray-700 mb-2">Bedrooms</p>
 
             <div className="grid grid-cols-5 gap-2">
@@ -667,7 +692,7 @@ export default function PreMarketListingPage() {
           </div>
 
           {/* Bathrooms */}
-          <div className="mb-4">
+          <div data-validation-field="bathrooms" className="mb-4">
             <p className="text-sm font-semibold text-gray-700 mb-2">
               Bathrooms
             </p>
@@ -802,7 +827,10 @@ export default function PreMarketListingPage() {
           </div>
 
           {!isAdminReferral ? (
-            <div ref={buyerInterestRef} className="mb-6 text-sm text-gray-700">
+            <div
+              data-validation-field="purchaseTimeline"
+              className="mb-6 text-sm text-gray-700"
+            >
               <p className="mb-2 text-sm font-semibold text-gray-700">
                 Check if you might also be open to buying
               </p>
@@ -831,7 +859,6 @@ export default function PreMarketListingPage() {
                 <div className="mt-3 w-full max-w-xs">
                   <div className="relative">
                     <select
-                      ref={purchaseTimelineRef}
                       value={purchaseTimeline}
                       onChange={(event) => {
                         setPurchaseTimeline(event.target.value);
@@ -868,7 +895,10 @@ export default function PreMarketListingPage() {
             />
           </div>
 
-          <div className="border-t border-gray-300 pt-4 space-y-3">
+          <div
+            data-validation-field="scope"
+            className="border-t border-gray-300 pt-4 space-y-3"
+          >
             <p className="text-[13px] font-semibold leading-snug text-black sm:text-sm md:text-[15px]">
               In order to match your request, which market scope should the
               agent focus on?
@@ -885,6 +915,7 @@ export default function PreMarketListingPage() {
                 <input
                   type="radio"
                   name="marketScope"
+                  data-validation-focus
                   checked={marketScope === "All Market"}
                   onChange={() => setMarketScope("All Market")}
                   className="h-6 w-6 shrink-0 accent-gray-600"
@@ -937,7 +968,10 @@ export default function PreMarketListingPage() {
           </div>
 
           {/* Agreement text + checkbox */}
-          <div className="border-t pt-4 text-gray-600 space-y-3">
+          <div
+            data-validation-field="agreement"
+            className="border-t pt-4 text-gray-600 space-y-3"
+          >
             <div className="space-y-3">
               <p className="text-[13px] font-semibold leading-snug text-black sm:text-sm md:text-[15px]">
                 Share your search to improve matching chances (optional - highly
@@ -1032,6 +1066,7 @@ export default function PreMarketListingPage() {
                   <input
                     type="checkbox"
                     checked={isAgreementChecked}
+                    data-validation-focus
                     onChange={(e) => {
                       if (e.target.checked && !renterPhone) {
                         setAgreementWarning(
@@ -1065,12 +1100,9 @@ export default function PreMarketListingPage() {
             {errorMessage && (
               <p className="text-sm text-red-600 text-right">{errorMessage}</p>
             )}
-            {formError && (
-              <p className="text-sm text-red-600 text-right">{formError}</p>
-            )}
             <button
               type="submit"
-              disabled={isSubmitting || !isAgreementChecked || !marketScope}
+              disabled={isSubmitting}
               className="flex items-center gap-2 bg-blue-500 text-white text-sm sm:text-base font-medium rounded-lg px-5 py-3 hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Bell size={16} />

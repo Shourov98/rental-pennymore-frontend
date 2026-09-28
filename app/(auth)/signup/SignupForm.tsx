@@ -227,7 +227,6 @@ export default function SignupForm({ role }: { role: SignupRole }) {
       const message = "Please choose a buying timeline.";
       setFieldErrors({ purchaseTimeline: message });
       setStatusMessage({ type: "error", message });
-      window.alert(message);
       return;
     }
 
