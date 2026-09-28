@@ -49,6 +49,8 @@ export default function PreMarketListingPage() {
   const dispatch = useDispatch();
   const earliestDateRef = useRef<HTMLInputElement>(null);
   const latestDateRef = useRef<HTMLInputElement>(null);
+  const buyerInterestRef = useRef<HTMLDivElement>(null);
+  const purchaseTimelineRef = useRef<HTMLSelectElement>(null);
 
   // Modal state (local UI)
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
@@ -243,10 +245,22 @@ export default function PreMarketListingPage() {
     if (Object.keys(nextFieldErrors).length > 0) {
       setFieldErrors(nextFieldErrors);
       const buyerTimelineError = nextFieldErrors.purchaseTimeline;
-      setFormError(
-        buyerTimelineError || "Please fill out the required fields before submitting.",
+      const hasOtherErrors = Object.keys(nextFieldErrors).some(
+        (field) => field !== "purchaseTimeline",
       );
-      if (buyerTimelineError) window.alert(buyerTimelineError);
+      setFormError(
+        hasOtherErrors ? "Please fill out the required fields before submitting." : null,
+      );
+      if (buyerTimelineError) {
+        window.alert(buyerTimelineError);
+        window.setTimeout(() => {
+          buyerInterestRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+          purchaseTimelineRef.current?.focus();
+        }, 0);
+      }
       return;
     }
 
@@ -788,7 +802,7 @@ export default function PreMarketListingPage() {
           </div>
 
           {!isAdminReferral ? (
-            <div className="mb-6 text-sm text-gray-700">
+            <div ref={buyerInterestRef} className="mb-6 text-sm text-gray-700">
               <p className="mb-2 text-sm font-semibold text-gray-700">
                 Check if you might also be open to buying
               </p>
@@ -817,6 +831,7 @@ export default function PreMarketListingPage() {
                 <div className="mt-3 w-full max-w-xs">
                   <div className="relative">
                     <select
+                      ref={purchaseTimelineRef}
                       value={purchaseTimeline}
                       onChange={(event) => {
                         setPurchaseTimeline(event.target.value);
