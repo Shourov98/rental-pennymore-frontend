@@ -223,6 +223,14 @@ export default function SignupForm({ role }: { role: SignupRole }) {
       return;
     }
 
+    if (isRenter && buyerSpecialistNeeded && !purchaseTimeline.trim()) {
+      const message = "Please choose a buying timeline.";
+      setFieldErrors({ purchaseTimeline: message });
+      setStatusMessage({ type: "error", message });
+      window.alert(message);
+      return;
+    }
+
     if (
       isRenter &&
       formData.password.length > 0 &&
@@ -460,7 +468,15 @@ export default function SignupForm({ role }: { role: SignupRole }) {
                 onChange={(event) => {
                   const checked = event.target.checked;
                   setBuyerSpecialistNeeded(checked);
-                  if (!checked) setPurchaseTimeline("");
+                  if (!checked) {
+                    setPurchaseTimeline("");
+                    setFieldErrors((prev) => {
+                      if (!prev.purchaseTimeline) return prev;
+                      const next = { ...prev };
+                      delete next.purchaseTimeline;
+                      return next;
+                    });
+                  }
                 }}
                 className="mt-0.5 h-4 w-4 accent-action"
               />
@@ -469,10 +485,28 @@ export default function SignupForm({ role }: { role: SignupRole }) {
             {buyerSpecialistNeeded ? (
               <div>
                 <label className="mb-2 block text-sm font-semibold text-text-tertiary">Purchase Timeline</label>
-                <select value={purchaseTimeline} onChange={(event) => setPurchaseTimeline(event.target.value)} className="w-full rounded-lg border border-border-secondary bg-white px-3 py-2 text-sm text-text-secondary">
+                <select
+                  value={purchaseTimeline}
+                  onChange={(event) => {
+                    setPurchaseTimeline(event.target.value);
+                    setFieldErrors((prev) => {
+                      if (!prev.purchaseTimeline) return prev;
+                      const next = { ...prev };
+                      delete next.purchaseTimeline;
+                      return next;
+                    });
+                  }}
+                  aria-invalid={Boolean(fieldErrors.purchaseTimeline)}
+                  className="w-full rounded-lg border border-border-secondary bg-white px-3 py-2 text-sm text-text-secondary"
+                >
                   <option value="">Select a timeline</option>
                   {PURCHASE_TIMELINE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
                 </select>
+                {fieldErrors.purchaseTimeline ? (
+                  <p className="mt-1 text-sm text-red-600">
+                    {fieldErrors.purchaseTimeline}
+                  </p>
+                ) : null}
               </div>
             ) : null}
           </div>

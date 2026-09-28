@@ -236,9 +236,17 @@ export default function PreMarketListingPage() {
       nextFieldErrors.scope = "Please select one market scope option.";
     }
 
+    if (buyerSpecialistNeeded && !purchaseTimeline.trim()) {
+      nextFieldErrors.purchaseTimeline = "Please choose a buying timeline.";
+    }
+
     if (Object.keys(nextFieldErrors).length > 0) {
       setFieldErrors(nextFieldErrors);
-      setFormError("Please fill out the required fields before submitting.");
+      const buyerTimelineError = nextFieldErrors.purchaseTimeline;
+      setFormError(
+        buyerTimelineError || "Please fill out the required fields before submitting.",
+      );
+      if (buyerTimelineError) window.alert(buyerTimelineError);
       return;
     }
 
@@ -791,19 +799,47 @@ export default function PreMarketListingPage() {
                   onChange={(event) => {
                     const checked = event.target.checked;
                     setBuyerSpecialistNeeded(checked);
-                    if (!checked) setPurchaseTimeline("");
+                    if (!checked) {
+                      setPurchaseTimeline("");
+                      setFieldErrors((prev) => {
+                        if (!prev.purchaseTimeline) return prev;
+                        const next = { ...prev };
+                        delete next.purchaseTimeline;
+                        return next;
+                      });
+                    }
                   }}
                   className="mt-0.5 h-4 w-4 cursor-pointer accent-blue-600"
                 />
                 <span>I would like to know more about upcoming sales service.<br /><span className="text-xs">[separate service, agent will be in touch]</span></span>
               </label>
               {buyerSpecialistNeeded ? (
-                <div className="relative mt-3 w-full max-w-xs">
-                  <select value={purchaseTimeline} onChange={(event) => setPurchaseTimeline(event.target.value)} className="w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 pr-9 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
-                    <option value="">Select a timeline</option>
-                    {purchaseTimelineOptions.map((option) => <option key={option} value={option}>{option}</option>)}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+                <div className="mt-3 w-full max-w-xs">
+                  <div className="relative">
+                    <select
+                      value={purchaseTimeline}
+                      onChange={(event) => {
+                        setPurchaseTimeline(event.target.value);
+                        setFieldErrors((prev) => {
+                          if (!prev.purchaseTimeline) return prev;
+                          const next = { ...prev };
+                          delete next.purchaseTimeline;
+                          return next;
+                        });
+                      }}
+                      aria-invalid={Boolean(fieldErrors.purchaseTimeline)}
+                      className="w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 pr-9 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    >
+                      <option value="">Select a timeline</option>
+                      {purchaseTimelineOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+                  </div>
+                  {fieldErrors.purchaseTimeline ? (
+                    <p className="mt-1 text-sm text-red-600">
+                      {fieldErrors.purchaseTimeline}
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
             </div>
