@@ -6,34 +6,24 @@ import FaqSection from "@/components/FaqSection";
 import HeroSection from "@/components/HeroSection";
 import MonthlyReportSection from "@/components/MonthlyReportSection";
 import {
-  RENTER_DASHBOARD_PATH,
-  renterHasActiveRequest,
-} from "@/lib/renterRedirect";
-import {
   selectAuth,
-  selectAccessToken,
   selectIsAuthed,
   selectReferrerBrokerageName,
   selectReferrerName,
   selectSessionReady,
 } from "@/store/slices/authSlice";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function HomePage() {
-  const router = useRouter();
   const isAuthed = useSelector(selectIsAuthed);
   const auth = useSelector(selectAuth);
-  const accessToken = useSelector(selectAccessToken);
   const referrerName = useSelector(selectReferrerName);
   const referrerBrokerageName = useSelector(selectReferrerBrokerageName);
   const sessionReady = useSelector(selectSessionReady);
   const role = auth.role ?? auth.user?.role ?? null;
   const isAgent = role === "Agent";
-  const isRenter = role === "Renter";
   const displayName = isAgent
     ? (auth.agentProfile?.userInfo?.fullName ??
       auth.user?.fullName ??
@@ -43,30 +33,8 @@ export default function HomePage() {
     ? (auth.agentProfile?.brokerageName ?? "The Corcoran Group")
     : referrerBrokerageName || "The Corcoran Group";
 
-  // Renters who already have at least one saved pre-market request
-  // should be sent straight to their dashboard ("My Requests") instead of
-  // landing on the marketing homepage. Renters without an active request
-  // (and non-renters) continue to see the public homepage as before.
-  const [redirectingToDashboard, setRedirectingToDashboard] = useState(false);
-  useEffect(() => {
-    if (!sessionReady || !isAuthed || !isRenter) return;
-    let cancelled = false;
-    void (async () => {
-      const hasActiveRequest = await renterHasActiveRequest(accessToken);
-      if (cancelled) return;
-      if (hasActiveRequest) {
-        setRedirectingToDashboard(true);
-        router.replace(RENTER_DASHBOARD_PATH);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [accessToken, isAuthed, isRenter, router, sessionReady]);
-
   if (!sessionReady) return null;
   if (!isAuthed) return <BrucherLanding />;
-  if (isRenter && redirectingToDashboard) return null;
 
   return (
     <main className="flex flex-col w-full min-h-screen bg-gray-100 text-gray-900">
