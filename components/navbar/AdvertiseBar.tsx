@@ -52,7 +52,7 @@ export default function AdvertiseBar() {
   if (!isActive || !content) return null;
 
   return (
-    <div className="w-full bg-gray-100 overflow-hidden">
+    <div className="advertise-bar w-full bg-gray-100 overflow-hidden">
       <div
         ref={marqueeRef}
         className="marquee-track"
@@ -83,6 +83,9 @@ export default function AdvertiseBar() {
           animation-timing-function: linear;
           animation-iteration-count: infinite;
           will-change: transform;
+        }
+        .advertise-bar:hover .marquee-track {
+          animation-play-state: paused;
         }
       `}</style>
     </div>
