@@ -447,11 +447,18 @@ export default function AgentMatchesPage() {
           );
         }
 
-        const normalized = (data.data ?? []).map((request) =>
-          normalizeAgentMatch(request, {
-            useCurrentScope: isMatchResultsMode,
-          }),
-        );
+        const normalized = (data.data ?? [])
+          .map((request) =>
+            normalizeAgentMatch(request, {
+              useCurrentScope: isMatchResultsMode,
+            }),
+          )
+          // Defense in depth for a stale API response. The match-search UI
+          // only permits Upcoming and Upcoming (M) rows.
+          .filter(
+            (request) =>
+              !isMatchResultsMode || request.scopeLabel !== "All Market",
+          );
         setRequests(normalized);
         setPagination(data.pagination);
         cacheAgentMatches(normalized);

@@ -992,9 +992,14 @@ export default function AgentRenterRequestsPage() {
           );
         }
 
-        const normalized = (data.data ?? []).map(normalizeAgentRequest);
-        // The API's `scope` is the live request scope. Find Matches must
-        // render that value, rather than the historical scope at match.
+        const normalized = (data.data ?? [])
+          .map(normalizeAgentRequest)
+          // Defense in depth: Find Matches must never display a plain All
+          // Market row, even if an outdated API deployment responds with one.
+          .filter(
+            (request) =>
+              !isMatchResultsMode || request.scopeLabel !== "All Market",
+          );
         setRequests(normalized);
         setPagination(data.pagination);
         setSelectedRequestIds([]);
