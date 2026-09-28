@@ -32,6 +32,9 @@ import { isUpcomingScope } from "@/lib/scope";
 
 const FILTERS_STORAGE_KEY = "agent-matches-filters";
 const LIST_STATE_STORAGE_KEY = "agent-matches-list-state";
+
+const isPlainAllMarketScope = (scope?: string) =>
+  scope?.trim().toLowerCase() === "all market";
 const defaultFilters: FilterType = getEmptyFilters();
 const NAVIGATION_STORAGE_KEY = "agent-matches-navigation";
 
@@ -457,7 +460,7 @@ export default function AgentMatchesPage() {
           // only permits Upcoming and Upcoming (M) rows.
           .filter(
             (request) =>
-              !isMatchResultsMode || request.scopeLabel !== "All Market",
+              !isMatchResultsMode || !isPlainAllMarketScope(request.scopeLabel),
           );
         setRequests(normalized);
         setPagination(data.pagination);
@@ -496,18 +499,21 @@ export default function AgentMatchesPage() {
   ]);
 
   const filteredRequests = useMemo(() => {
-    return requests.filter((req) =>
-      matchesAgentFilters(
-        req.raw,
-        filters,
-        showOwnReferrals,
-        currentAgentId,
-        false,
-      ),
+    return requests.filter(
+      (req) =>
+        (!isMatchResultsMode || !isPlainAllMarketScope(req.scopeLabel)) &&
+        matchesAgentFilters(
+          req.raw,
+          filters,
+          showOwnReferrals,
+          currentAgentId,
+          false,
+        ),
     );
   }, [
     currentAgentId,
     filters,
+    isMatchResultsMode,
     requests,
     showOwnReferrals,
   ]);

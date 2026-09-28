@@ -191,6 +191,9 @@ const preferenceEmptyIconSrc = "/icons/match/preference-empty.svg";
 const matchMissingColumnClass = "min-w-[170px]";
 const matchPreferenceColumnClass = "min-w-[175px]";
 
+const isPlainAllMarketScope = (scope?: string) =>
+  scope?.trim().toLowerCase() === "all market";
+
 const formatPriorityTitle = (index: number, preference?: string) => {
   const priorityLabel = `Priority ${index + 1}`;
   const preferenceLabel = preference?.trim();
@@ -909,18 +912,27 @@ export default function AgentRenterRequestsPage() {
       try {
         if (isMatchDemoMode) {
           const demoRequests = createDemoRequests();
-          setRequests(demoRequests);
+          // Keep the local demo subject to the same scope rule as the live
+          // matching tool. This is development-only, but it must never be an
+          // exception to the user-visible rule.
+          const visibleDemoRequests =
+            isMatchResultsMode || getDemoParam("results") === "1"
+              ? demoRequests.filter(
+                  (request) => !isPlainAllMarketScope(request.scopeLabel),
+                )
+              : demoRequests;
+          setRequests(visibleDemoRequests);
           setPagination({
             currentPage: 1,
             totalPages: 1,
-            totalItems: demoRequests.length,
+            totalItems: visibleDemoRequests.length,
             itemsPerPage: limit,
             hasNext: false,
             hasPrev: false,
             nextPage: null,
             prevPage: null,
           });
-          cacheAgentRequests(demoRequests);
+          cacheAgentRequests(visibleDemoRequests);
 
           const quickParam = getDemoParam(
             "quick",
@@ -931,7 +943,7 @@ export default function AgentRenterRequestsPage() {
           if (quickOption && quickOption.key !== "none") {
             setQuickSelect(quickOption.key);
             setSelectedRequestIds(
-              demoRequests
+              visibleDemoRequests
                 .filter(
                   (request) =>
                     (request.matchStarRating ?? 0) >= quickOption.threshold,
@@ -998,7 +1010,7 @@ export default function AgentRenterRequestsPage() {
           // Market row, even if an outdated API deployment responds with one.
           .filter(
             (request) =>
-              !isMatchResultsMode || request.scopeLabel !== "All Market",
+              !isMatchResultsMode || !isPlainAllMarketScope(request.scopeLabel),
           );
         setRequests(normalized);
         setPagination(data.pagination);
@@ -1040,7 +1052,13 @@ export default function AgentRenterRequestsPage() {
   ]);
 
   const filteredRequests = useMemo(() => {
-    if (isMatchResultsMode) return requests;
+    if (isMatchResultsMode) {
+      // Final UI guard: no state mutation or cached/stale response can render
+      // a plain All Market request inside Find Matches.
+      return requests.filter(
+        (request) => !isPlainAllMarketScope(request.scopeLabel),
+      );
+    }
 
     return requests.filter((req) =>
       matchesAgentFilters(
