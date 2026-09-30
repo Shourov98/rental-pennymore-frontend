@@ -458,59 +458,6 @@ export default function SignupForm({ role }: { role: SignupRole }) {
           }
         />
 
-        {isRenter ? (
-          <div className="space-y-3 rounded-xl border border-border-secondary bg-surface-secondary p-4">
-            <label className="flex cursor-pointer items-start gap-3 text-sm text-text-secondary">
-              <input
-                type="checkbox"
-                checked={buyerSpecialistNeeded}
-                onChange={(event) => {
-                  const checked = event.target.checked;
-                  setBuyerSpecialistNeeded(checked);
-                  if (!checked) {
-                    setPurchaseTimeline("");
-                    setFieldErrors((prev) => {
-                      if (!prev.purchaseTimeline) return prev;
-                      const next = { ...prev };
-                      delete next.purchaseTimeline;
-                      return next;
-                    });
-                  }
-                }}
-                className="mt-0.5 h-4 w-4 accent-action"
-              />
-              <span>I would like to know more about upcoming sales service.</span>
-            </label>
-            {buyerSpecialistNeeded ? (
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-text-tertiary">Purchase Timeline</label>
-                <select
-                  value={purchaseTimeline}
-                  onChange={(event) => {
-                    setPurchaseTimeline(event.target.value);
-                    setFieldErrors((prev) => {
-                      if (!prev.purchaseTimeline) return prev;
-                      const next = { ...prev };
-                      delete next.purchaseTimeline;
-                      return next;
-                    });
-                  }}
-                  aria-invalid={Boolean(fieldErrors.purchaseTimeline)}
-                  className="w-full rounded-lg border border-border-secondary bg-white px-3 py-2 text-sm text-text-secondary"
-                >
-                  <option value="">Select a timeline</option>
-                  {PURCHASE_TIMELINE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
-                </select>
-                {fieldErrors.purchaseTimeline ? (
-                  <p className="mt-1 text-sm text-red-600">
-                    {fieldErrors.purchaseTimeline}
-                  </p>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-
         <InputField
           icon="/icons/lucide/phone.svg"
           label="Phone no."
@@ -592,6 +539,62 @@ export default function SignupForm({ role }: { role: SignupRole }) {
           }}
           error={fieldErrors.password}
         />
+
+        {isRenter ? (
+          <div className="space-y-3 rounded-xl border border-border-secondary bg-surface-secondary p-4">
+            <label className="flex cursor-pointer items-start gap-3 text-sm text-text-secondary">
+              <input
+                type="checkbox"
+                checked={buyerSpecialistNeeded}
+                onChange={(event) => {
+                  const checked = event.target.checked;
+                  setBuyerSpecialistNeeded(checked);
+                  if (!checked) {
+                    setPurchaseTimeline("");
+                    setFieldErrors((prev) => {
+                      if (!prev.purchaseTimeline) return prev;
+                      const next = { ...prev };
+                      delete next.purchaseTimeline;
+                      return next;
+                    });
+                  }
+                }}
+                className="mt-0.5 h-4 w-4 accent-action"
+              />
+              <span>
+                I would like to know more about upcoming sales service.
+                {" "}(Optional, Separate service, your agent will be in touch).
+              </span>
+            </label>
+            {buyerSpecialistNeeded ? (
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-text-tertiary">Purchase Timeline</label>
+                <select
+                  value={purchaseTimeline}
+                  onChange={(event) => {
+                    setPurchaseTimeline(event.target.value);
+                    setFieldErrors((prev) => {
+                      if (!prev.purchaseTimeline) return prev;
+                      const next = { ...prev };
+                      delete next.purchaseTimeline;
+                      return next;
+                    });
+                  }}
+                  aria-invalid={Boolean(fieldErrors.purchaseTimeline)}
+                  className="w-full rounded-lg border border-border-secondary bg-white px-3 py-2 text-sm text-text-secondary"
+                >
+                  <option value="">Select a timeline</option>
+                  {PURCHASE_TIMELINE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+                </select>
+                {fieldErrors.purchaseTimeline ? (
+                  <p className="mt-1 text-sm text-red-600">
+                    {fieldErrors.purchaseTimeline}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         <div className="flex items-start gap-3 mt-2">
           <input
