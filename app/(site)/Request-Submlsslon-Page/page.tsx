@@ -4,6 +4,8 @@ import {
   AlertTriangle,
   Bell,
   Calendar,
+  Check,
+  ChevronDown,
   DollarSign,
   MapPin,
 } from "lucide-react";
@@ -53,7 +55,6 @@ export default function PreMarketListingPage() {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [description, setDescription] = useState("");
   const [isAgreementChecked, setIsAgreementChecked] = useState(false);
@@ -62,6 +63,8 @@ export default function PreMarketListingPage() {
     "" | "Upcoming" | "All Market"
   >("");
   const [agreementWarning, setAgreementWarning] = useState<string | null>(null);
+  const [buyerSpecialistNeeded, setBuyerSpecialistNeeded] = useState(false);
+  const [purchaseTimeline, setPurchaseTimeline] = useState("");
   const referrerName = useSelector(selectReferrerName);
   const referrer = useSelector(selectReferrer);
 
@@ -89,6 +92,26 @@ export default function PreMarketListingPage() {
   const renterName = renter?.fullName || user?.fullName || "Unknown renter";
   const renterEmail = renter?.email || user?.email || "";
   const renterPhone = renter?.phoneNumber || user?.phone || "";
+  const isAdminReferral = renter?.registrationType === "admin_referral";
+
+  useEffect(() => {
+    if (!accessToken || isAdminReferral) return;
+    const controller = new AbortController();
+    fetch(`${API_BASE_URL}/renter/profile`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      signal: controller.signal,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const questionnaire = data?.data?.questionnaire;
+        if (!questionnaire) return;
+        const checked = questionnaire.buyerSpecialistNeeded === true;
+        setBuyerSpecialistNeeded(checked);
+        setPurchaseTimeline(checked ? questionnaire.purchaseTimeline || "" : "");
+      })
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, [accessToken, isAdminReferral]);
 
   const registrationLink = useMemo(() => {
     const activationLink = referrer?.activationLink?.trim() || "";
@@ -162,7 +185,6 @@ export default function PreMarketListingPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage(null);
-    setFormError(null);
 
     const nextFieldErrors: Record<string, string> = {};
 
@@ -212,9 +234,40 @@ export default function PreMarketListingPage() {
       nextFieldErrors.scope = "Please select one market scope option.";
     }
 
+    if (buyerSpecialistNeeded && !purchaseTimeline.trim()) {
+      nextFieldErrors.purchaseTimeline = "Please choose a buying timeline.";
+    }
+
     if (Object.keys(nextFieldErrors).length > 0) {
       setFieldErrors(nextFieldErrors);
-      setFormError("Please fill out the required fields before submitting.");
+      const validationOrder = [
+        "movingDate",
+        "priceRange",
+        "locations",
+        "bedrooms",
+        "bathrooms",
+        "purchaseTimeline",
+        "scope",
+        "agreement",
+      ];
+      const firstInvalidField = validationOrder.find(
+        (field) => nextFieldErrors[field],
+      );
+
+      if (firstInvalidField) {
+        window.setTimeout(() => {
+          const section = document.querySelector<HTMLElement>(
+            `[data-validation-field="${firstInvalidField}"]`,
+          );
+          section?.scrollIntoView({ behavior: "smooth", block: "center" });
+          const focusTarget =
+            section?.querySelector<HTMLElement>("[data-validation-focus]") ??
+            section?.querySelector<HTMLElement>(
+              "input:not([type='hidden']), select, button:not([disabled])",
+            );
+          focusTarget?.focus({ preventScroll: true });
+        }, 0);
+      }
       return;
     }
 
@@ -276,6 +329,22 @@ export default function PreMarketListingPage() {
 
       if (accessToken) {
         headers.Authorization = `Bearer ${accessToken}`;
+      }
+
+      if (!isAdminReferral) {
+        const profileResponse = await fetch(`${API_BASE_URL}/renter/profile`, {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({
+            questionnaire: {
+              buyerSpecialistNeeded,
+              purchaseTimeline: buyerSpecialistNeeded ? purchaseTimeline : "",
+            },
+          }),
+        });
+        if (!profileResponse.ok) {
+          throw new Error("We couldn't save your purchase-interest preferences.");
+        }
       }
 
       const response = await fetch(`${API_BASE_URL}/pre-market/create`, {
@@ -342,6 +411,7 @@ export default function PreMarketListingPage() {
   const buildingOptions = ["Doorman", "Elevator", "Laundry in Building"];
   const petOptions = ["Cats allowed", "Dogs allowed"];
   const guarantorOptions = ["Personal guarantor", "Third party guarantor"];
+  const purchaseTimelineOptions = ["0–3 months", "3–6 months", "6–12 months", "12+ months", "Not sure"];
 
   return (
     <section className="w-full min-h-screen bg-gray-50 px-3 py-6 sm:px-6 sm:py-8 md:px-10 md:py-10">
@@ -366,7 +436,10 @@ export default function PreMarketListingPage() {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+          <div
+            data-validation-field="movingDate"
+            className="flex flex-col sm:flex-row gap-3 mb-4"
+          >
             {/* Earliest */}
             <div className="w-full sm:w-1/2">
               <label className="text-xs text-gray-600">Earliest</label>
@@ -378,6 +451,7 @@ export default function PreMarketListingPage() {
                 <input
                   type="date"
                   ref={earliestDateRef}
+                  data-validation-focus
                   value={movingDate.earliest}
                   min={earliestMinDate}
                   onChange={(e) =>
@@ -430,7 +504,10 @@ export default function PreMarketListingPage() {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+          <div
+            data-validation-field="priceRange"
+            className="flex flex-col sm:flex-row gap-3 mb-4"
+          >
             {/* Min Price */}
             <div className="w-full sm:w-1/2">
               <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
@@ -460,6 +537,7 @@ export default function PreMarketListingPage() {
                 <input
                   type="number"
                   value={priceRange.max === 0 ? "" : priceRange.max}
+                  data-validation-focus
                   step={25}
                   onChange={(e) =>
                     dispatch(
@@ -480,7 +558,7 @@ export default function PreMarketListingPage() {
           )}
 
           {/* Location */}
-          <div className="flex flex-col mb-4">
+          <div data-validation-field="locations" className="flex flex-col mb-4">
             <label className="text-sm font-semibold text-gray-700 mb-1">
               Location
             </label>
@@ -491,6 +569,15 @@ export default function PreMarketListingPage() {
 
             <div
               onClick={() => setIsLocationModalOpen(true)}
+              data-validation-focus
+              role="button"
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  setIsLocationModalOpen(true);
+                }
+              }}
               className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 cursor-pointer hover:border-blue-500 transition"
             >
               <MapPin size={16} className="text-blue-600 mr-2 shrink-0" />
@@ -511,8 +598,74 @@ export default function PreMarketListingPage() {
             <p className="text-sm text-red-600">{fieldErrors.locations}</p>
           )}
 
+          {false && !isAdminReferral ? (
+            <div
+              className="hidden"
+            >
+              <button
+                type="button"
+                role="checkbox"
+                aria-checked={buyerSpecialistNeeded}
+                onClick={() => {
+                  setBuyerSpecialistNeeded((checked) => {
+                    if (checked) setPurchaseTimeline("");
+                    return !checked;
+                  });
+                }}
+                className="flex w-full items-start gap-3 text-left"
+              >
+                <span
+                  className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-all duration-200 ${
+                    buyerSpecialistNeeded
+                      ? "scale-100 border-blue-600 bg-blue-600 shadow-sm"
+                      : "border-gray-300 bg-white group-hover:border-blue-400"
+                  }`}
+                >
+                  <Check
+                    className={`h-4 w-4 text-white transition-all duration-200 ${buyerSpecialistNeeded ? "scale-100 opacity-100" : "scale-50 opacity-0"}`}
+                    strokeWidth={3}
+                  />
+                </span>
+                <span className="min-w-0">
+                  <span className="flex items-center gap-2 font-semibold text-gray-800">
+                    Interested in upcoming sales?
+                  </span>
+                  <span className="mt-1 block text-sm leading-5 text-gray-600">
+                    I would like to know more about upcoming sales service.
+                  </span>
+                  <span className="mt-1 block text-xs text-gray-500">
+                    Separate service — an agent will be in touch.
+                  </span>
+                </span>
+              </button>
+              <div
+                className={`grid transition-all duration-300 ease-out ${buyerSpecialistNeeded ? "mt-4 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+              >
+                <div className="overflow-hidden">
+                  <label className="mb-2 block text-sm font-semibold text-gray-700">
+                    Purchase timeline
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={purchaseTimeline}
+                      data-validation-focus
+                      onChange={(event) => setPurchaseTimeline(event.target.value)}
+                      className="w-full appearance-none rounded-xl border border-blue-200 bg-white px-4 py-3 pr-11 text-sm font-medium text-gray-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                    >
+                      <option value="">Select a timeline</option>
+                      {purchaseTimelineOptions.map((option) => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-blue-600" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
           {/* Bedrooms */}
-          <div className="mb-4">
+          <div data-validation-field="bedrooms" className="mb-4">
             <p className="text-sm font-semibold text-gray-700 mb-2">Bedrooms</p>
 
             <div className="grid grid-cols-5 gap-2">
@@ -539,7 +692,7 @@ export default function PreMarketListingPage() {
           </div>
 
           {/* Bathrooms */}
-          <div className="mb-4">
+          <div data-validation-field="bathrooms" className="mb-4">
             <p className="text-sm font-semibold text-gray-700 mb-2">
               Bathrooms
             </p>
@@ -638,6 +791,17 @@ export default function PreMarketListingPage() {
             </div>
           </div>
 
+          {/* Buyer-interest control is intentionally placed after guarantors. */}
+          {false && !isAdminReferral ? (
+            <div className="mb-5 overflow-hidden rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-white p-4 shadow-sm transition-all duration-300 sm:p-5">
+              <button type="button" role="checkbox" aria-checked={buyerSpecialistNeeded} onClick={() => setBuyerSpecialistNeeded((checked) => { if (checked) setPurchaseTimeline(""); return !checked; })} className="flex w-full items-start gap-3 text-left">
+                <span className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-all duration-200 ${buyerSpecialistNeeded ? "border-blue-600 bg-blue-600 shadow-sm" : "border-gray-300 bg-white"}`}><Check className={`h-4 w-4 text-white transition-all duration-200 ${buyerSpecialistNeeded ? "scale-100 opacity-100" : "scale-50 opacity-0"}`} strokeWidth={3} /></span>
+                <span><span className="font-semibold text-gray-800">Interested in upcoming sales?</span><span className="mt-1 block text-sm text-gray-600">I would like to know more about upcoming sales service.</span><span className="mt-1 block text-xs text-gray-500">Separate service — an agent will be in touch.</span></span>
+              </button>
+              {buyerSpecialistNeeded ? <div className="mt-4"><label className="mb-2 block text-sm font-semibold text-gray-700">Purchase timeline</label><div className="relative"><select value={purchaseTimeline} onChange={(event) => setPurchaseTimeline(event.target.value)} className="w-full appearance-none rounded-xl border border-blue-200 bg-white px-4 py-3 pr-11 text-sm font-medium text-gray-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"><option value="">Select a timeline</option>{purchaseTimelineOptions.map((option) => <option key={option} value={option}>{option}</option>)}</select><ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-blue-600" /></div></div> : null}
+            </div>
+          ) : null}
+
           {/* Guarantor */}
           <div className="mb-6">
             <p className="text-sm font-semibold text-gray-700 mb-2">
@@ -662,6 +826,67 @@ export default function PreMarketListingPage() {
             </div>
           </div>
 
+          {!isAdminReferral ? (
+            <div
+              data-validation-field="purchaseTimeline"
+              className="mb-6 text-sm text-gray-700"
+            >
+              <p className="mb-2 text-sm font-semibold text-gray-700">
+                Check if you might also be open to buying
+              </p>
+              <label className="flex cursor-pointer items-start gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={buyerSpecialistNeeded}
+                  onChange={(event) => {
+                    const checked = event.target.checked;
+                    setBuyerSpecialistNeeded(checked);
+                    if (!checked) {
+                      setPurchaseTimeline("");
+                      setFieldErrors((prev) => {
+                        if (!prev.purchaseTimeline) return prev;
+                        const next = { ...prev };
+                        delete next.purchaseTimeline;
+                        return next;
+                      });
+                    }
+                  }}
+                  className="mt-0.5 h-4 w-4 cursor-pointer accent-blue-600"
+                />
+                <span>I would like to know more about upcoming sales service.<br /><span className="text-xs">[separate service, agent will be in touch]</span></span>
+              </label>
+              {buyerSpecialistNeeded ? (
+                <div className="mt-3 w-full max-w-xs">
+                  <div className="relative">
+                    <select
+                      value={purchaseTimeline}
+                      onChange={(event) => {
+                        setPurchaseTimeline(event.target.value);
+                        setFieldErrors((prev) => {
+                          if (!prev.purchaseTimeline) return prev;
+                          const next = { ...prev };
+                          delete next.purchaseTimeline;
+                          return next;
+                        });
+                      }}
+                      aria-invalid={Boolean(fieldErrors.purchaseTimeline)}
+                      className="w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 pr-9 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    >
+                      <option value="">Select a timeline</option>
+                      {purchaseTimelineOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+                  </div>
+                  {fieldErrors.purchaseTimeline ? (
+                    <p className="mt-1 text-sm text-red-600">
+                      {fieldErrors.purchaseTimeline}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
           {/* Preferences Drag List */}
           <div className="mb-6">
             <PreferencesDragList
@@ -670,7 +895,10 @@ export default function PreMarketListingPage() {
             />
           </div>
 
-          <div className="border-t border-gray-300 pt-4 space-y-3">
+          <div
+            data-validation-field="scope"
+            className="border-t border-gray-300 pt-4 space-y-3"
+          >
             <p className="text-[13px] font-semibold leading-snug text-black sm:text-sm md:text-[15px]">
               In order to match your request, which market scope should the
               agent focus on?
@@ -687,6 +915,7 @@ export default function PreMarketListingPage() {
                 <input
                   type="radio"
                   name="marketScope"
+                  data-validation-focus
                   checked={marketScope === "All Market"}
                   onChange={() => setMarketScope("All Market")}
                   className="h-6 w-6 shrink-0 accent-gray-600"
@@ -739,7 +968,10 @@ export default function PreMarketListingPage() {
           </div>
 
           {/* Agreement text + checkbox */}
-          <div className="border-t pt-4 text-gray-600 space-y-3">
+          <div
+            data-validation-field="agreement"
+            className="border-t pt-4 text-gray-600 space-y-3"
+          >
             <div className="space-y-3">
               <p className="text-[13px] font-semibold leading-snug text-black sm:text-sm md:text-[15px]">
                 Share your search to improve matching chances (optional - highly
@@ -834,6 +1066,7 @@ export default function PreMarketListingPage() {
                   <input
                     type="checkbox"
                     checked={isAgreementChecked}
+                    data-validation-focus
                     onChange={(e) => {
                       if (e.target.checked && !renterPhone) {
                         setAgreementWarning(
@@ -867,12 +1100,9 @@ export default function PreMarketListingPage() {
             {errorMessage && (
               <p className="text-sm text-red-600 text-right">{errorMessage}</p>
             )}
-            {formError && (
-              <p className="text-sm text-red-600 text-right">{formError}</p>
-            )}
             <button
               type="submit"
-              disabled={isSubmitting || !isAgreementChecked || !marketScope}
+              disabled={isSubmitting}
               className="flex items-center gap-2 bg-blue-500 text-white text-sm sm:text-base font-medium rounded-lg px-5 py-3 hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Bell size={16} />

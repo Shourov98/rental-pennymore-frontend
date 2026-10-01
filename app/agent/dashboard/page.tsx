@@ -80,6 +80,8 @@ const opportunityDetailsPlaceholder: Record<RepresentationType, string> = {
   owner_representation: `e.g. I have an exclusive coming up that can fit your client. Large one bedroom, West 72nd Street between Broadway and Amsterdam Avenue, dishwasher, high ceilings, $3,800, September 1 start date, elevator and laundry building. Reach out for showing times.`,
 };
 
+const BROKER_FEE_OPTIONS = ["One Month Rent", "9% Annual Rent", "10% Annual Rent", "11% Annual Rent", "12% Annual Rent", "13% Annual Rent", "14% Annual Rent", "15% Annual Rent", "Talk to Renter First"] as const;
+
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -188,6 +190,9 @@ const preferenceFilledIconSrc = "/icons/match/preference-filled.svg";
 const preferenceEmptyIconSrc = "/icons/match/preference-empty.svg";
 const matchMissingColumnClass = "min-w-[170px]";
 const matchPreferenceColumnClass = "min-w-[175px]";
+
+const isPlainAllMarketScope = (scope?: string) =>
+  scope?.trim().toLowerCase() === "all market";
 
 const formatPriorityTitle = (index: number, preference?: string) => {
   const priorityLabel = `Priority ${index + 1}`;
@@ -817,6 +822,7 @@ export default function AgentRenterRequestsPage() {
     RepresentationType | ""
   >("");
   const [bulkOpportunityDetails, setBulkOpportunityDetails] = useState("");
+  const [bulkBrokerFee, setBulkBrokerFee] = useState("");
   const [isBulkConfirmChecked, setIsBulkConfirmChecked] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(false);
   const [isMatchDemoMode, setIsMatchDemoMode] = useState(false);
@@ -906,18 +912,27 @@ export default function AgentRenterRequestsPage() {
       try {
         if (isMatchDemoMode) {
           const demoRequests = createDemoRequests();
-          setRequests(demoRequests);
+          // Keep the local demo subject to the same scope rule as the live
+          // matching tool. This is development-only, but it must never be an
+          // exception to the user-visible rule.
+          const visibleDemoRequests =
+            isMatchResultsMode || getDemoParam("results") === "1"
+              ? demoRequests.filter(
+                  (request) => !isPlainAllMarketScope(request.scopeLabel),
+                )
+              : demoRequests;
+          setRequests(visibleDemoRequests);
           setPagination({
             currentPage: 1,
             totalPages: 1,
-            totalItems: demoRequests.length,
+            totalItems: visibleDemoRequests.length,
             itemsPerPage: limit,
             hasNext: false,
             hasPrev: false,
             nextPage: null,
             prevPage: null,
           });
-          cacheAgentRequests(demoRequests);
+          cacheAgentRequests(visibleDemoRequests);
 
           const quickParam = getDemoParam(
             "quick",
@@ -928,7 +943,7 @@ export default function AgentRenterRequestsPage() {
           if (quickOption && quickOption.key !== "none") {
             setQuickSelect(quickOption.key);
             setSelectedRequestIds(
-              demoRequests
+              visibleDemoRequests
                 .filter(
                   (request) =>
                     (request.matchStarRating ?? 0) >= quickOption.threshold,
@@ -989,9 +1004,14 @@ export default function AgentRenterRequestsPage() {
           );
         }
 
-        const normalized = (data.data ?? []).map(normalizeAgentRequest);
-        // The API's `scope` is the live request scope. Find Matches must
-        // render that value, rather than the historical scope at match.
+        const normalized = (data.data ?? [])
+          .map(normalizeAgentRequest)
+          // Defense in depth: Find Matches must never display a plain All
+          // Market row, even if an outdated API deployment responds with one.
+          .filter(
+            (request) =>
+              !isMatchResultsMode || !isPlainAllMarketScope(request.scopeLabel),
+          );
         setRequests(normalized);
         setPagination(data.pagination);
         setSelectedRequestIds([]);
@@ -1032,7 +1052,13 @@ export default function AgentRenterRequestsPage() {
   ]);
 
   const filteredRequests = useMemo(() => {
-    if (isMatchResultsMode) return requests;
+    if (isMatchResultsMode) {
+      // Final UI guard: no state mutation or cached/stale response can render
+      // a plain All Market request inside Find Matches.
+      return requests.filter(
+        (request) => !isPlainAllMarketScope(request.scopeLabel),
+      );
+    }
 
     return requests.filter((req) =>
       matchesAgentFilters(
@@ -1673,6 +1699,7 @@ export default function AgentRenterRequestsPage() {
     setIsBulkConfirmOpen(false);
     setBulkRepresentationType("");
     setBulkOpportunityDetails("");
+    setBulkBrokerFee("");
     setIsBulkConfirmChecked(false);
   };
 
@@ -1738,6 +1765,7 @@ export default function AgentRenterRequestsPage() {
     setError(null);
     setBulkRepresentationType("");
     setBulkOpportunityDetails("");
+    setBulkBrokerFee("");
     setIsBulkConfirmChecked(false);
     setIsBulkRepresentationOpen(true);
   };
@@ -1796,6 +1824,9 @@ export default function AgentRenterRequestsPage() {
               : {}),
             ...(normalizedOpportunityDetails
               ? { opportunityDetails: normalizedOpportunityDetails }
+              : {}),
+            ...(representationType === "renter_representation" && bulkBrokerFee
+              ? { brokerFee: bulkBrokerFee }
               : {}),
           }),
         },
@@ -2811,6 +2842,7 @@ export default function AgentRenterRequestsPage() {
                   onChange={() => {
                     setBulkRepresentationType("owner_representation");
                     setBulkOpportunityDetails("");
+                    setBulkBrokerFee("");
                   }}
                   className="h-4 w-4 text-blue-600"
                 />
@@ -2873,6 +2905,15 @@ export default function AgentRenterRequestsPage() {
                   </p>
                 ) : null}
               </div>
+            ) : null}
+            {bulkRepresentationType === "renter_representation" ? (
+              <label className="mt-4 block text-sm font-semibold text-gray-800">
+                Broker Fee
+                <select value={bulkBrokerFee} onChange={(event) => setBulkBrokerFee(event.target.value)} className="mt-2 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-normal text-gray-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
+                  <option value="">Select Broker Fee</option>
+                  {BROKER_FEE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+                </select>
+              </label>
             ) : null}
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
