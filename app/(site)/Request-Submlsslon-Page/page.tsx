@@ -307,6 +307,16 @@ export default function PreMarketListingPage() {
         personalGuarantor: guarantor.includes("Personal guarantor"),
         thirdPartyGuarantor: guarantor.includes("Third party guarantor"),
       },
+      ...(!isAdminReferral
+        ? {
+            buyerInterest: {
+              buyerSpecialistNeeded,
+              ...(buyerSpecialistNeeded && purchaseTimeline.trim()
+                ? { purchaseTimeline: purchaseTimeline.trim() }
+                : {}),
+            },
+          }
+        : {}),
       preferences,
       shareConsent,
       scope: marketScope,
@@ -652,7 +662,7 @@ export default function PreMarketListingPage() {
                       onChange={(event) => setPurchaseTimeline(event.target.value)}
                       className="w-full appearance-none rounded-xl border border-blue-200 bg-white px-4 py-3 pr-11 text-sm font-medium text-gray-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                     >
-                      <option value="">Select a timeline</option>
+                      <option value="">Select a purchase timeline</option>
                       {purchaseTimelineOptions.map((option) => (
                         <option key={option} value={option}>{option}</option>
                       ))}
@@ -798,7 +808,7 @@ export default function PreMarketListingPage() {
                 <span className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-all duration-200 ${buyerSpecialistNeeded ? "border-blue-600 bg-blue-600 shadow-sm" : "border-gray-300 bg-white"}`}><Check className={`h-4 w-4 text-white transition-all duration-200 ${buyerSpecialistNeeded ? "scale-100 opacity-100" : "scale-50 opacity-0"}`} strokeWidth={3} /></span>
                 <span><span className="font-semibold text-gray-800">Interested in upcoming sales?</span><span className="mt-1 block text-sm text-gray-600">I would like to know more about upcoming sales service.</span><span className="mt-1 block text-xs text-gray-500">Separate service — an agent will be in touch.</span></span>
               </button>
-              {buyerSpecialistNeeded ? <div className="mt-4"><label className="mb-2 block text-sm font-semibold text-gray-700">Purchase timeline</label><div className="relative"><select value={purchaseTimeline} onChange={(event) => setPurchaseTimeline(event.target.value)} className="w-full appearance-none rounded-xl border border-blue-200 bg-white px-4 py-3 pr-11 text-sm font-medium text-gray-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"><option value="">Select a timeline</option>{purchaseTimelineOptions.map((option) => <option key={option} value={option}>{option}</option>)}</select><ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-blue-600" /></div></div> : null}
+              {buyerSpecialistNeeded ? <div className="mt-4"><label className="mb-2 block text-sm font-semibold text-gray-700">Purchase timeline</label><div className="relative"><select value={purchaseTimeline} onChange={(event) => setPurchaseTimeline(event.target.value)} className="w-full appearance-none rounded-xl border border-blue-200 bg-white px-4 py-3 pr-11 text-sm font-medium text-gray-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"><option value="">Select a purchase timeline</option>{purchaseTimelineOptions.map((option) => <option key={option} value={option}>{option}</option>)}</select><ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-blue-600" /></div></div> : null}
             </div>
           ) : null}
 
@@ -872,7 +882,7 @@ export default function PreMarketListingPage() {
                       aria-invalid={Boolean(fieldErrors.purchaseTimeline)}
                       className="w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 pr-9 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                     >
-                      <option value="">Select a timeline</option>
+                      <option value="">Select a purchase timeline</option>
                       {purchaseTimelineOptions.map((option) => <option key={option} value={option}>{option}</option>)}
                     </select>
                     <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2" />

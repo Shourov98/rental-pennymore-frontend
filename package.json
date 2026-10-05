@@ -4,11 +4,11 @@
   "private": true,
   "packageManager": "pnpm@9.15.0",
   "scripts": {
-    "dev": "WATCHPACK_POLLING=true next dev --webpack --hostname 127.0.0.1",
+    "dev": "node api.js && WATCHPACK_POLLING=true next dev --webpack --hostname 127.0.0.1",
     "dev:webpack": "WATCHPACK_POLLING=true next dev --webpack --hostname 127.0.0.1",
     "dev:3030": "WATCHPACK_POLLING=true next dev --webpack --hostname 127.0.0.1 --port 3030",
-    "build": "npm run security:check && next build --webpack",
-    "start": "next start --hostname 127.0.0.1 --port 3030",
+    "build": "node api.js && npm run security:check && next build --webpack",
+    "start": "node api.js && next start --hostname 127.0.0.1 --port 3030",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "security:check": "node scripts/security-check.mjs"
