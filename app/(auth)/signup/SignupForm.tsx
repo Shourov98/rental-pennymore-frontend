@@ -583,7 +583,7 @@ export default function SignupForm({ role }: { role: SignupRole }) {
                   aria-invalid={Boolean(fieldErrors.purchaseTimeline)}
                   className="w-full rounded-lg border border-border-secondary bg-white px-3 py-2 text-sm text-text-secondary"
                 >
-                  <option value="">Select a timeline</option>
+                  <option value="">Select a purchase timeline</option>
                   {PURCHASE_TIMELINE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
                 </select>
                 {fieldErrors.purchaseTimeline ? (
