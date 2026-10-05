@@ -307,6 +307,16 @@ export default function PreMarketListingPage() {
         personalGuarantor: guarantor.includes("Personal guarantor"),
         thirdPartyGuarantor: guarantor.includes("Third party guarantor"),
       },
+      ...(!isAdminReferral
+        ? {
+            buyerInterest: {
+              buyerSpecialistNeeded,
+              ...(buyerSpecialistNeeded && purchaseTimeline.trim()
+                ? { purchaseTimeline: purchaseTimeline.trim() }
+                : {}),
+            },
+          }
+        : {}),
       preferences,
       shareConsent,
       scope: marketScope,
