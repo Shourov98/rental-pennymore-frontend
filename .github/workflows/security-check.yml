@@ -2,14 +2,52 @@ name: Security check
 
 on:
   pull_request:
+    branches: [main]
   push:
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
   security-check:
+    name: security-check
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Run existing security check
+        run: pnpm run security:check
+
+      - name: Check dependency vulnerabilities
+        run: pnpm audit --audit-level high
+
+      - name: Check TypeScript
+        run: pnpm run typecheck
+
+      - name: Check ESLint
+        run: pnpm run lint
+
+      - name: Build Next.js application
+        run: pnpm run build
         with:
           node-version: 20
       - run: npm run security:check
