@@ -12,13 +12,6 @@ import {
   Phone,
   User,
 } from "lucide-react";
-import { loadStripe } from "@stripe/stripe-js";
-import {
-  CardElement,
-  Elements,
-  useElements,
-  useStripe,
-} from "@stripe/react-stripe-js";
 import RenterPreferenceView from "@/components/RenterPreferenceView";
 import OpportunityDetailsTextarea from "@/components/agent/OpportunityDetailsTextarea";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -131,103 +124,6 @@ const formatFeatureGroup = (
     .filter(([, value]) => value)
     .map(([key]) => labels[key] || key);
 
-const stripePublishableKey =
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
-const stripePromise = stripePublishableKey
-  ? loadStripe(stripePublishableKey)
-  : null;
-
-interface StripePaymentFormProps {
-  amountLabel: string;
-  clientSecret: string;
-  onClose: () => void;
-  onSuccess: (status?: string) => void;
-}
-
-function StripePaymentForm({
-  amountLabel,
-  clientSecret,
-  onClose,
-  onSuccess,
-}: StripePaymentFormProps) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setErrorMessage(null);
-
-    if (!stripe || !elements) {
-      setErrorMessage("Stripe is still loading. Please try again.");
-      return;
-    }
-
-    const cardElement = elements.getElement(CardElement);
-    if (!cardElement) {
-      setErrorMessage("Card details are not available yet.");
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      const { error, paymentIntent } = await stripe.confirmCardPayment(
-        clientSecret,
-        {
-          payment_method: { card: cardElement },
-        },
-      );
-
-      if (error) {
-        throw new Error(error.message || "Payment failed.");
-      }
-
-      onSuccess(paymentIntent?.status);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Payment failed.";
-      setErrorMessage(message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="rounded-lg border border-gray-200 p-3">
-        <CardElement
-          options={{
-            style: {
-              base: {
-                fontSize: "16px",
-                color: "#111827",
-                "::placeholder": { color: "#9CA3AF" },
-              },
-            },
-          }}
-        />
-      </div>
-      {errorMessage && <p className="text-sm text-red-600">{errorMessage}</p>}
-      <div className="flex flex-wrap gap-3 justify-end">
-        <button
-          type="button"
-          onClick={onClose}
-          className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={!stripe || !elements || isSubmitting}
-          className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? "Processing..." : `Pay ${amountLabel}`}
-        </button>
-      </div>
-    </form>
-  );
-}
-
 export default function AgentRenterRequestDetailsPage() {
   const params = useParams();
   const router = useRouter();
@@ -249,22 +145,6 @@ export default function AgentRenterRequestDetailsPage() {
     type: "success" | "error";
     message: string;
   } | null>(null);
-  const [paymentMessage, setPaymentMessage] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
-  const [isCreatingIntent, setIsCreatingIntent] = useState(false);
-  const [paymentIntentData, setPaymentIntentData] = useState<{
-    clientSecret?: string;
-    paymentIntentId?: string;
-    grantAccessId?: string;
-    amount?: number;
-    currency?: string;
-  } | null>(null);
-  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
-  const [localPaymentStatus, setLocalPaymentStatus] = useState<string | null>(
-    null,
-  );
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isConfirmChecked, setIsConfirmChecked] = useState(false);
   const [isRepresentationOpen, setIsRepresentationOpen] = useState(false);
@@ -716,16 +596,6 @@ export default function AgentRenterRequestDetailsPage() {
   // const shouldDisableMatchRequest = grantAccessEnabled
   //   ? isListingMatched
   //   : !canRequestAccess || isRequestSentByStatus || isRequestSent;
-  const showPaymentCard =
-    request?.raw?.status?.toLowerCase() === "approved" ||
-    request?.raw?.grantAccessStatus?.toLowerCase() === "approved";
-  const paymentStatus =
-    localPaymentStatus || request?.raw?.payment?.status?.toLowerCase();
-  const isPaid = paymentStatus === "succeeded";
-  const paymentAmount =
-    request?.raw?.payment?.amount ?? request?.raw?.chargeAmount;
-  const paymentCurrency = request?.raw?.payment?.currency || "USD";
-
   const isDisabled = grantAccessEnabled
     ? isListingMatched &&
       !canAddAdditionalOpportunity &&
@@ -746,15 +616,6 @@ export default function AgentRenterRequestDetailsPage() {
   //                 : isSubmitting
   //                 ? "Sending..."
   //                 : "Match Request"}
-
-  const formatPaymentAmount = (amount?: number, currency?: string) => {
-    if (amount == null) return "Not specified";
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency || "USD",
-      maximumFractionDigits: 2,
-    }).format(amount);
-  };
 
   const handleMatchRequest = async (
     representationType: RepresentationType = "renter_representation",
@@ -972,72 +833,6 @@ export default function AgentRenterRequestDetailsPage() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleCreatePaymentIntent = async () => {
-    if (!request?.raw?.grantAccessId || isCreatingIntent) return;
-    setPaymentMessage(null);
-
-    try {
-      if (!stripePublishableKey) {
-        throw new Error(
-          "Stripe is not configured. Add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.",
-        );
-      }
-
-      setIsCreatingIntent(true);
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
-
-      const response = await fetch(
-        `${API_BASE_URL}/pre-market/payment/create-intent`,
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ grantAccessId: request.raw.grantAccessId }),
-        },
-      );
-
-      const data = await response.json().catch(() => ({}));
-
-      if (!response.ok || data?.success === false) {
-        throw new Error(
-          data?.message || "We couldn't create the payment intent.",
-        );
-      }
-
-      const payload = data?.data ?? data;
-      setPaymentIntentData({
-        clientSecret: payload?.clientSecret,
-        paymentIntentId: payload?.paymentIntentId,
-        grantAccessId: payload?.grantAccessId || request.raw.grantAccessId,
-        amount: payload?.amount ?? paymentAmount,
-        currency: payload?.currency ?? paymentCurrency,
-      });
-      setIsPaymentOpen(true);
-    } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : "We couldn't create the payment intent.";
-      setPaymentMessage({ type: "error", message });
-    } finally {
-      setIsCreatingIntent(false);
-    }
-  };
-
-  const handlePaymentSuccess = (status?: string) => {
-    setLocalPaymentStatus(status || "succeeded");
-    setIsPaymentOpen(false);
-    setPaymentMessage({
-      type: "success",
-      message:
-        status === "succeeded"
-          ? "Payment completed successfully."
-          : "Payment submitted.",
-    });
   };
 
   const navigateToAdjacentRequest = (targetHref: string | null) => {
@@ -1387,93 +1182,6 @@ export default function AgentRenterRequestDetailsPage() {
                 })()
               : null}
           </div>
-
-          {showPaymentCard && (
-            <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-lg font-semibold text-[#0A093D]">
-                    Grant Access Payment
-                  </h2>
-                  <p className="text-sm text-gray-600">
-                    Complete payment to unlock renter details.
-                  </p>
-                </div>
-                <div className="text-right">
-                  <span
-                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
-                      isPaid
-                        ? "bg-green-100 text-green-700"
-                        : "bg-amber-100 text-amber-700"
-                    }`}
-                  >
-                    {isPaid ? "Paid" : paymentStatus || "Pending"}
-                  </span>
-                  <p className="mt-2 text-xs text-gray-500">Amount</p>
-                  <p className="text-lg font-semibold text-[#0A093D]">
-                    {formatPaymentAmount(paymentAmount, paymentCurrency)}
-                  </p>
-                </div>
-              </div>
-
-              {paymentMessage && (
-                <p
-                  className={`mt-3 text-sm ${
-                    paymentMessage.type === "error"
-                      ? "text-red-600"
-                      : "text-green-600"
-                  }`}
-                >
-                  {paymentMessage.message}
-                </p>
-              )}
-
-              {!isPaid && (
-                <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={handleCreatePaymentIntent}
-                    disabled={!request?.raw?.grantAccessId || isCreatingIntent}
-                    className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {isCreatingIntent ? "Creating..." : "Pay Now"}
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {isPaymentOpen &&
-            paymentIntentData?.clientSecret &&
-            stripePromise && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-                <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-[#0A093D]">
-                      Complete Payment
-                    </h3>
-                    <button
-                      type="button"
-                      onClick={() => setIsPaymentOpen(false)}
-                      className="text-sm text-gray-500 hover:text-gray-800"
-                    >
-                      Close
-                    </button>
-                  </div>
-                  <Elements stripe={stripePromise}>
-                    <StripePaymentForm
-                      amountLabel={formatPaymentAmount(
-                        paymentIntentData.amount ?? paymentAmount,
-                        paymentIntentData.currency ?? paymentCurrency,
-                      )}
-                      clientSecret={paymentIntentData.clientSecret}
-                      onClose={() => setIsPaymentOpen(false)}
-                      onSuccess={handlePaymentSuccess}
-                    />
-                  </Elements>
-                </div>
-              </div>
-            )}
 
           {/* Renter Contact */}
           {renterContact && (
