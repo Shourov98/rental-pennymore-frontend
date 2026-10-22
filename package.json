@@ -19,8 +19,6 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@react-google-maps/api": "^2.20.8",
     "@reduxjs/toolkit": "^2.13.0",
-    "@stripe/react-stripe-js": "^2.9.0",
-    "@stripe/stripe-js": "^4.10.0",
     "embla-carousel-react": "^8.6.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.553.0",
